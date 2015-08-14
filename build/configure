@@ -1,0 +1,248 @@
+#!/bin/bash
+
+scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
+scxpal_dir=`(cd ../../pal; pwd -P)`
+
+enable_debug=""
+enable_debug_flag=0
+enable_purify_agent=""
+enable_purify_server=""
+enable_omi_tools=""
+enable_omi_tools_flag=0
+opensource_distro=0
+build_type=Release
+ULINUX=0
+NOULINIX=0
+
+# Default OMI qualifiers for build purposes
+omi_configure_quals=""
+
+if [ ! -d "$scxomi_dir" ]; then
+    echo "OMI directory ($scxomi_dir) does not exist"
+    exit 1
+fi
+
+# Ruby configuration qualifiers
+ruby_configure_quals="--prefix=/opt/microsoft/omsagent"
+
+for opt
+do
+
+  arg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
+
+  case $opt in
+
+    -h | --help)
+      help=1
+    ;;
+
+    --enable-debug)
+      enable_debug="--enable-debug"
+      build_type=Debug
+      enable_debug_flag=1
+    ;;
+
+    --enable-ulinux)
+      if [ `uname` != "Linux" ]; then
+          echo "Cannot build for ULINUX on non-Linux platforms"
+          exit 1
+      fi
+      if [ "$NOULINUX" = "1" ]; then
+          echo "Conflicting qualifers: --enable-ulinux and --noenable-ulinux can't be specified together"
+          exit 1
+      fi
+      ULINUX=1
+    ;;
+
+    --noenable-ulinux)
+      if [ `uname` != "Linux" ]; then
+          echo "Cannot build for ULINUX on non-Linux platforms"
+          exit 1
+      fi
+      if [ "$ULINUX" = "1" ]; then
+          echo "Conflicting qualifers: --enable-ulinux and --noenable-ulinux can't be specified together"
+          exit 1
+      fi
+      NOULINUX=1
+    ;;
+
+    --enable-open-source)
+      opensource_distro=1
+    ;;
+
+    *)
+      echo "configure: invalid option '$opt'"
+      echo "Try configure --help' for more information."
+      exit 1
+    ;;
+
+  esac
+
+done
+
+if [ "$help" = "1" ]; then
+
+    cat<<EOF
+
+Usage: ./configure [OPTIONS]
+
+OVERVIEW:
+
+This script configures SCXOM for building. Type the following commands.
+
+    $ ./configure
+    $ make
+
+OPTIONS:
+    -h, --help                  Print this help message.
+    --enable-debug              Perform a debug build.
+    --[no]enable-ulinux         Specifies platform as ULINUX (Linux only);
+                                ULINUX is assumed on universal build systems
+    --enable-open-source        Build for open source distribution
+
+EOF
+    exit 0
+fi
+
+omi_configure_quals="${enable_debug} ${enable_omi_tools} ${omi_configure_quals}"
+pal_configure_quals="${enable_debug}"
+
+if [ "$ULINUX" -eq 1 -a "$opensource_distro" -eq 1 ]; then
+    echo "*** ULINUX not permitted for open source distributions; ULINUX disabled ***"
+    ULINUX=0
+fi
+
+if [ "$opensource_distro" -eq 1 ]; then
+    # We really don't want ULINUX, not even defaulted
+    NOULINUX=1
+fi
+
+# See if we're running on a SuSE 10 (universal) system; if so, assume ULINUX
+if [ "$NOULINUX" != "1" ]; then
+    if [ -e /etc/SuSE-release ]; then 
+        PF_MAJOR=`head -n 1 /etc/SuSE-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
+        PF_MINOR=`(head -n 1 /etc/SuSE-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
+        if [ "$PF_MAJOR" = "10" -a "$PF_MINOR" = "0" ]; then
+            ULINUX=1
+        fi
+    fi
+fi
+
+# Note: Most of this code came from the PAL configure file
+
+set_ulinux_pf() 
+{
+    PF_MAJOR=1
+    PF_MINOR=0
+    PF_DISTRO=ULINUX
+    PF_DISTRO_ULINUX_D=`[ -e /usr/bin/dpkg ] && echo 1`
+    if [ -n "$PF_DISTRO_ULINUX_D" ]; then
+        PF_DISTOR_ULINUX_R=
+        BUILD_DPKG=1
+        PKG_SUFFIX=deb
+    else
+        PF_DISTRO_ULINUX_R=`[ -e /usr/bin/rpmbuild ] && echo 1`
+        BUILD_RPM=1
+    fi
+}
+
+uname=`uname`
+case $uname in
+    Linux)
+        PF=Linux
+        PKG_SUFFIX=rpm
+        if [ -e /etc/SuSE-release ]; then 
+            CHECK_SUSE=1
+        fi
+        if [ -e /etc/redhat-release ]; then
+            CHECK_RHEL_OR_CENTOS=1
+        fi
+        if [ -n "$CHECK_RHEL_OR_CENTOS" ]; then
+            CHECK_CENTOS=`grep -i "Red Hat" /etc/redhat-release || echo 1`
+            if [ "$CHECK_CENTOS" != "1" ]; then
+                CHECK_RHEL=1
+            fi
+        fi
+
+        if [ "$ULINUX" = "1" ]; then
+            set_ulinux_pf
+            BUILD_RPM=1
+            BUILD_DPKG=1
+        elif [ -n "$CHECK_SUSE" ]; then
+            PF_MAJOR=`head -n 1 /etc/SuSE-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
+            PF_MINOR=`(head -n 1 /etc/SuSE-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
+            PF_DISTRO=SUSE
+        elif [ -n "$CHECK_RHEL" ]; then
+            PF_MAJOR=`head -n 1 /etc/redhat-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
+            PF_MINOR=`(head -n 1 /etc/redhat-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
+            PF_DISTRO=REDHAT
+        else
+            set_ulinux_pf
+        fi
+
+        case `uname -m` in
+            *64*)
+                PF_ARCH=x64
+                ARCH=x64
+            ;;
+            *86*)
+                PF_ARCH=x86
+                ARCH=ia32
+            ;;
+            *athlon*)
+                PF_ARCH=x86
+                ARCH=ia32
+            ;;
+            *)
+                PF_ARCH=UNKNOWN
+                ARCH=UNKNOWN
+            ;;
+        esac
+
+        if [ "$PF_ARCH" = "x86" ]; then
+            PF_WIDTH=32
+        else
+            PF_WIDTH=64
+        fi
+    ;;
+
+esac
+
+if [ "$uname" = "Linux" ]; then
+    BUILD_CONFIGURATION=${PF}_${PF_DISTRO}_${PF_MAJOR}.${PF_MINOR}_${PF_ARCH}_${PF_WIDTH}_${build_type}
+else
+    BUILD_CONFIGURATION=${PF}_${PF_MAJOR}.${PF_MINOR}_${PF_ARCH}_${PF_WIDTH}_${build_type}
+fi
+
+cat <<EOF > config.mak
+ENABLE_DEBUG=$enable_debug_flag
+OMI_CONFIGURE_QUALS=$omi_configure_quals
+RUBY_CONFIGURE_QUALS=$ruby_configure_quals
+
+BUILD_TYPE=$build_type
+PF=$PF
+PF_MAJOR=$PF_MAJOR
+PF_MINOR=$PF_MINOR
+PF_ARCH=$PF_ARCH
+ARCH=$ARCH
+PF_WIDTH=$PF_WIDTH
+PF_DISTRO=$PF_DISTRO
+ULINUX=$ULINUX
+BUILD_CONFIGURATION=$BUILD_CONFIGURATION
+EOF
+
+
+# Fix permissions in case they aren't executable - and then configure OMI
+chmod ug+x ${scxomi_dir}/configure ${scxomi_dir}/buildtool
+(cd ${scxomi_dir} && ./configure ${omi_configure_quals})
+
+# Fix permissions in case they aren't executable - and then configure PAL
+chmod ug+x ${scxpal_dir}/build/configure
+(cd ${scxpal_dir}/build && ./configure ${pal_configure_quals})
+
+# Display some information for our own configuration
+if [ "$ULINUX" = "1" ]; then
+    echo "Configured OMS for ULINUX build"
+else
+    echo "Configured OMS for non-ULINUX build"
+fi
