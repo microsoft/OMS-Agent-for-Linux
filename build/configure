@@ -23,7 +23,7 @@ if [ ! -d "$scxomi_dir" ]; then
 fi
 
 # Ruby configuration qualifiers
-ruby_configure_quals="--prefix=/opt/microsoft/omsagent"
+ruby_configure_quals="--prefix=/opt/microsoft/omsagent/ruby"
 
 for opt
 do
