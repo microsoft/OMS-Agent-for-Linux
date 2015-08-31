@@ -1,5 +1,7 @@
 #! /bin/sh
 
+set -e
+
 # Helper script to build Ruby properly for OMS agent
 # Also builds fluentd since it lives under the Ruby directory
 

@@ -1,0 +1,6 @@
+%Variables
+PERFORMING_UPGRADE_NOT: '[ "$1" -ne 1 ]'
+PACKAGE_TYPE: 'RPM'
+
+%Dependencies
+omi >= 1.0.8-2

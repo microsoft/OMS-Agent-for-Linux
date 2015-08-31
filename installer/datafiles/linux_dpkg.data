@@ -1,0 +1,6 @@
+%Variables
+PERFORMING_UPGRADE_NOT: '[ "$1" != "upgrade" ]'
+PACKAGE_TYPE: 'DPKG'
+
+%Dependencies
+omi (>= 1.0.8-2)

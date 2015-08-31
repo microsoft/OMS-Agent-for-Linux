@@ -1,5 +1,4 @@
 %Variables
-RUBY_INT:                 'intermediate/${{BUILD_CONFIGURATION}}'
 RUBY_DEST:                '/opt/microsoft/omsagent/ruby'
 
 %Files

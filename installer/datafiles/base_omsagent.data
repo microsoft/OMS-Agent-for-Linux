@@ -1,0 +1,54 @@
+%Variables
+SHELL_HEADER:            '#!/bin/sh'
+OMSHOME:                 '/opt/microsoft/omsagent'
+SUDO_LOC:                '/etc/opt/microsoft/omsagent/conf/sudodir'
+SUDO_DIR:                '/usr/bin'
+ROOT_GROUP_NAME:         'root'
+
+SHORT_NAME:              'omsagent'
+SHORT_NAME_PREFIX:       'MSFT'
+LONG_NAME:               'Microsoft Operations Management Suite for UNIX/Linux agent'
+GROUP:                   'Applications/System'
+LICENSE:                 'none'
+VENDOR:                  'http://www.microsoft.com'
+PROVIDES:                'omsuploads'
+DESCRIPTION:             'Provides agent for the Microsoft Operations Management Suite.'
+MAINTAINER:              'Microsoft Corporation'
+
+%Defines
+
+%Files
+
+%Links
+
+%Directories
+/opt;                                                   755; root; ${{ROOT_GROUP_NAME}}; sysdir
+/etc;                                                   755; root; ${{ROOT_GROUP_NAME}}; sysdir
+/etc/opt;                                               755; root; ${{ROOT_GROUP_NAME}}; sysdir
+/var;                                                   755; root; ${{ROOT_GROUP_NAME}}; sysdir
+/var/opt;                                               755; root; ${{ROOT_GROUP_NAME}}; sysdir
+
+/etc/opt/microsoft;                                     755; root; ${{ROOT_GROUP_NAME}}
+/etc/opt/microsoft/omsagent;                            755; root; ${{ROOT_GROUP_NAME}}
+/etc/opt/microsoft/omsagent/conf;                       755; root; ${{ROOT_GROUP_NAME}}
+
+/opt/microsoft;                                         755; root; ${{ROOT_GROUP_NAME}}
+/opt/microsoft/omsagent;                                755; root; ${{ROOT_GROUP_NAME}}
+
+/var/opt/microsoft;                                     755; root; ${{ROOT_GROUP_NAME}}
+/var/opt/microsoft/omiagent;                            755; root; ${{ROOT_GROUP_NAME}}
+/var/opt/microsoft/omiagent/tmp;                        755; root; ${{ROOT_GROUP_NAME}}
+
+%Dependencies
+
+%Postinstall_10
+set -e
+
+%Preinstall_0
+${{SHELL_HEADER}}
+%Postinstall_0
+${{SHELL_HEADER}}
+%Preuninstall_0
+${{SHELL_HEADER}}
+%Postuninstall_0
+${{SHELL_HEADER}}
