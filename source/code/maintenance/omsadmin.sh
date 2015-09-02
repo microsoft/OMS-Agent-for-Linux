@@ -96,13 +96,13 @@ cleanup()
 
 log_info()
 {
-    echo "$1"
+    echo -e "info\t$1"
     logger -i -p "$LOG_FACILITY".info -t omsagent "$1"
 }
 
 log_error()
 {
-    echo "$1" >&2
+    echo -e "error\t$1"
     logger -i -p "$LOG_FACILITY".err -t omsagent "$1"
 }
 
@@ -161,7 +161,7 @@ generate_certs()
 {
     log_info "Generating certificate ..."
     openssl req -subj "/CN=$WORKSPACE_ID/CN=$AGENT_GUID/OU=Microsoft Monitoring Agent/O=Microsoft" -new -newkey \
-        rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$FILE_KEY" -out "$FILE_CRT"
+        rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$FILE_KEY" -out "$FILE_CRT" > /dev/null 2>&1
 
     if [ "$?" -ne 0 -o ! -e "$FILE_KEY" -o ! -e "$FILE_CRT" ]; then
         log_error "Error generating certs"
