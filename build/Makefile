@@ -31,6 +31,16 @@ TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
 STAGING_DIR := $(TARGET_DIR)/staging
 INSTALLER_TMPDIR := $(TARGET_DIR)/installer_tmp
 
+INSTALLER_DATAFILES := base_omsagent.data linux.data ruby.data
+INSTALLER_DATAFILES_RPM := $(INSTALLER_DATAFILES) linux_rpm.data
+INSTALLER_DATAFILES_DPKG := $(INSTALLER_DATAFILES) linux_dpkg.data
+
+ifeq ($(PACKAGE_SUFFIX),rpm)
+INSTALLER_DATAFILES_CURRENT := $(INSTALLER_DATAFILES_RPM)
+else
+INSTALLER_DATAFILES_CURRENT := $(INSTALLER_DATAFILES_DPKG)
+endif
+
 # Hack until we have formal versioning from build system
 
 SCX_BUILDVERSION_MAJOR := 1
@@ -106,7 +116,7 @@ ifeq ($(ULINUX),1)
 		--VERSION=$(SCX_BUILDVERSION_MAJOR).$(SCX_BUILDVERSION_MINOR).$(SCX_BUILDVERSION_PATCH) \
 		--RELEASE=$(SCX_BUILDVERSION_BUILDNR) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
-		base_omsagent.data linux.data linux_rpm.data ruby.data
+		$(INSTALLER_DATAFILES_RPM)
 
 	# The kit has a name including .universalr., and the 'r' is only desired for OM
 	sed -e 's/\.universalr\./.universal./' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
@@ -133,7 +143,7 @@ ifeq ($(ULINUX),1)
 		--RELEASE=$(SCX_BUILDVERSION_BUILDNR) \
 		--DPKG_LOCATION=$(SCXPAL_DIR)/installer/InstallBuilder/tools/bin/dpkg-deb-$(PF_ARCH) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
-		base_omsagent.data linux.data linux_dpkg.data ruby.data
+		$(INSTALLER_DATAFILES_DPKG)
 
 	# The kit has a name including .universald., and the 'd' is only desired for OM
 	sed -e 's/\.universald\./.universal./' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
@@ -175,7 +185,7 @@ else
 		--VERSION=$(SCX_BUILDVERSION_MAJOR).$(SCX_BUILDVERSION_MINOR).$(SCX_BUILDVERSION_PATCH) \
 		--RELEASE=$(SCX_BUILDVERSION_BUILDNR) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
-		base_omsagent.data linux.data linux_rpm.data ruby.data
+		$(INSTALLER_DATAFILES_CURRENT)
 
 	# Strip the package extension from the package filename
 	sed -re 's/.rpm$$|.deb$$//' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
@@ -183,11 +193,11 @@ else
 
 	# The MP needs architecture of i686 (for x86) and x86_64 (for x64).
 	# sed -e 's/\.x86$$/\.i686/' $(TARGET_DIR)/package_filename | sed 's/\.x64$$/.x86_64/' > $(TARGET_DIR)/package_file.tmp
-	# mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename`.rpm $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`.rpm
+	# mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename`.$(PACKAGE_SUFFIX) $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`.$(PACKAGE_SUFFIX)
 	# mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename
 
-	# Build the tar file containing the .rpm package
-	cd $(TARGET_DIR); tar cvf `cat $(TARGET_DIR)/package_filename`.tar `cat $(TARGET_DIR)/package_filename`.rpm
+	# Build the tar file containing the native installer package
+	cd $(TARGET_DIR); tar cvf `cat $(TARGET_DIR)/package_filename`.tar `cat $(TARGET_DIR)/package_filename`.$(PACKAGE_SUFFIX)
 
 endif
 

@@ -255,6 +255,17 @@ case $uname in
             PF_MAJOR=`head -n 1 /etc/redhat-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
             PF_MINOR=`(head -n 1 /etc/redhat-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
             PF_DISTRO=REDHAT
+        elif [ -e /etc/lsb-release ]; then
+            source /etc/lsb-release
+            if [ "$DISTRIB_ID" = "Ubuntu" ]; then
+                PF_MAJOR=`echo $DISTRIB_RELEASE | cut -d '.' -f 1`
+                PF_MINOR=`echo $DISTRIB_RELEASE | cut -d '.' -f 2`
+                PF_DISTRO=UBUNTU
+                PKG_SUFFIX=deb
+                BUILD_DPKG=1
+            else
+                set_ulinux_pf
+            fi
         else
             set_ulinux_pf
         fi
@@ -316,6 +327,7 @@ PF_WIDTH=$PF_WIDTH
 PF_DISTRO=$PF_DISTRO
 ULINUX=$ULINUX
 BUILD_CONFIGURATION=$BUILD_CONFIGURATION
+PACKAGE_SUFFIX=$PKG_SUFFIX
 EOF
 
 
