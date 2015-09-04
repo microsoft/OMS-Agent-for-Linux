@@ -22,8 +22,87 @@ if [ ! -d "$scxomi_dir" ]; then
     exit 1
 fi
 
+#
 # Ruby configuration qualifiers
-ruby_configure_quals="--prefix=/opt/microsoft/omsagent/ruby"
+#
+
+# Some version of Ruby must be installed in order to build Ruby ...
+
+ruby -v 2>/dev/null 1>&2
+if [ $? -ne 0 ]; then
+    echo "Any version of Ruby must be installed in order to build Ruby"
+    exit 1
+fi
+
+# And some version of git must be installed in order to build fluentd ...
+
+git --version 2>/dev/null 1>&2
+if [ $? -ne 0 ]; then
+    echo "Any version of git must be installed in order to build fluentd"
+    exit 1
+fi
+
+# Note: Ruby has optimization issues with g++ v4.1.2 due to G++ bug # 18251:
+#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=18251
+
+perform_reduced_optimization() {
+    # POSIX Semantic Version <= Test
+    # Exit code 0 is success (i.e. true), meaning optimization is necessary
+    #
+    # Parameter: "x.y.z" (like "4.2.2"), for major.minor.patch versions
+
+    # Current version installed
+    local MAJOR=`echo $1 | cut -d. -f1`
+    local MINOR=`echo $1 | cut -d. -f2`
+    local PATCH=`echo $1 | cut -d. -f3`
+
+    # Version with the compiler bug
+    local TEST_MAJOR=4
+    local TEST_MINOR=1
+    local TEST_PATCH=2
+
+    # Check bounds on MAJOR
+    if [ $MAJOR -lt $TEST_MAJOR ]; then
+	return 0
+    elif [ $MAJOR -gt $TEST_MAJOR ]; then
+	return 1
+    fi
+
+    # MAJOR matched, so check bounds on MINOR
+    if [ $MINOR -lt $TEST_MINOR ]; then
+	return 0
+    elif [ $MINOR -gt $TEST_MINOR ]; then
+	return 1
+    fi
+
+    # MINOR matched, so check bounds on PATCH
+    if [ $PATCH -lt $TEST_PATCH ]; then
+	return 0
+    elif [ $PATCH -gt $TEST_PATCH ]; then
+	return 1
+    fi
+
+    # PATCH matched, so it is equal
+    return 0
+}
+
+RUBY_REDUCED_OPTIMIZATION=""
+GCC_VERSION=`g++ --version | head -1 | awk '{print $3}'`
+
+perform_reduced_optimization $GCC_VERSION
+if [ $? -eq 0 ]; then
+    RUBY_REDUCED_OPTIMIZATION="CFLAGS=-O1"
+fi   
+
+# List of ruby extensions. Disable everything, remove if:
+#   1. We absolutely need something, and
+#   2. We can guarantee (and insure) machine requirements for extension (at both build-time and run-time)
+
+# TODO: Bundler requires openssl ... need to figure out how to deal with this!
+
+RUBY_EXTENSIONS="continuation,coverage,dbm,etc,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
+
+ruby_configure_quals="--disable-install-doc ${RUBY_REDUCED_OPTIMIZATION} --with-out-ext=${RUBY_EXTENSIONS} --prefix=/opt/microsoft/omsagent/ruby"
 
 for opt
 do
@@ -184,14 +263,20 @@ case $uname in
             *64*)
                 PF_ARCH=x64
                 ARCH=x64
+                RUBY_ARCH=x86_64-linux
+                RUBY_ARCM=x86_64-linux
             ;;
             *86*)
                 PF_ARCH=x86
                 ARCH=ia32
+                RUBY_ARCH=x86-linux
+                RUBY_ARCM=`uname -m`-linux
             ;;
             *athlon*)
                 PF_ARCH=x86
                 ARCH=ia32
+                RUBY_ARCH=x86-linux
+                RUBY_ARCM=`uname -m`-linux
             ;;
             *)
                 PF_ARCH=UNKNOWN
@@ -216,8 +301,8 @@ fi
 
 cat <<EOF > config.mak
 ENABLE_DEBUG=$enable_debug_flag
-OMI_CONFIGURE_QUALS=$omi_configure_quals
-RUBY_CONFIGURE_QUALS=$ruby_configure_quals
+OMI_CONFIGURE_QUALS="$omi_configure_quals"
+RUBY_CONFIGURE_QUALS="$ruby_configure_quals"
 
 BUILD_TYPE=$build_type
 PF=$PF
@@ -225,6 +310,8 @@ PF_MAJOR=$PF_MAJOR
 PF_MINOR=$PF_MINOR
 PF_ARCH=$PF_ARCH
 ARCH=$ARCH
+RUBY_ARCH=$RUBY_ARCH
+RUBY_ARCM=$RUBY_ARCM
 PF_WIDTH=$PF_WIDTH
 PF_DISTRO=$PF_DISTRO
 ULINUX=$ULINUX
