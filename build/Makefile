@@ -1,4 +1,4 @@
-# -*- mode: Makefile; -*- 
+# -*- mode: Makefile; -*-
 
 #-------------------------------------------------------------------------------
 # 2015-08-14
@@ -7,8 +7,6 @@
 BASE_DIR := $(subst /build,,$(PWD))
 OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
 SCXPAL_DIR := $(shell cd ../../pal; pwd -P)
-
-RUBY_DEST_DIR := $(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 
 PF_POSIX := 1
 include $(SCXPAL_DIR)/build/config.mak
@@ -21,10 +19,24 @@ $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
+RUBY_DEST_DIR := $(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
+PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
+
+# Compiler flags
+
+ifeq ($(ENABLE_DEBUG),1)
+DEBUG_FLAGS := -g
+endif
+
+# Need to use RUBY_COMPILE_FLAGS when compiling code that uses C Ruby interfaces
+# (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.2.0)
+RUBY_COMPILE_FLAGS := $(DEBUG_FLAGS) -D_REENTRANT -fstack-protector-all -Wall -fno-nonansi-builtins -Woverloaded-virtual -Wformat -Wformat-security -Wcast-align -Wswitch-enum  -Wwrite-strings  -Werror -Wcast-qual -fPIC # -Wshadow -Wredundant-decls
+PLUGIN_LINK_LIBRARIES := -L$(OMI_ROOT)/output/lib -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
+SHARED_FLAGS := -shared
 
 # Support for installbuilder
 
@@ -41,6 +53,13 @@ else
 INSTALLER_DATAFILES_CURRENT := $(INSTALLER_DATAFILES_DPKG)
 endif
 
+# Plugins
+IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/in_omi.so
+
+OMI_INCLUDES := -I$(OMI_ROOT) -I$(OMI_ROOT)/common -I$(OMI_ROOT)/common/linux -I$(OMI_ROOT)/base -I$(OMI_ROOT)/output/include
+PAL_INCLUDES := -I$(SCXPAL_DIR)/source/code/include/util
+RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0/x86_64-linux -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0
+
 # Hack until we have formal versioning from build system
 
 SCX_BUILDVERSION_MAJOR := 1
@@ -48,20 +67,17 @@ SCX_BUILDVERSION_MINOR := 0
 SCX_BUILDVERSION_PATCH := 0
 SCX_BUILDVERSION_BUILDNR := 1
 
-
 #--------------------------------------------------------------------------------
 # Build targets
 
-all : $(RUBY_DEST_DIR)
+all : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 
-$(RUBY_DEST_DIR) :
-	#
-	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
-	#
-	$(BASE_DIR)/build/buildRuby.sh
+clean-plugins :
+	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
+	$(RM) $(IN_PLUGINS_LIB)
 
-clean :
-	$(RMDIR) $(BASE_DIR)/installer/intermediate $(BASE_DIR)/target
+clean : clean-plugins
+	$(RMDIR) $(BASE_DIR)/installer/intermediate $(BASE_DIR)/target $(INTERMEDIATE_DIR)/source/code
 	sudo $(RMDIR) $(BASE_DIR)/intermediate
 	-find $(BASE_DIR) -name \*~ -exec rm {} \;
 
@@ -83,6 +99,49 @@ distclean : clean
 	# -make -C $(SCXPAL_DIR)/build distclean
 	# -$(RMDIR) $(OMI_ROOT)/output*
 	-$(RM) $(SCXPAL_DIR)/build/config.mak
+
+#--------------------------------------------------------------------------------
+# Build the version of Ruby that we distribute
+
+$(RUBY_DEST_DIR) :
+	#
+	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
+	#
+	$(BASE_DIR)/build/buildRuby.sh
+
+#================================================================================
+# Internal functions
+#================================================================================
+
+# Convert a list of src files with absolute paths under BASE_DIR to corresponding
+# object files under intermediate directory
+# src_to_obj(list_of_cppfiles)
+src_to_obj = $(patsubst $(BASE_DIR)%, $(INTERMEDIATE_DIR)%, $(patsubst %.c, %.o, $(patsubst %.cpp, %.o, $(1))))
+
+# No default rules, please
+.SUFFIX:
+
+# Rule for compiling cpp files in source tree, ouptut in mirrored intermediate dir
+$(INTERMEDIATE_DIR)/%.o : $(BASE_DIR)/%.cpp
+	$(MKPATH) $(@D)
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) -I$(<D) -o $@ $<
+
+$(INTERMEDIATE_DIR)/%.o : $(BASE_DIR)/%.c
+	$(MKPATH) $(@D)
+	$(CXX) -c $(CFLAGS) $(INCLUDES) -I$(<D) -o $@ $<
+
+#--------------------------------------------------------------------------------
+# Build the plugins that we require for our agent
+
+STATIC_PLUGINS_SRCFILES = $(PLUGINS_DIR)/omi_interface.cpp
+STATIC_PLUGINS_OBJFILES = $(call src_to_obj,$(STATIC_PLUGINS_SRCFILES))
+
+$(IN_PLUGINS_LIB) : CXXFLAGS = $(RUBY_COMPILE_FLAGS)
+$(IN_PLUGINS_LIB) : INCLUDES = $(RUBY_INCLUDES) $(OMI_INCLUDES) $(PAL_INCLUDES)
+$(IN_PLUGINS_LIB) : $(STATIC_PLUGINS_OBJFILES)
+	$(MKPATH) $(INTERMEDIATE_DIR)
+	$(MKPATH) $(TARGET_DIR)
+	g++ $(SHARED_FLAGS) $(RUBY_INCLUDES) $(OMI_INCLUDES) $(PAL_INCLUDES) -o $@ $(STATIC_PLUGINS_OBJFILES) $(PLUGIN_LINK_LIBRARIES)
 
 #--------------------------------------------------------------------------------
 # Build the distribution kit
