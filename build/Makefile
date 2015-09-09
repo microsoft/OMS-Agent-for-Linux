@@ -58,7 +58,7 @@ IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/in_omi.so
 
 OMI_INCLUDES := -I$(OMI_ROOT) -I$(OMI_ROOT)/common -I$(OMI_ROOT)/common/linux -I$(OMI_ROOT)/base -I$(OMI_ROOT)/output/include
 PAL_INCLUDES := -I$(SCXPAL_DIR)/source/code/include/util
-RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0/x86_64-linux -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0
+RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0
 
 # Hack until we have formal versioning from build system
 
