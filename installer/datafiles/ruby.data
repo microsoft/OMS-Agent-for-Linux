@@ -7121,6 +7121,7 @@ ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/pathname.so;                ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/json/ext/generator.so;      ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/json/ext/generator.so; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/json/ext/parser.so;         ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/json/ext/parser.so;  755; root; root
 
+${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/etc.so;                     ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/etc.so;              755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/rbconfig.rb;                ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/rbconfig.rb;         644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/fcntl.so;                   ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/fcntl.so;            755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/zlib.so;                    ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/zlib.so;             755; root; root
@@ -7142,7 +7143,7 @@ ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/escape.so;        ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/emoji.so;         ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/emoji.so;  755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/utf8_mac.so;      ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/utf8_mac.so; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/emoji_sjis_docomo.so; ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/emoji_sjis_docomo.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/japanese_sjis.so;  ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/japanese_sjis.so; 755; root; root
+${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/japanese_sjis.so; ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/japanese_sjis.so; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/utf_16_32.so;     ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/utf_16_32.so; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/japanese_euc.so;  ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/japanese_euc.so; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/emoji_iso2022_kddi.so; ${{RUBY_INT}}/lib/ruby/2.2.0/${{RUBY_ARCM}}/enc/trans/emoji_iso2022_kddi.so; 755; root; root

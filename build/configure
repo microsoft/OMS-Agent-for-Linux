@@ -100,7 +100,7 @@ fi
 
 # TODO: Bundler requires openssl ... need to figure out how to deal with this!
 
-RUBY_EXTENSIONS="continuation,coverage,dbm,etc,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
+RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
 
 ruby_configure_quals="--disable-install-doc ${RUBY_REDUCED_OPTIMIZATION} --with-out-ext=${RUBY_EXTENSIONS} --prefix=/opt/microsoft/omsagent/ruby"
 

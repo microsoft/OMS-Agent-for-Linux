@@ -70,9 +70,9 @@ SCX_BUILDVERSION_BUILDNR := 1
 #--------------------------------------------------------------------------------
 # Build targets
 
-all : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
+all : $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB)
 
-clean-plugins :
+clean-plugins : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
 	$(RM) $(IN_PLUGINS_LIB)
 
@@ -99,6 +99,9 @@ distclean : clean
 	# -make -C $(SCXPAL_DIR)/build distclean
 	# -$(RMDIR) $(OMI_ROOT)/output*
 	-$(RM) $(SCXPAL_DIR)/build/config.mak
+
+clean-status :
+	@$(ECHO) "========================= Performing make clean"
 
 #--------------------------------------------------------------------------------
 # Build the version of Ruby that we distribute
@@ -142,6 +145,9 @@ $(IN_PLUGINS_LIB) : $(STATIC_PLUGINS_OBJFILES)
 	$(MKPATH) $(INTERMEDIATE_DIR)
 	$(MKPATH) $(TARGET_DIR)
 	g++ $(SHARED_FLAGS) $(RUBY_INCLUDES) $(OMI_INCLUDES) $(PAL_INCLUDES) -o $@ $(STATIC_PLUGINS_OBJFILES) $(PLUGIN_LINK_LIBRARIES)
+
+plugins-status :
+	@echo "========================= Performing Building input plugins"
 
 #--------------------------------------------------------------------------------
 # Build the distribution kit
