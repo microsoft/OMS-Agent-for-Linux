@@ -86,9 +86,10 @@ chmod u+w ${RUBY_REPAIR_LIST}
 echo "========================= Performing Building Ruby"
 make
 
-# Note: Ruby can fail unit tests on older platforms. Don't allow the build to fail for this ...
+# Note: Ruby can fail unit tests on older platforms (like Suse 10).
+# Since we moved to an alternate platform, continue to fail on test errors.
 echo "Running Ruby unit tests ..."
-make test || true
+make test
 
 echo "Running Ruby install ..."
 sudo make install
@@ -96,7 +97,7 @@ sudo make install
 export PATH=${RUBY_DESTDIR}/bin:$PATH
 
 echo "Installing Bundler into Ruby ..."
-sudo ${RUBY_DESTDIR}/bin/gem install bundler
+sudo ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
 # Now do what we need for FluentD
 

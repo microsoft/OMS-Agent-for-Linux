@@ -35,7 +35,8 @@ endif
 # Need to use RUBY_COMPILE_FLAGS when compiling code that uses C Ruby interfaces
 # (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.2.0)
 RUBY_COMPILE_FLAGS := $(DEBUG_FLAGS) -D_REENTRANT -fstack-protector-all -Wall -fno-nonansi-builtins -Woverloaded-virtual -Wformat -Wformat-security -Wcast-align -Wswitch-enum  -Wwrite-strings  -Werror -Wcast-qual -fPIC # -Wshadow -Wredundant-decls
-PLUGIN_LINK_LIBRARIES := -L$(OMI_ROOT)/output/lib -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
+# TODO: Horrible, dismal, ugly hack for SSL. We need to figure out the SSL story soon!
+PLUGIN_LINK_LIBRARIES := -L$(OMI_ROOT)/output/lib -L$(OMI_ROOT)/output_openssl_0.9.8/lib -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
 SHARED_FLAGS := -shared
 
 # Support for installbuilder
@@ -251,6 +252,9 @@ else
 		--RELEASE=$(SCX_BUILDVERSION_BUILDNR) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		$(INSTALLER_DATAFILES_CURRENT)
+
+	# The kit has a name including .universald., and the 'd' is only desired for OM
+	grep -qE "\.universal[dr]\." $(TARGET_DIR)/package_filename && ( sed -re 's/\.universal[dr]\./.universal./' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp; mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename` $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`; mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename )
 
 	# Strip the package extension from the package filename
 	sed -re 's/.rpm$$|.deb$$//' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
