@@ -11,7 +11,7 @@ class OMIInput < Input
 
     def initialize
         super
-        require_relative 'IN_OMI'
+        require_relative 'Libomi'
     end
 
     config_param :items, :array, :default => []
@@ -22,7 +22,7 @@ class OMIInput < Input
     end
 
     def start
-        @omi_interface = IN_OMI::OMIInterface.new
+        @omi_interface = Libomi::OMIInterface.new
         @omi_interface.connect
         if @run_interval
             @finished = false

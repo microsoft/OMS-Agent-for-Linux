@@ -55,7 +55,7 @@ INSTALLER_DATAFILES_CURRENT := $(INSTALLER_DATAFILES_DPKG)
 endif
 
 # Plugins
-IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/in_omi.so
+IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/Libomi.so
 
 OMI_INCLUDES := -I$(OMI_ROOT) -I$(OMI_ROOT)/common -I$(OMI_ROOT)/common/linux -I$(OMI_ROOT)/base -I$(OMI_ROOT)/output/include
 PAL_INCLUDES := -I$(SCXPAL_DIR)/source/code/include/util

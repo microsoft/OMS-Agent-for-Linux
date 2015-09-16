@@ -496,9 +496,9 @@ namespace
 extern "C" {
 
     void
-    Init_IN_OMI ()
+    Init_Libomi ()
     {
-        VALUE myModule = rb_define_module ("IN_OMI");
+        VALUE myModule = rb_define_module ("Libomi");
         VALUE omiInterface =
         rb_define_class_under (myModule, "OMIInterface", rb_cObject);
         rb_define_alloc_func (omiInterface, wrap_OMIInterface_alloc);

@@ -18,6 +18,10 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
+/etc/opt/microsoft/omsagent/conf/fluent.conf;                            installer/conf/fluent.conf;                                      644; root; root
+/opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                         source/code/plugins/in_omi.rb;                                   744; root; root
+/opt/microsoft/omsagent/fluent-plugin/Libomi.so;                         intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;                 744; root; root
+/opt/microsoft/omsagent/bin/omsadmin.sh;                                 source/code/maintenance/omsadmin.sh;                             744; root; root
 
 %Links
 
@@ -30,10 +34,13 @@ MAINTAINER:              'Microsoft Corporation'
 
 /etc/opt/microsoft;                                     755; root; ${{ROOT_GROUP_NAME}}
 /etc/opt/microsoft/omsagent;                            755; root; ${{ROOT_GROUP_NAME}}
+/etc/opt/microsoft/omsagent/certs;                      755; root; ${{ROOT_GROUP_NAME}}
 /etc/opt/microsoft/omsagent/conf;                       755; root; ${{ROOT_GROUP_NAME}}
 
 /opt/microsoft;                                         755; root; ${{ROOT_GROUP_NAME}}
 /opt/microsoft/omsagent;                                755; root; ${{ROOT_GROUP_NAME}}
+/opt/microsoft/omsagent/bin;                            755; root; ${{ROOT_GROUP_NAME}}
+/opt/microsoft/omsagent/fluent-plugin;                  755; root; ${{ROOT_GROUP_NAME}}
 
 /var/opt/microsoft;                                     755; root; ${{ROOT_GROUP_NAME}}
 /var/opt/microsoft/omiagent;                            755; root; ${{ROOT_GROUP_NAME}}
