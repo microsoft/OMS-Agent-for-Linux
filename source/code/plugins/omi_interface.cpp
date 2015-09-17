@@ -267,10 +267,10 @@ namespace
                 strm << (MI_FALSE == value.boolean ? JSON_FALSE : JSON_TRUE);
                 break;
             case MI_UINT8:
-                strm << value.uint8;
+                strm << static_cast<unsigned int>(value.uint8);
                 break;
             case MI_SINT8:
-                strm << value.sint8;
+                strm << static_cast<int>(value.sint8);
                 break;
             case MI_UINT16:
                 strm << value.uint16;
