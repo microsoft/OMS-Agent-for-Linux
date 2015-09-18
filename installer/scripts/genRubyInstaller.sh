@@ -59,7 +59,8 @@ for i in `find $SOURCE_DIR -name \* -print`; do
     if [ -d $i ]; then
         DIR_NAME=`echo $i | sed "s~$SOURCE_DIR~~"`
 	[ -n "$DIR_NAME" ] && DIR_NAME=`substitute_arch $DIR_NAME`
-        STAT_INFO=`stat -c "%a; %U; %G" $i`
+        # STAT_INFO=`stat -c "%a; %U; %G" $i`
+	STAT_INFO=`stat -c "%a; omsagent; omsagent" $i`
         printf "%-55s %s\n" "\${{RUBY_DEST}}${DIR_NAME};" "$STAT_INFO" >> $OUTPUT_DIR
     else
         OLD_BASE_DIR=`dirname $i`
@@ -68,7 +69,8 @@ for i in `find $SOURCE_DIR -name \* -print`; do
 
         FILE_NAME=`echo $i | sed "s~$SOURCE_DIR~~"`
 	FILE_NAME=`substitute_arch $FILE_NAME`
-        STAT_INFO=`stat -c "%a; %U; %G" $i`
+        # STAT_INFO=`stat -c "%a; %U; %G" $i`
+        STAT_INFO=`stat -c "%a; omsagent; omsagent" $i`
         printf "%-72s %-64s %s\n" "\${{RUBY_DEST}}${FILE_NAME};" "\${{RUBY_INT}}${FILE_NAME};" "$STAT_INFO" >> $OUTPUT_FILE
     fi
 done
@@ -78,7 +80,6 @@ done
 echo "Writing results to file: $OUTPUT_RESULTS"
 
 echo "%Variables" > $OUTPUT_RESULTS
-printf "%-25s %s\n" RUBY_INT: "'intermediate/\${{BUILD_CONFIGURATION}}'" >> $OUTPUT_RESULTS
 printf "%-25s %s\n" RUBY_DEST: "'/opt/microsoft/omsagent/ruby'" >> $OUTPUT_RESULTS
 echo "" >> $OUTPUT_RESULTS
 

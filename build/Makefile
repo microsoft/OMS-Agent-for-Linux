@@ -19,7 +19,7 @@ $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
-RUBY_DEST_DIR := $(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
+RUBY_DEST_DIR := $(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
 
@@ -59,31 +59,35 @@ IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/Libomi.so
 
 OMI_INCLUDES := -I$(OMI_ROOT) -I$(OMI_ROOT)/common -I$(OMI_ROOT)/common/linux -I$(OMI_ROOT)/base -I$(OMI_ROOT)/output/include
 PAL_INCLUDES := -I$(SCXPAL_DIR)/source/code/include/util
-RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DEST_DIR)/ruby/include/ruby-2.2.0
+RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DEST_DIR)/include/ruby-2.2.0
 
 # Hack until we have formal versioning from build system
 
-SCX_BUILDVERSION_MAJOR := 1
-SCX_BUILDVERSION_MINOR := 0
-SCX_BUILDVERSION_PATCH := 0
-SCX_BUILDVERSION_BUILDNR := 1
+OMS_BUILDVERSION_MAJOR := 1
+OMS_BUILDVERSION_MINOR := 0
+OMS_BUILDVERSION_PATCH := 0
+OMS_BUILDVERSION_BUILDNR := 1
+
+ifeq ($(ULINUX),1)
+  OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).universal.$(PF_ARCH)
+else
+  PF_DISTRO_LC := $(shell echo $(PF_DISTRO) | tr A-Z a-z)
+  OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).$(PF_DISTRO_LC).$(PF_MAJOR).$(PF_ARCH)
+endif
 
 #--------------------------------------------------------------------------------
 # Build targets
 
-all : $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB)
+all : $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
-clean-plugins : clean-status
+clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
+	$(RMDIR) $(BASE_DIR)/target 
 	$(RM) $(IN_PLUGINS_LIB)
-
-clean : clean-plugins
-	$(RMDIR) $(BASE_DIR)/installer/intermediate $(BASE_DIR)/target $(INTERMEDIATE_DIR)/source/code
-	sudo $(RMDIR) $(BASE_DIR)/intermediate
 	-find $(BASE_DIR) -name \*~ -exec rm {} \;
 
-distclean : clean
-	$(RM) $(BASE_DIR)/build/config.mak
+clean-ruby :
+	sudo $(RMDIR) $(BASE_DIR)/intermediate
 	sudo $(RMDIR) $(RUBY_DIR)/.ext
 	#
 	# Warning: This step will clean out checked out files from Ruby directory
@@ -99,6 +103,9 @@ distclean : clean
 	# -make -C $(OMI_ROOT) distclean
 	# -make -C $(SCXPAL_DIR)/build distclean
 	# -$(RMDIR) $(OMI_ROOT)/output*
+
+distclean : clean clean-ruby
+	$(RM) $(BASE_DIR)/build/config.mak
 	-$(RM) $(SCXPAL_DIR)/build/config.mak
 
 clean-status :
@@ -158,7 +165,10 @@ plugins-status :
 # While the "formal build" only builds ULINUX, we may build something else for DEV purposes.
 # Assume we ALWAYS build RPM, but only build DPKG if --enable-ulinux is speified in configure.
 
-kit : $(RUBY_DEST_DIR)
+
+kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
+
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR)
 ifeq ($(ULINUX),1)
 
 	@echo "========================= Performing Building RPM and DPKG packages"
@@ -179,15 +189,11 @@ ifeq ($(ULINUX),1)
 		--PFDISTRO=$(PF_DISTRO) \
 		--PFMAJOR=$(PF_MAJOR) \
 		--PFMINOR=$(PF_MINOR) \
-		--VERSION=$(SCX_BUILDVERSION_MAJOR).$(SCX_BUILDVERSION_MINOR).$(SCX_BUILDVERSION_PATCH) \
-		--RELEASE=$(SCX_BUILDVERSION_BUILDNR) \
+		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
+		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
+		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_RPM)
-
-	# The kit has a name including .universalr., and the 'r' is only desired for OM
-	sed -e 's/\.universalr\./.universal./' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
-	mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename` $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`
-	mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename
 
 	sudo $(RMDIR) $(STAGING_DIR)
 	$(MKPATH) $(TARGET_DIR)
@@ -205,29 +211,15 @@ ifeq ($(ULINUX),1)
 		--PFDISTRO=$(PF_DISTRO) \
 		--PFMAJOR=$(PF_MAJOR) \
 		--PFMINOR=$(PF_MINOR) \
-		--VERSION=$(SCX_BUILDVERSION_MAJOR).$(SCX_BUILDVERSION_MINOR).$(SCX_BUILDVERSION_PATCH) \
-		--RELEASE=$(SCX_BUILDVERSION_BUILDNR) \
+		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
+		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
 		--DPKG_LOCATION=$(SCXPAL_DIR)/installer/InstallBuilder/tools/bin/dpkg-deb-$(PF_ARCH) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
+		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)
 
-	# The kit has a name including .universald., and the 'd' is only desired for OM
-	sed -e 's/\.universald\./.universal./' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
-	mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename` $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`
-	mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename
-
-	# Strip the package extension from the package filename
-	sed -re 's/.rpm$$|.deb$$//' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
-	mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename
-
-	# The MP needs architecture of i686 (for x86) and x86_64 (for x64).
-	# sed -e 's/\.x86$$/\.i686/' $(TARGET_DIR)/package_filename | sed 's/\.x64$$/.x86_64/' > $(TARGET_DIR)/package_file.tmp
-	# mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename`.rpm $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`.rpm
-	# mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename`.deb $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`.deb
-	# mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename
-
 	# Build the tar file containing both .rpm and .deb packages
-	cd $(TARGET_DIR); tar cvf `cat $(TARGET_DIR)/package_filename`.tar `cat $(TARGET_DIR)/package_filename`.rpm `cat $(TARGET_DIR)/package_filename`.deb
+	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar $(OUTPUT_PACKAGE_PREFIX).rpm $(OUTPUT_PACKAGE_PREFIX).deb
 
 else
 
@@ -248,31 +240,17 @@ else
 		--PFDISTRO=$(PF_DISTRO) \
 		--PFMAJOR=$(PF_MAJOR) \
 		--PFMINOR=$(PF_MINOR) \
-		--VERSION=$(SCX_BUILDVERSION_MAJOR).$(SCX_BUILDVERSION_MINOR).$(SCX_BUILDVERSION_PATCH) \
-		--RELEASE=$(SCX_BUILDVERSION_BUILDNR) \
+		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
+		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
+		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_CURRENT)
 
-	# The kit has a name including .universald., and the 'd' is only desired for OM
-	grep -qE "\.universal[dr]\." $(TARGET_DIR)/package_filename && ( sed -re 's/\.universal[dr]\./.universal./' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp; mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename` $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`; mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename )
-
-	# Strip the package extension from the package filename
-	sed -re 's/.rpm$$|.deb$$//' $(TARGET_DIR)/package_filename > $(TARGET_DIR)/package_file.tmp
-	mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename
-
-	# The MP needs architecture of i686 (for x86) and x86_64 (for x64).
-	# sed -e 's/\.x86$$/\.i686/' $(TARGET_DIR)/package_filename | sed 's/\.x64$$/.x86_64/' > $(TARGET_DIR)/package_file.tmp
-	# mv $(TARGET_DIR)/`cat $(TARGET_DIR)/package_filename`.$(PACKAGE_SUFFIX) $(TARGET_DIR)/`cat $(TARGET_DIR)/package_file.tmp`.$(PACKAGE_SUFFIX)
-	# mv $(TARGET_DIR)/package_file.tmp $(TARGET_DIR)/package_filename
-
 	# Build the tar file containing the native installer package
-	cd $(TARGET_DIR); tar cvf `cat $(TARGET_DIR)/package_filename`.tar `cat $(TARGET_DIR)/package_filename`.$(PACKAGE_SUFFIX)
+	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar $(OUTPUT_PACKAGE_PREFIX).$(PACKAGE_SUFFIX)
 
 endif
 
 ifeq (0,1)
-	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) \
-                                             $(TARGET_DIR) \
-                                             `cat $(TARGET_DIR)/package_filename`
+	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX)
 endif
-	rm $(TARGET_DIR)/package_filename

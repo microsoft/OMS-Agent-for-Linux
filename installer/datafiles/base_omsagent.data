@@ -3,7 +3,6 @@ SHELL_HEADER:            '#!/bin/sh'
 OMSHOME:                 '/opt/microsoft/omsagent'
 SUDO_LOC:                '/etc/opt/microsoft/omsagent/conf/sudodir'
 SUDO_DIR:                '/usr/bin'
-ROOT_GROUP_NAME:         'root'
 
 SHORT_NAME:              'omsagent'
 SHORT_NAME_PREFIX:       'MSFT'
@@ -18,38 +17,77 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
-/etc/opt/microsoft/omsagent/conf/fluent.conf;                            installer/conf/fluent.conf;                                      644; root; root
-/opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                         source/code/plugins/in_omi.rb;                                   744; root; root
-/opt/microsoft/omsagent/fluent-plugin/Libomi.so;                         intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;                 744; root; root
-/opt/microsoft/omsagent/bin/omsadmin.sh;                                 source/code/maintenance/omsadmin.sh;                             744; root; root
+/etc/opt/microsoft/omsagent/conf/fluent.conf;                           installer/conf/fluent.conf;                            644; omsagent; omsagent
+/etc/opt/microsoft/omsagent/conf/installinfo.txt;                       installer/conf/installinfo.txt;                        644; omsagent; omsagent; conffile
+/opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                        source/code/plugins/in_omi.rb;                         744; omsagent; omsagent
+/opt/microsoft/omsagent/fluent-plugin/Libomi.so;                        intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; omsagent; omsagent
+/opt/microsoft/omsagent/bin/omsadmin.sh;                                source/code/maintenance/omsadmin.sh;                   744; omsagent; omsagent
 
 %Links
 
 %Directories
-/opt;                                                   755; root; ${{ROOT_GROUP_NAME}}; sysdir
-/etc;                                                   755; root; ${{ROOT_GROUP_NAME}}; sysdir
-/etc/opt;                                               755; root; ${{ROOT_GROUP_NAME}}; sysdir
-/var;                                                   755; root; ${{ROOT_GROUP_NAME}}; sysdir
-/var/opt;                                               755; root; ${{ROOT_GROUP_NAME}}; sysdir
+/opt;                                                   755; omsagent; omsagent; sysdir
+/etc;                                                   755; omsagent; omsagent; sysdir
+/etc/opt;                                               755; omsagent; omsagent; sysdir
+/var;                                                   755; omsagent; omsagent; sysdir
+/var/opt;                                               755; omsagent; omsagent; sysdir
 
-/etc/opt/microsoft;                                     755; root; ${{ROOT_GROUP_NAME}}
-/etc/opt/microsoft/omsagent;                            755; root; ${{ROOT_GROUP_NAME}}
-/etc/opt/microsoft/omsagent/certs;                      755; root; ${{ROOT_GROUP_NAME}}
-/etc/opt/microsoft/omsagent/conf;                       755; root; ${{ROOT_GROUP_NAME}}
+/etc/opt/microsoft;                                     755; omsagent; omsagent
+/etc/opt/microsoft/omsagent;                            755; omsagent; omsagent
+/etc/opt/microsoft/omsagent/certs;                      755; omsagent; omsagent
+/etc/opt/microsoft/omsagent/conf;                       755; omsagent; omsagent
 
-/opt/microsoft;                                         755; root; ${{ROOT_GROUP_NAME}}
-/opt/microsoft/omsagent;                                755; root; ${{ROOT_GROUP_NAME}}
-/opt/microsoft/omsagent/bin;                            755; root; ${{ROOT_GROUP_NAME}}
-/opt/microsoft/omsagent/fluent-plugin;                  755; root; ${{ROOT_GROUP_NAME}}
+/opt/microsoft;                                         755; omsagent; omsagent
+/opt/microsoft/omsagent;                                755; omsagent; omsagent
+/opt/microsoft/omsagent/bin;                            755; omsagent; omsagent
+/opt/microsoft/omsagent/fluent-plugin;                  755; omsagent; omsagent
 
-/var/opt/microsoft;                                     755; root; ${{ROOT_GROUP_NAME}}
-/var/opt/microsoft/omiagent;                            755; root; ${{ROOT_GROUP_NAME}}
-/var/opt/microsoft/omiagent/tmp;                        755; root; ${{ROOT_GROUP_NAME}}
+/var/opt/microsoft;                                     755; omsagent; omsagent
+/var/opt/microsoft/omsagent;                            755; omsagent; omsagent
+/var/opt/microsoft/omsagent/run;                        755; omsagent; omsagent
+/var/opt/microsoft/omsagent/tmp;                        755; omsagent; omsagent
 
 %Dependencies
 
+%CheckIfOmiIsRunning
+OMI_IS_RUNNING=1
+if [ -f /var/opt/omi/run/omiserver.pid ]; then
+    #  Check if omiserver is running with this pid.
+    omi_pid=`cat /var/opt/omi/run/omiserver.pid`
+    ps -aef | grep $omi_pid | grep omiserver 1> /dev/null 2> /dev/null
+    if [ $? -ne 0 ]; then
+	OMI_IS_RUNNING=0
+    fi
+else
+    OMI_IS_RUNNING=0
+fi
+
 %Postinstall_10
-set -e
+WriteInstallInfo() {
+    date +%Y-%m-%dT%T.0Z > /etc/opt/microsoft/omsagent/conf/installinfo.txt
+    echo ${{VERSION}}-${{RELEASE}} >> /etc/opt/microsoft/omsagent/conf/installinfo.txt
+}
+WriteInstallInfo
+
+%Postuninstall_10
+# Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
+#   1. Run the %pre section of the RPM being installed.
+#   2. Install the files that the RPM provides.
+#   3. Run the %post section of the RPM.
+#   4. Run the %preun of the old package.
+#   5. Delete any old files not overwritten by the newer version.
+#      (This step deletes files that the new package does not require.)
+#   6. Run the %postun hook of the old package.
+#
+# Thus, if we're an upgrade, skip all of this cleanup
+if ${{PERFORMING_UPGRADE_NOT}}; then 
+   # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
+   rm -f /etc/opt/microsoft/omsagent/conf/installinfo.txt*
+   rmdir /etc/opt/microsoft/omsagent/conf 2> /dev/null
+   rmdir /etc/opt/microsoft/omsagent 2> /dev/null
+   rmdir /etc/opt/microsoft 2> /dev/null
+   rmdir /etc/opt 2> /dev/null
+fi
 
 %Preinstall_0
 ${{SHELL_HEADER}}

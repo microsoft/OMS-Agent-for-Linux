@@ -1,19 +1,85 @@
 %Variables
-PF:	'Linux'
+PF:		'Linux'
+
+
+%OmiService_funcs
+StopOmiServer() {
+    if [ -x /usr/sbin/invoke-rc.d ]; then
+        /usr/sbin/invoke-rc.d omiserverd stop
+    elif [ -x /sbin/service ]; then
+        service omiserverd stop
+    else
+        echo "Unrecognized Service Controller to start OMI Service" 1>&2
+        exit 1
+    fi
+}
+
+StartOmiServer() {
+    if [ -x /usr/sbin/invoke-rc.d ]; then
+        /usr/sbin/invoke-rc.d omiserverd start
+    elif [ -x /sbin/service ]; then
+        service omiserverd start
+    else
+        echo "Unrecognized Service Controller to start OMI Service" 1>&2
+        exit 1
+    fi
+}
+
+RestartOmiServer() {
+    if [ $OMI_IS_RUNNING -eq 1 ]; then
+        StopOmiServer
+    fi
+    StartOmiServer
+}
+
+%OMSService_funcs
+StopOMSServer() {
+    if [ -x /usr/sbin/invoke-rc.d ]; then
+        /usr/sbin/invoke-rc.d omsagent stop
+    elif [ -x /sbin/service ]; then
+        service omsagent stop
+    else
+        echo "Unrecognized Service Controller to start omsagent Service" 1>&2
+        exit 1
+    fi
+}
+
+StartOMSServer() {
+    if [ -x /usr/sbin/invoke-rc.d ]; then
+        /usr/sbin/invoke-rc.d omsagent start
+    elif [ -x /sbin/service ]; then
+        service omsagent start
+    else
+        echo "Unrecognized Service Controller to start omsagent Service" 1>&2
+        exit 1
+    fi
+}
+
+RestartOMSServer() {
+    # if [ $OMI_IS_RUNNING -eq 1 ]; then
+        StopOMSServer
+    # fi
+    StartOMSServer
+}
+
+%Preinstall_1000
+# Add the 'omsagent' service account if it does not already exist
+egrep -q "^omsagent:" /etc/passwd
+if [ $? -ne 0 ]; then
+   echo "Creating omsagent service account ..."
+   useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -s /bin/bash omsagent
+fi
 
 %Postuninstall_1000
-# Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
-#   1. Run the %pre section of the RPM being installed.
-#   2. Install the files that the RPM provides.
-#   3. Run the %post section of the RPM.
-#   4. Run the %preun of the old package.
-#   5. Delete any old files not overwritten by the newer version.
-#      (This step deletes files that the new package does not require.)
-#   6. Run the %postun hook of the old package.
-#
-# Thus, if we're an upgrade, skip all of this cleanup
-if ${{PERFORMING_UPGRADE_NOT}}; then 
-   rmdir /opt/microsoft/omsagent 2> /dev/null
-   rmdir /opt/microsoft 2> /dev/null
-   rmdir /opt 2> /dev/null
+#include OmiService_funcs
+#include CheckIfOmiIsRunning
+
+# If we're called for upgrade, don't do anything
+if ${{PERFORMING_UPGRADE_NOT}}; then
+    # Restart the OMI server in case an agent is running under service account
+    RestartOmiServer
+
+    # Remove the service account
+    echo "Deleting omsagent service account ..."
+    userdel omsagent
 fi
