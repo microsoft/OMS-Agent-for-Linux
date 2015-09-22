@@ -1,0 +1,9 @@
+#Sudo configuration for omsagent
+User_Alias OMSUSERS = omsagent
+
+#restart rsyslog
+OMSUSERS ALL=(ALL) NOPASSWD: /usr/sbin/service rsyslog restart
+OMSUSERS ALL=(ALL) NOPASSWD: /bin/systemctl restart rsyslog
+
+#restart syslog-ng
+OMSUSERS ALL=(ALL) NOPASSWD: /usr/sbin/service syslogd restart

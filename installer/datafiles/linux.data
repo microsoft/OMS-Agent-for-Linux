@@ -2,12 +2,21 @@
 PF:		'Linux'
 
 
+%Directories
+/etc;                                                   755; root; root; sysdir
+/etc/init.d;                                            755; root; root; sysdir
+/etc/sudoers.d;                                         750; root; root; sysdir
+
+%Files
+/etc/init.d/omsagent;                                                   installer/scripts/omsagent.ulinux;                     755; root; root
+/etc/sudoers.d/omsagent;                                                installer/conf/sudoers;                                440; root; root
+
 %OmiService_funcs
 StopOmiServer() {
     if [ -x /usr/sbin/invoke-rc.d ]; then
         /usr/sbin/invoke-rc.d omiserverd stop
     elif [ -x /sbin/service ]; then
-        service omiserverd stop
+        /sbin/service omiserverd stop
     else
         echo "Unrecognized Service Controller to start OMI Service" 1>&2
         exit 1
@@ -18,7 +27,7 @@ StartOmiServer() {
     if [ -x /usr/sbin/invoke-rc.d ]; then
         /usr/sbin/invoke-rc.d omiserverd start
     elif [ -x /sbin/service ]; then
-        service omiserverd start
+        /sbin/service omiserverd start
     else
         echo "Unrecognized Service Controller to start OMI Service" 1>&2
         exit 1
@@ -37,7 +46,7 @@ StopOMSServer() {
     if [ -x /usr/sbin/invoke-rc.d ]; then
         /usr/sbin/invoke-rc.d omsagent stop
     elif [ -x /sbin/service ]; then
-        service omsagent stop
+        /sbin/service omsagent stop
     else
         echo "Unrecognized Service Controller to start omsagent Service" 1>&2
         exit 1
@@ -48,27 +57,103 @@ StartOMSServer() {
     if [ -x /usr/sbin/invoke-rc.d ]; then
         /usr/sbin/invoke-rc.d omsagent start
     elif [ -x /sbin/service ]; then
-        service omsagent start
+        /sbin/service omsagent start
     else
         echo "Unrecognized Service Controller to start omsagent Service" 1>&2
         exit 1
     fi
 }
 
+IsOMSServiceRunning() {
+    # Returns 0 if OMS service is not running, 1 if it is running
+    if [ ! -f /var/opt/microsoft/omsagent/run/omsagent.pid ]; then
+        return 0
+    fi
+    ps -p `cat /var/opt/microsoft/omsagent/run/omsagent.pid` | grep -q omsagent
+    if [ $? -ne 0 ]; then
+        rm /var/opt/microsoft/omsagent/run/omsagent.pid
+        return 0
+    else
+        return 1
+    fi
+}
+
 RestartOMSServer() {
-    # if [ $OMI_IS_RUNNING -eq 1 ]; then
-        StopOMSServer
-    # fi
+    IsOMSServiceRunning || StopOMSServer
     StartOMSServer
 }
 
+RemoveOMSService() {
+    if [ -x /usr/sbin/update-rc.d ]; then
+        /usr/sbin/update-rc.d omsagent defaults > /dev/null
+    elif [ -x /usr/lib/lsb/remove_initd ]; then
+        /usr/lib/lsb/remove_initd /etc/init.d/omsagent
+    elif [ -x /sbin/chkconfig ]; then
+        /sbin/chkconfig --del omsagent > /dev/null
+    else
+        echo "Unrecognized Service Controller to unregister omsagent Service."
+        exit 1
+    fi
+}
+
+RegisterOMSService() {
+    if [ -x /usr/sbin/update-rc.d ]; then
+        /usr/sbin/update-rc.d omsagent defaults > /dev/null
+    elif [ -x /usr/lib/lsb/install_initd ]; then
+        /usr/lib/lsb/install_initd /etc/init.d/omsagent
+    elif [ -x /sbin/chkconfig ]; then
+        /sbin/chkconfig --add omsagent > /dev/null
+    else
+        echo "Unrecognized Service Controller to configure OMS Service."
+        exit 1
+    fi
+}
+
 %Preinstall_1000
+#include OMSService_funcs
+#include OmiService_funcs
+
 # Add the 'omsagent' service account if it does not already exist
 egrep -q "^omsagent:" /etc/passwd
 if [ $? -ne 0 ]; then
    echo "Creating omsagent service account ..."
    useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -s /bin/bash omsagent
 fi
+
+#include CheckIfOmiIsRunning
+if [ $OMI_IS_RUNNING -eq 1 ]; then
+    StopOmiServer
+fi
+
+IsOMSServiceRunning
+if [ $? -ne 0 ]; then
+    StopOMSServer
+fi
+
+%Postinstall_200
+#include OMSService_funcs
+#include OmiService_funcs
+
+StartOmiServer
+
+RegisterOMSService
+StartOMSServer
+
+%Preuninstall_10
+#include OmiService_funcs
+#include OMSService_funcs
+
+#include CheckIfOmiIsRunning
+if [ $OMI_IS_RUNNING -eq 1 ]; then
+    StopOmiServer
+fi
+
+IsOMSServiceRunning
+if [ $? -ne 0 ]; then
+    StopOMSServer
+fi
+
+RemoveOMSService
 
 %Postuninstall_1000
 #include OmiService_funcs

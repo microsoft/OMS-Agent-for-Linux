@@ -17,35 +17,34 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
-/etc/opt/microsoft/omsagent/conf/fluent.conf;                           installer/conf/fluent.conf;                            644; omsagent; omsagent
-/etc/opt/microsoft/omsagent/conf/installinfo.txt;                       installer/conf/installinfo.txt;                        644; omsagent; omsagent; conffile
-/opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                        source/code/plugins/in_omi.rb;                         744; omsagent; omsagent
-/opt/microsoft/omsagent/fluent-plugin/Libomi.so;                        intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; omsagent; omsagent
-/opt/microsoft/omsagent/bin/omsadmin.sh;                                source/code/maintenance/omsadmin.sh;                   744; omsagent; omsagent
+/etc/opt/microsoft/omsagent/conf/fluent.conf;                           installer/conf/fluent.conf;                            644; root; root
+/etc/opt/microsoft/omsagent/conf/installinfo.txt;                       installer/conf/installinfo.txt;                        644; root; root; conffile
+/opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                        source/code/plugins/in_omi.rb;                         744; root; root
+/opt/microsoft/omsagent/fluent-plugin/Libomi.so;                        intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
+/opt/microsoft/omsagent/bin/omsadmin.sh;                                source/code/maintenance/omsadmin.sh;                   744; root; root
 
 %Links
+/opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
+
 
 %Directories
-/opt;                                                   755; omsagent; omsagent; sysdir
-/etc;                                                   755; omsagent; omsagent; sysdir
-/etc/opt;                                               755; omsagent; omsagent; sysdir
-/var;                                                   755; omsagent; omsagent; sysdir
-/var/opt;                                               755; omsagent; omsagent; sysdir
+/opt;                                                   755; root; root; sysdir
+/etc;                                                   755; root; root; sysdir
+/etc/opt;                                               755; root; root; sysdir
+/var;                                                   755; root; root; sysdir
+/var/opt;                                               755; root; root; sysdir
 
-/etc/opt/microsoft;                                     755; omsagent; omsagent
-/etc/opt/microsoft/omsagent;                            755; omsagent; omsagent
-/etc/opt/microsoft/omsagent/certs;                      755; omsagent; omsagent
-/etc/opt/microsoft/omsagent/conf;                       755; omsagent; omsagent
+/etc/opt/microsoft;                                     755; root; root
+/etc/opt/microsoft/omsagent;                            755; root; root
+/etc/opt/microsoft/omsagent/certs;                      755; root; root
+/etc/opt/microsoft/omsagent/conf;                       755; root; root
 
-/opt/microsoft;                                         755; omsagent; omsagent
-/opt/microsoft/omsagent;                                755; omsagent; omsagent
-/opt/microsoft/omsagent/bin;                            755; omsagent; omsagent
-/opt/microsoft/omsagent/fluent-plugin;                  755; omsagent; omsagent
+/opt/microsoft;                                         755; root; root
+/opt/microsoft/omsagent;                                755; root; root
+/opt/microsoft/omsagent/bin;                            755; root; root
+/opt/microsoft/omsagent/fluent-plugin;                  755; root; root
 
-/var/opt/microsoft;                                     755; omsagent; omsagent
-/var/opt/microsoft/omsagent;                            755; omsagent; omsagent
-/var/opt/microsoft/omsagent/run;                        755; omsagent; omsagent
-/var/opt/microsoft/omsagent/tmp;                        755; omsagent; omsagent
+/var/opt/microsoft;                                     755; root; root
 
 %Dependencies
 
@@ -62,12 +61,23 @@ else
     OMI_IS_RUNNING=0
 fi
 
-%Postinstall_10
+%Postinstall_100
 WriteInstallInfo() {
     date +%Y-%m-%dT%T.0Z > /etc/opt/microsoft/omsagent/conf/installinfo.txt
     echo ${{VERSION}}-${{RELEASE}} >> /etc/opt/microsoft/omsagent/conf/installinfo.txt
 }
 WriteInstallInfo
+
+# Can't use normal mechanisms to create /var directories because they must be
+# owned by omsagent account. So create them as part of Postinstall, after the
+# service account is created.
+
+mkdir -m 755 /var/opt/microsoft/omsagent        2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/log    2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/run    2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/tmp    2> /dev/null || true
+
+chown -R omsagent:omsagent /var/opt/microsoft/omsagent
 
 %Postuninstall_10
 # Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
@@ -81,6 +91,12 @@ WriteInstallInfo
 #
 # Thus, if we're an upgrade, skip all of this cleanup
 if ${{PERFORMING_UPGRADE_NOT}}; then 
+   # Clean up /var directory tree (created via PostInstall) if dirs are empty
+   rmdir /var/opt/microsoft/omsagent/tmp 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent/run 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent/log 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent 2> /dev/null
+
    # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
    rm -f /etc/opt/microsoft/omsagent/conf/installinfo.txt*
    rmdir /etc/opt/microsoft/omsagent/conf 2> /dev/null

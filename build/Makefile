@@ -168,7 +168,7 @@ plugins-status :
 
 kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 
-$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR)
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 ifeq ($(ULINUX),1)
 
 	@echo "========================= Performing Building RPM and DPKG packages"
