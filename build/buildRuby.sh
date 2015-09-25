@@ -74,7 +74,7 @@ echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS} ..."
 #
 
 echo "========================= Performing Repairing Ruby sources"
-RUBY_REPAIR_LIST="${RUBY_SRCDIR}/enc/unicode/name2ctype.h ${RUBY_SRCDIR}/enc/jis/props.h"
+RUBY_REPAIR_LIST="${RUBY_SRCDIR}/enc/unicode/name2ctype.h ${RUBY_SRCDIR}/enc/jis/props.h ${RUBY_SRCDIR}/lex.c"
 
 tf get -force ${RUBY_REPAIR_LIST}
 chmod u+w ${RUBY_REPAIR_LIST}

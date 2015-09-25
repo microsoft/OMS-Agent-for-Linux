@@ -5,11 +5,11 @@ PF:		'Linux'
 %Directories
 /etc;                                                   755; root; root; sysdir
 /etc/init.d;                                            755; root; root; sysdir
-/etc/sudoers.d;                                         750; root; root; sysdir
+%% /etc/sudoers.d;                                         750; root; root; sysdir
 
 %Files
 /etc/init.d/omsagent;                                                   installer/scripts/omsagent.ulinux;                     755; root; root
-/etc/sudoers.d/omsagent;                                                installer/conf/sudoers;                                440; root; root
+%% /etc/sudoers.d/omsagent;                                                installer/conf/sudoers;                                440; root; root
 
 %OmiService_funcs
 StopOmiServer() {
