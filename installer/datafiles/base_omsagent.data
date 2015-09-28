@@ -22,6 +22,8 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
 /opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                        source/code/plugins/in_omi.rb;                         744; root; root
 /opt/microsoft/omsagent/fluent-plugin/Libomi.so;                        intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
+/opt/microsoft/omsagent/fluent-plugin/filter_nagios_log.rb;             source/code/plugins/filter_nagios_log.rb;              744; root; root
+/opt/microsoft/omsagent/fluent-plugin/nagios_parser_lib.rb;             source/code/plugins/nagios_parser_lib.rb;              744; root; root
 /opt/microsoft/omsagent/bin/omsadmin.sh;                                source/code/maintenance/omsadmin.sh;                   744; root; root
 
 %Links
