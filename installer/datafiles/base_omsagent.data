@@ -17,8 +17,9 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
-/etc/opt/microsoft/omsagent/conf/fluent.conf;                           installer/conf/fluent.conf;                            644; root; root
-/etc/opt/microsoft/omsagent/conf/installinfo.txt;                       installer/conf/installinfo.txt;                        644; root; root; conffile
+/etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
+/etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
 /opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                        source/code/plugins/in_omi.rb;                         744; root; root
 /opt/microsoft/omsagent/fluent-plugin/Libomi.so;                        intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
 /opt/microsoft/omsagent/bin/omsadmin.sh;                                source/code/maintenance/omsadmin.sh;                   744; root; root
@@ -37,7 +38,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft;                                     755; root; root
 /etc/opt/microsoft/omsagent;                            755; root; root
 /etc/opt/microsoft/omsagent/certs;                      755; root; root
-/etc/opt/microsoft/omsagent/conf;                       755; root; root
+/etc/opt/microsoft/omsagent/sysconf;                    755; root; root
 
 /opt/microsoft;                                         755; root; root
 /opt/microsoft/omsagent;                                755; root; root
@@ -63,8 +64,8 @@ fi
 
 %Postinstall_100
 WriteInstallInfo() {
-    date +%Y-%m-%dT%T.0Z > /etc/opt/microsoft/omsagent/conf/installinfo.txt
-    echo ${{VERSION}}-${{RELEASE}} >> /etc/opt/microsoft/omsagent/conf/installinfo.txt
+    date +%Y-%m-%dT%T.0Z > /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
+    echo ${{VERSION}}-${{RELEASE}} >> /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
 }
 WriteInstallInfo
 
@@ -78,6 +79,15 @@ mkdir -m 755 /var/opt/microsoft/omsagent/run    2> /dev/null || true
 mkdir -m 755 /var/opt/microsoft/omsagent/tmp    2> /dev/null || true
 
 chown -R omsagent:omsagent /var/opt/microsoft/omsagent
+
+# Ditto for conf directory in /etc/opt/microsoft/omsagent/conf ...
+
+mkdir -m 755 /etc/opt/microsoft/omsagent/conf   2> /dev/null || true
+if [ ! -f /etc/opt/microsoft/omsagent/conf ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/conf
+fi
+
+chown -R omsagent:omsagent /etc/opt/microsoft/omsagent/conf
 
 %Postuninstall_10
 # Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
@@ -98,8 +108,8 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
    rmdir /var/opt/microsoft/omsagent 2> /dev/null
 
    # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
-   rm -f /etc/opt/microsoft/omsagent/conf/installinfo.txt*
-   rmdir /etc/opt/microsoft/omsagent/conf 2> /dev/null
+   rm -f /etc/opt/microsoft/omsagent/sysconf/installinfo.txt*
+   rmdir /etc/opt/microsoft/omsagent/sysconf 2> /dev/null
    rmdir /etc/opt/microsoft/omsagent 2> /dev/null
    rmdir /etc/opt/microsoft 2> /dev/null
    rmdir /etc/opt 2> /dev/null

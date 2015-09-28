@@ -4,6 +4,7 @@ PACKAGE_TYPE: 'RPM'
 
 %Dependencies
 omi >= 1.0.8-2
+scx >= 1.5.2-267
 
 %Directories
 /etc/sudoers.d;                                         750; root; root; sysdir

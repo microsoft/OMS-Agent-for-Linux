@@ -15,7 +15,7 @@ ULINUX=0
 NOULINIX=0
 
 # Default OMI qualifiers for build purposes
-omi_configure_quals=""
+omi_configure_quals="--prefix=/opt/omi --localstatedir=/var/opt/omi --sysconfdir=/etc/opt/omi/conf --certsdir=/etc/opt/omi/ssl"
 
 if [ ! -d "$scxomi_dir" ]; then
     echo "OMI directory ($scxomi_dir) does not exist" >& 2
