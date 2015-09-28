@@ -54,6 +54,12 @@ else
 INSTALLER_DATAFILES_CURRENT := $(INSTALLER_DATAFILES_DPKG)
 endif
 
+ifeq ("$(wildcard /usr/bin/dpkg-deb)","")
+DPKG_LOCATION="--DPKG_LOCATION=$(SCXPAL_DIR)/installer/InstallBuilder/tools/bin/dpkg-deb-$(PF_ARCH)"
+else
+DPKG_LOCATION=
+endif
+
 # Plugins
 IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/Libomi.so
 
@@ -82,7 +88,8 @@ all : $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
-	$(RMDIR) $(BASE_DIR)/target 
+	# On Debian, installer staging directory has root permissions, so sudo elevate
+	sudo $(RMDIR) $(BASE_DIR)/target 
 	$(RM) $(IN_PLUGINS_LIB)
 	-find $(BASE_DIR) -name \*~ -exec rm {} \;
 
@@ -213,7 +220,7 @@ ifeq ($(ULINUX),1)
 		--PFMINOR=$(PF_MINOR) \
 		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
 		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
-		--DPKG_LOCATION=$(SCXPAL_DIR)/installer/InstallBuilder/tools/bin/dpkg-deb-$(PF_ARCH) \
+		$(DPKG_LOCATION) \
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)

@@ -48,21 +48,55 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Note: Ruby has optimization issues with g++ v4.1.2 due to G++ bug # 18251:
+#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=18251
+
+gcc_compiler_bug_18251_resolved() {
+    # POSIX Semantic Version <= Test
+    # Exit code 0 is success (i.e. true), meaning optimization is necessary
+    #
+    # Parameter: "x.y.z" (like "4.2.2"), for major.minor.patch versions
+
+    # Current version installed
+    local MAJOR=`echo $1 | cut -d. -f1`
+    local MINOR=`echo $1 | cut -d. -f2`
+    local PATCH=`echo $1 | cut -d. -f3`
+
+    # Version with the compiler bug
+    local TEST_MAJOR=4
+    local TEST_MINOR=1
+    local TEST_PATCH=2
+
+    # Check bounds on MAJOR
+    if [ $MAJOR -lt $TEST_MAJOR ]; then
+	return 0
+    elif [ $MAJOR -gt $TEST_MAJOR ]; then
+	return 1
+    fi
+
+    # MAJOR matched, so check bounds on MINOR
+    if [ $MINOR -lt $TEST_MINOR ]; then
+	return 0
+    elif [ $MINOR -gt $TEST_MINOR ]; then
+	return 1
+    fi
+
+    # MINOR matched, so check bounds on PATCH
+    if [ $PATCH -lt $TEST_PATCH ]; then
+	return 0
+    elif [ $PATCH -gt $TEST_PATCH ]; then
+	return 1
+    fi
+
+    # PATCH matched, so it is equal
+    return 0
+}
+
 GCC_VERSION=`g++ --version | head -1 | awk '{print $3}'`
 
-# Note: Ruby has optimization issues with g++ v4.1.2 pre-release due to G++ bug # 18251:
-#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=18251
-#
-# We can work around this via reduced optimization (see history of this file).
-# But rather than do that, we moved to a different platform with GCC v4.1.1
-# (which did not exhibit the problem).
-
-GCC_MAJOR=`echo $GCC_VERSION | cut -d. -f1`
-GCC_MINOR=`echo $GCC_VERSION | cut -d. -f2`
-GCC_PATCH=`echo $GCC_VERSION | cut -d. -f3`
-
-if [ $GCC_MAJOR -eq 4 -a $GCC_MINOR -eq 1 -a $GCC_PATCH -eq 2 ]; then
-    echo "Ruby can't compile with this version of GCC ($GCC_VERSION) due to compiler bug" >& 2
+gcc_compiler_bug_18251_resolved $GCC_VERSION
+if [ $? -eq 0 ]; then
+    echo "ERROR: Can't build Ruby due to compiler bug #18251" >& 2
     exit 1
 fi
 

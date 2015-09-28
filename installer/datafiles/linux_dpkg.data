@@ -1,6 +1,17 @@
 %Variables
-PERFORMING_UPGRADE_NOT: '[ "$1" != "upgrade" ]'
+PERFORMING_UPGRADE_NOT: '[ "$1" != "upgrade" -a "$1" != "purge" ]'
 PACKAGE_TYPE: 'DPKG'
 
 %Dependencies
 omi (>= 1.0.8-2)
+
+%Directories
+/etc/sudoers.d;                                         755; root; root; sysdir
+
+%Files
+%% Set the permissions differently to be able to build package (without root)
+%% Then use a postinstall script to fix up the permissions to be correct.
+/etc/sudoers.d/omsagent;                                                installer/conf/sudoers;                                664; root; root
+
+%Postinstall_150
+chmod 440 /etc/sudoers.d/omsagent

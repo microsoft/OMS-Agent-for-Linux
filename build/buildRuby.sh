@@ -74,10 +74,14 @@ echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS} ..."
 #
 
 echo "========================= Performing Repairing Ruby sources"
-RUBY_REPAIR_LIST="${RUBY_SRCDIR}/enc/unicode/name2ctype.h ${RUBY_SRCDIR}/enc/jis/props.h ${RUBY_SRCDIR}/lex.c"
+RUBY_REPAIR_LIST="${RUBY_SRCDIR}/enc/unicode/name2ctype.h ${RUBY_SRCDIR}/enc/jis/props.h"
 
 tf get -force ${RUBY_REPAIR_LIST}
 chmod u+w ${RUBY_REPAIR_LIST}
+
+# and clean up files that we know don't exist in a clean Ruby tree
+
+rm -f ${RUBY_SRCDIR}/lex.c
 
 #
 # Now build Ruby ...
