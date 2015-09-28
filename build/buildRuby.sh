@@ -11,6 +11,8 @@ OMS_AGENTDIR=/opt/microsoft/omsagent
 RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby
 FLUENTD_DIR=${BASE_DIR}/source/ext/fluentd
 
+PLUGIN_TESTDIR=${BASE_DIR}/test/code/plugins
+
 # Has configure script been run?
 
 if [ ! -f ${BASE_DIR}/build/config.mak ]; then
@@ -119,6 +121,9 @@ cd ${FLUENTD_DIR}
 bundle install --local
 bundle exec rake build
 sudo ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
+
+echo "========================= Performing Running MSFT Unit Tests"
+${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/nagios_log_parser_test.rb
 
 echo "========================= Performing Moving Ruby to intermediate directory"
 mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}

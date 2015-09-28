@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.  All rights reserved.
 require 'test/unit'
-require_relative '../plugins/nagios_parser_lib'
+require_relative '../../../source/code/plugins/nagios_parser_lib'
 		
 class TestRuntimeError < NagiosModule::LoggingBase
 	def log_error(text)
