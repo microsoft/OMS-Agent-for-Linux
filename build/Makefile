@@ -83,6 +83,7 @@ endif
 
 #--------------------------------------------------------------------------------
 # Build targets
+.PHONY: all clean clean-ruby distclean clean-status plugins-status kit
 
 all : $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
@@ -171,7 +172,6 @@ plugins-status :
 #
 # While the "formal build" only builds ULINUX, we may build something else for DEV purposes.
 # Assume we ALWAYS build RPM, but only build DPKG if --enable-ulinux is speified in configure.
-
 
 kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 

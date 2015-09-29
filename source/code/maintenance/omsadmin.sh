@@ -2,13 +2,16 @@
 
 set -e
 
+# Folder for temporary generated files
 TMP_DIR=/var/opt/microsoft/omsagent/tmp
-CONF_FILENAME=/etc/opt/microsoft/omsagent/conf/oms.conf
+# File with initial onboarding credentials
+FILE_ONBOARD=/etc/omsagent-onboard.conf
+# Generated conf file containing information for this script
+CONF_FILENAME=/etc/opt/microsoft/omsagent/conf/omsadmin.conf
+# Certs
 FILE_KEY=/etc/opt/microsoft/omsagent/certs/oms.key
 FILE_CRT=/etc/opt/microsoft/omsagent/certs/oms.crt
 URL_TLD=opinsights.azure
-# For testing / debugging server side
-#URL_TLD=int2.microsoftatlanta-int
 
 HEADER_ONBOARD="$TMP_DIR"/header_onboard.out
 BODY_ONBOARD="$TMP_DIR"/body_onboard.xml
@@ -20,16 +23,11 @@ RESP_HEARTBEAT="$TMP_DIR"/resp_heartbeat.xml
 BODY_RENEW_CERT="$TMP_DIR"/body_renew_cert.xml
 RESP_RENEW_CERT="$TMP_DIR"/resp_renew_cert.xml
 
-#
-# Certifictate Information:
-#
-# O=Microsoft, OU=Microsoft Monitoring Agent, CN={agentId, you can use any GUID on registration}, CN={workspaceId}
-
-# Working workspace / key combo for production environment
-# -w 15b1d09f-7870-457d-818e-7aa0d75d7a8e -s dFUjETbH2q6nqiRCw7iiVI8l+Yzj7KQ0Ry5zicKU5zeSm5GNFE9/IvkqGFSa1PRjuElNPIGNB8VJVQuzR0js5w==
-
-# Working workspace / key combo for int/testing environment
-# bash -x onboard.sh -s IZEpESllxMcWIfb+qnd0edPQV2nztkCsWEWwjQcFCIdDH6k9MLeKaH7Ajjl6QpG4MYufzfxr78wlUKuz293oyg== -w 2bc9e85c-1d7f-4d9e-b348-29efdd52fb53
+WORKSPACE_ID=""
+AGENT_GUID=""
+LOG_FACILITY=local0
+CERTIFICATE_UPDATE_ENDPOINT=""
+VERBOSE=0
 
 usage()
 {
@@ -45,22 +43,12 @@ usage()
     exit 1
 }
 
-check_perms()
+check_user()
 {
-    if [ ! -w "$TMP_DIR" ]; then
-        log_error "Can't write in $TMP_DIR. Make sure you are running as root."
+    if [ `id -un` != "omsagent" ]; then
+        log_error "This script must be run as the omsagent user."
         exit 1
     fi
-}
-
-default_config()
-{
-    WORKSPACE_ID=""
-    AGENT_GUID=""
-    LOG_FACILITY=local0
-    CERTIFICATE_UPDATE_ENDPOINT=""
-
-    VERBOSE=0
 }
 
 save_config()
@@ -92,6 +80,7 @@ cleanup()
     rm "$HEADER_ONBOARD" "$BODY_ONBOARD" "$RESP_ONBOARD" > /dev/null 2>&1 || true
     rm "$BODY_HEARTBEAT" "$RESP_HEARTBEAT" > /dev/null 2>&1 || true
     rm "$BODY_RENEW_CERT" "$RESP_RENEW_CERT" > /dev/null 2>&1 || true
+    [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
 }
 
 log_info()
@@ -110,7 +99,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:brfv" opt; do
+    while getopts "h?s:w:brv" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -159,6 +148,8 @@ parse_args()
 
 generate_certs()
 {
+    # Certifictate Information:
+    # CN={workspaceId}, CN={agentId, you can use any GUID on registration}, OU=Microsoft Monitoring Agent, O=Microsoft
     log_info "Generating certificate ..."
     openssl req -subj "/CN=$WORKSPACE_ID/CN=$AGENT_GUID/OU=Microsoft Monitoring Agent/O=Microsoft" -new -newkey \
         rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$FILE_KEY" -out "$FILE_CRT" > /dev/null 2>&1
@@ -174,6 +165,11 @@ generate_certs()
 
 onboard()
 {
+    if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
+        log_error "Missing Wokspace ID or Shared Key information for onboarding"
+        exit 1
+    fi
+
     AGENT_GUID=`uuidgen`
     generate_certs
 
@@ -229,7 +225,7 @@ onboard()
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
         --write-out "%{http_code}\n" \
-        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/AgentTopologyRequest`
+        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
 
     if [ "$RET_CODE" = "200" ]; then
         log_info "Onboarding success"
@@ -246,7 +242,6 @@ heartbeat()
 {
     load_config
 
-
     # Generate the request body
     CERT_SERVER=`cat "$FILE_CRT" | awk 'NR>2 { print line } { line = $0 }'`
     echo '<?xml version="1.0"?>' > $BODY_HEARTBEAT
@@ -261,7 +256,7 @@ heartbeat()
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_HEARTBEAT" $CURL_VERBOSE \
         --write-out "%{http_code}\n" \
-        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/AgentTopologyRequest`
+        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
 
     if [ "$RET_CODE" = "200" ]; then
         # Extract the certificate update endpoint from the server response
@@ -287,8 +282,6 @@ heartbeat()
 
         if echo "$UPDATE_ATTR" | grep "true"; then
             renew_cert
-        else
-            log_info "No need to renew certs"
         fi
     else
         log_error "Error sending the heartbeat. HTTP code $RET_CODE"
@@ -353,11 +346,23 @@ renew_cert()
 main()
 {
     if [ $# -eq 0 ]; then
-        usage
+        # Allow onboarding params to be loaded from a file
+        # The file contains at least these two lines :
+        # WORKSPACE_ID="[...]"
+        # SHARED_KEY="[...]"
+        # and an optional line:
+        # URL_TLD=int2.microsoftatlanta-int
+        if [ -r "$FILE_ONBOARD" ]; then
+            log_info "Reading onboarding params form : $FILE_ONBOARD"
+            . "$FILE_ONBOARD"
+            ONBOARDING=1
+            ONBOARD_FROM_FILE=1
+        else
+            usage
+        fi
     fi
 
-    default_config
-    check_perms
+    check_user
     parse_args $@
 
     if [ ! -d "$TMP_DIR" ]; then

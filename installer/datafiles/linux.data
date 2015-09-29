@@ -17,7 +17,7 @@ StopOmiServer() {
     elif [ -x /sbin/service ]; then
         /sbin/service omiserverd stop
     else
-        echo "Unrecognized Service Controller to start OMI Service" 1>&2
+        echo "Unrecognized service controller to start OMI service" 1>&2
         exit 1
     fi
 }
@@ -28,7 +28,7 @@ StartOmiServer() {
     elif [ -x /sbin/service ]; then
         /sbin/service omiserverd start
     else
-        echo "Unrecognized Service Controller to start OMI Service" 1>&2
+        echo "Unrecognized service controller to start OMI service" 1>&2
         exit 1
     fi
 }
@@ -47,7 +47,7 @@ StopOMSServer() {
     elif [ -x /sbin/service ]; then
         /sbin/service omsagent stop
     else
-        echo "Unrecognized Service Controller to start omsagent Service" 1>&2
+        echo "Unrecognized service controller to start omsagent service" 1>&2
         exit 1
     fi
 }
@@ -58,7 +58,7 @@ StartOMSServer() {
     elif [ -x /sbin/service ]; then
         /sbin/service omsagent start
     else
-        echo "Unrecognized Service Controller to start omsagent Service" 1>&2
+        echo "Unrecognized service controller to start omsagent service" 1>&2
         exit 1
     fi
 }
@@ -90,7 +90,7 @@ RemoveOMSService() {
     elif [ -x /sbin/chkconfig ]; then
         /sbin/chkconfig --del omsagent > /dev/null
     else
-        echo "Unrecognized Service Controller to unregister omsagent Service."
+        echo "Unrecognized service controller to unregister omsagent service."
         exit 1
     fi
 }
@@ -103,7 +103,19 @@ RegisterOMSService() {
     elif [ -x /sbin/chkconfig ]; then
         /sbin/chkconfig --add omsagent > /dev/null
     else
-        echo "Unrecognized Service Controller to configure OMS Service."
+        echo "Unrecognized service controller to configure OMS service."
+        exit 1
+    fi
+}
+
+%rsyslog_funcs
+RestartRsyslog() {
+    if [ -x /usr/sbin/invoke-rc.d ]; then
+        /usr/sbin/invoke-rc.d rsyslog restart
+    elif [ -x /sbin/service ]; then
+        /sbin/service rsyslog restart
+    else
+        echo "Unrecognized service controller to start rsyslog service" 1>&2
         exit 1
     fi
 }
@@ -128,6 +140,25 @@ fi
 #include OMSService_funcs
 #include OmiService_funcs
 #include CheckIfOmiIsRunning
+#include rsyslog_funcs
+
+CONF_DIR="/etc/opt/microsoft/omsagent/conf"
+
+if [ ! -f "$CONF_DIR/rsyslog-oms.conf" ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf "$CONF_DIR"
+   chown omsagent:omsagent "$CONF_DIR/rsyslog-oms.conf"
+fi
+
+SymlinkSyslog() {
+  # We create a symlink in rsyslog.d so that DSC can update the pointee
+  if [ -d /etc/rsyslog.d -a ! -h /etc/rsyslog.d/rsyslog-oms.conf ]; then
+    ln -s /etc/opt/microsoft/omsagent/conf/rsyslog-oms.conf /etc/rsyslog.d/rsyslog-oms.conf
+  fi
+  # TODO support syslog-ng
+}
+SymlinkSyslog
+
+RestartRsyslog
 
 RestartOmiServer
 
@@ -153,6 +184,7 @@ RemoveOMSService
 %Postuninstall_1000
 #include OmiService_funcs
 #include CheckIfOmiIsRunning
+#include rsyslog_funcs
 
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
@@ -162,4 +194,7 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
     # Remove the service account
     echo "Deleting omsagent service account ..."
     userdel omsagent
+
+    rm -f /etc/rsyslog.d/rsyslog-oms.conf
+    RestartRsyslog
 fi

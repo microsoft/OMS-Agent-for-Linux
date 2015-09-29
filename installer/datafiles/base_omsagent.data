@@ -17,18 +17,21 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
+/etc/opt/microsoft/omsagent/LICENSE.txt;                                LICENSE.txt;                                           444; root; root
 /etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
-/opt/microsoft/omsagent/fluent-plugin/in_omi.rb;                        source/code/plugins/in_omi.rb;                         744; root; root
-/opt/microsoft/omsagent/fluent-plugin/Libomi.so;                        intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
-/opt/microsoft/omsagent/fluent-plugin/filter_nagios_log.rb;             source/code/plugins/filter_nagios_log.rb;              744; root; root
-/opt/microsoft/omsagent/fluent-plugin/nagios_parser_lib.rb;             source/code/plugins/nagios_parser_lib.rb;              744; root; root
-/opt/microsoft/omsagent/bin/omsadmin.sh;                                source/code/maintenance/omsadmin.sh;                   744; root; root
+/etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf;                   installer/conf/rsyslog-oms.conf;                       644; root; root
+/opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root
+/opt/microsoft/omsagent/plugin/in_omi.rb;                               source/code/plugins/in_omi.rb;                         744; root; root
+/opt/microsoft/omsagent/plugin/Libomi.so;                               intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
+/opt/microsoft/omsagent/plugin/filter_nagios_log.rb;                    source/code/plugins/filter_nagios_log.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/nagios_parser_lib.rb;                    source/code/plugins/nagios_parser_lib.rb;              744; root; root
+/opt/microsoft/omsagent/bin/omsadmin.sh;                                source/code/maintenance/omsadmin.sh;                   755; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
-
 
 %Directories
 /opt;                                                   755; root; root; sysdir
@@ -39,13 +42,12 @@ MAINTAINER:              'Microsoft Corporation'
 
 /etc/opt/microsoft;                                     755; root; root
 /etc/opt/microsoft/omsagent;                            755; root; root
-/etc/opt/microsoft/omsagent/certs;                      755; root; root
 /etc/opt/microsoft/omsagent/sysconf;                    755; root; root
 
 /opt/microsoft;                                         755; root; root
 /opt/microsoft/omsagent;                                755; root; root
 /opt/microsoft/omsagent/bin;                            755; root; root
-/opt/microsoft/omsagent/fluent-plugin;                  755; root; root
+/opt/microsoft/omsagent/plugin;                         755; root; root
 
 /var/opt/microsoft;                                     755; root; root
 
@@ -75,21 +77,25 @@ WriteInstallInfo
 # owned by omsagent account. So create them as part of Postinstall, after the
 # service account is created.
 
+mkdir -m 700 /etc/opt/microsoft/omsagent/certs/ 2> /dev/null || true
+chown -R omsagent:omsagent /etc/opt/microsoft/omsagent/certs
+
 mkdir -m 755 /var/opt/microsoft/omsagent        2> /dev/null || true
 mkdir -m 755 /var/opt/microsoft/omsagent/log    2> /dev/null || true
 mkdir -m 755 /var/opt/microsoft/omsagent/run    2> /dev/null || true
 mkdir -m 755 /var/opt/microsoft/omsagent/tmp    2> /dev/null || true
-
 chown -R omsagent:omsagent /var/opt/microsoft/omsagent
 
 # Ditto for conf directory in /etc/opt/microsoft/omsagent/conf ...
 
-mkdir -m 755 /etc/opt/microsoft/omsagent/conf   2> /dev/null || true
-if [ ! -f /etc/opt/microsoft/omsagent/conf ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/conf
+CONF_DIR="/etc/opt/microsoft/omsagent/conf"
+mkdir -m 755 "$CONF_DIR" 2> /dev/null || true
+
+if [ ! -f "$CONF_DIR/omsagent.conf" ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf "$CONF_DIR"
 fi
 
-chown -R omsagent:omsagent /etc/opt/microsoft/omsagent/conf
+chown -R omsagent:omsagent "$CONF_DIR"
 
 %Postuninstall_10
 # Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
@@ -102,8 +108,9 @@ chown -R omsagent:omsagent /etc/opt/microsoft/omsagent/conf
 #   6. Run the %postun hook of the old package.
 #
 # Thus, if we're an upgrade, skip all of this cleanup
-if ${{PERFORMING_UPGRADE_NOT}}; then 
-   # Clean up /var directory tree (created via PostInstall) if dirs are empty
+if ${{PERFORMING_UPGRADE_NOT}}; then
+   # Clean up directory tree (created via PostInstall) if dirs are empty
+   rmdir /etc/opt/microsoft/omsagent/certs/ 2> /dev/null
    rmdir /var/opt/microsoft/omsagent/tmp 2> /dev/null
    rmdir /var/opt/microsoft/omsagent/run 2> /dev/null
    rmdir /var/opt/microsoft/omsagent/log 2> /dev/null
