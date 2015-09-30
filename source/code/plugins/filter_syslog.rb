@@ -3,16 +3,10 @@ module Fluent
 
     Fluent::Plugin.register_filter('filter_syslog', self)
 
-    SEVERITY_MAP = {
-        'emerg'  => 0,
-        'alert'  => 1,
-        'crit'  => 2,
-        'err'  => 3,
-        'warn'  => 4,
-        'notice'  => 5,
-        'info'  => 6,
-        'debug'  => 7
-    }
+    def initialize
+        super
+        require 'socket'
+    end
 
     def configure(conf)
       super
@@ -28,17 +22,36 @@ module Fluent
 
     def filter(tag, time, record)
       # The tag looks like this : oms.syslog.authpriv.notice
-      tags = tag.split('.')
       record["Timestamp"] = Time.now.strftime("%Y-%m-%dT%H:%M:%S")
-      record["Facility"] = tags[2]
-      record["Severity"] = SEVERITY_MAP[tags[3]]
+
+      record["Host"] = record["host"]
+      record.delete "host"
+
+      addrinfos = Socket::getaddrinfo(Socket.gethostname,"echo",Socket::AF_UNSPEC)
+      record["HostIP"] = addrinfos.size >= 1 ? addrinfos[0][3] : "Unknown IP"
+
+      if record.has_key?("pid")
+        record["ProcessId"] = record["pid"]
+        record.delete "pid"
+      end
+
+      tags = tag.split('.')
+      if tags.size == 4
+        record["Facility"] = tags[2]
+        record["Severity"] = tags[3]
+      else
+        $log.error "The syslog tag does not have 4 parts #{tag}"
+      end
+
+      record["Message"] = record["message"]
+      record.delete "message"
+
       wrapper = {
         "DataType"=>"LINUX_SYSLOGS_BLOB",
         "IPName"=>"logmanagement",
         "DataItems"=>[record]
       }
 
-      # $log.info "SyslogFilter: #{tag} #{wrapper}"
       wrapper
     end
   end
