@@ -4,7 +4,7 @@ PACKAGE_TYPE: 'DPKG'
 
 %Dependencies
 omi (>= 1.0.8-2)
-scx (>= 1.5.2-267)
+scx (>= 1.6.1-100)
 
 %Directories
 /etc/sudoers.d;                                         755; root; root; sysdir

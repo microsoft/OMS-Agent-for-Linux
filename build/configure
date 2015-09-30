@@ -22,10 +22,6 @@ if [ ! -d "$scxomi_dir" ]; then
     exit 1
 fi
 
-#
-# Ruby configuration qualifiers
-#
-
 # Make sure we have the obvious build requirements for Ruby ...
 
 ruby -v 2>/dev/null 1>&2
@@ -107,8 +103,6 @@ fi
 # TODO: Bundler requires openssl ... need to figure out how to deal with this!
 
 RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
-
-ruby_configure_quals="--disable-install-doc --with-out-ext=${RUBY_EXTENSIONS} --prefix=/opt/microsoft/omsagent/ruby"
 
 for opt
 do
@@ -202,15 +196,24 @@ if [ "$opensource_distro" -eq 1 ]; then
     NOULINUX=1
 fi
 
-# See if we're running on a SuSE 10 (universal) system; if so, assume ULINUX
+# See if we're running on a Ubuntu 12 (universal) system; if so, assume ULINUX
+
 if [ "$NOULINUX" != "1" ]; then
-    if [ -e /etc/SuSE-release ]; then 
-        PF_MAJOR=`head -n 1 /etc/SuSE-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
-        PF_MINOR=`(head -n 1 /etc/SuSE-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
-        if [ "$PF_MAJOR" = "10" -a "$PF_MINOR" = "0" ]; then
+    if [ -e /etc/lsb-release -a -d /usr/local_ssl_1.0.0 ]; then 
+        . /etc/lsb-release
+        PF_MAJOR=`echo $DISTRIB_RELEASE | cut -d= -f2 | cut -d. -f1`
+        PF_MINOR=`echo $DISTRIB_RELEASE | cut -d= -f2 | cut -d. -f2`
+        if [ "$PF_MAJOR" -eq "12" -a "$PF_MINOR" -eq "4" ]; then
             ULINUX=1
         fi
     fi
+fi
+
+# And we need our local SSL directories to be able to deal with ULINUX
+
+if [ $ULINUX -eq 1 -a ! -d /usr/local_ssl_1.0.0 ]; then
+    echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
+    exit 1
 fi
 
 # Note: Most of this code came from the PAL configure file
@@ -317,8 +320,10 @@ case $uname in
 
         if [ "$PF_ARCH" = "x86" ]; then
             PF_WIDTH=32
+            SSL_LIB_DIR=lib
         else
             PF_WIDTH=64
+            SSL_LIB_DIR=lib64
         fi
     ;;
 
@@ -330,10 +335,25 @@ else
     BUILD_CONFIGURATION=${PF}_${PF_MAJOR}.${PF_MINOR}_${PF_ARCH}_${PF_WIDTH}_${build_type}
 fi
 
+# Determine Ruby configuration based on our configuration
+# TODO: This will have to change with SSL 0.9.8 support
+
+ruby_configure_quals=(
+    --disable-install-doc
+    --with-out-ext=${RUBY_EXTENSIONS}
+    --prefix=/opt/microsoft/omsagent/ruby )
+
+if [ "$ULINUX" = "1" ]; then
+    ruby_configure_quals=(
+	\"LDFLAGS=-L /usr/local_ssl_1.0.0/${SSL_LIB_DIR} -Wl,-rpath=/opt/omi/lib\"
+	\"CPPFLAGS=-I /usr/local_ssl_1.0.0/include\"
+	${ruby_configure_quals[@]} )
+fi
+
 cat <<EOF > config.mak
 ENABLE_DEBUG=$enable_debug_flag
 OMI_CONFIGURE_QUALS="$omi_configure_quals"
-RUBY_CONFIGURE_QUALS="$ruby_configure_quals"
+RUBY_CONFIGURE_QUALS=( ${ruby_configure_quals[@]} )
 
 BUILD_TYPE=$build_type
 PF=$PF

@@ -1,4 +1,8 @@
-#! /bin/sh
+#! /bin/bash
+
+# NOTE: This requires bash since RUBY_CONFIGURE_QUALS is an array, and sh doesn't
+#       support arrays. If we ever port to UNIX, we'll need to handle this in a
+#       different way (or make sure bash is on our build systems).
 
 set -e
 
@@ -23,7 +27,7 @@ fi
 . ${BASE_DIR}/build/config.mak
 
 # There may be multiple entires on the configure line; just get the one we need
-RUBY_DESTDIR=`echo $RUBY_CONFIGURE_QUALS | sed "s/ /\n/g" | grep -- "--prefix=" | cut -d= -f2`
+RUBY_DESTDIR=`echo "${RUBY_CONFIGURE_QUALS[@]}" | sed "s/ /\n/g" | grep -- "--prefix=" | cut -d= -f2`
 
 echo "Beginning Ruby build process ..."
 echo "  Build directory:   ${BASE_DIR}"
@@ -65,8 +69,8 @@ cd ${RUBY_SRCDIR}
 echo "========================= Performing Running Ruby configure"
 chmod u+x configure tool/ifchange
 touch configure
-echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS} ..."
-./configure ${RUBY_CONFIGURE_QUALS}
+echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS[@]} ..."
+./configure "${RUBY_CONFIGURE_QUALS[@]}"
 
 #
 # "Fix" the source tree. Ruby build may modify a few of it's files. Deal with it.
