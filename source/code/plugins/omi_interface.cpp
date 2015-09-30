@@ -8,11 +8,13 @@
 
 namespace
 {
-    MI_Char const JSON_START[] = MI_T ("omi_data");
     MI_Char const JSON_TRUE[] = MI_T ("true");
     MI_Char const JSON_FALSE[] = MI_T ("false");
+
+    MI_Char const JSON_MI_TYPE[] = MI_T ("MI_Type");
     MI_Char const JSON_MI_TIMESTAMP[] = MI_T ("MI_Timestamp");
     MI_Char const JSON_MI_INTERVAL[] = MI_T ("MI_Interval");
+    MI_Char const JSON_CLASS_KEY[] = MI_T ("ClassName");
 
     MI_Char const JSON_YEAR[] = MI_T ("year");
     MI_Char const JSON_MONTH[] = MI_T ("month");
@@ -38,13 +40,14 @@ namespace
     MI_Char const JSON_PAIR_TOKEN = MI_T (':');
 
     MI_Char const JSON_DOUBLE_QUOTE[] = MI_T ("\\\"");
-    MI_Char const JSON_BACK_SLASH[] = MI_T ("\\\"");
+    MI_Char const JSON_BACK_SLASH[] = MI_T ("\\\\");
     MI_Char const JSON_FORWARD_SLASH[] = MI_T ("\\/");
     MI_Char const JSON_BACK_SPACE[] = MI_T ("\\b");
     MI_Char const JSON_FORM_FEED[] = MI_T ("\\f");
     MI_Char const JSON_NEWLINE[] = MI_T ("\\n");
     MI_Char const JSON_RETURN[] = MI_T ("\\r");
     MI_Char const JSON_TAB[] = MI_T ("\\t");
+
 
 
     template<typename char_t, typename traits>
@@ -163,8 +166,11 @@ namespace
         std::basic_ostream<char_t, traits>& strm,
         MI_Timestamp timestamp)
     {
-        strm << JSON_START_STRING << JSON_MI_TIMESTAMP << JSON_END_STRING
-             << JSON_PAIR_TOKEN << JSON_DICT_START;
+        // type
+        strm << JSON_DICT_START
+             << JSON_START_STRING << JSON_MI_TYPE << JSON_END_STRING
+             << JSON_PAIR_TOKEN << JSON_START_STRING << JSON_MI_TIMESTAMP << JSON_END_STRING
+             << JSON_SEPARATOR;
         // year
         strm << JSON_START_STRING << JSON_YEAR << JSON_END_STRING << JSON_PAIR_TOKEN
              << JSON_START_STRING << timestamp.year << JSON_END_STRING
@@ -213,8 +219,11 @@ namespace
         std::basic_ostream<char_t, traits>& strm,
         MI_Interval interval)
     {
-        strm << JSON_START_STRING << JSON_MI_INTERVAL << JSON_END_STRING
-             << JSON_PAIR_TOKEN << JSON_DICT_START;
+        // type
+        strm << JSON_DICT_START
+             << JSON_START_STRING << JSON_MI_TYPE << JSON_END_STRING
+             << JSON_PAIR_TOKEN << JSON_START_STRING << JSON_MI_INTERVAL << JSON_END_STRING
+             << JSON_SEPARATOR;
         // days
         strm << JSON_START_STRING << JSON_DAYS << JSON_END_STRING << JSON_PAIR_TOKEN
              << JSON_START_STRING << interval.days << JSON_END_STRING
@@ -252,15 +261,15 @@ namespace
         MI_Value const& value,
         MI_Type const& type)
     {
-        if (0 == (MI_ARRAY & type) &&
-            0 == (MI_DATETIME & type))
-        {
-            strm << JSON_START_STRING;
-        }
-        else
+        if (MI_ARRAY & type)
         {
             strm << JSON_LIST_START;
         }
+        else if (type != MI_DATETIME)
+        {
+            strm << JSON_START_STRING;
+        }
+
         switch (type)
         {
             case MI_BOOLEAN:
@@ -365,14 +374,14 @@ namespace
                 array_to_json (strm, value.instancea, type);
                 break;
         }
-        if (0 == (MI_ARRAY & type) &&
-            0 == (MI_DATETIME & type))
-        {
-            strm << JSON_END_STRING;
-        }
-        else
+
+        if (MI_ARRAY & type)
         {
             strm << JSON_LIST_END;
+        }
+        else if (type != MI_DATETIME)
+        {
+            strm << JSON_END_STRING;
         }
     }
 
@@ -383,14 +392,34 @@ namespace
         std::basic_ostream<char_t, traits>& strm,
         MI_Instance const& instance)
     {
+        // An instance should be formated in a dictionary that is valid JSON
+        // Here is a partial example for the SCX_OperatingSystem class
+        /*
+        {
+            "ClassName": "SCX_OperatingSystem",
+            "Name": "Linux Distribution",
+            "LastBootUpTime": {
+                "MI_Type": "MI_Timestamp",
+                "year": "2015",
+                "month": "8",
+                "day": "19",
+                "hour": "10",
+                "minute": "57",
+                "second": "14",
+                "microseconds": "0",
+                "utc": "0"
+            },
+            "SystemUpTime": "3567851"
+        }*/
+
         MI_Char const* className;
         MI_Uint32 count;
         if (MI_RESULT_OK == MI_Instance_GetClassName (&instance, &className) &&
             MI_RESULT_OK == MI_Instance_GetElementCount (&instance, &count))
         {
-            strm << JSON_START_STRING << className << JSON_END_STRING
-                 << JSON_PAIR_TOKEN << JSON_DICT_START;
-            bool addSeparator = false;
+            strm << JSON_DICT_START
+                 << JSON_START_STRING << JSON_CLASS_KEY << JSON_END_STRING
+                 << JSON_PAIR_TOKEN << JSON_START_STRING << className << JSON_END_STRING;
             for (MI_Uint32 i = 0; i < count; ++i)
             {
                 MI_Char const* elementName;
@@ -401,14 +430,7 @@ namespace
                         &instance, i, &elementName, &value, &type, &flags) &&
                     0 == (MI_FLAG_NULL & flags))
                 {
-                    if (addSeparator)
-                    {
-                        strm << JSON_SEPARATOR;
-                    }
-                    else
-                    {
-                        addSeparator = true;
-                    }
+                    strm << JSON_SEPARATOR;
                     strm << JSON_START_STRING;
                     string_to_json (strm, elementName);
                     strm << JSON_END_STRING << JSON_PAIR_TOKEN;
@@ -606,8 +628,7 @@ OMIInterface::Enumerate (
     typedef std::pair<char_t const*, char_t const*> EnumItem_t;
     MI_Result result = MI_RESULT_OK;
     bool addSeparator = false;
-    strm << JSON_LIST_START << JSON_START_STRING << JSON_START
-         << JSON_END_STRING << JSON_PAIR_TOKEN << JSON_LIST_START;
+    strm << JSON_LIST_START;
     for (typename std::vector<EnumItem_t>::iterator pos = enumItems.begin (),
          endPos = enumItems.end ();
          pos != endPos;
@@ -631,7 +652,7 @@ OMIInterface::Enumerate (
         addSeparator = (0 < handle_results (strm, &operation));
         MI_Operation_Close (&operation);
     }
-    strm << JSON_LIST_END << JSON_LIST_END;
+    strm << JSON_LIST_END;
     return result;
 }
 

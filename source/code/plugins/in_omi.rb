@@ -1,8 +1,6 @@
 #!/usr/local/bin/ruby
 
-
 module Fluent
-
 
 class OMIInput < Input
     Fluent::Plugin.register_input('omi', self)
@@ -11,14 +9,22 @@ class OMIInput < Input
 
     def initialize
         super
+        require 'json'
         require_relative 'Libomi'
     end
 
     config_param :items, :array, :default => []
     config_param :run_interval, :time, :default => nil
-
+    config_param :tag, :string, :default => "omi.data"
     def configure (conf)
         super
+    end
+
+    def enumerate
+        time = Engine.now
+        record_txt = @omi_interface.enumerate(@items)
+        record = JSON.parse record_txt
+        router.emit(@tag, time, record)
     end
 
     def start
@@ -30,10 +36,7 @@ class OMIInput < Input
             @mutex = Mutex.new
             @thread = Thread.new(&method(:run_periodic))
         else
-            tag = "omi.data"
-            time = Engine.now
-            record = @omi_interface.enumerate(@items)
-            router.emit(tag, time, record)
+            enumerate
         end
     end
 
@@ -56,10 +59,7 @@ class OMIInput < Input
             done = @finished
             @mutex.unlock
             if !done
-                tag = "omi.data"
-                time = Engine.now
-                record = @omi_interface.enumerate(@items)
-                router.emit(tag, time, record)
+                enumerate
             end
             @mutex.lock
         end
