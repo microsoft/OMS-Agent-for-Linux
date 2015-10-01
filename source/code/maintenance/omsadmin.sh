@@ -196,9 +196,9 @@ onboard()
 
     CONTENT_HASH=`openssl sha256 $BODY_ONBOARD | awk '{print $2}' | xxd -r -p | base64`
 
-    # Key decode might be a problem with shell escape characters ...
-    KEY_DECODED=`echo $SHARED_KEY | base64 -d`
-    AUTHORIZATION_KEY=`echo -en "$REQ_DATE\n$CONTENT_HASH\n" | openssl dgst -sha256 -hmac "$KEY_DECODED" -binary | openssl enc -base64`
+    KEY_HEX=`echo -n $SHARED_KEY | base64 -d | xxd -p | tr -d "\n"`
+    AUTHORIZATION_KEY=`echo -en "$REQ_DATE\n$CONTENT_HASH\n" | openssl dgst -sha256 -mac HMAC -macopt hexkey:$KEY_HEX -binary | openssl enc -base64`
+
     echo "x-ms-Date: $REQ_DATE" > $HEADER_ONBOARD
     echo "x-ms-version: August, 2015" >> $HEADER_ONBOARD
     #echo "x-ms-SHA256_Content: $CONTENT_HASH" >> $HEADER_ONBOARD
