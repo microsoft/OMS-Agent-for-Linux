@@ -6,6 +6,7 @@ module Fluent
     def initialize
         super
         require 'socket'
+        require 'time'
     end
 
     def configure(conf)
@@ -21,8 +22,7 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      # The tag looks like this : oms.syslog.authpriv.notice
-      record["Timestamp"] = Time.now.strftime("%Y-%m-%dT%H:%M:%S")
+      record["Timestamp"] = Time.at(time).utc.iso8601
 
       record["Host"] = record["host"]
       record.delete "host"
@@ -41,6 +41,7 @@ module Fluent
         record.delete "pid"
       end
 
+      # The tag should looks like this : oms.syslog.authpriv.notice
       tags = tag.split('.')
       if tags.size == 4
         record["Facility"] = tags[2]

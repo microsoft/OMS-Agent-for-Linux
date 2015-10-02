@@ -7,9 +7,6 @@ class Fluent::OutputOMS < Fluent::Output
   # Endpoint URL ex. localhost.local/api/
   config_param :endpoint_url, :string
 
-  # Raise errors that were rescued during HTTP requests?
-  config_param :raise_on_error, :bool, :default => true
-
   def initialize
     super
     require 'net/http'
@@ -21,7 +18,7 @@ class Fluent::OutputOMS < Fluent::Output
 
   def configure(conf)
     super
-    @uri = URI.parse( @endpoint_url )
+    @URI_ENDPOINT = URI.parse( @endpoint_url )
   end
 
   def start
@@ -51,7 +48,7 @@ class Fluent::OutputOMS < Fluent::Output
   end
 
   def default_http
-    http = Net::HTTP.new( @uri.host, @uri.port )
+    http = Net::HTTP.new( @URI_ENDPOINT.host, @URI_ENDPOINT.port )
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     http.cert = @cert
@@ -79,15 +76,14 @@ class Fluent::OutputOMS < Fluent::Output
     end
   end
 
-  def create_request(tag, time, record)
-    url =  @endpoint_url
-    uri = URI.parse(url)
-    req = Net::HTTP::Post.new(uri.path)
+  def create_request(record)
+    req = Net::HTTP::Post.new(@URI_ENDPOINT.path)
+    # Serialize the record
     req.body = Yajl.dump(record)
-    return req, uri
+    return req
   end
 
-  def start_request(req, uri)
+  def start_request(req)
     return false unless read_certificate
     res = nil
 
@@ -96,10 +92,8 @@ class Fluent::OutputOMS < Fluent::Output
       res = http.start {|http|  http.request(req) }
 
     rescue => e # rescue all StandardErrors
-      # server didn't respond
+      # Server didn't respond
       $log.warn "Net::HTTP.#{req.method.capitalize} raises exception: #{e.class}, '#{e.message}'"
-
-      raise e if @raise_on_error
       return false
     else
       if res and res.is_a?(Net::HTTPSuccess)
@@ -110,16 +104,16 @@ class Fluent::OutputOMS < Fluent::Output
       else
         res_summary = "res=nil"
       end
-      $log.warn "Failed to #{req.method} #{req.body} #{uri} (#{res_summary})"
+      $log.warn "Failed to #{req.method} #{req.body} #{@URI_ENDPOINT} (#{res_summary})"
       return false
     end # end begin
   end # end start_request
 
   def handle_record(tag, time, record)
-    req, uri = create_request(tag, time, record)
-    success = start_request(req, uri)
+    req = create_request(record)
+    success = start_request(req)
     if success
-      $log.debug "Sent #{tag}"
+      $log.debug "Sent #{tag} at #{time}"
     end
   end
 
