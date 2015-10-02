@@ -115,7 +115,7 @@ RestartRsyslog() {
     elif [ -x /sbin/service ]; then
         /sbin/service rsyslog restart
     else
-        echo "Unrecognized service controller to start rsyslog service" 1>&2
+        echo "Unrecognized service controller to restart rsyslog service" 1>&2
         exit 1
     fi
 }

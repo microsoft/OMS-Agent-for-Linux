@@ -27,8 +27,14 @@ module Fluent
       record["Host"] = record["host"]
       record.delete "host"
 
-      addrinfos = Socket::getaddrinfo(Socket.gethostname,"echo",Socket::AF_UNSPEC)
-      record["HostIP"] = addrinfos.size >= 1 ? addrinfos[0][3] : "Unknown IP"
+      begin
+        addrinfos = Socket::getaddrinfo(Socket.gethostname, "echo", Socket::AF_UNSPEC)
+      rescue => e
+        $log.error "Failed to call getaddrinfo : #{e}"
+        record["HostIP"] = "Unknown IP"
+      else
+        record["HostIP"] = addrinfos.size >= 1 ? addrinfos[0][3] : "Unknown IP"
+      end
 
       if record.has_key?("pid")
         record["ProcessId"] = record["pid"]

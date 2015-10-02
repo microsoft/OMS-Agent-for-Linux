@@ -4,24 +4,29 @@ set -e
 
 # Folder for temporary generated files
 TMP_DIR=/var/opt/microsoft/omsagent/tmp
+
 # File with initial onboarding credentials
 FILE_ONBOARD=/etc/omsagent-onboard.conf
+
 # Generated conf file containing information for this script
-CONF_FILENAME=/etc/opt/microsoft/omsagent/conf/omsadmin.conf
+CONF_OMSADMIN=/etc/opt/microsoft/omsagent/conf/omsadmin.conf
+
+# Omsagent daemon configuration
+CONF_OMSAGENT=/etc/opt/microsoft/omsagent/conf/omsagent.conf
+
 # Certs
 FILE_KEY=/etc/opt/microsoft/omsagent/certs/oms.key
 FILE_CRT=/etc/opt/microsoft/omsagent/certs/oms.crt
 URL_TLD=opinsights.azure
 
-HEADER_ONBOARD="$TMP_DIR"/header_onboard.out
-BODY_ONBOARD="$TMP_DIR"/body_onboard.xml
-RESP_ONBOARD="$TMP_DIR"/resp_onboard.xml
+BODY_ONBOARD=$TMP_DIR/body_onboard.xml
+RESP_ONBOARD=$TMP_DIR/resp_onboard.xml
 
-BODY_HEARTBEAT="$TMP_DIR"/body_heartbeat.xml
-RESP_HEARTBEAT="$TMP_DIR"/resp_heartbeat.xml
+BODY_HEARTBEAT=$TMP_DIR/body_heartbeat.xml
+RESP_HEARTBEAT=$TMP_DIR/resp_heartbeat.xml
 
-BODY_RENEW_CERT="$TMP_DIR"/body_renew_cert.xml
-RESP_RENEW_CERT="$TMP_DIR"/resp_renew_cert.xml
+BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
+RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
 
 WORKSPACE_ID=""
 AGENT_GUID=""
@@ -40,47 +45,61 @@ usage()
     echo
     echo "Renew certificates:"
     echo "$0 -r" >& 2
-    exit 1
+    clean_exit 1
 }
 
 check_user()
 {
-    if [ `id -un` != "omsagent" ]; then
-        log_error "This script must be run as the omsagent user."
-        exit 1
+    if [ $EUID -ne 0 -a `id -un` != "omsagent" ]; then
+        log_error "This script must be run as root or as the omsagent user."
+        clean_exit 1
     fi
+}
+
+chown_omsagent()
+{
+    # When this script is run as root, we still have to make sure the generated
+    # files are owned by omsagent for everything to work properly
+    [ "$EUID" -eq 0 ] && chown omsagent:omsagent $@
 }
 
 save_config()
 {
     #Save configuration
-    echo WORKSPACE_ID=$WORKSPACE_ID > $CONF_FILENAME
-    echo AGENT_GUID=$AGENT_GUID >> $CONF_FILENAME
-    echo LOG_FACILITY=$LOG_FACILITY >> $CONF_FILENAME
-    echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_FILENAME
+    echo WORKSPACE_ID=$WORKSPACE_ID > $CONF_OMSADMIN
+    echo AGENT_GUID=$AGENT_GUID >> $CONF_OMSADMIN
+    echo LOG_FACILITY=$LOG_FACILITY >> $CONF_OMSADMIN
+    echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
+    echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
+    chown_omsagent "$CONF_OMSADMIN"
 }
 
 load_config()
 {
-    if [ ! -e "$CONF_FILENAME" ]; then
-        log_error "Missing configuration file : $CONF_FILENAME"
-        exit 1
+    if [ ! -e "$CONF_OMSADMIN" ]; then
+        log_error "Missing configuration file : $CONF_OMSADMIN"
+        clean_exit 1
     fi
 
-    . "$CONF_FILENAME"
+    . "$CONF_OMSADMIN"
 
     if [ -z "$WORKSPACE_ID" -o -z "$AGENT_GUID" ]; then
-        log_error "Missing required field from configuration file: $CONF_FILENAME"
-        exit 1
+        log_error "Missing required field from configuration file: $CONF_OMSADMIN"
+        clean_exit 1
     fi
 }
 
 cleanup()
 {
-    rm "$HEADER_ONBOARD" "$BODY_ONBOARD" "$RESP_ONBOARD" > /dev/null 2>&1 || true
+    rm "$BODY_ONBOARD" "$RESP_ONBOARD" > /dev/null 2>&1 || true
     rm "$BODY_HEARTBEAT" "$RESP_HEARTBEAT" > /dev/null 2>&1 || true
     rm "$BODY_RENEW_CERT" "$RESP_RENEW_CERT" > /dev/null 2>&1 || true
-    [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
+}
+
+clean_exit()
+{
+    cleanup
+    exit $1
 }
 
 log_info()
@@ -138,12 +157,6 @@ parse_args()
         # Suppress curl output
         CURL_VERBOSE=-s
     fi
-
-    # We need Workspace ID and the shared key (Primary or secondary key, doesn't matter)
-    if [ "$ONBOARDING" = "1" ] && [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
-        log_error "Error: Qualifiers -w and -s are mandatory"
-        usage
-    fi
 }
 
 generate_certs()
@@ -156,18 +169,44 @@ generate_certs()
 
     if [ "$?" -ne 0 -o ! -e "$FILE_KEY" -o ! -e "$FILE_CRT" ]; then
         log_error "Error generating certs"
-        exit 1
+        clean_exit 1
     fi
+
+    chown_omsagent "$FILE_KEY" "$FILE_CRT"
 
     # Set safe certificate permissions
     chmod 600 "$FILE_KEY" "$FILE_CRT"
+}
+
+restart_omsagent()
+{
+    if [ -x /usr/sbin/invoke-rc.d ]; then
+        /usr/sbin/invoke-rc.d omsagent restart
+    elif [ -x /sbin/service ]; then
+        /sbin/service omsagent restart
+    elif [ -x /usr/bin/systemctl ]; then
+        /usr/bin/systemctl restart omsagent
+    else
+        echo "Unrecognized service controller to restart omsagent service" 1>&2
+        clean_exit 1
+    fi
+}
+
+update_conf_endpoint()
+{
+    # Replace the endpoint in the omsagent conf. We replace the whole url in case of reonboarding.
+    sed -i.bak "s,endpoint_url.*,endpoint_url https://${WORKSPACE_ID}.ods.${URL_TLD}.com/OperationalData.svc/PostJsonDataItems," "$CONF_OMSAGENT"
+    chown_omsagent "$CONF_OMSAGENT"
+
+    # Reload the conf by restarting the service
+    restart_omsagent
 }
 
 onboard()
 {
     if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
         log_error "Missing Wokspace ID or Shared Key information for onboarding"
-        exit 1
+        clean_exit 1
     fi
 
     AGENT_GUID=`uuidgen`
@@ -178,10 +217,6 @@ onboard()
         log_info "Public Key stored in:    $FILE_CRT"
         # Public key can be verified with a command like:  openssl x509 -text -in oms.crt
     fi
-
-    #
-    # Generate the request header and body
-    #
 
     # Generate the body first so we can compute a SHA256 on the body
 
@@ -199,16 +234,9 @@ onboard()
     KEY_HEX=`echo -n $SHARED_KEY | base64 -d | xxd -p | tr -d "\n"`
     AUTHORIZATION_KEY=`echo -en "$REQ_DATE\n$CONTENT_HASH\n" | openssl dgst -sha256 -mac HMAC -macopt hexkey:$KEY_HEX -binary | openssl enc -base64`
 
-    echo "x-ms-Date: $REQ_DATE" > $HEADER_ONBOARD
-    echo "x-ms-version: August, 2015" >> $HEADER_ONBOARD
-    #echo "x-ms-SHA256_Content: $CONTENT_HASH" >> $HEADER_ONBOARD
-    echo "Authorization: $WORKSPACE_ID; $AUTHORIZATION_KEY" >> $HEADER_ONBOARD
-
     if [ $VERBOSE -ne 0 ]; then
         echo
         echo "Generated request:"
-        cat $HEADER_ONBOARD
-        echo
         cat $BODY_ONBOARD
     fi
 
@@ -233,7 +261,7 @@ onboard()
         log_error "Error onboarding. HTTP code $RET_CODE"
         return 1
     fi
-
+    update_conf_endpoint
     save_config
     return 0
 }
@@ -346,12 +374,14 @@ renew_cert()
 main()
 {
     if [ $# -eq 0 ]; then
+
         # Allow onboarding params to be loaded from a file
         # The file contains at least these two lines :
         # WORKSPACE_ID="[...]"
         # SHARED_KEY="[...]"
         # and an optional line:
         # URL_TLD=int2.microsoftatlanta-int
+
         if [ -r "$FILE_ONBOARD" ]; then
             log_info "Reading onboarding params form : $FILE_ONBOARD"
             . "$FILE_ONBOARD"
@@ -365,15 +395,15 @@ main()
     check_user
     parse_args $@
 
-    if [ ! -d "$TMP_DIR" ]; then
-        mkdir -p "$TMP_DIR"
-    fi
+    [ "$ONBOARDING" = "1" ] && (onboard || clean_exit 1)
+    [ "$HEARTBEAT"  = "1" ] && (heartbeat || clean_exit 1)
+    [ "$RENEW_CERT" = "1" ] && (renew_cert || clean_exit 1)
 
-    [ "$ONBOARDING" = "1" ] && (onboard || exit 1)
-    [ "$HEARTBEAT"  = "1" ] && (heartbeat || exit 1)
-    [ "$RENEW_CERT" = "1" ] && (renew_cert || exit 1)
-    cleanup
-    exit 0
+    # If we reach this point, onboarding was successful, we can remove the
+    # onboard conf to prevent accidentally re-onboarding
+    [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
+
+    clean_exit 0
 }
 
 main $@
