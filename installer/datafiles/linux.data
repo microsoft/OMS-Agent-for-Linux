@@ -106,6 +106,12 @@ RegisterOMSService() {
         echo "Unrecognized service controller to configure OMS service."
         exit 1
     fi
+
+    # If we have systemctl here, tell it to reload (resolves transient problems)
+    which systemctl > /dev/null 2> /dev/null
+    if [ $? -eq 0 ]; then
+        systemctl daemon-reload
+    fi
 }
 
 %rsyslog_funcs
