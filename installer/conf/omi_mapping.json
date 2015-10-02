@@ -59,7 +59,7 @@
       "CounterName": "% Free Space"
     },
     {
-      "CimPropertyName": "% Free Space",
+      "CimPropertyName": "PercentUsedSpace",
       "CounterName": "% Used Space"
     },
     {
