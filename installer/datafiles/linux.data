@@ -128,7 +128,7 @@ RestartRsyslog() {
 egrep -q "^omsagent:" /etc/passwd
 if [ $? -ne 0 ]; then
    echo "Creating omsagent service account ..."
-   useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -s /bin/bash omsagent
+   useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -s /bin/bash -U omsagent
 fi
 
 IsOMSServiceRunning
@@ -194,6 +194,15 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
     # Remove the service account
     echo "Deleting omsagent service account ..."
     userdel omsagent
+
+    if [ $? -eq 0 ]; then
+        # Depending on system settings, the group may not have been deleted
+        egrep -q "^omsagent:" /etc/group
+        if [ $? -eq 0 ]; then
+            echo "Deleting omsagent group ..."
+            groupdel omsagent
+        fi
+    fi
 
     rm -f /etc/rsyslog.d/rsyslog-oms.conf
     RestartRsyslog
