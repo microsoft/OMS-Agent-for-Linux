@@ -127,7 +127,9 @@ bundle exec rake build
 sudo ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
 
 echo "========================= Performing Running MSFT Unit Tests"
+# TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
 ${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/nagios_log_parser_test.rb
+${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/omi_lib_test.rb 
 
 echo "========================= Performing Moving Ruby to intermediate directory"
 mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}

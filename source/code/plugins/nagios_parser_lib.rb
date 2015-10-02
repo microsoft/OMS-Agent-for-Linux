@@ -17,7 +17,7 @@ module NagiosModule
 			@error_handler = error_handler
 		end
 		
-		# This method will take a line and return the parsed record in json format 
+		# This method will take a line and return the parsed record (data item) in json format 
 		# it is a nagios host or service alert	
 		#
 		def parse_alert_record(line)
@@ -85,5 +85,23 @@ module NagiosModule
 
 			return parsed_record
 		end
+  
+		# adds additional meta needed for ODS (i.e. DataType, IPName)
+		#
+		def parse_and_wrap(line)
+			data_item = parse_alert_record(line)
+			if (data_item != nil and data_item.size > 0)
+				  wrapper = {
+					"DataType"=>"LINUX_NAGIOSALERTS_BLOB",
+					"IPName"=>"AlertManagement",
+					"DataItems"=>[data_item]
+				  }
+				  return wrapper
+			else
+				# no data items, send a empty array that tells ODS
+				# output plugin to not send the data
+				return {}
+			end
+		end		
   end
 end

@@ -12,7 +12,7 @@ module Fluent
 			
 		# each record represents one line from the nagios log
 		def filter(tag, time, record)
-			return @nagios_lib.parse_alert_record(record["message"])
+			return @nagios_lib.parse_and_wrap(record["message"])
 		end
 	end
 end

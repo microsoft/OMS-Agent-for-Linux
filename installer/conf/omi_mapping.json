@@ -1,0 +1,183 @@
+[{
+  "CimClassName": "SCX_ProcessorStatisticalInformation",
+  "ObjectName": "Processor",
+  "InstanceProperty": "Name",
+  "CimProperties": [
+    {
+      "CimPropertyName": "PercentProcessorTime",
+      "CounterName": "% Processor Time"
+    },
+    {
+      "CimPropertyName": "PercentIdleTime",
+      "CounterName": "% Idle Time"
+    },
+    {
+      "CimPropertyName": "PercentUserTime",
+      "CounterName": "% User Time"
+    },
+    {
+      "CimPropertyName": "PercentNiceTime",
+      "CounterName": "% Nice Time"
+    },
+    {
+      "CimPropertyName": "PercentPrivilegedTime",
+      "CounterName": "% Privileged Time"
+    },
+    {
+      "CimPropertyName": "PercentIOWaitTime",
+      "CounterName": "% IO Wait Time"
+    },
+    {
+      "CimPropertyName": "PercentInterruptTime",
+      "CounterName": "% Interrupt Time"
+    },
+    {
+      "CimPropertyName": "PercentDPCTime",
+      "CounterName": "% DPC Time"
+    }
+  ]
+},
+{
+  "CimClassName": "SCX_FileSystemStatisticalInformation",
+  "ObjectName": "Logical Disk",
+  "InstanceProperty": "Name",
+  "CimProperties": [
+    {
+      "CimPropertyName": "PercentFreeInodes",
+      "CounterName": "% Free Inodes"
+    },
+    {
+      "CimPropertyName": "PercentUsedInodes",
+      "CounterName": "% Used Inodes"
+    },
+    {
+      "CimPropertyName": "FreeMegabytes",
+      "CounterName": "Free Megabytes"
+    },
+    {
+      "CimPropertyName": "PercentFreeSpace",
+      "CounterName": "% Free Space"
+    },
+    {
+      "CimPropertyName": "% Free Space",
+      "CounterName": "% Used Space"
+    },
+    {
+      "CimPropertyName": "BytesPerSecond",
+      "CounterName": "Logical Disk Bytes/sec"
+    },
+    {
+      "CimPropertyName": "ReadBytesPerSecond",
+      "CounterName": "Disk Read Bytes/sec"
+    },
+    {
+      "CimPropertyName": "WriteBytesPerSecond",
+      "CounterName": "Disk Write Bytes/sec"
+    },
+    {
+      "CimPropertyName": "TransfersPerSecond",
+      "CounterName": "Disk Transfers/sec"
+    },
+    {
+      "CimPropertyName": "ReadsPerSecond",
+      "CounterName": "Disk Reads/sec"
+    },
+    {
+      "CimPropertyName": "WritesPerSecond",
+      "CounterName": "Disk Writes/sec"
+    }
+  ]
+},
+{
+  "CimClassName": "SCX_MemoryStatisticalInformation",
+  "ObjectName": "Memory",
+  "InstanceProperty": "Name",
+  "CimProperties": [
+    {
+      "CimPropertyName": "AvailableMemory",
+      "CounterName": "Available MBytes Memory"
+    },
+    {
+      "CimPropertyName": "PercentAvailableMemory",
+      "CounterName": "% Available Memory"
+    },
+    {
+      "CimPropertyName": "UsedMemory",
+      "CounterName": "Used Memory MBytes"
+    },
+    {
+      "CimPropertyName": "PercentUsedMemory",
+      "CounterName": "% Used Memory"
+    },
+    {
+      "CimPropertyName": "PagesPerSec",
+      "CounterName": "Pages/sec"
+    },
+    {
+      "CimPropertyName": "PagesReadPerSec",
+      "CounterName": "Page Reads/sec"
+    },
+    {
+      "CimPropertyName": "PagesWrittenPerSec",
+      "CounterName": "Page Writes/sec"
+    },
+    {
+      "CimPropertyName": "AvailableSwap",
+      "CounterName": "Available MBytes Swap"
+    },
+    {
+      "CimPropertyName": "PercentAvailableSwap",
+      "CounterName": "% Available Swap Space"
+    },
+    {
+      "CimPropertyName": "UsedSwap",
+      "CounterName": "Used MBytes Swap Space"
+    },
+    {
+      "CimPropertyName": "PercentUsedSwap",
+      "CounterName": "% Used Swap Space"
+    }
+  ]
+},
+{
+  "CimClassName": "SCX_DiskDriveStatisticalInformation",
+  "ObjectName": "Physical Disk",
+  "InstanceProperty": "Name",
+  "CimProperties": [
+    {
+      "CimPropertyName": "BytesPerSecond",
+      "CounterName": "Physical Disk Bytes/sec"
+    },
+    {
+      "CimPropertyName": "AverageTransferTime",
+      "CounterName": "Avg. Disk sec/Transfer"
+    },
+    {
+      "CimPropertyName": "AverageReadTime",
+      "CounterName": "Avg. Disk sec/Read"
+    },
+    {
+      "CimPropertyName": "AverageWriteTime",
+      "CounterName": "Avg. Disk sec/Write"
+    }
+  ]
+},
+{
+  "CimClassName": "SCX_EthernetPortStatistics",
+  "ObjectName": "Network Adapter",
+  "InstanceProperty": "InstanceID",
+  "CimProperties": [
+    {
+      "CimPropertyName": "BytesReceived",
+      "CounterName": "Bytes Received/Sec"
+    },
+    {
+      "CimPropertyName": "BytesTransmitted",
+      "CounterName": "Bytes Sent/Sec"
+    },
+    {
+      "CimPropertyName": "BytesTotal",
+      "CounterName": "Bytes Total/Sec"
+    }
+  ]
+}]
