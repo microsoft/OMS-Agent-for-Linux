@@ -84,7 +84,7 @@ module OmiModule
 				# if counterName is collected, perform the lookup for the value
 				# else skip to the next property
 				specific_mapping["CimProperties"].each { |property| 
-					if collected_counters.include?"#{transformed_record["ObjectName"]} #{property["CounterName"]}"
+					if collected_counters.include?("#{transformed_record["ObjectName"]} #{property["CounterName"]}")
 						counter_pair = {}
 						counter_pair["CounterName"] = property["CounterName"]
 						counter_pair["Value"] = record[property["CimPropertyName"]]

@@ -161,23 +161,4 @@
       "CounterName": "Avg. Disk sec/Write"
     }
   ]
-},
-{
-  "CimClassName": "SCX_EthernetPortStatistics",
-  "ObjectName": "Network Adapter",
-  "InstanceProperty": "InstanceID",
-  "CimProperties": [
-    {
-      "CimPropertyName": "BytesReceived",
-      "CounterName": "Bytes Received/Sec"
-    },
-    {
-      "CimPropertyName": "BytesTransmitted",
-      "CounterName": "Bytes Sent/Sec"
-    },
-    {
-      "CimPropertyName": "BytesTotal",
-      "CounterName": "Bytes Total/Sec"
-    }
-  ]
 }]

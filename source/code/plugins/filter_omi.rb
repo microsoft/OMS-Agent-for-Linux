@@ -5,9 +5,9 @@ module Fluent
 	class OmiFilter < Filter
 		Plugin.register_filter('filter_omi', self)
 		
-		# perf_counters is a string of csv list of performance counters 
+		# perf_counters is an array of csv list of performance counters 
 		# each item in the list is the Object Name concentated with the Counter Name
-		config_param :perf_counters, :string, :default => ""
+		config_param :perf_counters, :array, :default => []
 		
     	# This method is called before starting.
     	def configure(conf)

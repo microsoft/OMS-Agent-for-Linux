@@ -65,43 +65,40 @@ class OmiLib_Test < Test::Unit::TestCase
 	
 	def test_transform_class_returns_valid_record_all_counters
 		all_performance_counters = [
-			'Processor % Processor Time',
-			'Processor % Idle Time',
-			'Processor % User Time',
-			'Processor % Nice Time',
-			'Processor % Privileged Time',
-			'Processor % IO Wait Time',
-			'Processor % Interrupt Time',
-			'Processor % DPC Time',
-			'Memory Available MBytes Memory',
-			'Memory % Available Memory',
-			'Memory Used Memory MBytes',
-			'Memory % Used Memory',
-			'Memory Pages/sec',
-			'Memory Page Reads/sec',
-			'Memory Page Writes/sec',
-			'Memory Available MBytes Swap',
-			'Memory % Available Swap Space',
-			'Memory Used MBytes Swap Space',
-			'Memory % Used Swap Space',
-			'Logical Disk % Free Inodes',
-			'Logical Disk % Used Inodes',
-			'Logical Disk Free Megabytes',
-			'Logical Disk % Free Space',
-			'Logical Disk % Used Space',
-			'Logical Disk Logical Disk Bytes/sec',
-			'Logical Disk Disk Read Bytes/sec',
-			'Logical Disk Disk Write Bytes/sec',
-			'Logical Disk Disk Transfers/sec',
-			'Logical Disk Disk Reads/sec',
-			'Logical Disk Disk Writes/sec',
-			'Physical Disk Physical Disk Bytes/sec',
-			'Physical Disk Avg. Disk sec/Transfer',
-			'Physical Disk Avg. Disk sec/Read',
-			'Physical Disk Avg. Disk sec/Write',
-			'Network Adapter Bytes Received/Sec',
-			'Network Adapter Bytes Sent/Sec',
-			'Network Adapter Bytes Total/Sec'		
+			"Processor % Processor Time",
+			"Processor % Idle Time",
+			"Processor % User Time",
+			"Processor % Nice Time",
+			"Processor % Privileged Time",
+			"Processor % IO Wait Time",
+			"Processor % Interrupt Time",
+			"Processor % DPC Time",
+			"Memory Available MBytes Memory",
+			"Memory % Available Memory",
+			"Memory Used Memory MBytes",
+			"Memory % Used Memory",
+			"Memory Pages/sec",
+			"Memory Page Reads/sec",
+			"Memory Page Writes/sec",
+			"Memory Available MBytes Swap",
+			"Memory % Available Swap Space",
+			"Memory Used MBytes Swap Space",
+			"Memory % Used Swap Space",
+			"Logical Disk % Free Inodes",
+			"Logical Disk % Used Inodes",
+			"Logical Disk Free Megabytes",
+			"Logical Disk % Free Space",
+			"Logical Disk % Used Space",
+			"Logical Disk Logical Disk Bytes/sec",
+			"Logical Disk Disk Read Bytes/sec",
+			"Logical Disk Disk Write Bytes/sec",
+			"Logical Disk Disk Transfers/sec",
+			"Logical Disk Disk Reads/sec",
+			"Logical Disk Disk Writes/sec",
+			"Physical Disk Physical Disk Bytes/sec",
+			"Physical Disk Avg. Disk sec/Transfer",
+			"Physical Disk Avg. Disk sec/Read",
+			"Physical Disk Avg. Disk sec/Write"
 		]
 	
 		# Test SCX_ProcessorStatisticalInformation
@@ -124,11 +121,6 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_disk_record = [{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"sda","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"},{"CounterName":"Avg. Disk sec/Transfer","Value":"0"},{"CounterName":"Avg. Disk sec/Read","Value":"0"},{"CounterName":"Avg. Disk sec/Write","Value":"0"}]},{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"_Total","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"},{"CounterName":"Avg. Disk sec/Transfer","Value":"0"},{"CounterName":"Avg. Disk sec/Read","Value":"0"},{"CounterName":"Avg. Disk sec/Write","Value":"0"}]}]
 		transform_validate_records_helper(expected_disk_record, disk_input_record, all_performance_counters, "Disk Input Class Failed!")
 		
-		# Test SCX_EthernetPortStatistics
-		ethernet_input_record = [{"ClassName"=>"SCX_EthernetPortStatistics","InstanceID"=>"docker0","Caption"=>"Ethernet port information","Description"=>"Statistics on transfer performance for a port","BytesTransmitted"=>"0","BytesReceived"=>"0","PacketsTransmitted"=>"0","PacketsReceived"=>"0","BytesTotal"=>"0","TotalRxErrors"=>"0","TotalTxErrors"=>"0","TotalCollisions"=>"0"},{"ClassName"=>"SCX_EthernetPortStatistics","InstanceID"=>"eth0","Caption"=>"Ethernet port information","Description"=>"Statistics on transfer performance for a port","BytesTransmitted"=>"4336973515","BytesReceived"=>"4041642996","PacketsTransmitted"=>"12758188","PacketsReceived"=>"32223752","BytesTotal"=>"8378616511","TotalRxErrors"=>"0","TotalTxErrors"=>"0","TotalCollisions"=>"0"}]
-		expected_ethernet_record = [{"Host":"testhost","ObjectName":"Network Adapter","InstanceName":"docker0","Collections":[{"CounterName":"Bytes Received/Sec","Value":"0"},{"CounterName":"Bytes Sent/Sec","Value":"0"},{"CounterName":"Bytes Total/Sec","Value":"0"}]},{"Host":"testhost","ObjectName":"Network Adapter","InstanceName":"eth0","Collections":[{"CounterName":"Bytes Received/Sec","Value":"4041642996"},{"CounterName":"Bytes Sent/Sec","Value":"4336973515"},{"CounterName":"Bytes Total/Sec","Value":"8378616511"}]}]
-		transform_validate_records_helper(expected_ethernet_record, ethernet_input_record, all_performance_counters, "Ethernet Input Class Failed!")
-		
 		# TODO: Add docker test
 	end
 	
@@ -137,8 +129,7 @@ class OmiLib_Test < Test::Unit::TestCase
 			'Processor % Processor Time',
 			'Memory Available MBytes Memory',
 			'Logical Disk % Free Inodes',
-			'Physical Disk Physical Disk Bytes/sec',
-			'Network Adapter Bytes Total/Sec'		
+			'Physical Disk Physical Disk Bytes/sec'
 		]		
 
 		# Test filtered SCX_ProcessorStatisticalInformation
@@ -161,11 +152,6 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_disk_record = [{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"sda","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"}]},{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"_Total","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"}]}]
 		transform_validate_records_helper(expected_disk_record, disk_input_record, filtered_performance_counters, "Disk Filtered Input Class Failed!")
 		
-		# # Test filtered SCX_EthernetPortStatistics
-		ethernet_input_record = [{"ClassName"=>"SCX_EthernetPortStatistics","InstanceID"=>"docker0","Caption"=>"Ethernet port information","Description"=>"Statistics on transfer performance for a port","BytesTransmitted"=>"0","BytesReceived"=>"0","PacketsTransmitted"=>"0","PacketsReceived"=>"0","BytesTotal"=>"0","TotalRxErrors"=>"0","TotalTxErrors"=>"0","TotalCollisions"=>"0"},{"ClassName"=>"SCX_EthernetPortStatistics","InstanceID"=>"eth0","Caption"=>"Ethernet port information","Description"=>"Statistics on transfer performance for a port","BytesTransmitted"=>"4336973515","BytesReceived"=>"4041642996","PacketsTransmitted"=>"12758188","PacketsReceived"=>"32223752","BytesTotal"=>"8378616511","TotalRxErrors"=>"0","TotalTxErrors"=>"0","TotalCollisions"=>"0"}]
-		expected_ethernet_record = [{"Host":"testhost","ObjectName":"Network Adapter","InstanceName":"docker0","Collections":[{"CounterName":"Bytes Total/Sec","Value":"0"}]},{"Host":"testhost","ObjectName":"Network Adapter","InstanceName":"eth0","Collections":[{"CounterName":"Bytes Total/Sec","Value":"8378616511"}]}]
-		transform_validate_records_helper(expected_ethernet_record, ethernet_input_record, filtered_performance_counters, "Ethernet Filtered Input Class Failed!")
-	
 		# TODO: Add docker filter test
 
 	end
@@ -191,11 +177,6 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_disk_record = [{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"sda","Collections":[]},{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"_Total","Collections":[]}]
 		transform_validate_records_helper(expected_disk_record, disk_input_record, [], "Disk Filtered Input Class Failed!")
 		
-		# Test no perf counters selected SCX_EthernetPortStatistics
-		ethernet_input_record = [{"ClassName"=>"SCX_EthernetPortStatistics","InstanceID"=>"docker0","Caption"=>"Ethernet port information","Description"=>"Statistics on transfer performance for a port","BytesTransmitted"=>"0","BytesReceived"=>"0","PacketsTransmitted"=>"0","PacketsReceived"=>"0","BytesTotal"=>"0","TotalRxErrors"=>"0","TotalTxErrors"=>"0","TotalCollisions"=>"0"},{"ClassName"=>"SCX_EthernetPortStatistics","InstanceID"=>"eth0","Caption"=>"Ethernet port information","Description"=>"Statistics on transfer performance for a port","BytesTransmitted"=>"4336973515","BytesReceived"=>"4041642996","PacketsTransmitted"=>"12758188","PacketsReceived"=>"32223752","BytesTotal"=>"8378616511","TotalRxErrors"=>"0","TotalTxErrors"=>"0","TotalCollisions"=>"0"}]
-		expected_ethernet_record = [{"Host":"testhost","ObjectName":"Network Adapter","InstanceName":"docker0","Collections":[]},{"Host":"testhost","ObjectName":"Network Adapter","InstanceName":"eth0","Collections":[]}]
-		transform_validate_records_helper(expected_ethernet_record, ethernet_input_record, [], "Ethernet Filtered Input Class Failed!")
-	
 		# TODO: Add docker no perf counters selected test
 
 	end	
