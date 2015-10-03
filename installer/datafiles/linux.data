@@ -1,6 +1,7 @@
 %Variables
-PF:		'Linux'
-
+PF:          'Linux'
+RSYSLOG_LN:  '/etc/rsyslog.d/95-omsagent.conf'
+CONF_DIR:    '/etc/opt/microsoft/omsagent/conf'
 
 %Directories
 /etc;                                                   755; root; root; sysdir
@@ -8,7 +9,6 @@ PF:		'Linux'
 
 %Files
 /etc/init.d/omsagent;                                                   installer/scripts/omsagent.ulinux;                     755; root; root
-
 
 %OmiService_funcs
 StopOmiServer() {
@@ -133,8 +133,8 @@ RestartRsyslog() {
 # Add the 'omsagent' service account if it does not already exist
 egrep -q "^omsagent:" /etc/passwd
 if [ $? -ne 0 ]; then
-   echo "Creating omsagent service account ..."
-   useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -s /bin/bash -U omsagent
+    echo "Creating omsagent service account ..."
+    useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -s /bin/bash -U omsagent
 fi
 
 IsOMSServiceRunning
@@ -148,24 +148,18 @@ fi
 #include CheckIfOmiIsRunning
 #include rsyslog_funcs
 
-CONF_DIR="/etc/opt/microsoft/omsagent/conf"
-
-if [ ! -f "$CONF_DIR/rsyslog-oms.conf" ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf "$CONF_DIR"
-   chown omsagent:omsagent "$CONF_DIR/rsyslog-oms.conf"
+if [ ! -f ${{CONF_DIR}}/rsyslog-oms.conf ]; then
+    cp /etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf ${{CONF_DIR}}
+    chown omsagent:omsagent ${{CONF_DIR}}/rsyslog-oms.conf
 fi
 
-SymlinkSyslog() {
-  # We create a symlink in rsyslog.d so that DSC can update the pointee
-  if [ -d /etc/rsyslog.d -a ! -h /etc/rsyslog.d/rsyslog-oms.conf ]; then
-    ln -s /etc/opt/microsoft/omsagent/conf/rsyslog-oms.conf /etc/rsyslog.d/rsyslog-oms.conf
-  fi
-  # TODO support syslog-ng
-}
-SymlinkSyslog
+# We create a symlink in rsyslog.d so that DSC can update the pointee
+if [ -d /etc/rsyslog.d -a ! -h ${{RSYSLOG_LN}}]; then
+    ln -s /etc/opt/microsoft/omsagent/conf/rsyslog-oms.conf ${{RSYSLOG_LN}}
+fi
+# TODO support syslog-ng
 
 RestartRsyslog
-
 RestartOmiServer
 
 RegisterOMSService
@@ -210,6 +204,6 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
         fi
     fi
 
-    rm -f /etc/rsyslog.d/rsyslog-oms.conf
+    rm -f ${{RSYSLOG_LN}}
     RestartRsyslog
 fi
