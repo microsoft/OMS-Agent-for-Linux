@@ -108,6 +108,12 @@ log_info()
     logger -i -p "$LOG_FACILITY".info -t omsagent "$1"
 }
 
+log_warning()
+{
+    echo -e "warning\t$1"
+    logger -i -p "$LOG_FACILITY".warning -t omsagent "$1"
+}
+
 log_error()
 {
     echo -e "error\t$1"
@@ -178,6 +184,34 @@ generate_certs()
     chmod 600 "$FILE_KEY" "$FILE_CRT"
 }
 
+append_telemetry()
+{
+    if [ ! -w "$1" ]; then
+        log_warning "Invalid parameter $1 to append_telemetry()"
+        return 1
+    fi
+
+    OS_INFO="/etc/opt/microsoft/scx/conf/scx-release"
+
+    if [ ! -r $OS_INFO ]; then
+        # This is not fatal, we simply proceed without the info
+        log_info "Could not read telemetry information from $OS_INFO"
+        return 1
+    fi
+
+    # We grep instead of sourcing because parentheses in the file cause syntax errors
+    OSName=`grep OSName $OS_INFO | cut -d= -f2`
+    OSManufacturer=`grep OSManufacturer $OS_INFO | cut -d= -f2`
+    OSVersion=`grep OSVersion $OS_INFO | cut -d= -f2`
+
+    echo "   <OperatingSystem>" >> $1
+    echo "      <Name>$OSName</Name>" >> $1
+    echo "      <Manufacturer>$OSManufacturer</Manufacturer>" >> $1
+    echo "      <ProcessorArchitecture>x64</ProcessorArchitecture>" >> $1
+    echo "      <Version>$OSVersion</Version>" >> $1
+    echo "   </OperatingSystem>" >> $1
+}
+
 restart_omsagent()
 {
     if [ -x /usr/sbin/invoke-rc.d ]; then
@@ -227,6 +261,7 @@ onboard()
     echo "   <FullyQualfiedDomainName>`hostname -f`</FullyQualfiedDomainName>" >> $BODY_ONBOARD
     echo "   <EntityTypeId>$AGENT_GUID</EntityTypeId>" >> $BODY_ONBOARD
     echo "   <AuthenticationCertificate>${CERT_SERVER}</AuthenticationCertificate>" >> $BODY_ONBOARD
+    append_telemetry $BODY_ONBOARD
     echo "</AgentTopologyRequest>" >> $BODY_ONBOARD
 
     CONTENT_HASH=`openssl sha256 $BODY_ONBOARD | awk '{print $2}' | xxd -r -p | base64`
@@ -247,7 +282,8 @@ onboard()
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
         --header "Authorization: $WORKSPACE_ID; $AUTHORIZATION_KEY" \
-        --header "User-Agent: omsagent 0.5" \
+        --header "User-Agent: omsagent 0.6" \
+        --header "Accept-Language: en-US" \
         --insecure \
         --data-binary @$BODY_ONBOARD \
         --cert "$FILE_CRT" --key "$FILE_KEY" \
@@ -277,9 +313,14 @@ heartbeat()
     echo "   <FullyQualfiedDomainName>`hostname -f`</FullyQualfiedDomainName>" >> $BODY_HEARTBEAT
     echo "   <EntityTypeId>$AGENT_GUID</EntityTypeId>" >> $BODY_HEARTBEAT
     echo "   <AuthenticationCertificate>${CERT_SERVER}</AuthenticationCertificate>" >> $BODY_HEARTBEAT
+    append_telemetry $BODY_HEARTBEAT
     echo "</AgentTopologyRequest>" >> $BODY_HEARTBEAT
 
-    RET_CODE=`curl --insecure \
+    REQ_DATE=`date +%Y-%m-%dT%T.%N%:z`
+    RET_CODE=`curl --header "x-ms-Date: $REQ_DATE"
+        --header "User-Agent: omsagent 0.6" \
+        --header "Accept-Language: en-US" \
+        --insecure \
         --data-binary @$BODY_HEARTBEAT \
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_HEARTBEAT" $CURL_VERBOSE \
