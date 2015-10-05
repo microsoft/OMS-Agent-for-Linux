@@ -19,12 +19,18 @@ $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
-RUBY_DEST_DIR := $(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
+
+ifeq ($(ULINUX),1)
+# TODO: I don't think it matters which version of Ruby we link Libomi.so against, BUT VERIFY THIS!!!!!!!
+RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/098/ruby
+else
+RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
+endif
 
 # Compiler flags
 
@@ -72,7 +78,7 @@ RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DES
 OMS_BUILDVERSION_MAJOR := 1
 OMS_BUILDVERSION_MINOR := 0
 OMS_BUILDVERSION_PATCH := 0
-OMS_BUILDVERSION_BUILDNR := 2
+OMS_BUILDVERSION_BUILDNR := 10
 
 ifeq ($(ULINUX),1)
   OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).universal.$(PF_ARCH)
@@ -126,7 +132,15 @@ $(RUBY_DEST_DIR) :
 	#
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
-	$(BASE_DIR)/build/buildRuby.sh
+ifeq ($(ULINUX),1)
+	@$(ECHO) "========================= Performing Building Ruby for SSL v0.9.8 ..."
+	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh 098
+	@$(ECHO) "========================= Performing Building Ruby for SSL v1.0.0 ..."
+	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh 100
+else
+	@$(ECHO) "========================= Performing Building Ruby"
+	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh
+endif
 
 #================================================================================
 # Internal functions
@@ -178,10 +192,11 @@ kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 ifeq ($(ULINUX),1)
 
-	@echo "========================= Performing Building RPM and DPKG packages"
+	@echo "========================= Performing Building RPM/DPKG packages (SSL 0.9.8)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
+	$(MKPATH) $(TARGET_DIR)/098
+
 	sudo $(RMDIR) $(STAGING_DIR)
-	$(MKPATH) $(TARGET_DIR)
 	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
 		--TARGET_DIR=$(TARGET_DIR) \
@@ -189,7 +204,7 @@ ifeq ($(ULINUX),1)
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
 		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
-		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/ruby \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/098/ruby \
 		--RUBY_ARCH=$(RUBY_ARCH) \
 		--RUBY_ARCM=$(RUBY_ARCM) \
 		--PFARCH=$(PF_ARCH) \
@@ -201,9 +216,9 @@ ifeq ($(ULINUX),1)
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_RPM)
+	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098
 
 	sudo $(RMDIR) $(STAGING_DIR)
-	$(MKPATH) $(TARGET_DIR)
 	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
 		--TARGET_DIR=$(TARGET_DIR) \
@@ -211,7 +226,7 @@ ifeq ($(ULINUX),1)
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
 		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
-		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/ruby \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/098/ruby \
 		--RUBY_ARCH=$(RUBY_ARCH) \
 		--RUBY_ARCM=$(RUBY_ARCM) \
 		--PFARCH=$(PF_ARCH) \
@@ -224,13 +239,65 @@ ifeq ($(ULINUX),1)
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)
+	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(TARGET_DIR)/098
+
+	@echo "========================= Performing Building RPM/DPKG packages (SSL 1.0)"
+	$(MKPATH) $(INSTALLER_TMPDIR)
+	$(MKPATH) $(TARGET_DIR)/100
+
+	sudo $(RMDIR) $(STAGING_DIR)
+	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
+		--BASE_DIR=$(BASE_DIR) \
+		--TARGET_DIR=$(TARGET_DIR) \
+		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
+		--STAGING_DIR=$(STAGING_DIR) \
+		--BUILD_TYPE=$(BUILD_TYPE) \
+		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/100/ruby \
+		--RUBY_ARCH=$(RUBY_ARCH) \
+		--RUBY_ARCM=$(RUBY_ARCM) \
+		--PFARCH=$(PF_ARCH) \
+		--PFDISTRO=$(PF_DISTRO) \
+		--PFMAJOR=$(PF_MAJOR) \
+		--PFMINOR=$(PF_MINOR) \
+		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
+		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
+		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
+		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
+		$(INSTALLER_DATAFILES_RPM)
+	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/100
+
+	sudo $(RMDIR) $(STAGING_DIR)
+	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
+		--BASE_DIR=$(BASE_DIR) \
+		--TARGET_DIR=$(TARGET_DIR) \
+		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
+		--STAGING_DIR=$(STAGING_DIR) \
+		--BUILD_TYPE=$(BUILD_TYPE) \
+		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/100/ruby \
+		--RUBY_ARCH=$(RUBY_ARCH) \
+		--RUBY_ARCM=$(RUBY_ARCM) \
+		--PFARCH=$(PF_ARCH) \
+		--PFDISTRO=$(PF_DISTRO) \
+		--PFMAJOR=$(PF_MAJOR) \
+		--PFMINOR=$(PF_MINOR) \
+		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
+		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
+		$(DPKG_LOCATION) \
+		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
+		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
+		$(INSTALLER_DATAFILES_DPKG)
+	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(TARGET_DIR)/100
 
 	# Build the tar file containing both .rpm and .deb packages
-	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar $(OUTPUT_PACKAGE_PREFIX).rpm $(OUTPUT_PACKAGE_PREFIX).deb
+	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar \
+		098/$(OUTPUT_PACKAGE_PREFIX).rpm 098/$(OUTPUT_PACKAGE_PREFIX).deb \
+		100/$(OUTPUT_PACKAGE_PREFIX).rpm 100/$(OUTPUT_PACKAGE_PREFIX).deb
 
 else
 
-	@echo "========================= Performing Building RPM and DPKG packages"
+	@echo "========================= Performing Building installation package"
 	$(MKPATH) $(INSTALLER_TMPDIR)
 	sudo $(RMDIR) $(STAGING_DIR)
 	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \

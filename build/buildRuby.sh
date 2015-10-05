@@ -4,7 +4,50 @@
 #       support arrays. If we ever port to UNIX, we'll need to handle this in a
 #       different way (or make sure bash is on our build systems).
 
+#
+# Usage: buildRuby.sh <parameters>
+#
+#   Parameters may be one of:
+#       "100": Build for SSL v1.0.0
+#       "098": Build for SSL v0.9.8
+#       blank: Build for the local system
+#       
+
 set -e
+
+SSL_VERSION=$1
+
+# The sudo command will not preserve many environment variables, and we require
+# that at least LD_LIBRARY_PATH is preserved to build with different versions
+# of SSL. The "elevate" command will use SUDO, but will preserve specific
+# environment variables.
+
+elevate()
+{
+    local ENV_FILE=/tmp/$USER-elevate-$$.env
+    local SUDO_FILE=/tmp/$USER-elevate-$$.sh
+
+    rm -f $ENV_FILE $SUDO_FILE
+
+    # Write out the environment variables to preserve
+    echo "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\"" >> $ENV_FILE
+
+    # Write out the actual script that will be sudo elevated
+    echo "#! /bin/bash" >> $SUDO_FILE
+    echo >> $SUDO_FILE
+    echo "source $ENV_FILE" >> $SUDO_FILE
+    echo $@ >> $SUDO_FILE
+
+    # Now run the command to elevate
+    chmod +x $SUDO_FILE
+    sudo $SUDO_FILE
+    exit_status=$?
+
+    # Cleanup
+    rm -f $ENV_FILE $SUDO_FILE
+
+    return $exit_status
+}
 
 # Helper script to build Ruby properly for OMS agent
 # Also builds fluentd since it lives under the Ruby directory
@@ -26,13 +69,45 @@ fi
 
 . ${BASE_DIR}/build/config.mak
 
+if [ -z "${BUILD_CONFIGURATION}" ]; then
+    echo "Fatal: Configuration file error; \$BUILD_CONFIGURATION not properly defined" >& 2
+    exit 1
+fi
+
 # There may be multiple entires on the configure line; just get the one we need
 RUBY_DESTDIR=`echo "${RUBY_CONFIGURE_QUALS[@]}" | sed "s/ /\n/g" | grep -- "--prefix=" | cut -d= -f2`
+
+# Modify Ruby build configuration as necessary for SSL version
+
+case $SSL_VERSION in
+    098)
+        INT_APPEND_DIR="/${SSL_VERSION}"
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_098[@]}" "${RUBY_CONFIGURE_QUALS[@]}" )
+
+        export LD_LIBRARY_PATH=$SSL_098_LIBPATH:$LD_LIBRARY_PATH
+        ;;
+
+    100)
+        INT_APPEND_DIR="/${SSL_VERSION}"
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" )
+
+        export LD_LIBRARY_PATH=$SSL_100_LIBPATH:$LD_LIBRARY_PATH
+        ;;
+
+    *)
+        INT_APPEND_DIR=""
+
+        if [ -n "$SSL_VERSION" ]; then
+            echo "Invalid parameter passed: Must be 098, 100, or blank" >& 2
+            exit 1
+        fi	    
+esac
 
 echo "Beginning Ruby build process ..."
 echo "  Build directory:   ${BASE_DIR}"
 echo "  Ruby sources:      ${RUBY_SRCDIR}"
 echo "  Ruby destination:  ${RUBY_DESTDIR}"
+echo "  Configuration:     ${RUBY_CONFIGURE_QUALS[@]}"
 
 # Did we pick up Ruby destintion directory properly?
 
@@ -102,12 +177,12 @@ echo "Running Ruby unit tests ..."
 make test
 
 echo "Running Ruby install ..."
-sudo make install
+elevate make install
 
 export PATH=${RUBY_DESTDIR}/bin:$PATH
 
 echo "Installing Bundler into Ruby ..."
-sudo ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
 # Now do what we need for FluentD
 
@@ -124,19 +199,24 @@ echo "========================= Performing Building FluentD"
 cd ${FLUENTD_DIR}
 bundle install --local
 bundle exec rake build
-sudo ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
+elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
 
 echo "========================= Performing Running MSFT Unit Tests"
-pushd ${PLUGIN_TESTDIR}
+
+cd ${PLUGIN_TESTDIR}
 # TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
 ${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/nagios_log_parser_test.rb
 ${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/omi_lib_test.rb 
-popd
 
 echo "========================= Performing Moving Ruby to intermediate directory"
-mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}
-sudo rm -rf ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}/ruby
-sudo mv ${RUBY_DESTDIR} ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}
+
+# Variable ${INT_APPEND_DIR} will either be blank, or something like "/100"
+mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
+sudo rm -rf ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}/ruby
+sudo mv ${RUBY_DESTDIR} ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
 sudo rm -rf ${OMS_AGENTDIR}
+
+# Pacify Make (Make doesn't know that the generated Ruby directory can vary)
+mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}/ruby
 
 exit 0
