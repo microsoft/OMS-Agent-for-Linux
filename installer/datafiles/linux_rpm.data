@@ -3,6 +3,11 @@ PERFORMING_UPGRADE_NOT: '[ "$1" -ne 1 ]'
 PACKAGE_TYPE: 'RPM'
 
 %Dependencies
+%% In omsadmin.sh: 'curl' requires 'curl',
+%%                 'uuidgen' requires 'util-linux' or 'util-linux-ng' (preinstall),
+%%                 'xxd' requires 'vim' or 'vim-common' (preinstall)
+curl
+
 omi >= 1.0.8-2
 scx >= 1.6.1-100
 
@@ -11,3 +16,20 @@ scx >= 1.6.1-100
 
 %Files
 /etc/sudoers.d/omsagent;                                                installer/conf/sudoers;                                440; root; root
+
+%Preinstall_100
+PREINSTALL_VALIDATION_FAILED=0
+
+which xxd > /dev/null 2> /dev/null
+if [ $? -ne 0 ]; then
+    echo “Program ‘xxd’ is not installed, aborting installation. Please install ‘vim’ or ‘vim-common’ and reinstall omsagent.”
+    PREINSTALL_VALIDATION_FAILED=1
+fi
+
+which uuidgen > /dev/null 2> /dev/null
+if [ $? -ne 0 ]; then
+    echo “Program ‘uuidgen’ is not installed, aborting installation. Please install 'util-linux' or 'util-linux-ng' and reinstall omsagent.”
+    PREINSTALL_VALIDATION_FAILED=1
+fi
+
+[ $PREINSTALL_VALIDATION_FAILED -ne 0 ] && exit 1
