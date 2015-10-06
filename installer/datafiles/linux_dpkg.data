@@ -9,7 +9,7 @@ uuid-runtime
 vim-common
 
 omi (>= 1.0.8-2)
-scx (>= 1.6.1-100)
+scx (>= 1.6.1-110)
 
 %Directories
 /etc/sudoers.d;                                         755; root; root; sysdir
