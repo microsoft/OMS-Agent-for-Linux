@@ -98,7 +98,14 @@ class OmiLib_Test < Test::Unit::TestCase
 			"Physical Disk Physical Disk Bytes/sec",
 			"Physical Disk Avg. Disk sec/Transfer",
 			"Physical Disk Avg. Disk sec/Read",
-			"Physical Disk Avg. Disk sec/Write"
+			"Physical Disk Avg. Disk sec/Write",
+			"Container Processor Usage sec",
+			"Container % Processor Time",
+			"Container Memory Usage MB",
+			"Container Network Receive Bytes",
+			"Container Network Send Bytes",
+			"Container Disk Reads MB",
+			"Container Disk Writes MB"
 		]
 	
 		# Test SCX_ProcessorStatisticalInformation
@@ -121,7 +128,10 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_disk_record = [{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"sda","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"},{"CounterName":"Avg. Disk sec/Transfer","Value":"0"},{"CounterName":"Avg. Disk sec/Read","Value":"0"},{"CounterName":"Avg. Disk sec/Write","Value":"0"}]},{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"_Total","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"},{"CounterName":"Avg. Disk sec/Transfer","Value":"0"},{"CounterName":"Avg. Disk sec/Read","Value":"0"},{"CounterName":"Avg. Disk sec/Write","Value":"0"}]}]
 		transform_validate_records_helper(expected_disk_record, disk_input_record, all_performance_counters, "Disk Input Class Failed!")
 		
-		# TODO: Add docker test
+		# Test Container_ContainerStatistics
+		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedPct"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
+		expected_container_record = [{"Host":"testhost","ObjectName":"Container","InstanceName":"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","Collections":[{"CounterName":"Processor Usage sec","Value":"5"},{"CounterName":"% Processor Time","Value":"1"},{"CounterName":"Memory Usage MB","Value":"64"},{"CounterName":"Network Receive Bytes","Value":"256"},{"CounterName":"Network Send Bytes","Value":"256"},{"CounterName":"Disk Reads MB","Value":"10"},{"CounterName":"Disk Writes MB","Value":"2"}]}]
+		transform_validate_records_helper(expected_container_record, container_perf_record, all_performance_counters, "Container Input Class Failed!")
 	end
 	
 	def test_transform_class_returns_valid_record_filter_counters
@@ -129,7 +139,8 @@ class OmiLib_Test < Test::Unit::TestCase
 			'Processor % Processor Time',
 			'Memory Available MBytes Memory',
 			'Logical Disk % Free Inodes',
-			'Physical Disk Physical Disk Bytes/sec'
+			'Physical Disk Physical Disk Bytes/sec',
+			"Container Processor Usage sec"
 		]		
 
 		# Test filtered SCX_ProcessorStatisticalInformation
@@ -152,8 +163,10 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_disk_record = [{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"sda","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"}]},{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"_Total","Collections":[{"CounterName":"Physical Disk Bytes/sec","Value":"0"}]}]
 		transform_validate_records_helper(expected_disk_record, disk_input_record, filtered_performance_counters, "Disk Filtered Input Class Failed!")
 		
-		# TODO: Add docker filter test
-
+		# Test Container_ContainerStatistics
+		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedPct"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
+		expected_container_record = [{"Host":"testhost","ObjectName":"Container","InstanceName":"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","Collections":[{"CounterName":"Processor Usage sec","Value":"5"}]}]
+		transform_validate_records_helper(expected_container_record, container_perf_record, filtered_performance_counters, "Filtered Container Input Class Failed!")
 	end
 
 	def test_transform_class_returns_valid_record_filter_out_all_counters
@@ -177,7 +190,9 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_disk_record = [{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"sda","Collections":[]},{"Host":"testhost","ObjectName":"Physical Disk","InstanceName":"_Total","Collections":[]}]
 		transform_validate_records_helper(expected_disk_record, disk_input_record, [], "Disk Filtered Input Class Failed!")
 		
-		# TODO: Add docker no perf counters selected test
-
-	end	
+		# Test Container_ContainerStatistics
+		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedPct"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
+		expected_container_record = [{"Host":"testhost","ObjectName":"Container","InstanceName":"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","Collections":[]}]
+		transform_validate_records_helper(expected_container_record, container_perf_record, [], "Container Input Class with no counters Failed!")
+	end
 end

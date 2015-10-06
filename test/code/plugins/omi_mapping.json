@@ -161,4 +161,40 @@
       "CounterName": "Avg. Disk sec/Write"
     }
   ]
+},
+{
+	"CimClassName": "Container_ContainerStatistics",
+	"ObjectName": "Container",
+	"InstanceProperty": "InstanceID",
+	"CimProperties":
+	[
+		{
+			"CimPropertyName": "CPUTotal",
+			"CounterName": "Processor Usage sec"
+		},
+		{
+			"CimPropertyName": "CPUTotalPct",
+			"CounterName": "% Processor Time"
+		},
+		{
+			"CimPropertyName": "MemUsedPct",
+			"CounterName": "Memory Usage MB"
+		},
+		{
+			"CimPropertyName": "NetRXBytes",
+			"CounterName": "Network Receive Bytes"
+		},
+		{
+			"CimPropertyName": "NetTXBytes",
+			"CounterName": "Network Send Bytes"
+		},
+		{
+			"CimPropertyName": "DiskBytesRead",
+			"CounterName": "Disk Reads MB"
+		},
+		{
+			"CimPropertyName": "DiskBytesWritten",
+			"CounterName": "Disk Writes MB"
+		}
+	]
 }]
