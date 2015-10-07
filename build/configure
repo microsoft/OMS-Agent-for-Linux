@@ -109,8 +109,6 @@ fi
 
 # TODO: Bundler requires openssl ... need to figure out how to deal with this!
 
-RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
-
 for opt
 do
 
@@ -340,11 +338,16 @@ fi
 # Determine Ruby configuration based on our configuration
 # TODO: This will have to change with SSL 0.9.8 support
 
+RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
+
 ruby_configure_quals=(
     --disable-install-doc
     --without-gmp
     --with-out-ext=${RUBY_EXTENSIONS}
-    --prefix=/opt/microsoft/omsagent/ruby )
+     )
+
+ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
+ruby_config_quals_testins="--prefix=/usr/local/ruby-2.2.0"
 
 if [ "$ULINUX" = "1" ]; then
     ssl_098_dirpath=/usr/local_ssl_0.9.8
@@ -377,6 +380,8 @@ BUILD_CONFIGURATION=$BUILD_CONFIGURATION
 PACKAGE_SUFFIX=$PKG_SUFFIX
 
 RUBY_CONFIGURE_QUALS=( ${ruby_configure_quals[@]} )
+RUBY_CONFIGURE_QUALS_SYSINS="$ruby_config_quals_sysins"
+RUBY_CONFIGURE_QUALS_TESTINS="$ruby_config_quals_testins"
 EOF
 
 if [ "$ULINUX" = "1" ]; then

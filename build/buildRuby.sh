@@ -5,17 +5,18 @@
 #       different way (or make sure bash is on our build systems).
 
 #
-# Usage: buildRuby.sh <parameters>
+# Usage: buildRuby.sh <parameter>
 #
-#   Parameters may be one of:
+#   Parameter may be one of:
 #       "100": Build for SSL v1.0.0
 #       "098": Build for SSL v0.9.8
 #       blank: Build for the local system
+#       test:  Build for test purposes
 #       
 
 set -e
 
-SSL_VERSION=$1
+BUILD_CONFIGURATION=$1
 
 # The sudo command will not preserve many environment variables, and we require
 # that at least LD_LIBRARY_PATH is preserved to build with different versions
@@ -74,34 +75,48 @@ if [ -z "${BUILD_CONFIGURATION}" ]; then
     exit 1
 fi
 
-# There may be multiple entires on the configure line; just get the one we need
-RUBY_DESTDIR=`echo "${RUBY_CONFIGURE_QUALS[@]}" | sed "s/ /\n/g" | grep -- "--prefix=" | cut -d= -f2`
-
 # Modify Ruby build configuration as necessary for SSL version
+# (Only one parameter is valid for us; verify this)
 
-case $SSL_VERSION in
+if [ $# -gt 1 ]; then
+    echo "$0: Invalid option (see comments for usage)" >& 2
+    exit 1
+fi
+
+RUNNING_FOR_TEST=0
+
+case $BUILD_CONFIGURATION in
+    test)
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
+        RUNNING_FOR_TEST=1
+	;;
+
     098)
-        INT_APPEND_DIR="/${SSL_VERSION}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_098[@]}" "${RUBY_CONFIGURE_QUALS[@]}" )
+        INT_APPEND_DIR="/${BUILD_CONFIGURATION}"
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_098[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_098_LIBPATH:$LD_LIBRARY_PATH
         ;;
 
     100)
-        INT_APPEND_DIR="/${SSL_VERSION}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" )
+        INT_APPEND_DIR="/${BUILD_CONFIGURATION}"
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_100_LIBPATH:$LD_LIBRARY_PATH
         ;;
 
     *)
         INT_APPEND_DIR=""
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
-        if [ -n "$SSL_VERSION" ]; then
-            echo "Invalid parameter passed: Must be 098, 100, or blank" >& 2
+        if [ -n "$BUILD_CONFIGURATION" ]; then
+            echo "Invalid parameter passed: Must be test, 098, 100, or blank" >& 2
             exit 1
-        fi	    
+        fi
 esac
+
+# There are multiple entires on the configure line; just get the one we need
+RUBY_DESTDIR=`echo "${RUBY_CONFIGURE_QUALS[@]}" | sed "s/ /\n/g" | grep -- "--prefix=" | cut -d= -f2`
 
 echo "Beginning Ruby build process ..."
 echo "  Build directory:   ${BASE_DIR}"
@@ -184,6 +199,12 @@ export PATH=${RUBY_DESTDIR}/bin:$PATH
 echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
+# Eliminate coverage bundle until we can work out UTF issues
+# if [ $RUNNING_FOR_TEST -ne 0 ]; then
+    # echo "Installing Coverage into Ruby ..."
+    # elevate ${RUBY_DESTDIR}/bin/gem install coverage
+# fi
+
 # Now do what we need for FluentD
 
 cd ${FLUENTD_DIR}
@@ -201,22 +222,25 @@ bundle install --local
 bundle exec rake build
 elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
 
-echo "========================= Performing Running MSFT Unit Tests"
+if [ $RUNNING_FOR_TEST -eq 0 ]; then
 
-cd ${PLUGIN_TESTDIR}
-# TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
-${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/nagios_log_parser_test.rb
-${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/omi_lib_test.rb 
+    echo "========================= Performing Running MSFT Unit Tests"
 
-echo "========================= Performing Moving Ruby to intermediate directory"
+    cd ${PLUGIN_TESTDIR}
+    # TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
+    ${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/nagios_log_parser_test.rb
+    ${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/omi_lib_test.rb 
 
-# Variable ${INT_APPEND_DIR} will either be blank, or something like "/100"
-mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
-sudo rm -rf ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}/ruby
-sudo mv ${RUBY_DESTDIR} ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
-sudo rm -rf ${OMS_AGENTDIR}
+    echo "========================= Performing Moving Ruby to intermediate directory"
 
-# Pacify Make (Make doesn't know that the generated Ruby directory can vary)
-mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}/ruby
+    # Variable ${INT_APPEND_DIR} will either be blank, or something like "/100"
+    mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
+    sudo rm -rf ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}/ruby
+    sudo mv ${RUBY_DESTDIR} ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
+    sudo rm -rf ${OMS_AGENTDIR}
+
+    # Pacify Make (Make doesn't know that the generated Ruby directory can vary)
+    mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}/ruby
+fi
 
 exit 0

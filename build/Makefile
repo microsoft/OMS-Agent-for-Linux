@@ -9,9 +9,9 @@ OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
 SCXPAL_DIR := $(shell cd ../../pal; pwd -P)
 
 PF_POSIX := 1
-include $(SCXPAL_DIR)/build/config.mak
+#include $(SCXPAL_DIR)/build/config.mak
 include $(BASE_DIR)/build/config.mak
-#include $(BASE_DIR)/build/Makefile.version
+include $(BASE_DIR)/build/Makefile.version
 include $(SCXPAL_DIR)/build/Makefile.pal
 
 ifndef ENABLE_DEBUG
@@ -31,6 +31,9 @@ RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/098/ruby
 else
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
 endif
+
+# Version of Ruby for test purposes only
+RUBY_TESTING_DIR := $(shell echo "$(RUBY_CONFIGURE_QUALS_TESTINS)" | cut -d= -f2)
 
 # Compiler flags
 
@@ -73,13 +76,6 @@ OMI_INCLUDES := -I$(OMI_ROOT) -I$(OMI_ROOT)/common -I$(OMI_ROOT)/common/linux -I
 PAL_INCLUDES := -I$(SCXPAL_DIR)/source/code/include/util
 RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DEST_DIR)/include/ruby-2.2.0
 
-# Hack until we have formal versioning from build system
-
-OMS_BUILDVERSION_MAJOR := 1
-OMS_BUILDVERSION_MINOR := 0
-OMS_BUILDVERSION_PATCH := 0
-OMS_BUILDVERSION_BUILDNR := 11
-
 ifeq ($(ULINUX),1)
   OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).universal.$(PF_ARCH)
 else
@@ -91,7 +87,7 @@ endif
 # Build targets
 .PHONY: all clean clean-ruby distclean clean-status plugins-status kit
 
-all : $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
+all : $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
@@ -126,6 +122,15 @@ clean-status :
 	@$(ECHO) "========================= Performing make clean"
 
 #--------------------------------------------------------------------------------
+# Build the version of Ruby that we test with
+
+$(RUBY_TESTING_DIR) :
+	#
+	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
+	#
+	@$(ECHO) "========================= Performing Building Ruby for testing"
+	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh test
+
 # Build the version of Ruby that we distribute
 
 $(RUBY_DEST_DIR) :
