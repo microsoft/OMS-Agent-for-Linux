@@ -141,7 +141,7 @@ fi
 # version of Ruby to do this to protect against Ruby version differences in how
 # that is handled.
 
-if [ -d ${OMS_AGENTDIR} ]; then
+if [ -d ${OMS_AGENTDIR} -a ${RUNNING_FOR_TEST} -eq 0 ]; then
     echo "FATAL: OMS agent is already installed at '${OMS_AGENTDIR}'! Must remove agent to build agent ..." >& 2
     exit 1
 fi
