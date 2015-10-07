@@ -2,6 +2,7 @@
 
 scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
 scxpal_dir=`(cd ../../pal; pwd -P)`
+scxcim_dir=`(cd ../../opsmgr; pwd -P)`
 
 enable_debug=""
 enable_debug_flag=0
@@ -14,11 +15,18 @@ build_type=Release
 ULINUX=0
 NOULINIX=0
 
-# Default OMI qualifiers for build purposes
-omi_configure_quals="--prefix=/opt/omi --localstatedir=/var/opt/omi --sysconfdir=/etc/opt/omi/conf --certsdir=/etc/opt/omi/ssl"
-
 if [ ! -d "$scxomi_dir" ]; then
     echo "OMI directory ($scxomi_dir) does not exist" >& 2
+    exit 1
+fi
+
+if [ ! -d "$scxpal_dir" ]; then
+    echo "PAL directory ($scxpal_dir) does not exist" >& 2
+    exit 1
+fi
+
+if [ ! -d "$scxcim_dir" ]; then
+    echo "SCX directory ($scxcim_dir) does not exist" >& 2
     exit 1
 fi
 
@@ -46,6 +54,10 @@ fi
 
 # Note: Ruby has optimization issues with g++ v4.1.2 due to G++ bug # 18251:
 #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=18251
+#
+# This appears to mostly affect 32-bit platforms. So if we're using an old
+# compiler, warn of this at the end of configure and build Ruby with
+# optimization disabled.
 
 gcc_compiler_bug_18251_resolved() {
     # POSIX Semantic Version <= Test
@@ -57,13 +69,11 @@ gcc_compiler_bug_18251_resolved() {
     local MAJOR=`echo $1 | cut -d. -f1`
     local MINOR=`echo $1 | cut -d. -f2`
     local PATCH=`echo $1 | cut -d. -f3`
-    local DATE=$2
 
     # Version with the compiler bug
     local TEST_MAJOR=4
     local TEST_MINOR=1
     local TEST_PATCH=2
-    local TEST_DATE=20070525
 
     # Check bounds on MAJOR
     if [ $MAJOR -lt $TEST_MAJOR ]; then
@@ -86,28 +96,36 @@ gcc_compiler_bug_18251_resolved() {
         return 1
     fi
 
-    # What about the build date?
-    if [ $DATE -lt $TEST_DATE ]; then
-        return 0
-    fi
-
     # GCC version includes fix for compiler bug
     return 1
 }
 
-GCC_VERSION=`g++ --version | head -1 | awk '{print $3, $4}'`
+number_of_bits() {
+    # Always favor 64-bit if we get something unanticipated
+    case `uname -m` in
+        *64*)
+            echo "64"
+            ;;
+        *86* | *athlon*)
+            echo "32"
+            ;;
+        *)
+            echo "64"
+            ;;
+        esac
+}
 
+GCC_VERSION=`g++ --version | head -1 | sed 's/([^)]*)//' | awk '{print $2}'`
+
+NOOPTIMIZE=0
 gcc_compiler_bug_18251_resolved $GCC_VERSION
-if [ $? -eq 0 ]; then
-    echo "ERROR: Can't build Ruby due to compiler bug #18251" >& 2
-    exit 1
+if [ $? -eq 0 -a `number_of_bits` -eq 32 ]; then
+    NOOPTIMIZE=1
 fi
 
 # List of ruby extensions. Disable everything, remove if:
 #   1. We absolutely need something, and
 #   2. We can guarantee (and insure) machine requirements for extension (at both build-time and run-time)
-
-# TODO: Bundler requires openssl ... need to figure out how to deal with this!
 
 for opt
 do
@@ -135,6 +153,7 @@ do
           echo "Conflicting qualifers: --enable-ulinux and --noenable-ulinux can't be specified together" >& 2
           exit 1
       fi
+      enable_ulinux="--enable-ulinux"
       ULINUX=1
     ;;
 
@@ -188,8 +207,7 @@ EOF
     exit 0
 fi
 
-omi_configure_quals="${enable_debug} ${enable_omi_tools} ${omi_configure_quals}"
-pal_configure_quals="${enable_debug}"
+scx_configure_quals="${enable_debug} ${enable_ulinux}"
 
 if [ "$ULINUX" -eq 1 -a "$opensource_distro" -eq 1 ]; then
     echo "*** ULINUX not permitted for open source distributions; ULINUX disabled ***" >& 2
@@ -199,19 +217,6 @@ fi
 if [ "$opensource_distro" -eq 1 ]; then
     # We really don't want ULINUX, not even defaulted
     NOULINUX=1
-fi
-
-# See if we're running on a CentOS 5.1 or RedHat 5.1 (universal) system; if so, assume ULINUX
-
-if [ "$NOULINUX" != "1" ]; then
-    if [ -e /etc/redhat-release -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then 
-        PF_MAJOR=`head -n 1 /etc/redhat-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
-        PF_MINOR=`(head -n 1 /etc/redhat-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
-        # Note: CentOS 5.1 identifies itself as CentOS 5
-        if [ "$PF_MAJOR" -eq "5" -a "$PF_MINOR" -eq "0" ]; then
-            ULINUX=1
-        fi
-    fi
 fi
 
 # And we need our local SSL directories to be able to deal with ULINUX
@@ -336,7 +341,6 @@ else
 fi
 
 # Determine Ruby configuration based on our configuration
-# TODO: This will have to change with SSL 0.9.8 support
 
 RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
 
@@ -345,6 +349,10 @@ ruby_configure_quals=(
     --without-gmp
     --with-out-ext=${RUBY_EXTENSIONS}
      )
+
+if [ $NOOPTIMIZE -eq 1 ]; then
+    ruby_configure_quals=( CFLAGS=-O1 CXXFLAGS=-O1 ${ruby_configure_quals[@]} )
+fi
 
 ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
 ruby_config_quals_testins="--prefix=/usr/local/ruby-2.2.0"
@@ -363,7 +371,6 @@ fi
 
 cat <<EOF > config.mak
 ENABLE_DEBUG=$enable_debug_flag
-OMI_CONFIGURE_QUALS="$omi_configure_quals"
 
 BUILD_TYPE=$build_type
 PF=$PF
@@ -391,15 +398,15 @@ if [ "$ULINUX" = "1" ]; then
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
 fi
 
-# Fix permissions in case they aren't executable - and then configure OMI
-chmod ug+x ${scxomi_dir}/configure ${scxomi_dir}/buildtool
-(cd ${scxomi_dir} && ./configure ${omi_configure_quals})
-
-# Fix permissions in case they aren't executable - and then configure PAL
-chmod ug+x ${scxpal_dir}/build/configure
-(cd ${scxpal_dir}/build && ./configure ${pal_configure_quals})
+# Fix permissions in case they aren't executable - and then configure SCX
+chmod ug+x ${scxcim_dir}/build/configure
+(cd ${scxcim_dir}/build && ./configure ${scx_configure_quals})
 
 # Display some information for our own configuration
+if [ $NOOPTIMIZE -eq 1 ]; then
+    echo "Notice: Ruby will be built WITHOUT optimization!"
+fi
+
 if [ "$ULINUX" = "1" ]; then
     echo "Configured OMS for ULINUX build"
 else

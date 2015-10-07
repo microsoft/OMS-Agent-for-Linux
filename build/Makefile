@@ -6,17 +6,19 @@
 
 BASE_DIR := $(subst /build,,$(PWD))
 OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
-SCXPAL_DIR := $(shell cd ../../pal; pwd -P)
+PAL_DIR := $(shell cd ../../pal; pwd -P)
+SCX_DIR := $(shell cd ../../opsmgr; pwd -P)
 
 PF_POSIX := 1
-#include $(SCXPAL_DIR)/build/config.mak
 include $(BASE_DIR)/build/config.mak
 include $(BASE_DIR)/build/Makefile.version
-include $(SCXPAL_DIR)/build/Makefile.pal
+include $(PAL_DIR)/build/Makefile.pal
 
 ifndef ENABLE_DEBUG
 $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
+
+SCX_TARGET_DIR := $(SCX_DIR)/target/$(BUILD_CONFIGURATION)
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
@@ -27,10 +29,12 @@ INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
 
 ifeq ($(ULINUX),1)
-# TODO: I don't think it matters which version of Ruby we link Libomi.so against, BUT VERIFY THIS!!!!!!!
+# Doesn't matter what version of SSL/Ruby we use to compile or link the OMI plugin
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/098/ruby
+OMI_LIBRARY_DIR := $(OMI_ROOT)/output_openssl_0.9.8/lib
 else
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
+OMI_LIBRARY_DIR := $(OMI_ROOT)/output/lib
 endif
 
 # Version of Ruby for test purposes only
@@ -46,8 +50,7 @@ endif
 # Need to use RUBY_COMPILE_FLAGS when compiling code that uses C Ruby interfaces
 # (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.2.0)
 RUBY_COMPILE_FLAGS := $(DEBUG_FLAGS) -D_REENTRANT -fstack-protector-all -Wall -fno-nonansi-builtins -Woverloaded-virtual -Wformat -Wformat-security -Wcast-align -Wswitch-enum  -Wwrite-strings  -Werror -Wcast-qual -fPIC # -Wshadow -Wredundant-decls
-# TODO: Horrible, dismal, ugly hack for SSL. We need to figure out the SSL story soon!
-PLUGIN_LINK_LIBRARIES := -L$(OMI_ROOT)/output/lib -L$(OMI_ROOT)/output_openssl_0.9.8/lib -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
+PLUGIN_LINK_LIBRARIES := -L$(OMI_LIBRARY_DIR) -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
 SHARED_FLAGS := -shared
 
 # Support for installbuilder
@@ -66,7 +69,7 @@ INSTALLER_DATAFILES_CURRENT := $(INSTALLER_DATAFILES_DPKG)
 endif
 
 ifeq ("$(wildcard /usr/bin/dpkg-deb)","")
-DPKG_LOCATION="--DPKG_LOCATION=$(SCXPAL_DIR)/installer/InstallBuilder/tools/bin/dpkg-deb-$(PF_ARCH)"
+DPKG_LOCATION="--DPKG_LOCATION=$(PAL_DIR)/installer/InstallBuilder/tools/bin/dpkg-deb-$(PF_ARCH)"
 else
 DPKG_LOCATION=
 endif
@@ -75,7 +78,7 @@ endif
 IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/Libomi.so
 
 OMI_INCLUDES := -I$(OMI_ROOT) -I$(OMI_ROOT)/common -I$(OMI_ROOT)/common/linux -I$(OMI_ROOT)/base -I$(OMI_ROOT)/output/include
-PAL_INCLUDES := -I$(SCXPAL_DIR)/source/code/include/util
+PAL_INCLUDES := -I$(PAL_DIR)/source/code/include/util
 RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DEST_DIR)/include/ruby-2.2.0
 
 ifeq ($(ULINUX),1)
@@ -89,7 +92,7 @@ endif
 # Build targets
 .PHONY: all clean clean-ruby distclean clean-status plugins-status kit tests test
 
-all : $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
+all : $(SCX_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
@@ -111,17 +114,22 @@ clean-ruby :
 	#
 	@echo "Cleaning fluentd source directory ..."
 	find $(FLUENTD_DIR) -type f -perm -u+w -print -exec rm {} \;
-	#
-	# -make -C $(OMI_ROOT) distclean
-	# -make -C $(SCXPAL_DIR)/build distclean
-	# -$(RMDIR) $(OMI_ROOT)/output*
 
 distclean : clean clean-ruby
+	-make -C $(SCX_DIR)/build distclean
+	-$(RMDIR) $(OMI_ROOT)/output*
+
 	$(RM) $(BASE_DIR)/build/config.mak
-	-$(RM) $(SCXPAL_DIR)/build/config.mak
+	-$(RM) $(PAL_DIR)/build/config.mak
 
 clean-status :
 	@$(ECHO) "========================= Performing make clean"
+
+#--------------------------------------------------------------------------------
+# Build SCX project (special mode to only build the provider itself if ulinux)
+
+$(SCX_TARGET_DIR) : 
+	$(MAKE) -C $(SCX_DIR)/build all
 
 #--------------------------------------------------------------------------------
 # Build the version of Ruby that we test with
@@ -194,17 +202,18 @@ plugins-status :
 # While the "formal build" only builds ULINUX, we may build something else for DEV purposes.
 # Assume we ALWAYS build RPM, but only build DPKG if --enable-ulinux is speified in configure.
 
+ifeq ($(ULINUX),1)
+
 kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
-ifeq ($(ULINUX),1)
 
 	@echo "========================= Performing Building RPM/DPKG packages (SSL 0.9.8)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
 	$(MKPATH) $(TARGET_DIR)/098
 
 	sudo $(RMDIR) $(STAGING_DIR)
-	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
+	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
 		--TARGET_DIR=$(TARGET_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
@@ -226,7 +235,7 @@ ifeq ($(ULINUX),1)
 	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098
 
 	sudo $(RMDIR) $(STAGING_DIR)
-	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
+	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
 		--TARGET_DIR=$(TARGET_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
@@ -253,7 +262,7 @@ ifeq ($(ULINUX),1)
 	$(MKPATH) $(TARGET_DIR)/100
 
 	sudo $(RMDIR) $(STAGING_DIR)
-	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
+	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
 		--TARGET_DIR=$(TARGET_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
@@ -275,7 +284,7 @@ ifeq ($(ULINUX),1)
 	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/100
 
 	sudo $(RMDIR) $(STAGING_DIR)
-	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
+	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
 		--TARGET_DIR=$(TARGET_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
@@ -302,12 +311,20 @@ ifeq ($(ULINUX),1)
 		098/$(OUTPUT_PACKAGE_PREFIX).rpm 098/$(OUTPUT_PACKAGE_PREFIX).deb \
 		100/$(OUTPUT_PACKAGE_PREFIX).rpm 100/$(OUTPUT_PACKAGE_PREFIX).deb
 
+ifeq (0,1)
+	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX)
+endif
+
 else
+
+kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).$(PACKAGE_SUFFIX)
+
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).$(PACKAGE_SUFFIX) : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 
 	@echo "========================= Performing Building installation package"
 	$(MKPATH) $(INSTALLER_TMPDIR)
 	sudo $(RMDIR) $(STAGING_DIR)
-	python $(SCXPAL_DIR)/installer/InstallBuilder/installbuilder.py \
+	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
 		--TARGET_DIR=$(TARGET_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
@@ -327,13 +344,6 @@ else
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_CURRENT)
 
-	# Build the tar file containing the native installer package
-	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar $(OUTPUT_PACKAGE_PREFIX).$(PACKAGE_SUFFIX)
-
-endif
-
-ifeq (0,1)
-	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX)
 endif
 
 #--------------------------------------------------------------------------------
@@ -343,6 +353,10 @@ endif
 tests : test
 
 test : $(RUBY_TESTING_DIR)
+ifeq ($(ULINUX),1)
+	$(MAKE) -C $(SCX_DIR)/build test
+endif
+
 	@echo "========================= Performing Running MSFT Unit Tests"
 
 	# TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
