@@ -21,6 +21,7 @@ endif
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
+PLUGINS_TESTDIR := ${BASE_DIR}/test/code/plugins
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
@@ -34,6 +35,7 @@ endif
 
 # Version of Ruby for test purposes only
 RUBY_TESTING_DIR := $(shell echo "$(RUBY_CONFIGURE_QUALS_TESTINS)" | cut -d= -f2)
+RUBY_TESTING_EXE := $(RUBY_TESTING_DIR)/bin/ruby
 
 # Compiler flags
 
@@ -85,7 +87,7 @@ endif
 
 #--------------------------------------------------------------------------------
 # Build targets
-.PHONY: all clean clean-ruby distclean clean-status plugins-status kit
+.PHONY: all clean clean-ruby distclean clean-status plugins-status kit tests test
 
 all : $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
@@ -333,3 +335,18 @@ endif
 ifeq (0,1)
 	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX)
 endif
+
+#--------------------------------------------------------------------------------
+# Run unit tests
+#
+
+tests : test
+
+test : $(RUBY_TESTING_DIR)
+	@echo "========================= Performing Running MSFT Unit Tests"
+
+	# TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
+	cd ${PLUGINS_TESTDIR}; \
+	$(RUBY_TESTING_EXE) nagios_log_parser_test.rb; \
+	$(RUBY_TESTING_EXE) omi_lib_test.rb 
+

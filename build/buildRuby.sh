@@ -16,7 +16,7 @@
 
 set -e
 
-BUILD_CONFIGURATION=$1
+RUBY_BUILD_TYPE=$1
 
 # The sudo command will not preserve many environment variables, and we require
 # that at least LD_LIBRARY_PATH is preserved to build with different versions
@@ -59,8 +59,6 @@ OMS_AGENTDIR=/opt/microsoft/omsagent
 RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby
 FLUENTD_DIR=${BASE_DIR}/source/ext/fluentd
 
-PLUGIN_TESTDIR=${BASE_DIR}/test/code/plugins
-
 # Has configure script been run?
 
 if [ ! -f ${BASE_DIR}/build/config.mak ]; then
@@ -85,21 +83,21 @@ fi
 
 RUNNING_FOR_TEST=0
 
-case $BUILD_CONFIGURATION in
+case $RUBY_BUILD_TYPE in
     test)
         RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
         RUNNING_FOR_TEST=1
 	;;
 
     098)
-        INT_APPEND_DIR="/${BUILD_CONFIGURATION}"
+        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
         RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_098[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_098_LIBPATH:$LD_LIBRARY_PATH
         ;;
 
     100)
-        INT_APPEND_DIR="/${BUILD_CONFIGURATION}"
+        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
         RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_100_LIBPATH:$LD_LIBRARY_PATH
@@ -109,8 +107,8 @@ case $BUILD_CONFIGURATION in
         INT_APPEND_DIR=""
         RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
-        if [ -n "$BUILD_CONFIGURATION" ]; then
-            echo "Invalid parameter passed: Must be test, 098, 100, or blank" >& 2
+        if [ -n "$RUBY_BUILD_TYPE" ]; then
+            echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, 098, 100, or blank" >& 2
             exit 1
         fi
 esac
@@ -223,14 +221,6 @@ bundle exec rake build
 elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
 
 if [ $RUNNING_FOR_TEST -eq 0 ]; then
-
-    echo "========================= Performing Running MSFT Unit Tests"
-
-    cd ${PLUGIN_TESTDIR}
-    # TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
-    ${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/nagios_log_parser_test.rb
-    ${RUBY_DESTDIR}/bin/ruby ${PLUGIN_TESTDIR}/omi_lib_test.rb 
-
     echo "========================= Performing Moving Ruby to intermediate directory"
 
     # Variable ${INT_APPEND_DIR} will either be blank, or something like "/100"
