@@ -24,7 +24,10 @@ class OMIInput < Input
         time = Engine.now
         record_txt = @omi_interface.enumerate(@items)
         record = JSON.parse record_txt
-        router.emit(@tag, time, record)
+
+        if record.length > 0
+            router.emit(@tag, time, record)
+        end
     end
 
     def start
