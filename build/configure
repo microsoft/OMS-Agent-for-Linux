@@ -228,6 +228,14 @@ if [ $ULINUX -eq 1 ]; then
     fi
 fi
 
+if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then
+    echo "This appears to be a ULINUX system, but you're not doing a ULINUX build." >& 2
+    echo "Given that OMI makes assumptions based on these directories, there is an" >& 2
+    echo "extraordinarily good chance that your build will fail. You should do a" >& 2
+    echo "ULINUX build (--enable-ulinux) on this system." >& 2
+    exit 1
+fi
+
 # Note: Most of this code came from the PAL configure file
 
 set_ulinux_pf() 
