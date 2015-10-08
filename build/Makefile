@@ -23,7 +23,7 @@ SCX_TARGET_DIR := $(SCX_DIR)/target/$(BUILD_CONFIGURATION)
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
-PLUGINS_TESTDIR := ${BASE_DIR}/test/code/plugins
+TEST_DIR := ${BASE_DIR}/test
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
@@ -410,9 +410,12 @@ test : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
 
 	# TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
-	cd ${PLUGINS_TESTDIR}; \
+	cd $(TEST_DIR)/code/plugins; \
 	$(RUBY_TESTING_EXE) nagios_log_parser_test.rb; \
 	$(RUBY_TESTING_EXE) omi_lib_test.rb 
+
+	@echo "========================= Performing test omsadmin.sh"
+	bash $(TEST_DIR)/installer/scripts/test_omsadmin.sh $(BASE_DIR)
 
 ifeq ($(ULINUX),1)
 	$(MAKE) -C $(SCX_DIR)/build test

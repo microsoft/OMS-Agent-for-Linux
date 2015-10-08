@@ -2,22 +2,22 @@
 
 set -e
 
-# Folder for temporary generated files
 TMP_DIR=/var/opt/microsoft/omsagent/tmp
+CERT_DIR=/etc/opt/microsoft/omsagent/certs
+CONF_DIR=/etc/opt/microsoft/omsagent/conf
 
 # File with initial onboarding credentials
 FILE_ONBOARD=/etc/omsagent-onboard.conf
 
 # Generated conf file containing information for this script
-CONF_OMSADMIN=/etc/opt/microsoft/omsagent/conf/omsadmin.conf
+CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
 
 # Omsagent daemon configuration
-CONF_OMSAGENT=/etc/opt/microsoft/omsagent/conf/omsagent.conf
+CONF_OMSAGENT=$CONF_DIR/omsagent.conf
 
 # Certs
-FILE_KEY=/etc/opt/microsoft/omsagent/certs/oms.key
-FILE_CRT=/etc/opt/microsoft/omsagent/certs/oms.crt
-URL_TLD=opinsights.azure
+FILE_KEY=$CERT_DIR/oms.key
+FILE_CRT=$CERT_DIR/oms.crt
 
 BODY_ONBOARD=$TMP_DIR/body_onboard.xml
 RESP_ONBOARD=$TMP_DIR/resp_onboard.xml
@@ -27,6 +27,9 @@ RESP_HEARTBEAT=$TMP_DIR/resp_heartbeat.xml
 
 BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
 RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
+
+USER_AGENT="omsagent 0.7"
+URL_TLD=opinsights.azure
 
 WORKSPACE_ID=""
 AGENT_GUID=""
@@ -38,13 +41,13 @@ usage()
 {
     echo "Maintenance tool for OMS:"
     echo "Onboarding:"
-    echo "$0 -w <workspace id> -s <shared key>" >& 2
-    echo
+    echo "$0 -w <workspace id> -s <shared key>"
+    echo 
     echo "Heartbeat:"
-    echo "$0 -b" >& 2
+    echo "$0 -b"
     echo
     echo "Renew certificates:"
-    echo "$0 -r" >& 2
+    echo "$0 -r"
     clean_exit 1
 }
 
@@ -60,7 +63,7 @@ chown_omsagent()
 {
     # When this script is run as root, we still have to make sure the generated
     # files are owned by omsagent for everything to work properly
-    [ "$EUID" -eq 0 ] && chown omsagent:omsagent $@
+    [ "$EUID" -eq 0 ] && chown omsagent:omsagent $@ > /dev/null 2>&1
 }
 
 save_config()
@@ -195,7 +198,7 @@ append_telemetry()
 
     if [ ! -r $OS_INFO ]; then
         # This is not fatal, we simply proceed without the info
-        log_info "Could not read telemetry information from $OS_INFO"
+        log_warning "Unable to read file $OS_INFO; telemetry information will not be sent to server"
         return 1
     fi
 
@@ -214,16 +217,11 @@ append_telemetry()
 
 restart_omsagent()
 {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent restart
-    elif [ -x /sbin/service ]; then
-        /sbin/service omsagent restart
-    elif [ -x /usr/bin/systemctl ]; then
-        /usr/bin/systemctl restart omsagent
-    else
-        echo "Unrecognized service controller to restart omsagent service" 1>&2
-        clean_exit 1
-    fi
+    SERVICE_CONTROL=/opt/microsoft/omsagent/bin/service_control.sh
+    if [ -x $SERVICE_CONTROL ]; then
+        $SERVICE_CONTROL restart
+        [ $? -ne 0 ] && clean_exit 1
+    fi 
 }
 
 update_conf_endpoint()
@@ -233,7 +231,7 @@ update_conf_endpoint()
     chown_omsagent "$CONF_OMSAGENT"
 
     # Reload the conf by restarting the service
-    restart_omsagent
+    restart_omsagent 
 }
 
 onboard()
@@ -282,7 +280,7 @@ onboard()
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
         --header "Authorization: $WORKSPACE_ID; $AUTHORIZATION_KEY" \
-        --header "User-Agent: omsagent 0.6" \
+        --header "User-Agent: $USER_AGENT" \
         --header "Accept-Language: en-US" \
         --insecure \
         --data-binary @$BODY_ONBOARD \
@@ -317,8 +315,8 @@ heartbeat()
     echo "</AgentTopologyRequest>" >> $BODY_HEARTBEAT
 
     REQ_DATE=`date +%Y-%m-%dT%T.%N%:z`
-    RET_CODE=`curl --header "x-ms-Date: $REQ_DATE"
-        --header "User-Agent: omsagent 0.6" \
+    RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
+        --header "User-Agent: $USER_AGENT" \
         --header "Accept-Language: en-US" \
         --insecure \
         --data-binary @$BODY_HEARTBEAT \
