@@ -74,6 +74,16 @@ else
 DPKG_LOCATION=
 endif
 
+# Other packaging support
+
+ifeq ($(ULINUX),1)
+  ifeq ($(PF_ARCH),x86)
+    OSS_KITS := $(shell cd $(SCX_DIR)/installer/oss-kits; ls *-oss-test.sh *.i686.sh)
+  else ifeq ($(PF_ARCH),x64)
+    OSS_KITS := $(shell cd $(SCX_DIR)/installer/oss-kits; ls *-oss-test.sh *.x86_64.sh)
+  endif
+endif
+
 # Plugins
 IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/Libomi.so
 
@@ -206,9 +216,51 @@ ifeq ($(ULINUX),1)
 
 kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 
-$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
+	$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
+	$(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
 
-	@echo "========================= Performing Building RPM/DPKG packages (SSL 0.9.8)"
+	@echo "========================= Performing Building .tar file"
+
+	# Gather the OMI bits that we need and rename them in a non-SCX manner (easier to deal with)
+	# Note: We take care to only copy the latest version of OMI if there are multiple versions
+	$(RM) $(TARGET_DIR)/098/omi-*.{rpm,deb} $(TARGET_DIR)/100/omi-*.{rpm,deb}
+
+	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(TARGET_DIR)/098
+	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(TARGET_DIR)/098
+	cd $(TARGET_DIR)/098; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
+	cd $(TARGET_DIR)/098; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
+
+	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(TARGET_DIR)/100
+	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(TARGET_DIR)/100
+	cd $(TARGET_DIR)/100; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
+	cd $(TARGET_DIR)/100; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
+
+	# Gather the SCX bits that we need (due to scx-cimprov versioning; names are fine as is)
+	# Note: We take care to only copy the latest version if there are multiple versions
+	$(RM) $(TARGET_DIR)/098/scx-*.{rpm,deb} $(TARGET_DIR)/100/scx-*.{rpm,deb}
+
+	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.rpm | sort | tail -1` $(TARGET_DIR)/098
+	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.deb | sort | tail -1` $(TARGET_DIR)/098
+
+	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.rpm | sort | tail -1` $(TARGET_DIR)/100
+	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.deb | sort | tail -1` $(TARGET_DIR)/100
+
+	# Pick up the OSS (Open Source) providers
+	$(RMDIR) $(TARGET_DIR)/oss-kits
+	$(MKPATH) $(TARGET_DIR)/oss-kits
+	cd $(SCX_DIR)/installer/oss-kits; $(COPY) $(OSS_KITS) $(TARGET_DIR)/oss-kits
+
+	# Build the tar file containing both .rpm and .deb packages
+	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/*
+
+ifeq (0,1)
+	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX)
+endif
+
+
+$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm:
+	@echo "========================= Performing Building RPM package (SSL 0.9.8)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
 	$(MKPATH) $(TARGET_DIR)/098
 
@@ -234,6 +286,11 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 		$(INSTALLER_DATAFILES_RPM)
 	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098
 
+$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb:
+	@echo "========================= Performing Building DEB package (SSL 0.9.8)"
+	$(MKPATH) $(INSTALLER_TMPDIR)
+	$(MKPATH) $(TARGET_DIR)/098
+
 	sudo $(RMDIR) $(STAGING_DIR)
 	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
@@ -257,7 +314,8 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 		$(INSTALLER_DATAFILES_DPKG)
 	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(TARGET_DIR)/098
 
-	@echo "========================= Performing Building RPM/DPKG packages (SSL 1.0)"
+$(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm:
+	@echo "========================= Performing Building RPM package (SSL 1.0)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
 	$(MKPATH) $(TARGET_DIR)/100
 
@@ -283,6 +341,11 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 		$(INSTALLER_DATAFILES_RPM)
 	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/100
 
+$(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb:
+	@echo "========================= Performing Building DEB package (SSL 1.0)"
+	$(MKPATH) $(INSTALLER_TMPDIR)
+	$(MKPATH) $(TARGET_DIR)/100
+
 	sudo $(RMDIR) $(STAGING_DIR)
 	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
@@ -305,15 +368,6 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)
 	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(TARGET_DIR)/100
-
-	# Build the tar file containing both .rpm and .deb packages
-	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar \
-		098/$(OUTPUT_PACKAGE_PREFIX).rpm 098/$(OUTPUT_PACKAGE_PREFIX).deb \
-		100/$(OUTPUT_PACKAGE_PREFIX).rpm 100/$(OUTPUT_PACKAGE_PREFIX).deb
-
-ifeq (0,1)
-	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX)
-endif
 
 else
 
@@ -353,10 +407,6 @@ endif
 tests : test
 
 test : $(RUBY_TESTING_DIR)
-ifeq ($(ULINUX),1)
-	$(MAKE) -C $(SCX_DIR)/build test
-endif
-
 	@echo "========================= Performing Running MSFT Unit Tests"
 
 	# TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
@@ -364,3 +414,6 @@ endif
 	$(RUBY_TESTING_EXE) nagios_log_parser_test.rb; \
 	$(RUBY_TESTING_EXE) omi_lib_test.rb 
 
+ifeq ($(ULINUX),1)
+	$(MAKE) -C $(SCX_DIR)/build test
+endif
