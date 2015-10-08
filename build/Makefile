@@ -214,7 +214,11 @@ plugins-status :
 
 ifeq ($(ULINUX),1)
 
-kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
+kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh
+
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
+	@echo "========================= Performing Building shell bundle"
+	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
@@ -253,10 +257,6 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) 
 
 	# Build the tar file containing both .rpm and .deb packages
 	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/*
-
-ifeq (0,1)
-	../installer/bundle/create_bundle.sh $(PF)_$(PF_DISTRO) $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX)
-endif
 
 
 $(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm:
