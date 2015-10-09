@@ -215,23 +215,15 @@ append_telemetry()
     echo "   </OperatingSystem>" >> $1
 }
 
-restart_omsagent()
-{
-    SERVICE_CONTROL=/opt/microsoft/omsagent/bin/service_control.sh
-    if [ -x $SERVICE_CONTROL ]; then
-        $SERVICE_CONTROL restart
-        [ $? -ne 0 ] && clean_exit 1
-    fi 
-}
-
 update_conf_endpoint()
 {
     # Replace the endpoint in the omsagent conf. We replace the whole url in case of reonboarding.
     sed -i.bak "s,endpoint_url.*,endpoint_url https://${WORKSPACE_ID}.ods.${URL_TLD}.com/OperationalData.svc/PostJsonDataItems," "$CONF_OMSAGENT"
     chown_omsagent "$CONF_OMSAGENT"
 
-    # Reload the conf by restarting the service
-    restart_omsagent 
+    # Reload the configuration
+    /opt/microsoft/omsagent/bin/service_control reload
+    [ $? -ne 0 ] && clean_exit 1
 }
 
 onboard()

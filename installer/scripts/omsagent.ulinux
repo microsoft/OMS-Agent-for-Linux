@@ -24,9 +24,14 @@ test -x $OMS_BIN || { echo "$OMS_BIN not installed";
     if [ "$1" = "stop" ]; then exit 0;
     else exit 5; fi; }
 
-# LOG File & PID File
-LOGFILE=/var/opt/microsoft/omsagent/log/omsagent.log
-PIDFILE=/var/opt/microsoft/omsagent/run/omsagent.pid
+# LOGFILE and PIDFILE picked up from service control helper script
+
+if [ ! -f /opt/microsoft/omsagent/bin/service_control ]; then
+    echo "Could not source service control functions."
+    exit 1
+fi
+
+. /opt/microsoft/omsagent/bin/service_control functions
 
 if [ -f /etc/init.d/functions ]; then
     INIT_STYLE=R      # INIT_STYLE uses R/S/D for its representative platform RedHat/SuSE/Debian 
@@ -38,84 +43,30 @@ elif [ -f /lib/lsb/init-functions ]; then
     INIT_STYLE=D
     . /lib/lsb/init-functions
 else
-    echo -n "Could not source init functions."
+    echo "Could not source init functions."
     exit 1
 fi
-
-
-is_omsagent_running()
-{
-    # Returns 1 if 'omsagent' is running, 0 otherwise
-    [ -f $PIDFILE ] || return 0
-    ps -p `cat $PIDFILE` | grep -q omsagent
-    STATUS=$?
-
-    # Kill PID file if we're not running any longer
-    if [ $STATUS -ne 0 ]; then
-        rm $PIDFILE
-        return 0
-    else
-        return 1
-    fi
-}
-
-wait_until_omsagent_stops()
-{
-    # Required parameter: Number of seconds to wait for agent to stop
-    if [ -z "$1" -o "$1" -le 0 ]; then
-        echo "Function \"wait_until_omsagent_stops\" called with invalid parameter"
-        exit 1
-    fi
-
-    COUNTER=$(( $1 * 2 )) # Since we sleep 0.5 seconds, compute number of seconds
-    while [ $COUNTER -gt 0 ]; do
-        is_omsagent_running && return $?
-        COUNTER=$(( $COUNTER - 1 ))
-        sleep 0.5
-    done
-
-    # One final try for accurate return status (just return status from the call)
-    is_omsagent_running
-}
-
-stop_omsagent_service()
-{
-    # First try sending a graceful shutdown request.
-    # If omsagent doesn't stop, forcefully kill it.
-    #
-    # TODO: omsagent doesn't currently gracefully shut down, we're investigating this later
-
-    is_omsagent_running && return $?
-
-    # kill -sigterm `cat $PIDFILE`
-    # wait_until_omsagent_stops 10 && return $?
-
-    echo -n "(Forced) "
-    kill -sigkill `cat $PIDFILE`
-    wait_until_omsagent_stops 5
-    return $?
-}
 
 
 RETVAL=0
 USER_REQ=""
 case "$1" in
      start)
-        CREATE_LINKS=is_omsagent_running # /opt/omi/bin/support/installssllinks
+        AGENT_RUNNING=is_omsagent_running
         START_QUALS="-d $PIDFILE --no-supervisor -o $LOGFILE"
 
         case $INIT_STYLE in
             D)
                 log_begin_msg "Starting $OMS_NAME: "
                 [ "`id -u`" -eq 0 ] && USER_REQ="--chuid omsagent"
-                $CREATE_LINKS && /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --name "omsagent" --startas $OMS_BIN -- $START_QUALS
+                $AGENT_RUNNING && /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --name "omsagent" --startas $OMS_BIN -- $START_QUALS
                 RETVAL=$?
                 log_end_msg $RETVAL
                 ;;               
             R)
                 echo -n "Starting $OMS_NAME: "
                 [ "`id -u`" -eq 0 ] && USER_REQ="--user=omsagent"
-                $CREATE_LINKS && daemon $USER_REQ $OMS_BIN $START_QUALS
+                $AGENT_RUNNING && daemon $USER_REQ $OMS_BIN $START_QUALS
                 RETVAL=$?
                 echo
                 ;;
@@ -125,7 +76,7 @@ case "$1" in
                 LC_CTYPE="$RC_LANG"; export LC_CTYPE
                 echo -n "Starting $OMS_NAME "
                 [ "`id -u`" -eq 0 ] && USER_REQ="-u omsagent"
-                $CREATE_LINKS && startproc $USER_REQ -p $PIDFILE $OMS_BIN $START_QUALS
+                $AGENT_RUNNING && startproc $USER_REQ -p $PIDFILE $OMS_BIN $START_QUALS
                 rc_status -v
                 ;;
             *)  exit 1   ;;
@@ -136,20 +87,20 @@ case "$1" in
         case $INIT_STYLE in
             D)
                 log_begin_msg "Shutting down $OMS_NAME: "
-                stop_omsagent_service
+                stop_omsagent_process
                 RETVAL=$?
                 log_end_msg $RETVAL
                 ;;
             R)
                 echo -n "Shutting down $OMS_NAME: "
-                stop_omsagent_service
+                stop_omsagent_process
                 RETVAL=$?
                 if [ $RETVAL -eq 0 ]; then echo_success; else echo_failure; fi
                 echo
                 ;;
             S)
                 echo -n "Shutting down $OMS_NAME: "
-                stop_omsagent_service
+                stop_omsagent_process
                 rc_status -v
                 ;;
             *)  exit 1    ;;

@@ -41,47 +41,6 @@ RestartOmiServer() {
 }
 
 %OMSService_funcs
-StopOMSServer() {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent stop
-    elif [ -x /sbin/service ]; then
-        /sbin/service omsagent stop
-    else
-        echo "Unrecognized service controller to start omsagent service" 1>&2
-        exit 1
-    fi
-}
-
-StartOMSServer() {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent start
-    elif [ -x /sbin/service ]; then
-        /sbin/service omsagent start
-    else
-        echo "Unrecognized service controller to start omsagent service" 1>&2
-        exit 1
-    fi
-}
-
-IsOMSServiceRunning() {
-    # Returns 0 if OMS service is not running, 1 if it is running
-    if [ ! -f /var/opt/microsoft/omsagent/run/omsagent.pid ]; then
-        return 0
-    fi
-    ps -p `cat /var/opt/microsoft/omsagent/run/omsagent.pid` | grep -q omsagent
-    if [ $? -ne 0 ]; then
-        rm /var/opt/microsoft/omsagent/run/omsagent.pid
-        return 0
-    else
-        return 1
-    fi
-}
-
-RestartOMSServer() {
-    IsOMSServiceRunning || StopOMSServer
-    StartOMSServer
-}
-
 RemoveOMSService() {
     if [ -x /usr/sbin/update-rc.d ]; then
         /usr/sbin/update-rc.d omsagent defaults > /dev/null
@@ -135,6 +94,11 @@ RestartRsyslog() {
 #include OMSService_funcs
 #include OmiService_funcs
 
+# If our service is already running, stop it
+if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
+   /opt/microsoft/omsagent/bin/service_control stop
+fi
+
 # Add the 'omsagent' group if it does not already exist
 # (Can't use useradd with -U since that doesn't exist on older systems)
 egrep -q "^omsagent:" /etc/group
@@ -148,11 +112,6 @@ egrep -q "^omsagent:" /etc/passwd
 if [ $? -ne 0 ]; then
     echo "Creating omsagent service account ..."
     useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -g omsagent -s /bin/bash omsagent
-fi
-
-IsOMSServiceRunning
-if [ $? -ne 0 ]; then
-    StopOMSServer
 fi
 
 %Postinstall_200
@@ -176,7 +135,7 @@ RestartRsyslog
 RestartOmiServer
 
 RegisterOMSService
-StartOMSServer
+/opt/microsoft/omsagent/bin/service_control start
 
 %Preuninstall_10
 #include OmiService_funcs
@@ -187,9 +146,8 @@ if [ $OMI_IS_RUNNING -eq 1 ]; then
     StopOmiServer
 fi
 
-IsOMSServiceRunning
-if [ $? -ne 0 ]; then
-    StopOMSServer
+if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
+    /opt/microsoft/omsagent/bin/service_control stop
 fi
 
 RemoveOMSService

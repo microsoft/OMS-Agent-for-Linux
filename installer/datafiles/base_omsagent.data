@@ -26,7 +26,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/LICENSE.txt;                                    LICENSE.txt;                                           444; root; root
 
 /opt/microsoft/omsagent/bin/omsadmin.sh;                                installer/scripts/omsadmin.sh;                         755; root; root
-/opt/microsoft/omsagent/bin/service_control.sh;                         installer/scripts/service_control.sh;                  755; root; root
+/opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
 
 /opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root
@@ -75,8 +75,8 @@ fi
 
 %Postinstall_100
 WriteInstallInfo() {
-    date +%Y-%m-%dT%T.0Z > /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
-    echo ${{VERSION}}-${{RELEASE}} >> /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
+    echo "${{VERSION}}-${{RELEASE}} ${{VERSION_IDENT}}" > /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
+    date +%Y-%m-%dT%T.0Z >> /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
 }
 WriteInstallInfo
 
