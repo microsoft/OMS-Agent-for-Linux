@@ -57,7 +57,7 @@ module OmiModule
 			
 			begin
 				records_hash = JSON.parse(records)
-			rescue => error
+			rescue
 				@error_handler.log_error("Invalid Input Class Instances format")
 				return {}
 			end

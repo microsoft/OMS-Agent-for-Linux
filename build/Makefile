@@ -410,15 +410,11 @@ tests : test
 
 test : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
-
-	# TODO: wrap all unit tests under a test suite so we only need to invoke ruby once
-	cd $(TEST_DIR)/code/plugins; \
-	$(RUBY_TESTING_EXE) nagios_log_parser_test.rb; \
-	$(RUBY_TESTING_EXE) omi_lib_test.rb 
+	cd $(TEST_DIR)/code/plugins; $(RUBY_TESTING_DIR)/bin/rake -f $(TEST_DIR)/Rakefile.rb test
 
 	@echo "========================= Performing test omsadmin.sh"
 	bash $(TEST_DIR)/installer/scripts/test_omsadmin.sh $(BASE_DIR)
-
 ifeq ($(ULINUX),1)
 	$(MAKE) -C $(SCX_DIR)/build test
 endif
+

@@ -102,6 +102,6 @@ module NagiosModule
 				# output plugin to not send the data
 				return {}
 			end
-		end		
-  end
+		end
+	end
 end

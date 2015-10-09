@@ -100,5 +100,5 @@ class NagiosLib_Test < Test::Unit::TestCase
 	#
 	def call_parse_alert(text)
 		@@nagios_lib.parse_alert_record(text)
-  end  
+	end
 end

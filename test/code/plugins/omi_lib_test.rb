@@ -1,7 +1,7 @@
 require 'test/unit'
 require_relative '../../../source/code/plugins/omi_lib'
 
-class TestRuntimeError < OmiModule::LoggingBase
+class TestRuntimeError2 < OmiModule::LoggingBase
 	def log_error(text)
 		raise text
 	end
@@ -10,7 +10,7 @@ end
 class OmiLib_Test < Test::Unit::TestCase
 	class << self
 		def startup
-			@@omi_lib = OmiModule::Omi.new(TestRuntimeError.new, "omi_mapping.json")
+			@@omi_lib = OmiModule::Omi.new(TestRuntimeError2.new, "omi_mapping.json")
 		end
 
 		def shutdown
