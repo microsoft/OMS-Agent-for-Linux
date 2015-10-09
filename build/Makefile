@@ -55,8 +55,8 @@ SHARED_FLAGS := -shared
 
 # Support for installbuilder
 
-STAGING_DIR := $(TARGET_DIR)/staging
-INSTALLER_TMPDIR := $(TARGET_DIR)/installer_tmp
+STAGING_DIR := $(INTERMEDIATE_DIR)/staging
+INSTALLER_TMPDIR := $(INTERMEDIATE_DIR)/installer_tmp
 
 INSTALLER_DATAFILES := base_omsagent.data linux.data ruby.data
 INSTALLER_DATAFILES_RPM := $(INSTALLER_DATAFILES) linux_rpm.data
@@ -106,8 +106,10 @@ all : $(SCX_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
+
 	# On Debian, installer staging directory has root permissions, so sudo elevate
-	sudo $(RMDIR) $(BASE_DIR)/target 
+	sudo $(RMDIR) $(STAGING_DIR) $(INSTALLER_TMPDIR) $(BASE_DIR)/target 
+
 	$(RM) $(IN_PLUGINS_LIB)
 	-find $(BASE_DIR) -name \*~ -exec rm {} \;
 
