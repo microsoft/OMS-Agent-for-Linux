@@ -12,8 +12,17 @@ chmod u+wx $OMSADMIN
 sed -i s,TMP_DIR=.*,TMP_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,CONF_DIR=.*,CONF_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,CERT_DIR=.*,CERT_DIR=$TESTDIR,1 $OMSADMIN
+sed -i s,OS_INFO=.*,OS_INFO=$TESTDIR/scx-release,1 $OMSADMIN
 
 echo endpoint_url=https://WORKSPACE_ID.ods.opinsights.azure.com/OperationalData.svc/PostJsonDataItems.com > $TESTDIR/omsagent.conf
+
+cat <<EOF > $TESTDIR/scx-release
+OSName=Ubuntu
+OSVersion=14.04
+OSFullName=Ubuntu 14.04 (x86_64)
+OSAlias=UniversalD
+OSManufacturer=Canonical Group Limited
+EOF
 
 # This is a static workspace ID and shared key that should not change
 echo ============= Test Onboarding:

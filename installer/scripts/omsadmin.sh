@@ -6,7 +6,7 @@ TMP_DIR=/var/opt/microsoft/omsagent/tmp
 CERT_DIR=/etc/opt/microsoft/omsagent/certs
 CONF_DIR=/etc/opt/microsoft/omsagent/conf
 
-# File with initial onboarding credentials
+# Optional file with initial onboarding credentials
 FILE_ONBOARD=/etc/omsagent-onboard.conf
 
 # Generated conf file containing information for this script
@@ -14,6 +14,12 @@ CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
 
 # Omsagent daemon configuration
 CONF_OMSAGENT=$CONF_DIR/omsagent.conf
+
+# File with OS information for telemetry
+OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
+
+# Script to control the omsagent service 
+SERVICE_CONTROL=/opt/microsoft/omsagent/bin/service_control
 
 # Certs
 FILE_KEY=$CERT_DIR/oms.key
@@ -194,8 +200,6 @@ append_telemetry()
         return 1
     fi
 
-    OS_INFO="/etc/opt/microsoft/scx/conf/scx-release"
-
     if [ ! -r $OS_INFO ]; then
         # This is not fatal, we simply proceed without the info
         log_warning "Unable to read file $OS_INFO; telemetry information will not be sent to server"
@@ -222,8 +226,9 @@ update_conf_endpoint()
     chown_omsagent "$CONF_OMSAGENT"
 
     # Reload the configuration
-    /opt/microsoft/omsagent/bin/service_control reload
-    [ $? -ne 0 ] && clean_exit 1
+    if [ -x $SERVICE_CONTROL ]; then
+        $SERVICE_CONTROL reload || clean_exit 1
+    fi
 }
 
 onboard()
