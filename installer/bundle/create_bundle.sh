@@ -22,6 +22,7 @@ usage()
     echo "usage: $0 directory tar-file"
     echo "  where"
     echo "    directory is directory path to package file (target directory)"
+    echo "    intermediate is dir path to intermediate dir (where installer_tmp lives)"
     echo "    tar-file is the name of the tar file that contains the .deb/.rpm files"
     echo
     echo "This script, and the associated bundle skeleton, are intended to work only"
@@ -37,7 +38,8 @@ usage()
 # Validate parameters
 
 DIRECTORY=$1
-TAR_FILE=$2
+INTERMEDIATE=$2
+TAR_FILE=$3
 
 if [ -z "$DIRECTORY" ]; then
     echo "Missing parameter: Target Directory" >&2
@@ -48,6 +50,23 @@ fi
 
 if [ ! -d "$DIRECTORY" ]; then
     echo "Directory \"$DIRECTORY\" does not exist" >&2
+    exit 1
+fi
+
+if [ -z "$INTERMEDIATE" ]; then
+    echo "Missing parameter: Intermediate Directory" >&2
+    echo ""
+    usage
+    exit 1
+fi
+
+if [ ! -d "$INTERMEDIATE" ]; then
+    echo "Directory \"$INTERMEDIATE\" does not exist" >&2
+    exit 1
+fi
+
+if [ ! -d "$INTERMEDIATE/installer_tmp" ]; then
+    echo "Directory \"$INTERMEDIATE/installer_tmp\" does not exist" >&2
     exit 1
 fi
 
@@ -65,7 +84,7 @@ if [ ! -f "$DIRECTORY/$TAR_FILE" ]; then
     exit 1
 fi
 
-INTERMEDIATE_DIR=`(cd $DIRECTORY/installer_tmp; pwd -P)`
+INTERMEDIATE_DIR=`(cd $INTERMEDIATE/installer_tmp; pwd -P)`
 
 # Switch to one of the output directories to avoid directory prefixes
 cd $DIRECTORY/098
@@ -73,6 +92,7 @@ cd $DIRECTORY/098
 SCX_PACKAGE=`ls scx-*.rpm | sed 's/.rpm$//'`
 OMI_PACKAGE=`ls omi-*.rpm | sed 's/.rpm$//'`
 OMS_PACKAGE=`ls omsagent-*.rpm | sed 's/.rpm$//'`
+DSC_PACKAGE=`ls omsconfig-*.rpm | sed 's/.rpm$//'`
 
 # TODO : Add verification to insure all flavors exist
 
@@ -91,6 +111,7 @@ sed -i "s/TAR_FILE=<TAR_FILE>/TAR_FILE=$TAR_FILE/" $BUNDLE_FILE
 
 sed -i "s/OMI_PKG=<OMI_PKG>/OMI_PKG=$OMI_PACKAGE/" $BUNDLE_FILE
 sed -i "s/OMS_PKG=<OMS_PKG>/OMS_PKG=$OMS_PACKAGE/" $BUNDLE_FILE
+sed -i "s/DSC_PKG=<DSC_PKG>/DSC_PKG=$DSC_PACKAGE/" $BUNDLE_FILE
 sed -i "s/SCX_PKG=<SCX_PKG>/SCX_PKG=$SCX_PACKAGE/" $BUNDLE_FILE
 
 SCRIPT_LEN=`wc -l < $BUNDLE_FILE | sed 's/ //g'`

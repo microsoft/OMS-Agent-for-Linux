@@ -8,6 +8,7 @@ BASE_DIR := $(subst /build,,$(PWD))
 OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 SCX_DIR := $(shell cd ../../opsmgr; pwd -P)
+DSC_DIR := $(shell cd ../../dsc; pwd -P)
 
 PF_POSIX := 1
 include $(BASE_DIR)/build/config.mak
@@ -19,6 +20,7 @@ $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
 SCX_TARGET_DIR := $(SCX_DIR)/target/$(BUILD_CONFIGURATION)
+DSC_TARGET_DIR := $(DSC_DIR)/release
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
@@ -102,7 +104,7 @@ endif
 # Build targets
 .PHONY: all clean clean-ruby distclean clean-status plugins-status kit tests test
 
-all : $(SCX_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
+all : $(SCX_TARGET_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
@@ -127,7 +129,11 @@ clean-ruby :
 	@echo "Cleaning fluentd source directory ..."
 	find $(FLUENTD_DIR) -type f -perm -u+w -print -exec rm {} \;
 
-distclean : clean clean-ruby
+clean-dsc :
+	-make -C $(DSC_DIR) clean
+
+distclean : clean clean-ruby clean-dsc
+	-$(RM) $(DSC_DIR)/omi-1.0.8
 	-make -C $(SCX_DIR)/build distclean
 	-$(RMDIR) $(OMI_ROOT)/output*
 
@@ -142,6 +148,24 @@ clean-status :
 
 $(SCX_TARGET_DIR) : 
 	$(MAKE) -C $(SCX_DIR)/build all
+
+#--------------------------------------------------------------------------------
+# Build DSC project (configured for the OMS project)
+#
+# Note: This expects that SCX (and thus OMI) is already built! Take care of your
+# ordering on the 'all' target!
+
+$(DSC_TARGET_DIR) :
+ifeq ($(ULINUX),1)
+	@$(ECHO) "========================= Performing Building DSC Project"
+	cd $(DSC_DIR); ./configure --oms
+	ln -fs $(OMI_ROOT) $(DSC_DIR)/omi-1.0.8
+	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_0.9.8 output
+	$(MAKE) -C $(DSC_DIR) dsc098
+	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.0.0 output
+	$(MAKE) -C $(DSC_DIR) dsc100
+	cd $(OMI_ROOT); $(RMDIR) output
+endif
 
 #--------------------------------------------------------------------------------
 # Build the version of Ruby that we test with
@@ -220,7 +244,8 @@ kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 	@echo "========================= Performing Building shell bundle"
-	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
+	chmod +x ../installer/bundle/create_bundle.sh
+	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
@@ -251,6 +276,17 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) 
 
 	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.rpm | sort | tail -1` $(TARGET_DIR)/100
 	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.deb | sort | tail -1` $(TARGET_DIR)/100
+
+	# Gather the DSC bits that we need
+	$(RM) $(TARGET_DIR)/098/omsconfig-*.{rpm,deb} $(TARGET_DIR)/100/omsconfig-*.{rpm,deb}
+
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.rpm | sort | tail -1` $(TARGET_DIR)/098
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.deb | sort | tail -1` $(TARGET_DIR)/098
+	cd $(TARGET_DIR)/098; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_098././'` ; $(MV) $$SOURCE $$DEST; done
+
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.rpm | sort | tail -1` $(TARGET_DIR)/100
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(TARGET_DIR)/100
+	cd $(TARGET_DIR)/100; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_100././'` ; $(MV) $$SOURCE $$DEST; done
 
 	# Pick up the OSS (Open Source) providers
 	$(RMDIR) $(TARGET_DIR)/oss-kits

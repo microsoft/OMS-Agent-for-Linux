@@ -30,6 +30,7 @@ EXTRACT_DIR="`pwd -P`/omsbundle.$$"
 TAR_FILE=<TAR_FILE>
 OMI_PKG=<OMI_PKG>
 OMS_PKG=<OMS_PKG>
+DSC_PKG=<DSC_PKG>
 SCX_PKG=<SCX_PKG>
 SCRIPT_LEN=<SCRIPT_LEN>
 SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>
@@ -127,11 +128,13 @@ check_if_pkg_is_installed() {
 # $2 - The package name of the package to be installed (for future compatibility)
 pkg_add() {
     pkg_filename=$1
+    pkg_name=$2
 
     ulinux_detect_openssl_version
     pkg_filename=$TMPBINDIR/$pkg_filename
 
     ulinux_detect_installer
+    echo "----- Installing package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
         dpkg --install --refuse-downgrade ${pkg_filename}.deb
     else
@@ -142,6 +145,7 @@ pkg_add() {
 # $1 - The package name of the package to be uninstalled
 pkg_rm() {
     ulinux_detect_installer
+    echo "----- Removing package: $1 -----"
     if [ "$INSTALLER" = "DPKG" ]; then
         if [ "$installMode" = "P" ]; then
             dpkg --purge ${1}
@@ -164,6 +168,7 @@ pkg_upd() {
     pkg_filename=$TMPBINDIR/$pkg_filename
 
     ulinux_detect_installer
+    echo "----- Updating package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
         [ -z "${forceFlag}" -o "${pkg_name}" = "omi" ] && FORCE="--refuse-downgrade" || FORCE=""
         dpkg --install $FORCE ${pkg_filename}.deb
@@ -281,6 +286,7 @@ cd $EXTRACT_DIR
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]
 then
+    pkg_rm omsconfig
     pkg_rm omsagent
 
     if [ -f /opt/microsoft/scx/bin/uninstall ]; then
@@ -340,6 +346,7 @@ EXIT_STATUS=0
 SCX_EXIT_STATUS=0
 OMI_EXIT_STATUS=0
 OMS_EXIT_STATUS=0
+DSC_EXIT_STATUS=0
 BUNDLE_EXIT_STATUS=0
 
 case "$installMode" in
@@ -367,8 +374,12 @@ case "$installMode" in
         pkg_add $OMS_PKG omsagent
         OMS_EXIT_STATUS=$?
 
+        pkg_add $DSC_PKG omsconfig
+        DSC_EXIT_STATUS=$?
+
         # Install bundled providers
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+        echo "----- Installing bundled packages -----"
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
@@ -401,11 +412,15 @@ case "$installMode" in
         pkg_upd $OMS_PKG omsagent
         OMS_EXIT_STATUS=$?
 
+        pkg_upd $DSC_PKG omsconfig
+        DSC_EXIT_STATUS=$?
+
         # Upgrade bundled providers
         #   Temporarily force upgrades via --force; this will unblock the test team
         #   This change may or may not be permanent; we'll see
         # [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         FORCE="--force"
+        echo "----- Updating bundled packages -----"
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
@@ -426,7 +441,7 @@ esac
 
 # Remove temporary files (now part of cleanup_and_exit) and exit
 
-if [ "$OMS_EXIT_STATUS" -ne 0 -o "$SCX_EXIT_STATUS" -ne 0 -o "$OMI_EXIT_STATUS" -ne 0 -o "$BUNDLE_EXIT_STATUS" -ne 0 ]; then
+if [ "$OMS_EXIT_STATUS" -ne 0 -o "$DSC_EXIT_STATUS" -ne 0 -o "$SCX_EXIT_STATUS" -ne 0 -o "$OMI_EXIT_STATUS" -ne 0 -o "$BUNDLE_EXIT_STATUS" -ne 0 ]; then
     cleanup_and_exit 1
 else
     cleanup_and_exit 0
