@@ -25,7 +25,6 @@ DSC_TARGET_DIR := $(DSC_DIR)/release
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
-TEST_DIR := ${BASE_DIR}/test
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
@@ -451,10 +450,12 @@ tests : test
 
 test : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
-	cd $(TEST_DIR)/code/plugins; $(RUBY_TESTING_DIR)/bin/rake -f $(TEST_DIR)/Rakefile.rb test
+	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb test \
+		BASE_DIR=$(BASE_DIR) \
+		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins
 
 	@echo "========================= Performing test omsadmin.sh"
-	bash $(TEST_DIR)/installer/scripts/test_omsadmin.sh $(BASE_DIR)
+	bash $(BASE_DIR)/test/installer/scripts/test_omsadmin.sh $(BASE_DIR)
 
 ifeq ($(ULINUX),1)
 	$(MAKE) -C $(SCX_DIR)/build test

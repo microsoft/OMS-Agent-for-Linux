@@ -3,10 +3,8 @@ PERFORMING_UPGRADE_NOT: '[ "$1" != "upgrade" -a "$1" != "purge" ]'
 PACKAGE_TYPE: 'DPKG'
 
 %Dependencies
-%% In omsadmin.sh: 'curl' requires 'curl', 'uuidgen' requires 'uuid-runtime', 'xxd' requires 'vim-common'
+%% In omsadmin.sh: 'curl' requires 'curl'
 curl
-uuid-runtime
-vim-common
 
 omi (>= 1.0.8-2)
 scx (>= 1.6.1-110)

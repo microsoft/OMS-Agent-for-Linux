@@ -10,7 +10,7 @@ end
 class OmiLib_Test < Test::Unit::TestCase
 	class << self
 		def startup
-			@@omi_lib = OmiModule::Omi.new(TestRuntimeError2.new, "omi_mapping.json")
+			@@omi_lib = OmiModule::Omi.new(TestRuntimeError2.new, ENV['PLUGINS_TEST_DIR']+"/omi_mapping.json")
 		end
 
 		def shutdown

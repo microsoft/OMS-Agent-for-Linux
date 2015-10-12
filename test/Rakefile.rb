@@ -7,7 +7,9 @@ task :test => [:base_test]
 
 desc 'Run test_unit based test'
 Rake::TestTask.new(:base_test) do |t|
-  t.test_files = Dir["*test*.rb"].sort
+  plugin_test_files = Dir["#{ENV['PLUGINS_TEST_DIR']}/*test*.rb"].sort
+  script_test_files = Dir["#{ENV['BASE_DIR']}/test/installer/scripts/*test*.rb"].sort
+  t.test_files = plugin_test_files + script_test_files
   t.verbose = true
   t.warning = true
 end

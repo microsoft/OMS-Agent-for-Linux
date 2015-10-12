@@ -5,7 +5,6 @@ TESTDIR=/tmp/test_omsadmin_$$
 mkdir -p $TESTDIR
 
 OMSADMIN=$TESTDIR/omsadmin.sh
-
 cp $BASE_DIR/installer/scripts/omsadmin.sh $OMSADMIN
 chmod u+wx $OMSADMIN
 
@@ -13,6 +12,8 @@ sed -i s,TMP_DIR=.*,TMP_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,CONF_DIR=.*,CONF_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,CERT_DIR=.*,CERT_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,OS_INFO=.*,OS_INFO=$TESTDIR/scx-release,1 $OMSADMIN
+sed -i s,RUBY=.*,RUBY=/usr/local/ruby-2.2.0/bin/ruby,1 $OMSADMIN
+sed -i s,AUTH_KEY_SCRIPT=.*,AUTH_KEY_SCRIPT=$BASE_DIR/installer/scripts/auth_key.rb,1 $OMSADMIN
 
 echo endpoint_url=https://WORKSPACE_ID.ods.opinsights.azure.com/OperationalData.svc/PostJsonDataItems.com > $TESTDIR/omsagent.conf
 

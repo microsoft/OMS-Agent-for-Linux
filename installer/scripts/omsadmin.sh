@@ -21,10 +21,15 @@ OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
 # Script to control the omsagent service 
 SERVICE_CONTROL=/opt/microsoft/omsagent/bin/service_control
 
+RUBY=/opt/microsoft/omsagent/ruby/bin/ruby
+AUTH_KEY_SCRIPT=/opt/microsoft/omsagent/bin/auth_key.rb
+
 # Certs
 FILE_KEY=$CERT_DIR/oms.key
 FILE_CRT=$CERT_DIR/oms.crt
 
+# Temporary files
+SHARED_KEY_FILE=$TMP_DIR/shared_key
 BODY_ONBOARD=$TMP_DIR/body_onboard.xml
 RESP_ONBOARD=$TMP_DIR/resp_onboard.xml
 
@@ -103,6 +108,7 @@ cleanup()
     rm "$BODY_ONBOARD" "$RESP_ONBOARD" > /dev/null 2>&1 || true
     rm "$BODY_HEARTBEAT" "$RESP_HEARTBEAT" > /dev/null 2>&1 || true
     rm "$BODY_RENEW_CERT" "$RESP_RENEW_CERT" > /dev/null 2>&1 || true
+    rm "$SHARED_KEY_FILE" > /dev/null 2>&1 || true
 }
 
 clean_exit()
@@ -179,6 +185,12 @@ generate_certs()
     # Certifictate Information:
     # CN={workspaceId}, CN={agentId, you can use any GUID on registration}, OU=Microsoft Monitoring Agent, O=Microsoft
     log_info "Generating certificate ..."
+    
+    # Set safe certificate permissions before to prevent timing attacks
+    touch "$FILE_KEY" "$FILE_CRT"
+    chown_omsagent "$FILE_KEY" "$FILE_CRT"
+    chmod 600 "$FILE_KEY" "$FILE_CRT"
+
     openssl req -subj "/CN=$WORKSPACE_ID/CN=$AGENT_GUID/OU=Microsoft Monitoring Agent/O=Microsoft" -new -newkey \
         rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$FILE_KEY" -out "$FILE_CRT" > /dev/null 2>&1
 
@@ -186,11 +198,6 @@ generate_certs()
         log_error "Error generating certs"
         clean_exit 1
     fi
-
-    chown_omsagent "$FILE_KEY" "$FILE_CRT"
-
-    # Set safe certificate permissions
-    chmod 600 "$FILE_KEY" "$FILE_CRT"
 }
 
 append_telemetry()
@@ -238,7 +245,7 @@ onboard()
         clean_exit 1
     fi
 
-    AGENT_GUID=`uuidgen`
+    AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
     generate_certs
 
     if [ "$VERBOSE" = "1" ]; then
@@ -259,10 +266,11 @@ onboard()
     append_telemetry $BODY_ONBOARD
     echo "</AgentTopologyRequest>" >> $BODY_ONBOARD
 
-    CONTENT_HASH=`openssl sha256 $BODY_ONBOARD | awk '{print $2}' | xxd -r -p | base64`
+    echo -n "$SHARED_KEY" > "$SHARED_KEY_FILE"
 
-    KEY_HEX=`echo -n $SHARED_KEY | base64 -d | xxd -p | tr -d "\n"`
-    AUTHORIZATION_KEY=`echo -en "$REQ_DATE\n$CONTENT_HASH\n" | openssl dgst -sha256 -mac HMAC -macopt hexkey:$KEY_HEX -binary | openssl enc -base64`
+    AUTHS=`$RUBY $AUTH_KEY_SCRIPT $REQ_DATE $BODY_ONBOARD $SHARED_KEY_FILE`
+    CONTENT_HASH=`echo $AUTHS | cut -d" " -f1`
+    AUTHORIZATION_KEY=`echo $AUTHS | cut -d" " -f2` 
 
     if [ $VERBOSE -ne 0 ]; then
         echo
