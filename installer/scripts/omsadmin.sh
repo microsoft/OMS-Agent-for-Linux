@@ -75,6 +75,7 @@ chown_omsagent()
     # When this script is run as root, we still have to make sure the generated
     # files are owned by omsagent for everything to work properly
     [ "$EUID" -eq 0 ] && chown omsagent:omsagent $@ > /dev/null 2>&1
+    return 0
 }
 
 save_config()
@@ -85,6 +86,7 @@ save_config()
     echo LOG_FACILITY=$LOG_FACILITY >> $CONF_OMSADMIN
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
+    echo DSC_ENDPOINT=$DSC_ENDPOINT >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
 }
 
@@ -295,6 +297,7 @@ onboard()
         https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
 
     if [ "$RET_CODE" = "200" ]; then
+        apply_dsc_endpoint $RESP_ONBOARD
         log_info "Onboarding success"
     else
         log_error "Error onboarding. HTTP code $RET_CODE"
@@ -303,6 +306,45 @@ onboard()
     update_conf_endpoint
     save_config
     return 0
+}
+
+apply_certificate_update_endpoint()
+{
+    # Update the CERTIFICATE_UPDATE_ENDPOINT variable and call renew_cert if the server asks
+    local xml_file=$1
+    # Extract the certificate update endpoint from the server response
+    ENDPOINT_TAG=`grep -o "<CertificateUpdateEndpoint.*CertificateUpdateEndpoint>" $xml_file`
+    CERTIFICATE_UPDATE_ENDPOINT=`echo $ENDPOINT_TAG | grep -o https.*RenewCertificate`
+
+    if [ -z "$CERTIFICATE_UPDATE_ENDPOINT" ]; then
+        log_error "Could not extract the update certificate endpoint."
+        return 1
+    fi
+
+    # Check in the response if the certs should be renewed
+    UPDATE_ATTR=`echo "$ENDPOINT_TAG" | grep -oP "updateCertificate=\"((true|false))\""`
+    if [ -z "UPDATE_ATTR" ]; then
+        log_error "Could not find the updateCertificate tag in the heartbeat response"
+        return 1
+    fi
+
+    if echo "$UPDATE_ATTR" | grep "true"; then
+        renew_cert
+    fi
+}
+
+apply_dsc_endpoint()
+{
+    # Updates the DSC_ENDPOINT variable
+    local xml_file=$1
+    # Extract the DSC endpoint from the server response
+    DSC_CONF=`grep -o "<DscConfiguration.*DscConfiguration>" $xml_file`
+    DSC_ENDPOINT=`echo $DSC_CONF | grep -o "<Endpoint>.*</Endpoint>" | sed -e "s/<.\?Endpoint>//g" -e "s/(/\\\\\(/g" -e "s/)/\\\\\)/g"`
+
+    if [ -z "$DSC_ENDPOINT" ]; then
+        log_error "Could not extract the DSC endpoint."
+        return 1
+    fi
 }
 
 heartbeat()
@@ -331,30 +373,12 @@ heartbeat()
         https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
 
     if [ "$RET_CODE" = "200" ]; then
-        # Extract the certificate update endpoint from the server response
-        ENDPOINT_TAG=`grep -o "<CertificateUpdateEndpoint.*CertificateUpdateEndpoint>" $RESP_HEARTBEAT`
-        CERTIFICATE_UPDATE_ENDPOINT=`echo $ENDPOINT_TAG | grep -o https.*RenewCertificate`
-
-        if [ -z "$CERTIFICATE_UPDATE_ENDPOINT" ]; then
-            log_error "Could not extract the update certificate endpoint."
-            return 1
-        fi
-
+        apply_certificate_update_endpoint $RESP_HEARTBEAT
+        apply_dsc_endpoint $RESP_HEARTBEAT
         log_info "Heartbeat success"
 
         # Save the current certificate endpoint url
         save_config
-
-        # Check in the response if the certs should be renewed
-        UPDATE_ATTR=`echo "$ENDPOINT_TAG" | grep -oP "updateCertificate=\"((true|false))\""`
-        if [ -z "UPDATE_ATTR" ]; then
-            log_error "Could not find the updateCertificate tag in the heartbeat response"
-            return 1
-        fi
-
-        if echo "$UPDATE_ATTR" | grep "true"; then
-            renew_cert
-        fi
     else
         log_error "Error sending the heartbeat. HTTP code $RET_CODE"
         return 1
