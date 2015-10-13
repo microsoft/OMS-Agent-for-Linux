@@ -25,6 +25,7 @@ MAINTAINER:              'Microsoft Corporation'
 
 /opt/microsoft/omsagent/LICENSE.txt;                                    LICENSE.txt;                                           444; root; root
 
+/opt/microsoft/omsagent/bin/auth_key.rb;                                installer/scripts/auth_key.rb;                         744; root; root
 /opt/microsoft/omsagent/bin/omsadmin.sh;                                installer/scripts/omsadmin.sh;                         755; root; root
 /opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
 
@@ -34,8 +35,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/Libomi.so;                               intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
 /opt/microsoft/omsagent/plugin/filter_nagios_log.rb;                    source/code/plugins/filter_nagios_log.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/nagios_parser_lib.rb;                    source/code/plugins/nagios_parser_lib.rb;              744; root; root
-/opt/microsoft/omsagent/plugin/filter_omi.rb;                    	    source/code/plugins/filter_omi.rb;              	   744; root; root
-/opt/microsoft/omsagent/plugin/omi_lib.rb;                              source/code/plugins/omi_lib.rb;              		   744; root; root
+/opt/microsoft/omsagent/plugin/filter_omi.rb;                           source/code/plugins/filter_omi.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/omi_lib.rb;                              source/code/plugins/omi_lib.rb;                        744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
