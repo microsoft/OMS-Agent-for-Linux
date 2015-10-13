@@ -24,6 +24,7 @@ esac
 SCRIPT_DIR="`(cd \"$SCRIPT_INDIRECT\"; pwd -P)`"
 SCRIPT="$SCRIPT_DIR/`basename $0`"
 EXTRACT_DIR="`pwd -P`/omsbundle.$$"
+ONBOARD_FILE=/etc/omsagent-onboard.conf
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -48,6 +49,10 @@ usage()
     echo "  --restart-deps         Reconfigure and restart dependent service"
     echo "  --upgrade              Upgrade the package in the system."
     echo "  --debug                use shell debug mode."
+    echo
+    echo "  -w=id, --id=id         Use workspace ID <id> for automatic onboarding."
+    echo "  -s=key, --shared=key   Use <key> as the shared key for automatic onboarding."
+    echo
     echo "  -? | --help            shows this usage text."
 }
 
@@ -157,7 +162,6 @@ pkg_rm() {
     fi
 }
 
-
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed
 pkg_upd() {
@@ -184,6 +188,8 @@ pkg_upd() {
 # Main script follows
 #
 
+onboardINT=0
+
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -191,7 +197,7 @@ do
             # hidden option, not part of usage
             # echo "  --extract-script FILE  extract the script to FILE."
             head -${SCRIPT_LEN} "${SCRIPT}" > "$2"
-            local shouldexit=true
+            shouldexit=true
             shift 2
             ;;
 
@@ -199,7 +205,7 @@ do
             # hidden option, not part of usage
             # echo "  --extract-binary FILE  extract the binary to FILE."
             tail -n +${SCRIPT_LEN_PLUS_ONE} "${SCRIPT}" > "$2"
-            local shouldexit=true
+            shouldexit=true
             shift 2
             ;;
 
@@ -239,10 +245,25 @@ do
             shift 1
             ;;
 
+        -s|--shared)
+            onboardKey=$2
+            shift 2
+            ;;
+
+        --int)
+            onboardINT=1
+            shift 1
+            ;;
+
         --upgrade)
             verifyNoInstallationOption
             installMode=U
             shift 1
+            ;;
+
+        -w|--id)
+            onboardID=$2
+            shift 2
             ;;
 
         --debug)
@@ -274,6 +295,38 @@ if [ -z "${installMode}" ]; then
     cleanup_and_exit 3
 fi
 
+ONBOARD_ERROR=0
+[ -z "$onboardID" -a -n "$onboardKey" ] && ONBOARD_ERROR=1
+[ -n "$onboardID" -a -z "$onboardKey" ] && ONBOARD_ERROR=1
+
+if [ "$ONBOARD_ERROR" -ne 0 ]; then
+    echo "Must specify both workspace ID (--id) and key (--shared) to onboard" 1>& 2
+    exit 1
+fi
+
+if [ "$onboardINT" -ne 0 ]; then
+    if [ -z "$onboardID" -o -z "$onboardKey" ]; then
+        echo "Must specify both workspace ID (--id) and key (--shared) to internally onboard" 1>& 2
+        exit 1
+    fi
+fi
+
+if [ -n "$onboardID" -a -n "$onboardKey" ]; then
+    if [ `id -u` -ne 0 ]; then
+        echo "Must have root privileges to be able to onboard" 1>& 2
+        exit 1
+    fi
+
+    cat /dev/null > $ONBOARD_FILE
+    chmod 600 $ONBOARD_FILE
+    echo "WORKSPACE_ID=$onboardID" >> $ONBOARD_FILE
+    echo "SHARED_KEY=$onboardKey" >> $ONBOARD_FILE
+
+    if [ "$onboardINT" -ne 0 ]; then
+        echo "URL_TLD=int2.microsoftatlanta-int" >> $ONBOARD_FILE
+    fi
+fi
+
 #
 # Note: From this point, we're in a temporary directory. This aids in cleanup
 # from bundled packages in our package (we just remove the diretory when done).
@@ -298,7 +351,8 @@ then
     if [ "$installMode" = "P" ]
     then
         echo "Purging all files in cross-platform agent ..."
-        rm -rf /etc/opt/microsoft/*-cimprov /etc/opt/microsoft/scx /etc/opt/microsoft/omsagent \
+        rm -rf /etc/opt/microsoft/omsconfig /opt/microsoft/omsconfig /var/opt/microsoft/omsconfig \
+            /etc/opt/microsoft/*-cimprov /etc/opt/microsoft/scx /etc/opt/microsoft/omsagent \
             /opt/microsoft/*-cimprov /opt/microsoft/scx /opt/microsoft/omsagent \
             /var/opt/microsoft/*-cimprov /var/opt/microsoft/scx /var/opt/microsoft/omsagent
         rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true

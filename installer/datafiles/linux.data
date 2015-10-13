@@ -135,7 +135,10 @@ RestartRsyslog
 RestartOmiServer
 
 RegisterOMSService
-/opt/microsoft/omsagent/bin/service_control start
+
+%Postinstall_400
+/opt/microsoft/omsagent/bin/service_control is-running
+[ $? -eq 0 ] && /opt/microsoft/omsagent/bin/service_control start
 
 %Preuninstall_10
 #include OmiService_funcs

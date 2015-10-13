@@ -451,7 +451,7 @@ main()
         # URL_TLD=int2.microsoftatlanta-int
 
         if [ -r "$FILE_ONBOARD" ]; then
-            log_info "Reading onboarding params form : $FILE_ONBOARD"
+            log_info "Reading onboarding params from: $FILE_ONBOARD"
             . "$FILE_ONBOARD"
             ONBOARDING=1
             ONBOARD_FROM_FILE=1

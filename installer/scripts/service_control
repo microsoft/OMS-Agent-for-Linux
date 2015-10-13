@@ -127,6 +127,11 @@ case "$1" in
     functions)
         ;;
 
+    is-running)
+        is_omsagent_running
+        exit $?
+        ;;
+
     start)
         start_omsagent
         ;;

@@ -105,6 +105,11 @@ fi
 
 chown -R omsagent:omsagent "$CONF_DIR"
 
+%Postinstall_300
+if [ -f /etc/omsagent-onboard.conf ]; then
+   /opt/microsoft/omsagent/bin/omsadmin.sh
+fi
+
 %Postuninstall_10
 # Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
 #   1. Run the %pre section of the RPM being installed.
