@@ -103,7 +103,7 @@ ulinux_detect_installer()
     INSTALLER=
 
     # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    type dpkg > /dev/null 2>&1
+    which dpkg > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         INSTALLER=DPKG
     else

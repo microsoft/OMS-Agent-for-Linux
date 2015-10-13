@@ -7,7 +7,7 @@ PACKAGE_TYPE: 'RPM'
 curl
 
 omi >= 1.0.8-2
-scx >= 1.6.1-110
+scx >= 1.6.1-120
 
 %Directories
 /etc/sudoers.d;                                         750; root; root; sysdir
