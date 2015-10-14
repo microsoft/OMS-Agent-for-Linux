@@ -84,11 +84,11 @@ start_omsagent_process()
 start_omsagent()
 {
     if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent start > /dev/null 2>&1 
+        /usr/sbin/invoke-rc.d omsagent start
     elif [ -x /sbin/service ]; then
-        /sbin/service omsagent start > /dev/null 2>&1 
+        /sbin/service omsagent start
     elif [ -x /usr/bin/systemctl ]; then
-        /usr/bin/systemctl start omsagent > /dev/null 2>&1 
+        /usr/bin/systemctl start omsagent
     else
         echo "Unrecognized service controller to restart omsagent service" 1>&2
         exit 1
@@ -98,11 +98,11 @@ start_omsagent()
 stop_omsagent()
 {
     if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent stop > /dev/null 2>&1 
+        /usr/sbin/invoke-rc.d omsagent stop
     elif [ -x /sbin/service ]; then
-        /sbin/service omsagent stop > /dev/null 2>&1 
+        /sbin/service omsagent stop
     elif [ -x /usr/bin/systemctl ]; then
-        /usr/bin/systemctl restart stop > /dev/null 2>&1 
+        /usr/bin/systemctl restart stop
     else
         echo "Unrecognized service controller to restart omsagent service" 1>&2
         exit 1
@@ -112,11 +112,11 @@ stop_omsagent()
 restart_omsagent()
 {
     if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent restart > /dev/null 2>&1 
+        /usr/sbin/invoke-rc.d omsagent restart
     elif [ -x /sbin/service ]; then
-        /sbin/service omsagent restart > /dev/null 2>&1 
+        /sbin/service omsagent restart
     elif [ -x /usr/bin/systemctl ]; then
-        /usr/bin/systemctl restart omsagent > /dev/null 2>&1 
+        /usr/bin/systemctl restart omsagent
     else
         echo "Unrecognized service controller to restart omsagent service" 1>&2
         exit 1
