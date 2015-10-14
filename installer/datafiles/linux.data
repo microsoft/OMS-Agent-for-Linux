@@ -1,6 +1,6 @@
 %Variables
 PF:          'Linux'
-RSYSLOG_LN:  '/etc/rsyslog.d/95-omsagent.conf'
+RSYSLOG_DEST:  '/etc/rsyslog.d/95-omsagent.conf'
 CONF_DIR:    '/etc/opt/microsoft/omsagent/conf'
 
 %Directories
@@ -125,13 +125,15 @@ if [ ! -f ${{CONF_DIR}}/rsyslog-oms.conf ]; then
     chown omsagent:omsagent ${{CONF_DIR}}/rsyslog-oms.conf
 fi
 
-# We create a symlink in rsyslog.d so that DSC can update the pointee
-if [ -d /etc/rsyslog.d -a ! -h ${{RSYSLOG_LN}} ]; then
-    ln -s /etc/opt/microsoft/omsagent/conf/rsyslog-oms.conf ${{RSYSLOG_LN}}
+# Install our rsyslog conf file
+if [ -d /etc/rsyslog.d -a ! -f ${{RSYSLOG_DEST}} ]; then
+    cp /etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf ${{RSYSLOG_DEST}}
+    chown omsagent:omsagent ${{RSYSLOG_DEST}}
+    RestartRsyslog
 fi
+
 # TODO support syslog-ng
 
-RestartRsyslog
 RestartOmiServer
 
 RegisterOMSService
@@ -178,6 +180,6 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
         fi
     fi
 
-    rm -f ${{RSYSLOG_LN}}
+    rm -f ${{RSYSLOG_DEST}}
     RestartRsyslog
 fi
