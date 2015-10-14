@@ -14,7 +14,7 @@ module Fluent
       		super
 			@hostname = "Unknown Host"
 			begin
-				@hostname = Socket.gethostname
+				@hostname = Socket.gethostname.split(".")[0]
 			rescue => error
 				$log.error "Unable to get the Host Name"
 			end
