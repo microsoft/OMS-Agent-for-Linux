@@ -240,6 +240,18 @@ update_conf_endpoint()
     fi
 }
 
+set_FQDN()
+{
+    local hostname=`hostname`
+    local domainname=`hostname -d`
+
+    if [ -n "$domainname" ]; then
+        FQDN="$hostname.$domainname"
+    else
+        FQDN="$hostname"
+    fi
+}
+
 onboard()
 {
     if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
@@ -260,9 +272,10 @@ onboard()
 
     REQ_DATE=`date +%Y-%m-%dT%T.%N%:z`
     CERT_SERVER=`cat $FILE_CRT | awk 'NR>2 { print line } { line = $0 }'`
+    set_FQDN
     echo '<?xml version="1.0"?>' > $BODY_ONBOARD
     echo '<AgentTopologyRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/">' >> $BODY_ONBOARD
-    echo "   <FullyQualfiedDomainName>`hostname -f`</FullyQualfiedDomainName>" >> $BODY_ONBOARD
+    echo "   <FullyQualfiedDomainName>${FQDN}</FullyQualfiedDomainName>" >> $BODY_ONBOARD
     echo "   <EntityTypeId>$AGENT_GUID</EntityTypeId>" >> $BODY_ONBOARD
     echo "   <AuthenticationCertificate>${CERT_SERVER}</AuthenticationCertificate>" >> $BODY_ONBOARD
     append_telemetry $BODY_ONBOARD
@@ -353,9 +366,10 @@ heartbeat()
 
     # Generate the request body
     CERT_SERVER=`cat "$FILE_CRT" | awk 'NR>2 { print line } { line = $0 }'`
+    set_FQDN
     echo '<?xml version="1.0"?>' > $BODY_HEARTBEAT
     echo '<AgentTopologyRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/">' >> $BODY_HEARTBEAT
-    echo "   <FullyQualfiedDomainName>`hostname -f`</FullyQualfiedDomainName>" >> $BODY_HEARTBEAT
+    echo "   <FullyQualfiedDomainName>${FQDN}</FullyQualfiedDomainName>" >> $BODY_HEARTBEAT
     echo "   <EntityTypeId>$AGENT_GUID</EntityTypeId>" >> $BODY_HEARTBEAT
     echo "   <AuthenticationCertificate>${CERT_SERVER}</AuthenticationCertificate>" >> $BODY_HEARTBEAT
     append_telemetry $BODY_HEARTBEAT
