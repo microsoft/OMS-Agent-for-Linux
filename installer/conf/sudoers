@@ -7,3 +7,6 @@ OMSUSERS ALL=(ALL) NOPASSWD: /bin/systemctl restart rsyslog
 
 #restart syslog-ng
 OMSUSERS ALL=(ALL) NOPASSWD: /usr/sbin/service syslogd restart
+
+#Inspect Docker containers (filter_docker_log.rb)
+OMSUSERS ALL=(ALL) NOPASSWD: /usr/bin/docker inspect *
