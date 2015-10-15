@@ -114,7 +114,7 @@ clean : clean-status
 	$(RM) $(IN_PLUGINS_LIB)
 	-find $(BASE_DIR) -name \*~ -exec rm {} \;
 
-clean-ruby :
+clean-ruby : clean
 	sudo $(RMDIR) $(BASE_DIR)/intermediate
 	sudo $(RMDIR) $(RUBY_DIR)/.ext
 	#
@@ -128,7 +128,7 @@ clean-ruby :
 	@echo "Cleaning fluentd source directory ..."
 	find $(FLUENTD_DIR) -type f -perm -u+w -print -exec rm {} \;
 
-clean-dsc :
+clean-dsc : clean
 	-make -C $(DSC_DIR) clean
 
 distclean : clean clean-ruby clean-dsc
