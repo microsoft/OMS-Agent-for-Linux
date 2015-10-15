@@ -37,6 +37,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/nagios_parser_lib.rb;                    source/code/plugins/nagios_parser_lib.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/filter_omi.rb;                           source/code/plugins/filter_omi.rb;                     744; root; root
 /opt/microsoft/omsagent/plugin/omi_lib.rb;                              source/code/plugins/omi_lib.rb;                        744; root; root
+/opt/microsoft/omsagent/plugin/omslog.rb;                               source/code/plugins/omslog.rb;                         744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root

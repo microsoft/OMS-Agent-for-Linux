@@ -1,7 +1,6 @@
 %Variables
-PF:          'Linux'
-RSYSLOG_DEST:  '/etc/rsyslog.d/95-omsagent.conf'
-CONF_DIR:    '/etc/opt/microsoft/omsagent/conf'
+PF:           'Linux'
+RSYSLOG_DEST: '/etc/rsyslog.d/95-omsagent.conf'
 
 %Directories
 /etc;                                                   755; root; root; sysdir
@@ -119,11 +118,6 @@ fi
 #include OmiService_funcs
 #include CheckIfOmiIsRunning
 #include rsyslog_funcs
-
-if [ ! -f ${{CONF_DIR}}/rsyslog-oms.conf ]; then
-    cp /etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf ${{CONF_DIR}}
-    chown omsagent:omsagent ${{CONF_DIR}}/rsyslog-oms.conf
-fi
 
 # Install our rsyslog conf file
 if [ -d /etc/rsyslog.d -a ! -f ${{RSYSLOG_DEST}} ]; then

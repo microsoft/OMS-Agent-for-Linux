@@ -18,11 +18,13 @@ CONF_OMSAGENT=$CONF_DIR/omsagent.conf
 # File with OS information for telemetry
 OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
 
-# Script to control the omsagent service 
-SERVICE_CONTROL=/opt/microsoft/omsagent/bin/service_control
+# File with information about the agent installed 
+INSTALL_INFO=/etc/opt/microsoft/omsagent/sysconf/installinfo.txt
 
 RUBY=/opt/microsoft/omsagent/ruby/bin/ruby
 AUTH_KEY_SCRIPT=/opt/microsoft/omsagent/bin/auth_key.rb
+
+METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
 
 # Certs
 FILE_KEY=$CERT_DIR/oms.key
@@ -39,7 +41,6 @@ RESP_HEARTBEAT=$TMP_DIR/resp_heartbeat.xml
 BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
 RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
 
-USER_AGENT="omsagent 0.7"
 URL_TLD=opinsights.azure
 
 WORKSPACE_ID=""
@@ -62,11 +63,16 @@ usage()
     clean_exit 1
 }
 
+set_user_agent()
+{
+    USER_AGENT=`head -1 $INSTALL_INFO | awk '{print $1}'`
+}
+
 check_user()
 {
     if [ $EUID -ne 0 -a `id -un` != "omsagent" ]; then
         log_error "This script must be run as root or as the omsagent user."
-        clean_exit 1
+        exit 1
     fi
 }
 
@@ -87,6 +93,7 @@ save_config()
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
     echo DSC_ENDPOINT=$DSC_ENDPOINT >> $CONF_OMSADMIN
+    echo OMS_ENDPOINT=https://$WORKSPACE_ID.ods.$URL_TLD.com/OperationalData.svc/PostJsonDataItems >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
 }
 
@@ -110,7 +117,6 @@ cleanup()
     rm "$BODY_ONBOARD" "$RESP_ONBOARD" > /dev/null 2>&1 || true
     rm "$BODY_HEARTBEAT" "$RESP_HEARTBEAT" > /dev/null 2>&1 || true
     rm "$BODY_RENEW_CERT" "$RESP_RENEW_CERT" > /dev/null 2>&1 || true
-    rm "$SHARED_KEY_FILE" > /dev/null 2>&1 || true
 }
 
 clean_exit()
@@ -228,18 +234,6 @@ append_telemetry()
     echo "   </OperatingSystem>" >> $1
 }
 
-update_conf_endpoint()
-{
-    # Replace the endpoint in the omsagent conf. We replace the whole url in case of reonboarding.
-    sed -i.bak "s,endpoint_url.*,endpoint_url https://${WORKSPACE_ID}.ods.${URL_TLD}.com/OperationalData.svc/PostJsonDataItems," "$CONF_OMSAGENT"
-    chown_omsagent "$CONF_OMSAGENT"
-
-    # Reload the configuration
-    if [ -x $SERVICE_CONTROL ]; then
-        $SERVICE_CONTROL reload || clean_exit 1
-    fi
-}
-
 set_FQDN()
 {
     local hostname=`hostname`
@@ -281,9 +275,12 @@ onboard()
     append_telemetry $BODY_ONBOARD
     echo "</AgentTopologyRequest>" >> $BODY_ONBOARD
 
-    echo -n "$SHARED_KEY" > "$SHARED_KEY_FILE"
-
+    cat /dev/null > "$SHARED_KEY_FILE"
+    chmod 600 "$SHARED_KEY_FILE"
+    echo -n "$SHARED_KEY" >> "$SHARED_KEY_FILE"
     AUTHS=`$RUBY $AUTH_KEY_SCRIPT $REQ_DATE $BODY_ONBOARD $SHARED_KEY_FILE`
+    rm "$SHARED_KEY_FILE"
+
     CONTENT_HASH=`echo $AUTHS | cut -d" " -f1`
     AUTHORIZATION_KEY=`echo $AUTHS | cut -d" " -f2` 
 
@@ -316,8 +313,12 @@ onboard()
         log_error "Error onboarding. HTTP code $RET_CODE"
         return 1
     fi
-    update_conf_endpoint
+    
     save_config
+
+    if [ -e $METACONFIG_PY ] && which python; then
+        python $METACONFIG_PY
+    fi
     return 0
 }
 
@@ -475,6 +476,7 @@ main()
     fi
 
     check_user
+    set_user_agent
     parse_args $@
 
     [ "$ONBOARDING" = "1" ] && (onboard || clean_exit 1)
