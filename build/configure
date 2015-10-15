@@ -333,10 +333,8 @@ case $uname in
 
         if [ "$PF_ARCH" = "x86" ]; then
             PF_WIDTH=32
-            SSL_LIB_DIR=lib
         else
             PF_WIDTH=64
-            SSL_LIB_DIR=lib64
         fi
     ;;
 
@@ -354,6 +352,7 @@ RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,
 
 ruby_configure_quals=(
     --disable-install-doc
+    --disable-install-rdoc
     --without-gmp
     --with-out-ext=${RUBY_EXTENSIONS}
      )
@@ -367,14 +366,12 @@ ruby_config_quals_testins="--prefix=/usr/local/ruby-2.2.0"
 
 if [ "$ULINUX" = "1" ]; then
     ssl_098_dirpath=/usr/local_ssl_0.9.8
-    ruby_configure_quals_098=(
-        \"LDFLAGS=-L $ssl_098_dirpath/${SSL_LIB_DIR} -Wl,-rpath=/opt/omi/lib\"
-        \"CPPFLAGS=-I $ssl_098_dirpath/include\" )
+    ruby_configure_quals_098=( --with-openssl-dir=$ssl_098_dirpath
+        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 
     ssl_100_dirpath=/usr/local_ssl_1.0.0
-    ruby_configure_quals_100=(
-        \"LDFLAGS=-L $ssl_100_dirpath/${SSL_LIB_DIR} -Wl,-rpath=/opt/omi/lib\"
-        \"CPPFLAGS=-I $ssl_100_dirpath/include\" )
+    ruby_configure_quals_100=( --with-openssl-dir=$ssl_100_dirpath
+        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 fi
 
 cat <<EOF > config.mak
@@ -400,9 +397,13 @@ RUBY_CONFIGURE_QUALS_TESTINS="$ruby_config_quals_testins"
 EOF
 
 if [ "$ULINUX" = "1" ]; then
-    echo "SSL_098_LIBPATH=${ssl_098_dirpath}/${SSL_LIB_DIR}" >> config.mak
+    # SSL "lib" directory name can vary based on platform AND OpenSSL version ...
+    ssl_098_libpath=`eval echo ${ssl_098_dirpath}/lib*`
+    ssl_100_libpath=`eval echo ${ssl_100_dirpath}/lib*`
+
+    echo "SSL_098_LIBPATH=${ssl_098_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_098=( ${ruby_configure_quals_098[@]} )" >> config.mak
-    echo "SSL_100_LIBPATH=${ssl_100_dirpath}/${SSL_LIB_DIR}" >> config.mak
+    echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
 fi
 
