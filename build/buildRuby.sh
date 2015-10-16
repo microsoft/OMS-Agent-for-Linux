@@ -170,10 +170,33 @@ echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS[@]} ..."
 #
 
 echo "========================= Performing Repairing Ruby sources"
-RUBY_REPAIR_LIST="${RUBY_SRCDIR}/enc/unicode/name2ctype.h ${RUBY_SRCDIR}/enc/jis/props.h"
 
-tf get -force ${RUBY_REPAIR_LIST}
-chmod u+w ${RUBY_REPAIR_LIST}
+# RUBY_REPAIR_LIST is set reletive to the Ruby source directory
+RUBY_REPAIR_LIST="enc/unicode/name2ctype.h enc/jis/props.h"
+
+# Are we running under Jenkins? If so, no access to TFS ...
+
+cd ${RUBY_SRCDIR}
+
+if [ -n "$WORKSPACE" ]; then
+    if [ -d "$WORKSPACE" ]; then
+        if [ -e "$WORKSPACE/ruby_backup.tar" ]; then
+            echo "Restoring Ruby-modified files from backup ..."
+            tar -xvf $WORKSPACE/ruby_backup.tar
+        else
+            echo "Creating backup for Ruby-modified files ..."
+            chmod u+w ${RUBY_REPAIR_LIST}
+            tar -cvf $WORKSPACE/ruby_backup.tar ${RUBY_REPAIR_LIST}
+        fi
+    else
+        echo "Jenkins \"WORKSPACE\" is defined ($WORKSPACE), but is not a directory" 1>& 2
+        exit 1
+    fi
+else
+    # Not running under Jenkins, so just use TFS to recover Ruby files
+    tf get -force ${RUBY_REPAIR_LIST}
+    chmod u+w ${RUBY_REPAIR_LIST}
+fi
 
 # and clean up files that we know don't exist in a clean Ruby tree
 
@@ -198,12 +221,6 @@ export PATH=${RUBY_DESTDIR}/bin:$PATH
 
 echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
-
-# Eliminate coverage bundle until we can work out UTF issues
-# if [ $RUNNING_FOR_TEST -ne 0 ]; then
-    # echo "Installing Coverage into Ruby ..."
-    # elevate ${RUBY_DESTDIR}/bin/gem install coverage
-# fi
 
 # Now do what we need for FluentD
 
