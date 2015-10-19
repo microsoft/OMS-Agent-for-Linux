@@ -174,6 +174,7 @@ $(RUBY_TESTING_DIR) :
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
 	@$(ECHO) "========================= Performing Building Ruby for testing"
+	sudo $(RMDIR) /usr/local/ruby-2.2.0*
 	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh test
 
 # Build the version of Ruby that we distribute
@@ -455,10 +456,7 @@ test : $(RUBY_TESTING_DIR)
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins
 
 	@echo "========================= Performing test omsadmin.sh"
-	bash $(BASE_DIR)/test/installer/scripts/test_omsadmin.sh $(BASE_DIR)
+	bash $(BASE_DIR)/test/installer/scripts/test_omsadmin.sh $(BASE_DIR) $(RUBY_TESTING_DIR)
 
-ifeq ($(ULINUX),1)
-	# Unit tests currently unreliably, temporarily disable them
-	# (Note that standard SCX builds will run unit tests as well)
-	# $(MAKE) -C $(SCX_DIR)/build test
-endif
+fulltest : test
+	$(MAKE) -C $(SCX_DIR)/build test

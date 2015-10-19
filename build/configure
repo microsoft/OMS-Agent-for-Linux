@@ -123,10 +123,6 @@ if [ $? -eq 0 -a `number_of_bits` -eq 32 ]; then
     NOOPTIMIZE=1
 fi
 
-# List of ruby extensions. Disable everything, remove if:
-#   1. We absolutely need something, and
-#   2. We can guarantee (and insure) machine requirements for extension (at both build-time and run-time)
-
 for opt
 do
 
@@ -346,23 +342,36 @@ else
     BUILD_CONFIGURATION=${PF}_${PF_MAJOR}.${PF_MINOR}_${PF_ARCH}_${PF_WIDTH}_${build_type}
 fi
 
+# List of ruby extensions. Disable everything, remove if:
+#   1. We absolutely need something, and
+#   2. We can guarantee (and insure) machine requirements for extension (at both build-time and run-time)
+#
+# Note: To see how Ruby was built (after the fact), use a command like:
+#
+#   ruby -e 'puts RUBY_DESCRIPTION, RbConfig::CONFIG["GCC"], RbConfig::CONFIG["cflags"]'
+#
 # Determine Ruby configuration based on our configuration
 
 RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
 
+if [ $NOOPTIMIZE -eq 1 ]; then
+    ruby_optimize_flag=-O2
+else
+    ruby_optimize_flag=-O3
+fi
+
+ruby_cflags="${ruby_optimize_flag} -fno-fast-math -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration"
+
 ruby_configure_quals=(
+    \"CFLAGS=${ruby_cflags}\"
     --disable-install-doc
     --disable-install-rdoc
     --without-gmp
     --with-out-ext=${RUBY_EXTENSIONS}
      )
 
-if [ $NOOPTIMIZE -eq 1 ]; then
-    ruby_configure_quals=( CFLAGS=-O1 CXXFLAGS=-O1 ${ruby_configure_quals[@]} )
-fi
-
 ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
-ruby_config_quals_testins="--prefix=/usr/local/ruby-2.2.0"
+ruby_config_quals_testins="--prefix=/usr/local/ruby-2.2.0a"
 
 if [ "$ULINUX" = "1" ]; then
     ssl_098_dirpath=/usr/local_ssl_0.9.8
@@ -413,7 +422,7 @@ chmod ug+x ${scxcim_dir}/build/configure
 
 # Display some information for our own configuration
 if [ $NOOPTIMIZE -eq 1 ]; then
-    echo "Notice: Ruby will be built WITHOUT optimization!"
+    echo "Notice: Ruby will be built WITH REDUCED optimization!"
 fi
 
 if [ "$ULINUX" = "1" ]; then

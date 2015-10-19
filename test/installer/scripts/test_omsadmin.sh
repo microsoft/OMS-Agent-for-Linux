@@ -1,4 +1,6 @@
 BASE_DIR=$1
+RUBY_TESTVERS=$2
+
 TESTDIR_SKEL=/tmp/test_omsadmin_
 TESTDIR=$TESTDIR_SKEL$$
 mkdir -p $TESTDIR
@@ -15,7 +17,7 @@ sed -i s,TMP_DIR=.*,TMP_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,CONF_DIR=.*,CONF_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,CERT_DIR=.*,CERT_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,OS_INFO=.*,OS_INFO=$TESTDIR/scx-release,1 $OMSADMIN
-sed -i s,RUBY=.*,RUBY=/usr/local/ruby-2.2.0/bin/ruby,1 $OMSADMIN
+sed -i s,RUBY=.*,RUBY=${RUBY_TESTVERS}/bin/ruby,1 $OMSADMIN
 sed -i s,AUTH_KEY_SCRIPT=.*,AUTH_KEY_SCRIPT=$BASE_DIR/installer/scripts/auth_key.rb,1 $OMSADMIN
 sed -i s,INSTALL_INFO=.*,INSTALL_INFO=$BASE_DIR/installer/conf/installinfo.txt,1 $OMSADMIN
 

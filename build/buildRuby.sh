@@ -239,6 +239,10 @@ bundle install --local
 bundle exec rake build
 elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
 
+echo "========================= Performing Stripping Binaries"
+sudo find ${RUBY_DESTDIR} -name \*.so -print -exec strip {} \;
+sudo strip ${RUBY_DESTDIR}/bin/ruby
+
 if [ $RUNNING_FOR_TEST -eq 0 ]; then
     echo "========================= Performing Moving Ruby to intermediate directory"
 

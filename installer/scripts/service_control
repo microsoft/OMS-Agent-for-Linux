@@ -90,7 +90,7 @@ start_omsagent()
     elif [ -x /usr/bin/systemctl ]; then
         /usr/bin/systemctl start omsagent
     else
-        echo "Unrecognized service controller to restart omsagent service" 1>&2
+        echo "Unrecognized service controller to start omsagent service" 1>&2
         exit 1
     fi
 }
@@ -102,9 +102,9 @@ stop_omsagent()
     elif [ -x /sbin/service ]; then
         /sbin/service omsagent stop
     elif [ -x /usr/bin/systemctl ]; then
-        /usr/bin/systemctl restart stop
+        /usr/bin/systemctl stop omsagent
     else
-        echo "Unrecognized service controller to restart omsagent service" 1>&2
+        echo "Unrecognized service controller to stop omsagent service" 1>&2
         exit 1
     fi
 }
