@@ -38,6 +38,11 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/filter_omi.rb;                           source/code/plugins/filter_omi.rb;                     744; root; root
 /opt/microsoft/omsagent/plugin/omi_lib.rb;                              source/code/plugins/omi_lib.rb;                        744; root; root
 /opt/microsoft/omsagent/plugin/omslog.rb;                               source/code/plugins/omslog.rb;                         744; root; root
+/opt/microsoft/omsagent/plugin/in_zabbix.rb;                            source/code/plugins/in_zabbix.rb;                      744; root; root
+/opt/microsoft/omsagent/plugin/zabbix_lib.rb;                           source/code/plugins/zabbix_lib.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/zabbix_client.rb;                        source/code/plugins/zabbix_client.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/zabbixapi.rb;                            source/code/plugins/zabbixapi.rb;                      744; root; root
+/opt/microsoft/omsagent/plugin/zabbix_version.rb;                       source/code/plugins/zabbix_version.rb;                 744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
@@ -92,6 +97,7 @@ chown -R omsagent:omsagent /etc/opt/microsoft/omsagent/certs
 mkdir -m 755 /var/opt/microsoft/omsagent        2> /dev/null || true
 mkdir -m 755 /var/opt/microsoft/omsagent/log    2> /dev/null || true
 mkdir -m 755 /var/opt/microsoft/omsagent/run    2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/state  2> /dev/null || true
 mkdir -m 755 /var/opt/microsoft/omsagent/tmp    2> /dev/null || true
 chown -R omsagent:omsagent /var/opt/microsoft/omsagent
 
@@ -126,6 +132,7 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
    # Clean up directory tree (created via PostInstall) if dirs are empty
    rmdir /etc/opt/microsoft/omsagent/certs/ 2> /dev/null
    rmdir /var/opt/microsoft/omsagent/tmp 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent/state 2> /dev/null
    rmdir /var/opt/microsoft/omsagent/run 2> /dev/null
    rmdir /var/opt/microsoft/omsagent/log 2> /dev/null
    rmdir /var/opt/microsoft/omsagent 2> /dev/null
