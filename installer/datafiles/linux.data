@@ -1,6 +1,7 @@
 %Variables
 PF:           'Linux'
 RSYSLOG_DEST: '/etc/rsyslog.d/95-omsagent.conf'
+OMI_SERVICE:  '/opt/omi/bin/service_control'
 
 %Directories
 /etc;                                                   755; root; root; sysdir
@@ -9,35 +10,6 @@ RSYSLOG_DEST: '/etc/rsyslog.d/95-omsagent.conf'
 %Files
 /etc/init.d/omsagent;                                                   installer/scripts/omsagent.ulinux;                     755; root; root
 
-%OmiService_funcs
-StopOmiServer() {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omiserverd stop
-    elif [ -x /sbin/service ]; then
-        /sbin/service omiserverd stop
-    else
-        echo "Unrecognized service controller to start OMI service" 1>&2
-        exit 1
-    fi
-}
-
-StartOmiServer() {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omiserverd start
-    elif [ -x /sbin/service ]; then
-        /sbin/service omiserverd start
-    else
-        echo "Unrecognized service controller to start OMI service" 1>&2
-        exit 1
-    fi
-}
-
-RestartOmiServer() {
-    if [ $OMI_IS_RUNNING -eq 1 ]; then
-        StopOmiServer
-    fi
-    StartOmiServer
-}
 
 %OMSService_funcs
 RemoveOMSService() {
@@ -91,7 +63,6 @@ RestartRsyslog() {
 
 %Preinstall_1000
 #include OMSService_funcs
-#include OmiService_funcs
 
 # If our service is already running, stop it
 if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
@@ -115,8 +86,6 @@ fi
 
 %Postinstall_200
 #include OMSService_funcs
-#include OmiService_funcs
-#include CheckIfOmiIsRunning
 #include rsyslog_funcs
 
 # Install our rsyslog conf file
@@ -128,7 +97,8 @@ fi
 
 # TODO support syslog-ng
 
-RestartOmiServer
+# Reload the OMI server
+${{OMI_SERVICE}} reload
 
 RegisterOMSService
 
@@ -137,13 +107,7 @@ RegisterOMSService
 [ $? -eq 0 ] && /opt/microsoft/omsagent/bin/service_control start
 
 %Preuninstall_10
-#include OmiService_funcs
 #include OMSService_funcs
-
-#include CheckIfOmiIsRunning
-if [ $OMI_IS_RUNNING -eq 1 ]; then
-    StopOmiServer
-fi
 
 if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
     /opt/microsoft/omsagent/bin/service_control stop
@@ -152,14 +116,12 @@ fi
 RemoveOMSService
 
 %Postuninstall_1000
-#include OmiService_funcs
-#include CheckIfOmiIsRunning
 #include rsyslog_funcs
 
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
     # Restart the OMI server in case an agent is running under service account
-    RestartOmiServer
+    ${{OMI_SERVICE}} restart
 
     # Remove the service account
     echo "Deleting omsagent service account ..."

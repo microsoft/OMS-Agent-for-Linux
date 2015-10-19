@@ -67,19 +67,6 @@ MAINTAINER:              'Microsoft Corporation'
 
 %Dependencies
 
-%CheckIfOmiIsRunning
-OMI_IS_RUNNING=1
-if [ -f /var/opt/omi/run/omiserver.pid ]; then
-    #  Check if omiserver is running with this pid.
-    omi_pid=`cat /var/opt/omi/run/omiserver.pid`
-    ps -aef | grep $omi_pid | grep omiserver 1> /dev/null 2> /dev/null
-    if [ $? -ne 0 ]; then
-	OMI_IS_RUNNING=0
-    fi
-else
-    OMI_IS_RUNNING=0
-fi
-
 %Postinstall_100
 WriteInstallInfo() {
     echo "${{VERSION}}-${{RELEASE}} ${{VERSION_IDENT}}" > /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
