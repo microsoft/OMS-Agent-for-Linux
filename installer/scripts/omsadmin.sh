@@ -193,19 +193,23 @@ generate_certs()
     # Certifictate Information:
     # CN={workspaceId}, CN={agentId, you can use any GUID on registration}, OU=Microsoft Monitoring Agent, O=Microsoft
     log_info "Generating certificate ..."
-    
+    local tmp_key="$FILE_KEY.tmp"
     # Set safe certificate permissions before to prevent timing attacks
-    touch "$FILE_KEY" "$FILE_CRT"
-    chown_omsagent "$FILE_KEY" "$FILE_CRT"
-    chmod 600 "$FILE_KEY" "$FILE_CRT"
+    touch "$tmp_key" "$FILE_KEY" "$FILE_CRT"
+    chown_omsagent "$tmp_key" "$FILE_KEY" "$FILE_CRT"
+    chmod 600 "$tmp_key" "$FILE_KEY" "$FILE_CRT"
 
     openssl req -subj "/CN=$WORKSPACE_ID/CN=$AGENT_GUID/OU=Microsoft Monitoring Agent/O=Microsoft" -new -newkey \
-        rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$FILE_KEY" -out "$FILE_CRT" > /dev/null 2>&1
+        rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$tmp_key" -out "$FILE_CRT" > /dev/null 2>&1
 
-    if [ "$?" -ne 0 -o ! -e "$FILE_KEY" -o ! -e "$FILE_CRT" ]; then
+    if [ "$?" -ne 0 -o ! -e "$tmp_key" -o ! -e "$FILE_CRT" ]; then
         log_error "Error generating certs"
         clean_exit 1
     fi
+    
+    # Convert key to rsa format for older systems
+    openssl rsa -in "$tmp_key" -out "$FILE_KEY" > /dev/null 2>&1
+    rm "$tmp_key"
 }
 
 append_telemetry()
