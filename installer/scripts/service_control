@@ -19,8 +19,18 @@
 LOGFILE=/var/opt/microsoft/omsagent/log/omsagent.log
 PIDFILE=/var/opt/microsoft/omsagent/run/omsagent.pid
 
+verify_privileges()
+{
+    if [ `id -u` -ne 0 ]; then
+        echo "Must have root privileges for this operation" >& 2
+        exit 1
+    fi
+}
+
 is_omsagent_running()
 {
+    verify_privileges
+
     # Returns 1 if 'omsagent' is running, 0 otherwise
     [ -f $PIDFILE ] || return 0
     ps -p `cat $PIDFILE` | grep -q omsagent
@@ -83,43 +93,70 @@ start_omsagent_process()
 
 start_omsagent()
 {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent start
-    elif [ -x /sbin/service ]; then
-        /sbin/service omsagent start
-    elif [ -x /usr/bin/systemctl ]; then
+    is_omsagent_running
+    [ $? -ne 0 ] && return
+
+    # Registered as a systemd service?
+    if [ -f /usr/lib/systemd/system/omsagent.service ]; then
         /usr/bin/systemctl start omsagent
     else
-        echo "Unrecognized service controller to start omsagent service" 1>&2
-        exit 1
+        if [ -x /usr/sbin/invoke-rc.d ]; then
+            /usr/sbin/invoke-rc.d omsagent start
+        elif [ -x /sbin/service ]; then
+            /sbin/service omsagent start
+        elif [ -x /usr/bin/systemctl ]; then
+            /usr/bin/systemctl start omsagent
+        else
+            echo "Unrecognized service controller to start OMS Agent service" 1>&2
+            exit 1
+        fi
     fi
 }
 
 stop_omsagent()
 {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent stop
-    elif [ -x /sbin/service ]; then
-        /sbin/service omsagent stop
-    elif [ -x /usr/bin/systemctl ]; then
-        /usr/bin/systemctl stop omsagent
-    else
-        echo "Unrecognized service controller to stop omsagent service" 1>&2
-        exit 1
+    is_omsagent_running
+    if [ $? -ne 0 ]; then
+        # Registered as a systemd service?
+        if [ -f /usr/lib/systemd/system/omsagent.service ]; then
+            /usr/bin/systemctl stop omsagent
+        else
+            if [ -x /usr/sbin/invoke-rc.d ]; then
+                /usr/sbin/invoke-rc.d omsagent stop
+            elif [ -x /sbin/service ]; then
+                /sbin/service omsagent stop
+            elif [ -x /usr/bin/systemctl ]; then
+                /usr/bin/systemctl stop omsagent
+            else
+                echo "Unrecognized service controller to stop OMS Agent service" 1>&2
+                exit 1
+            fi
+        fi
     fi
 }
 
 restart_omsagent()
 {
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d omsagent restart
-    elif [ -x /sbin/service ]; then
-        /sbin/service omsagent restart
-    elif [ -x /usr/bin/systemctl ]; then
+    is_omsagent_running
+    if [ $? -eq 0 ]; then
+        start_omsagent
+        return
+    fi
+
+    # Registered as a systemd service?
+    if [ -f /usr/lib/systemd/system/omsagent.service ]; then
         /usr/bin/systemctl restart omsagent
     else
-        echo "Unrecognized service controller to restart omsagent service" 1>&2
-        exit 1
+        if [ -x /usr/sbin/invoke-rc.d ]; then
+            /usr/sbin/invoke-rc.d omsagent restart
+        elif [ -x /sbin/service ]; then
+            /sbin/service omsagent restart
+        elif [ -x /usr/bin/systemctl ]; then
+            /usr/bin/systemctl restart omsagent
+        else
+            echo "Unrecognized service controller to restart OMS Agent service" 1>&2
+            exit 1
+        fi
     fi
 }
 

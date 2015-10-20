@@ -2,46 +2,70 @@
 PF:           'Linux'
 RSYSLOG_DEST: '/etc/rsyslog.d/95-omsagent.conf'
 OMI_SERVICE:  '/opt/omi/bin/service_control'
+OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
 
 %Directories
 /etc;                                                   755; root; root; sysdir
 /etc/init.d;                                            755; root; root; sysdir
 
 %Files
-/etc/init.d/omsagent;                                                   installer/scripts/omsagent.ulinux;                     755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux;                    installer/scripts/omsagent.ulinux;                     755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    755; root; root
 
 
 %OMSService_funcs
-RemoveOMSService() {
-    if [ -x /usr/sbin/update-rc.d ]; then
-        /usr/sbin/update-rc.d omsagent defaults > /dev/null
-    elif [ -x /usr/lib/lsb/remove_initd ]; then
-        /usr/lib/lsb/remove_initd /etc/init.d/omsagent
-    elif [ -x /sbin/chkconfig ]; then
-        /sbin/chkconfig --del omsagent > /dev/null
-    else
-        echo "Unrecognized service controller to unregister omsagent service."
-        exit 1
+StopOMSService() {
+    if [ -f ${{OMS_SERVICE}} ]; then
+        ${{OMS_SERVICE}} stop
     fi
 }
 
-RegisterOMSService() {
-    if [ -x /usr/sbin/update-rc.d ]; then
-        /usr/sbin/update-rc.d omsagent defaults > /dev/null
-    elif [ -x /usr/lib/lsb/install_initd ]; then
-        /usr/lib/lsb/install_initd /etc/init.d/omsagent
-    elif [ -x /sbin/chkconfig ]; then
-        /sbin/chkconfig --add omsagent > /dev/null
+RemoveOMSService() {
+    # Stop the server if it's running
+    StopOMSService
+
+    # Registered as a systemd service?
+    if [ -f /usr/lib/systemd/system/omsagent.service ]; then
+        rm -f /usr/lib/systemd/system/omsagent.service
+    elif [ -f /etc/init.d/omsagent ]; then
+        if [ -f /usr/sbin/update-rc.d ]; then
+            /usr/sbin/update-rc.d -f omsagent remove
+        elif [ -x /usr/lib/lsb/remove_initd ]; then
+            /usr/lib/lsb/remove_initd /etc/init.d/omsagent
+        elif [ -x /sbin/chkconfig ]; then
+            chkconfig --del omsagent > /dev/null
+        else
+            echo "Unrecognized Service Controller to unregister OMS Agent Service."
+            exit 1
+        fi
+
+        rm /etc/init.d/omsagent
+    fi
+}
+
+ConfigureOMSService() {
+    echo "Configuring OMS agent service ..."
+    pidof systemd 1> /dev/null 2> /dev/null
+    if [ $? -eq 0 ]; then
+        # systemd
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd /usr/lib/systemd/system/omsagent.service
+        /usr/bin/systemctl daemon-reload
     else
-        echo "Unrecognized service controller to configure OMS service."
-        exit 1
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
+
+        if [ -x /usr/sbin/update-rc.d ]; then
+            update-rc.d omsagent defaults > /dev/null
+        elif [ -x /usr/lib/lsb/install_initd ]; then
+            /usr/lib/lsb/install_initd /etc/init.d/omsagent
+        elif [ -x /sbin/chkconfig ]; then
+            chkconfig --add omsagent > /dev/null
+        else
+            echo "Unrecognized Service Controller to configure OMS Agent Service."
+            exit 1
+        fi
     fi
 
-    # If we have systemctl here, tell it to reload (resolves transient problems)
-    which systemctl > /dev/null 2> /dev/null
-    if [ $? -eq 0 ]; then
-        systemctl daemon-reload
-    fi
+    ${{OMS_SERVICE}} start
 }
 
 %rsyslog_funcs
@@ -100,11 +124,7 @@ fi
 # Reload the OMI server
 ${{OMI_SERVICE}} reload
 
-RegisterOMSService
-
-%Postinstall_400
-/opt/microsoft/omsagent/bin/service_control is-running
-[ $? -eq 0 ] && /opt/microsoft/omsagent/bin/service_control start
+ConfigureOMSService
 
 %Preuninstall_10
 #include OMSService_funcs
