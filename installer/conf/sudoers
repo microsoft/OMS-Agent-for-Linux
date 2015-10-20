@@ -1,12 +1,10 @@
 #Sudo configuration for omsagent
 User_Alias OMSUSERS = omsagent
 
-#restart rsyslog
-OMSUSERS ALL=(ALL) NOPASSWD: /usr/sbin/service rsyslog restart
-OMSUSERS ALL=(ALL) NOPASSWD: /bin/systemctl restart rsyslog
-
-#restart syslog-ng
-OMSUSERS ALL=(ALL) NOPASSWD: /usr/sbin/service syslogd restart
+#update and restart syslog
+OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSRsyslog.post.sh
+OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSSysklog.post.sh
+OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSSyslog-ng.post.sh
 
 #Inspect Docker containers (filter_docker_log.rb)
 OMSUSERS ALL=(ALL) NOPASSWD: /usr/bin/docker inspect *
