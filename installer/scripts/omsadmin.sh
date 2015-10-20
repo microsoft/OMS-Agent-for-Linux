@@ -65,7 +65,7 @@ usage()
 
 set_user_agent()
 {
-    USER_AGENT=`head -1 $INSTALL_INFO | awk '{print $1}'`
+    USER_AGENT=LinuxMonitoringAgent/`head -1 $INSTALL_INFO | awk '{print $1}'`
 }
 
 check_user()
