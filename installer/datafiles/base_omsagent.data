@@ -3,6 +3,7 @@ SHELL_HEADER:            '#!/bin/sh'
 OMSHOME:                 '/opt/microsoft/omsagent'
 SUDO_LOC:                '/etc/opt/microsoft/omsagent/conf/sudodir'
 SUDO_DIR:                '/usr/bin'
+CONF_DIR:                '/etc/opt/microsoft/omsagent/conf'
 
 SHORT_NAME:              'omsagent'
 SHORT_NAME_PREFIX:       'MSFT'
@@ -90,14 +91,16 @@ chown -R omsagent:omsagent /var/opt/microsoft/omsagent
 
 # Ditto for conf directory in /etc/opt/microsoft/omsagent/conf ...
 
-CONF_DIR="/etc/opt/microsoft/omsagent/conf"
-mkdir -m 755 "$CONF_DIR" 2> /dev/null || true
+mkdir -m 755 ${{CONF_DIR}} 2> /dev/null || true
 
-if [ ! -f "$CONF_DIR/omsagent.conf" ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf "$CONF_DIR"
+if [ ! -f ${{CONF_DIR}}/omsagent.conf ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf ${{CONF_DIR}}
 fi
 
-chown -R omsagent:omsagent "$CONF_DIR"
+# Folder for omsagent.conf includes
+mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
+
+chown -R omsagent:omsagent ${{CONF_DIR}}
 
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
