@@ -11,6 +11,9 @@ module Fluent
 			require 'date'
 			require '/opt/microsoft/omsagent/plugin/zabbixapi' 
 			require_relative 'zabbix_lib'
+			
+			@watermark_file = '/var/opt/microsoft/omsagent/state/zabbix_watermark'
+			@default_watermark = Time.now.utc.to_i
 		end
 
 		config_param :run_interval, :time, :default => nil
@@ -29,7 +32,7 @@ module Fluent
 		end
 
 		def start
-			@zabbix_lib = ZabbixModule::Zabbix.new(ZabbixModule::RuntimeError.new, DateTime.parse("1970-01-01 00:00:00").to_time.to_i, ZabbixApiWrapper, @zabbix_url, @zabbix_username, @zabbix_password)
+			@zabbix_lib = ZabbixModule::Zabbix.new(ZabbixModule::RuntimeError.new, @watermark_file, @default_watermark, ZabbixApiWrapper, @zabbix_url, @zabbix_username, @zabbix_password)
 			if @run_interval
 				@finished = false
 				@condition = ConditionVariable.new

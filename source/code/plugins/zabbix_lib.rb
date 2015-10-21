@@ -1,6 +1,7 @@
 module ZabbixModule
 	require_relative 'zabbixapi'
-
+	require 'time'
+	
 	class LoggingBase
 		def log_error(text)
 		end
@@ -13,9 +14,20 @@ module ZabbixModule
 	end
 	
 	class Zabbix
-		def initialize(error_handler, watermark_time, zabbix_client, zabbix_url, zabbix_username, zabbix_password)
+		def initialize(error_handler, watermark_file, default_timestamp, zabbix_client, zabbix_url, zabbix_username, zabbix_password)
+			# check whether watermark file exists,
+			# if it exists, read the watermark from it 
+			# else default the watermark to passed in timestamp
+			# and create watermark file
+			if (File.file?(watermark_file))
+				@watermark_time = File.read(watermark_file).to_i
+			else
+				@watermark_time = default_timestamp
+				File.open(watermark_file, 'w+') {|f| f.write(@watermark_time.to_s) }
+			end
+			
+			@watermark_file = watermark_file
 			@error_handler = error_handler
-			@watermark_time = watermark_time
 			@zabbix_client = zabbix_client
 			@zabbix_url = zabbix_url
 			@zabbix_username = zabbix_username
@@ -62,17 +74,21 @@ module ZabbixModule
 			triggers.each { |trigger| 
 				if (trigger["lastchange"].to_i > @watermark_time)
 					trigger["description"] = trigger["description"].sub('{HOST.NAME}', trigger["host"])
-					oms_alerts.push(trigger)
 
 					# update the latest record ingestion time
 					if (trigger["lastchange"].to_i > last_ingest_time)
 						last_ingest_time = trigger["lastchange"].to_i
 					end
+					
+					oms_alerts.push(trigger)
 				end
-			}
+		}
 			
 			# update watermark_time to be the latest ingestion time
 			@watermark_time = last_ingest_time
+			
+			# write watermark time to disk
+			File.open(@watermark_file, 'w') {|f| f.write(@watermark_time.to_s) }
 			
 			return oms_alerts
 		end
