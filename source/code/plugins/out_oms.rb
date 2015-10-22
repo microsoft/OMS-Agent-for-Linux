@@ -111,7 +111,7 @@ class Fluent::OutputOMS < Fluent::Output
     return req
   end
 
-  def start_request(req)
+  def start_request(req, tag)
     res = nil
 
     begin
@@ -127,20 +127,20 @@ class Fluent::OutputOMS < Fluent::Output
         return true
       end
       if res
-        res_summary = "#{res.code} #{res.message} #{res.body}"
+        res_summary = "(#{res.code} #{res.message} #{res.body})"
       else
-        res_summary = "res=nil"
+        res_summary = "(res=nil)"
       end
-      $log.warn "Failed to #{req.method} #{req.body} #{@uri_endpoint} (#{res_summary})"
+      @omslog.log_once(@warn_proc, @debug_proc, "Failed to #{req.method} #{tag} at #{@uri_endpoint} #{res_summary}")
       return false
     end # end begin
   end # end start_request
 
   def handle_record(tag, time, record)
     req = create_request(record)
-    success = start_request(req)
+    success = start_request(req, tag)
     if success
-      $log.debug "Sent #{tag} at #{time}"
+      $log.debug "Success sending #{tag}"
     end
   end
 
