@@ -40,29 +40,39 @@ handle_return_code()
     if [ $ret_code -eq 0 ]; then
         echo "OK"
     else
-        echo "FAIL! Log stored in: $dbg_file_path" 1>&2
+        mv "$dbg_file_path" "$dbg_file_path.fail"
+        echo "FAIL! Log stored in: $dbg_file_path.fail" 1>&2
         HAS_FAILURE=1
     fi
 }
 
-# This is a static workspace ID and shared key that should not change
 echo -n "Test Onboarding...  "
-sudo bash -x $OMSADMIN -v -w cec9ea66-f775-41cd-a0a6-2d0f0ffdac6f -s qoTgVB0a1393p4FUncrY0nc/U1/CkOYlXz3ok3Oe79gSB6NLa853hiQzcwcyBb10Rjj7iswRvoJGtLJUD/o/yw== > $DBG_ONDBOARD 2>&1
+echo "======================== TEST ONBOARDING  ========================" > $DBG_ONDBOARD 
+# This is a static workspace ID and shared key that should not change
+WORKSPACE_ID=cec9ea66-f775-41cd-a0a6-2d0f0ffdac6f
+SHARED_KEY=qoTgVB0a1393p4FUncrY0nc/U1/CkOYlXz3ok3Oe79gSB6NLa853hiQzcwcyBb10Rjj7iswRvoJGtLJUD/o/yw==
+
+echo "sudo bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY" >> $DBG_ONDBOARD
+sudo bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY >> $DBG_ONDBOARD 2>&1
 handle_return_code $? $DBG_ONDBOARD
 
 echo -n "Test Heartbeat...   "
-sudo bash -x $OMSADMIN -v -b  > $DBG_HEARTBEAT 2>&1
+echo "======================== TEST HEARTBEAT ========================" > $DBG_HEARTBEAT
+echo "sudo bash -x $OMSADMIN -v -b"  >> $DBG_HEARTBEAT
+sudo bash -x $OMSADMIN -v -b  >> $DBG_HEARTBEAT 2>&1
 handle_return_code $? $DBG_HEARTBEAT
 
 echo -n "Test Renew certs... "
-sudo bash -x $OMSADMIN -v -r  > $DBG_RENEWCERT 2>&1
+echo "======================== TEST RENEW CERTS ========================" > $DBG_RENEWCERT
+echo "bash -x $OMSADMIN -v -r" >> $DBG_RENEWCERT
+sudo bash -x $OMSADMIN -v -r  >> $DBG_RENEWCERT 2>&1
 handle_return_code $? $DBG_RENEWCERT
 
 # Leave folder around if there was a failure for post mortem debug
 if [ $HAS_FAILURE -eq 0 ]; then
     rm -rf $TESTDIR_SKEL*
 else
-    cat $TESTDIR/debug_* 2>&1
+    cat $TESTDIR/debug_*.fail 2>&1
 fi
 
 exit $HAS_FAILURE
