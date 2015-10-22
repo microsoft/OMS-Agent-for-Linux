@@ -21,7 +21,6 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
-/etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf;                   installer/conf/rsyslog-oms.conf;                       644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
 
 /opt/microsoft/omsagent/LICENSE.txt;                                    LICENSE.txt;                                           444; root; root

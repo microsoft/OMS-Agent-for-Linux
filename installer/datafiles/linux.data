@@ -9,6 +9,9 @@ OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
 /etc/init.d;                                            755; root; root; sysdir
 
 %Files
+/etc/opt/microsoft/omsagent/sysconf/rsyslog.conf;                       installer/conf/rsyslog.conf;                           644; root; root
+/etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf;                     installer/conf/syslog-ng.conf;                         644; root; root
+
 /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux;                    installer/scripts/omsagent.ulinux;                     755; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    755; root; root
 
@@ -68,22 +71,122 @@ ConfigureOMSService() {
     ${{OMS_SERVICE}} start
 }
 
-%rsyslog_funcs
-RestartRsyslog() {
-    # If /etc/rsyslog.d doesn't exist, then rsyslog likely isn't here
-    if [ ! -d /etc/rsyslog.d ]; then
+%Syslog_Services
+RestartService() {
+    if [ -z "$1" ]; then
+        echo "RestartService requires parameter (service name to restart)" 1>&2
         return 1
     fi
 
-    if [ -x /usr/sbin/invoke-rc.d ]; then
-        /usr/sbin/invoke-rc.d rsyslog restart
-    elif [ -x /sbin/service ]; then
-        /sbin/service rsyslog restart
+    echo "Restarting service: $1"
+
+    # Does the service exist under systemd?
+    pidof systemd 1> /dev/null 2> /dev/null
+    if [ $? -eq 0 -a -f /usr/lib/systemd/system/${1}.service ]; then
+        /usr/bin/systemctl restart $1
     else
-        echo "Unrecognized service controller to restart rsyslog service" 1>&2
-        exit 1
+        if [ -x /usr/sbin/invoke-rc.d ]; then
+            /usr/sbin/invoke-rc.d $1 restart
+        elif [ -x /sbin/service ]; then
+            /sbin/service $1 restart
+        elif [ -x /usr/bin/systemctl ]; then
+            /usr/bin/systemctl restart $1
+        else
+            echo "Unrecognized service controller to start service $1" 1>&2
+	    return 1
+        fi
+     fi    
+}
+
+ConfigureRsyslog() {
+    if [ ! -f ${{RSYSLOG_DEST}} ]; then
+        echo "Configuring rsyslog for OMS logging"
+
+        cp /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf ${{RSYSLOG_DEST}}
+        chown omsagent:omsagent ${{RSYSLOG_DEST}}
+        RestartService rsyslog
     fi
 }
+
+UnconfigureRsyslog() {
+    if [ -f ${{RSYSLOG_DEST}} ]; then
+        echo "Unconfiguring rsyslog for OMS logging"
+
+        rm -f ${{RSYSLOG_DEST}}
+        RestartService rsyslog
+    fi
+}
+
+ConfigureSyslog_ng() {
+    # Don't reconfigure syslog-ng if already configured (avoid duplicate entries)
+    egrep -q "OMS_|_oms" /etc/syslog-ng/syslog-ng.conf
+    if [ $? -ne 0 ]; then
+        echo "Configuring syslog-ng for OMS logging"
+
+        cat /etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf >> /etc/syslog-ng/syslog-ng.conf
+        RestartService syslog
+    fi
+}
+
+UnconfigureSyslog_ng() {
+    egrep -q "OMS_|_oms" /etc/syslog-ng/syslog-ng.conf
+    if [ $? -eq 0 ]; then
+        echo "Unconfiguring syslog-ng for OMS logging"
+
+        cp /etc/syslog-ng/syslog-ng.conf /etc/syslog-ng/syslog-ng.bak
+        egrep -v "OMS_|_oms" /etc/syslog-ng/syslog-ng.bak > /etc/syslog-ng/syslog-ng.conf
+        RestartService syslog
+    fi
+}
+
+ConfigureSysklog() {
+    # Don't configure sysklog if already configured (avoid duplicate entries)
+    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/syslog.conf
+    if [ $? -ne 0 ]; then
+        echo "Configuring sysklog for OMS logging"
+
+        cat /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf >> /etc/syslog.conf
+        RestartService syslog
+    fi
+}
+
+UnconfigureSysklog() {
+    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/syslog.conf
+    if [ $? -eq 0 ]; then
+        echo "Unconfiguring sysklog for OMS logging"
+
+        cp /etc/syslog.conf /etc/syslog/syslog.bak
+        egrep -v "OMS Syslog|@127.0.0.1:25224" /etc/syslog.bak > /etc/syslog.conf
+        RestartService syslog
+    fi
+}
+
+ConfigureSyslog() {
+    if [ -f /etc/rsyslog.conf -a -d /etc/rsyslog.d ]; then
+        ConfigureRsyslog
+    elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
+        ConfigureSyslog_ng
+    elif [ -f /etc/syslog.conf ]; then
+        ConfigureSysklog
+    else
+        echo "Unable to determine syslog controller for OMS logging"
+        return 1
+    fi
+}
+
+UnconfigureSyslog() {
+    if [ -f /etc/rsyslog.conf -a -d /etc/rsyslog.d ]; then
+        UnconfigureRsyslog
+    elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
+        UnconfigureSyslog_ng
+    elif [ -f /etc/syslog.conf ]; then
+        UnconfigureSysklog
+    else
+        echo "Unable to determine syslog controller for OMS logging"
+        return 1
+    fi
+}
+
 
 %Preinstall_1000
 #include OMSService_funcs
@@ -110,21 +213,11 @@ fi
 
 %Postinstall_200
 #include OMSService_funcs
-#include rsyslog_funcs
+#include Syslog_Services
 
-# Install our rsyslog conf file
-if [ -d /etc/rsyslog.d -a ! -f ${{RSYSLOG_DEST}} ]; then
-    cp /etc/opt/microsoft/omsagent/sysconf/rsyslog-oms.conf ${{RSYSLOG_DEST}}
-    chown omsagent:omsagent ${{RSYSLOG_DEST}}
-    RestartRsyslog
-fi
-
-# TODO support syslog-ng
-
-# Reload the OMI server
 ${{OMI_SERVICE}} reload
-
 ConfigureOMSService
+ConfigureSyslog
 
 %Preuninstall_10
 #include OMSService_funcs
@@ -136,10 +229,12 @@ fi
 RemoveOMSService
 
 %Postuninstall_1000
-#include rsyslog_funcs
+#include Syslog_Services
 
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
+    UnconfigureSyslog
+
     # Restart the OMI server in case an agent is running under service account
     ${{OMI_SERVICE}} restart
 
@@ -155,7 +250,4 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
             groupdel omsagent
         fi
     fi
-
-    rm -f ${{RSYSLOG_DEST}}
-    RestartRsyslog
 fi
