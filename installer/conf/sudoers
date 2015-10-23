@@ -7,5 +7,8 @@ OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSRsyslog.post.sh
 OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSSysklog.post.sh
 OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSSyslog-ng.post.sh
 
+#restart omsagent daemon
+OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/bin/service_control
+
 #Inspect Docker containers (filter_docker_log.rb)
 OMSUSERS ALL=(ALL) NOPASSWD: /usr/bin/docker inspect *
