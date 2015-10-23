@@ -28,6 +28,18 @@ class ZabbixApiQuery_Test
 	end
 end
 
+class ZabbixClient_Test
+	attr_writer :version
+	
+	def initialize(options={})
+		#no op
+	end
+	
+	def api_version
+		return @version
+	end
+end
+
 class ZabbixLib_Test < Test::Unit::TestCase
 	class << self
 		def startup
@@ -45,6 +57,30 @@ class ZabbixLib_Test < Test::Unit::TestCase
 	
 	def teardown
 		delete_watermark_helper
+	end
+	
+	def test_zabbix_client_versions
+		verify_invalid_client_version("1.8.4")
+		verify_invalid_client_version("3.0.2")
+		verify_invalid_client_version("2.0")
+		verify_invalid_client_version("2.4")
+		
+		verify_valid_client_version("2.0.15")
+		verify_valid_client_version("2.4.6")
+		verify_valid_client_version("2.2.12")
+	end
+	
+	def verify_invalid_client_version(version)
+		@mock_client = ZabbixClient_Test.new
+		@mock_client.version = version
+		exception = assert_raise(RuntimeError) {ZabbixApiWrapper.new({}, @mock_client)}
+		assert_equal(exception.message, "Zabbix API version: #{version} is not support by this version of zabbixapi", "Expected Invalid Exception")
+	end
+
+	def verify_valid_client_version(version)
+		@mock_client = ZabbixClient_Test.new
+		@mock_client.version = version
+		ZabbixApiWrapper.new({}, @mock_client) # no exception thrown means it was the correct client version
 	end
 
 	def test_get_zabbix_alerts_after_watermark

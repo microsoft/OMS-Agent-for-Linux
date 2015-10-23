@@ -16,9 +16,14 @@ class ZabbixApiWrapper
     @client.api_request(:method => data[:method], :params => data[:params])
   end
 
-  def initialize(options = {})
-    @client = ZabbixApi::Client.new(options)
-    unless @client.api_version =~ /2\.2\.\d+/
+  def initialize(options = {}, mock_client = nil)
+	if mock_client.nil? == true
+		@client = ZabbixApi::Client.new(options)
+	else
+		@client = mock_client
+	end
+	
+    unless @client.api_version =~ /2\.\d+\.\d+/
       raise "Zabbix API version: #{@client.api_version} is not support by this version of zabbixapi"
     end
   end
