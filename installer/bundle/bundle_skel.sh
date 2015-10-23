@@ -437,9 +437,13 @@ case "$installMode" in
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
+
+            # It's possible we have a test file without a kit; if so, ignore it
+            OSS_BUNDLE=`basename $i -oss-test.sh`
+            [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
+
             ./$i
             if [ $? -eq 0 ]; then
-                OSS_BUNDLE=`basename $i -oss-test.sh`
                 ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
@@ -478,9 +482,13 @@ case "$installMode" in
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
+
+            # It's possible we have a test file without a kit; if so, ignore it
+            OSS_BUNDLE=`basename $i -oss-test.sh`
+            [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
+
             ./$i
             if [ $? -eq 0 ]; then
-                OSS_BUNDLE=`basename $i -oss-test.sh`
                 ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"

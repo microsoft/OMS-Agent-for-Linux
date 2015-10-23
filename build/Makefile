@@ -80,8 +80,10 @@ endif
 ifeq ($(ULINUX),1)
   ifeq ($(PF_ARCH),x86)
     OSS_KITS := $(shell cd $(SCX_DIR)/installer/oss-kits; ls *-oss-test.sh *.i686.sh)
+    OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh *.i686.sh)
   else ifeq ($(PF_ARCH),x64)
     OSS_KITS := $(shell cd $(SCX_DIR)/installer/oss-kits; ls *-oss-test.sh *.x86_64.sh)
+    OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh *.x86_64.sh)
   endif
 endif
 
@@ -292,6 +294,8 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) 
 	$(RMDIR) $(TARGET_DIR)/oss-kits
 	$(MKPATH) $(TARGET_DIR)/oss-kits
 	cd $(SCX_DIR)/installer/oss-kits; $(COPY) $(OSS_KITS) $(TARGET_DIR)/oss-kits
+	cd $(BASE_DIR)/installer/oss-kits; $(COPY) $(OMS_OSS_KITS) $(TARGET_DIR)/oss-kits
+	chmod +x $(TARGET_DIR)/oss-kits/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
 	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/*
