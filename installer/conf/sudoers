@@ -1,4 +1,5 @@
-#Sudo configuration for omsagent
+# Begin sudo configuration for omsagent
+
 User_Alias OMSUSERS = omsagent
 Defaults:omsagent !requiretty
 
@@ -12,3 +13,5 @@ OMSUSERS ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/bin/service_control
 
 #Inspect Docker containers (filter_docker_log.rb)
 OMSUSERS ALL=(ALL) NOPASSWD: /usr/bin/docker inspect *
+
+# End sudo configuration for omsagent

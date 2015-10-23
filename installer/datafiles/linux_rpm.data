@@ -8,10 +8,3 @@ curl
 
 omi >= 1.0.8-3
 scx >= 1.6.1-120
-
-%Directories
-/etc/sudoers.d;                                         750; root; root; sysdir
-
-%Files
-/etc/sudoers.d/omsagent;                                                installer/conf/sudoers;                                440; root; root
-

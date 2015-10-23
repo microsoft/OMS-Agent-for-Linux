@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/sh
 
 #
 # Shell Bundle installer package for the OMS project
@@ -50,8 +50,8 @@ usage()
     echo "  --upgrade              Upgrade the package in the system."
     echo "  --debug                use shell debug mode."
     echo
-    echo "  -w=id, --id=id         Use workspace ID <id> for automatic onboarding."
-    echo "  -s=key, --shared=key   Use <key> as the shared key for automatic onboarding."
+    echo "  -w id, --id id         Use workspace ID <id> for automatic onboarding."
+    echo "  -s key, --shared key   Use <key> as the shared key for automatic onboarding."
     echo
     echo "  -? | --help            shows this usage text."
 }

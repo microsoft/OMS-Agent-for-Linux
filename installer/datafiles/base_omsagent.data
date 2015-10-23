@@ -1,8 +1,6 @@
 %Variables
 SHELL_HEADER:            '#!/bin/sh'
 OMSHOME:                 '/opt/microsoft/omsagent'
-SUDO_LOC:                '/etc/opt/microsoft/omsagent/conf/sudodir'
-SUDO_DIR:                '/usr/bin'
 CONF_DIR:                '/etc/opt/microsoft/omsagent/conf'
 
 SHORT_NAME:              'omsagent'
