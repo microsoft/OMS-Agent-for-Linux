@@ -240,7 +240,7 @@ append_telemetry()
 set_FQDN()
 {
     local hostname=`hostname`
-    local domainname=`hostname -d`
+    local domainname=`hostname -d 2> /dev/null`
 
     if [ -n "$domainname" ]; then
         FQDN="$hostname.$domainname"
