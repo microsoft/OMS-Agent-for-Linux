@@ -1,9 +1,10 @@
 class OmiOms
   require 'json'
+  require_relative 'oms_common'
   
   attr_reader :specific_mapping
 
-  def initialize(object_name, instance_regex, counter_name_regex, omi_mapping_path, omi_interface=nil)
+  def initialize(object_name, instance_regex, counter_name_regex, omi_mapping_path, omi_interface=nil, common=nil)
     @object_name = object_name
     @counter_name_regex = counter_name_regex
     @instance_regex = instance_regex
@@ -19,7 +20,8 @@ class OmiOms
       return
     end
     
-    @hostname = get_hostname
+    common = OMS::Common.new if common == nil
+    @hostname = common.get_hostname
 
     if omi_interface
       @omi_interface = omi_interface
@@ -29,16 +31,6 @@ class OmiOms
     end
     @omi_interface.connect
 
-  end
-
-  def get_hostname
-    hostname = "Unknown Host"
-    begin
-      hostname = Socket.gethostname.split(".")[0]
-    rescue => error
-      $log.error "Unable to get the Host Name: #{error}"
-    end
-    return hostname
   end
 
   def get_specific_mapping

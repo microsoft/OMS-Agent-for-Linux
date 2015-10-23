@@ -42,10 +42,17 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
     end
   end
 
+  class MockCommon
+    def get_hostname
+      return 'MockHostname'
+    end
+  end
+
   def setup
     $log = MockLog.new
     set_static_mock_data
     @mock = MockOmiInterface.new
+    @common = MockCommon.new
     @mapping_path = "#{ENV['BASE_DIR']}/installer/conf/omi_mapping.json"
   end
 
@@ -100,9 +107,8 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
   end
 
   def test_get_hostname
-    omilib = OmiOms.new('Logical Disk', 'inst_regex', 'counter_regex', @mapping_path, @mock)
-    assert_equal([], $log.logs, "There was an unexpected error creating omilib")
-    hostname = omilib.get_hostname
+    require_relative '../../../source/code/plugins/oms_common'
+    hostname = OMS::Common.new.get_hostname
     assert_equal([], $log.logs, "There was an error parsing the hostname")
     # Sanity check
     assert(hostname.size > 0, "Hostname returned is empty")
@@ -136,7 +142,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
   
   def test_enumerate_filtering
     @mock.omi_result = @OMI_result_logical_disk
-    omilib = OmiOms.new('Logical Disk', '_Total', '%', @mapping_path, @mock)
+    omilib = OmiOms.new('Logical Disk', '_Total', '%', @mapping_path, @mock, @common)
     
     time = Time.parse('2015-10-21 16:21:19 -0700')
     result = omilib.enumerate(time)
@@ -161,7 +167,8 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
 
   def test_enumerate_filtering_or
     @mock.omi_result = @OMI_result_logical_disk
-    omilib = OmiOms.new('Logical Disk', '/', '%|Disk', @mapping_path, @mock)
+    omilib = OmiOms.new('Logical Disk', '/', '%|Disk', @mapping_path, @mock, @common)
+
     time = Time.parse('2015-10-21 16:21:19 -0700')
     result = omilib.enumerate(time)
     assert_equal(@OMS_result_logical_disk_or, result, "The result of enumerate differs from the expected result")
@@ -169,7 +176,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
 
   def test_enumerate_filtering_all
     @mock.omi_result = @OMI_result_logical_disk
-    omilib = OmiOms.new('Logical Disk', '.*', '.*', @mapping_path, @mock)
+    omilib = OmiOms.new('Logical Disk', '.*', '.*', @mapping_path, @mock, @common)
     time = Time.parse('2015-10-21 16:21:19 -0700')
     result = omilib.enumerate(time)
     assert_equal(@OMS_result_logical_disk_all, result, "The result of enumerate differs from the expected result")
@@ -191,11 +198,11 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
     # To keep the tests more readable, dump ugly data here
     @OMI_result_logical_disk = '[{"ClassName":"SCX_FileSystemStatisticalInformation","Caption":"File system information","Description":"Performance statistics related to a logical unit of secondary storage","Name":"/","IsAggregate":"false","IsOnline":"true","FreeMegabytes":"85293","UsedMegabytes":"13097","PercentFreeSpace":"87","PercentUsedSpace":"13","PercentFreeInodes":"95","PercentUsedInodes":"5","BytesPerSecond":"8792","ReadBytesPerSecond":"3713","WriteBytesPerSecond":"5079","TransfersPerSecond":"1","ReadsPerSecond":"0","WritesPerSecond":"1"},{"ClassName":"SCX_FileSystemStatisticalInformation","Caption":"File system information","Description":"Performance statistics related to a logical unit of secondary storage","Name":"/boot","IsAggregate":"false","IsOnline":"true","FreeMegabytes":"70","UsedMegabytes":"166","PercentFreeSpace":"30","PercentUsedSpace":"70","PercentFreeInodes":"99","PercentUsedInodes":"1","BytesPerSecond":"0","ReadBytesPerSecond":"0","WriteBytesPerSecond":"0","TransfersPerSecond":"0","ReadsPerSecond":"0","WritesPerSecond":"0"},{"ClassName":"SCX_FileSystemStatisticalInformation","Caption":"File system information","Description":"Performance statistics related to a logical unit of secondary storage","Name":"_Total","IsAggregate":"true","IsOnline":"true","FreeMegabytes":"85363","UsedMegabytes":"13263","PercentFreeSpace":"87","PercentUsedSpace":"13","PercentFreeInodes":"100","PercentUsedInodes":"0","BytesPerSecond":"8792","ReadBytesPerSecond":"3713","WriteBytesPerSecond":"5079","TransfersPerSecond":"1","ReadsPerSecond":"0","WritesPerSecond":"1"}]'
     
-    @OMS_result_logical_disk_filter = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"buntu14", "ObjectName"=>"Logical Disk", "InstanceName"=>"_Total", "Collections"=>[{"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"100"}, {"CounterName"=>"% Used Inodes", "Value"=>"0"}]}]}
+    @OMS_result_logical_disk_filter = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"MockHostname", "ObjectName"=>"Logical Disk", "InstanceName"=>"_Total", "Collections"=>[{"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"100"}, {"CounterName"=>"% Used Inodes", "Value"=>"0"}]}]}
 
-    @OMS_result_logical_disk_or = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"buntu14", "ObjectName"=>"Logical Disk", "InstanceName"=>"/", "Collections"=>[{"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"95"}, {"CounterName"=>"% Used Inodes", "Value"=>"5"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"8792"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"3713"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"5079"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"1"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"1"}]}, {"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"buntu14", "ObjectName"=>"Logical Disk", "InstanceName"=>"/boot", "Collections"=>[{"CounterName"=>"% Free Space", "Value"=>"30"}, {"CounterName"=>"% Used Space", "Value"=>"70"}, {"CounterName"=>"% Free Inodes", "Value"=>"99"}, {"CounterName"=>"% Used Inodes", "Value"=>"1"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"0"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"0"}]}]}
+    @OMS_result_logical_disk_or = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"MockHostname", "ObjectName"=>"Logical Disk", "InstanceName"=>"/", "Collections"=>[{"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"95"}, {"CounterName"=>"% Used Inodes", "Value"=>"5"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"8792"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"3713"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"5079"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"1"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"1"}]}, {"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"MockHostname", "ObjectName"=>"Logical Disk", "InstanceName"=>"/boot", "Collections"=>[{"CounterName"=>"% Free Space", "Value"=>"30"}, {"CounterName"=>"% Used Space", "Value"=>"70"}, {"CounterName"=>"% Free Inodes", "Value"=>"99"}, {"CounterName"=>"% Used Inodes", "Value"=>"1"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"0"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"0"}]}]}
   
-    @OMS_result_logical_disk_all = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"buntu14", "ObjectName"=>"Logical Disk", "InstanceName"=>"/", "Collections"=>[{"CounterName"=>"Free Megabytes", "Value"=>"85293"}, {"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"95"}, {"CounterName"=>"% Used Inodes", "Value"=>"5"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"8792"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"3713"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"5079"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"1"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"1"}]}, {"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"buntu14", "ObjectName"=>"Logical Disk", "InstanceName"=>"/boot", "Collections"=>[{"CounterName"=>"Free Megabytes", "Value"=>"70"}, {"CounterName"=>"% Free Space", "Value"=>"30"}, {"CounterName"=>"% Used Space", "Value"=>"70"}, {"CounterName"=>"% Free Inodes", "Value"=>"99"}, {"CounterName"=>"% Used Inodes", "Value"=>"1"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"0"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"0"}]}, {"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"buntu14", "ObjectName"=>"Logical Disk", "InstanceName"=>"_Total", "Collections"=>[{"CounterName"=>"Free Megabytes", "Value"=>"85363"}, {"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"100"}, {"CounterName"=>"% Used Inodes", "Value"=>"0"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"8792"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"3713"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"5079"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"1"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"1"}]}]}
+    @OMS_result_logical_disk_all = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"MockHostname", "ObjectName"=>"Logical Disk", "InstanceName"=>"/", "Collections"=>[{"CounterName"=>"Free Megabytes", "Value"=>"85293"}, {"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"95"}, {"CounterName"=>"% Used Inodes", "Value"=>"5"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"8792"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"3713"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"5079"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"1"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"1"}]}, {"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"MockHostname", "ObjectName"=>"Logical Disk", "InstanceName"=>"/boot", "Collections"=>[{"CounterName"=>"Free Megabytes", "Value"=>"70"}, {"CounterName"=>"% Free Space", "Value"=>"30"}, {"CounterName"=>"% Used Space", "Value"=>"70"}, {"CounterName"=>"% Free Inodes", "Value"=>"99"}, {"CounterName"=>"% Used Inodes", "Value"=>"1"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"0"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"0"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"0"}]}, {"Timestamp"=>"2015-10-21T23:21:19Z", "Host"=>"MockHostname", "ObjectName"=>"Logical Disk", "InstanceName"=>"_Total", "Collections"=>[{"CounterName"=>"Free Megabytes", "Value"=>"85363"}, {"CounterName"=>"% Free Space", "Value"=>"87"}, {"CounterName"=>"% Used Space", "Value"=>"13"}, {"CounterName"=>"% Free Inodes", "Value"=>"100"}, {"CounterName"=>"% Used Inodes", "Value"=>"0"}, {"CounterName"=>"Logical Disk Bytes/sec", "Value"=>"8792"}, {"CounterName"=>"Disk Read Bytes/sec", "Value"=>"3713"}, {"CounterName"=>"Disk Write Bytes/sec", "Value"=>"5079"}, {"CounterName"=>"Disk Transfers/sec", "Value"=>"1"}, {"CounterName"=>"Disk Reads/sec", "Value"=>"0"}, {"CounterName"=>"Disk Writes/sec", "Value"=>"1"}]}]}
 
   end
 
