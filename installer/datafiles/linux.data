@@ -15,7 +15,7 @@ OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux;                    installer/scripts/omsagent.ulinux;                     755; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    755; root; root
 
-/etc/opt/microsoft/omsagent/sysconf/sudoers;                            installer/conf/sudoers;                                660; root; root
+/etc/opt/microsoft/omsagent/sysconf/sudoers;                            installer/conf/sudoers;                                664; root; root
 
 
 %OMSService_funcs
@@ -181,7 +181,7 @@ UnconfigureSysklog() {
     if [ $? -eq 0 ]; then
         echo "Unconfiguring sysklog for OMS logging"
 
-        cp /etc/syslog.conf /etc/syslog/syslog.bak
+        cp /etc/syslog.conf /etc/syslog.bak
         egrep -v "OMS Syslog|@127.0.0.1:25224" /etc/syslog.bak > /etc/syslog.conf
         RestartService syslog
     fi
@@ -299,6 +299,8 @@ else
     [ $? -ne 0 ] && cat /etc/opt/microsoft/omsagent/sysconf/sudoers >> /etc/sudoers
 fi
 
+chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
+
 
 %Preuninstall_10
 #include OMSService_funcs
@@ -322,9 +324,12 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
     # Unconfigure sudo configuration
     if [ -f /etc/sudoers.d/omsagent ]; then
         rm -f /etc/sudoers.d/omsagent
-    elif [ `grep -q '# Begin sudo configuration for omsagent' /etc/sudoers` -eq 0 ]; then
-        cp /etc/sudoers /etc/sudoers.bak
-        sed '/^##### Begin sudo configuration for omsagent/,/##### End sudo configuration for omsagent$/ d' /etc/sudoers.bak > /etc/sudoers
+    else
+        grep -q '# Begin sudo configuration for omsagent' /etc/sudoers
+        if [ $? -eq 0 ]; then
+            cp /etc/sudoers /etc/sudoers.bak
+            sed '/^##### Begin sudo configuration for omsagent/,/##### End sudo configuration for omsagent$/ d' /etc/sudoers.bak > /etc/sudoers
+        fi
     fi
 
     # Remove the service account
