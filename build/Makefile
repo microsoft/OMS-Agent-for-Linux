@@ -103,7 +103,7 @@ endif
 
 #--------------------------------------------------------------------------------
 # Build targets
-.PHONY: all clean clean-ruby distclean clean-status plugins-status kit tests test
+.PHONY: all clean clean-ruby distclean clean-status plugins-status kit tests test unittest systemtest
 
 all : $(SCX_TARGET_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
 
@@ -453,14 +453,23 @@ endif
 
 tests : test
 
-test : $(RUBY_TESTING_DIR)
+unittest : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
 	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb test \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins
 
-	@echo "========================= Performing test omsadmin.sh"
+systemtest : $(RUBY_TESTING_DIR)
+	# Any tests that are slow or communicate with a remote server
+	@echo "========================= Performing System Test"
+	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb systemtest \
+		BASE_DIR=$(BASE_DIR) \
+		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
+		RUBY_TESTING_DIR=$(RUBY_TESTING_DIR)
+
+	@echo "========================= Performing Test omsadmin.sh"
 	bash $(BASE_DIR)/test/installer/scripts/test_omsadmin.sh $(BASE_DIR) $(RUBY_TESTING_DIR)
 
-fulltest : test
+
+test : unittest systemtest
 	$(MAKE) -C $(SCX_DIR)/build test

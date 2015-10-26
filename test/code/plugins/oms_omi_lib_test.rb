@@ -1,5 +1,6 @@
 require 'test/unit'
 require_relative '../../../source/code/plugins/oms_omi_lib'
+require_relative 'omstestlib'
 
 class In_OMS_OMI_Test < Test::Unit::TestCase
   
@@ -26,22 +27,6 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
     end
   end
 
-  class MockLog
-    attr_reader :logs
-
-    def initialize
-      clear
-    end
-
-    def clear
-      @logs = []
-    end
-    
-    def error(message)
-      @logs << message
-    end
-  end
-
   class MockCommon
     def get_hostname
       return 'MockHostname'
@@ -49,7 +34,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
   end
 
   def setup
-    $log = MockLog.new
+    $log = OMS::MockLog.new
     set_static_mock_data
     @mock = MockOmiInterface.new
     @common = MockCommon.new
@@ -184,7 +169,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
   
   def test_connect
     # We should connect automatically on instance creation 
-    omilib = OmiOms.new('Apache HTTP Server', 'inst_regex', 'counter_regex', @mapping_path, @mock)
+    OmiOms.new('Apache HTTP Server', 'inst_regex', 'counter_regex', @mapping_path, @mock)
     assert_equal(true, @mock.called_connect, "Connect was not called")
   end
   
