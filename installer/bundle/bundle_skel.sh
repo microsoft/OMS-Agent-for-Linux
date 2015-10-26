@@ -84,6 +84,19 @@ verifyNoInstallationOption()
     return;
 }
 
+verifyPrivileges() {
+    # Parameter: desired operation (for meaningful output)
+    if [ -z "$1" ]; then
+        echo "verifyPrivileges missing required parameter (operation)" 1>& 2
+        exit 1
+    fi
+
+    if [ `id -u` -ne 0 ]; then
+        echo "Must have root privileges to be able to perform $1 operation" 1>& 2
+        exit 1
+    fi
+}
+
 ulinux_detect_openssl_version() {
     TMPBINDIR=
     # the system OpenSSL version is 0.9.8.  Likewise with OPENSSL_SYSTEM_VERSION_100
@@ -101,7 +114,6 @@ ulinux_detect_openssl_version() {
         cleanup_and_exit 60
     fi
 }
-
 
 ulinux_detect_installer()
 {
@@ -184,6 +196,7 @@ pkg_upd() {
     fi
 }
 
+
 #
 # Main script follows
 #
@@ -222,12 +235,14 @@ do
 
         --install)
             verifyNoInstallationOption
+            verifyPrivileges "install"
             installMode=I
             shift 1
             ;;
 
         --purge)
             verifyNoInstallationOption
+            verifyPrivileges "purge"
             installMode=P
             shouldexit=true
             shift 1
@@ -235,6 +250,7 @@ do
 
         --remove)
             verifyNoInstallationOption
+            verifyPrivileges "remove"
             installMode=R
             shouldexit=true
             shift 1
@@ -257,6 +273,7 @@ do
 
         --upgrade)
             verifyNoInstallationOption
+            verifyPrivileges "upgrade"
             installMode=U
             shift 1
             ;;
@@ -312,10 +329,7 @@ if [ "$onboardINT" -ne 0 ]; then
 fi
 
 if [ -n "$onboardID" -a -n "$onboardKey" ]; then
-    if [ `id -u` -ne 0 ]; then
-        echo "Must have root privileges to be able to onboard" 1>& 2
-        exit 1
-    fi
+    verifyPrivileges "onboard"
 
     cat /dev/null > $ONBOARD_FILE
     chmod 600 $ONBOARD_FILE

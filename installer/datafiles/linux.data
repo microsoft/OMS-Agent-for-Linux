@@ -122,7 +122,7 @@ UnconfigureRsyslog() {
 }
 
 ConfigureOldRsyslog() {
-    # Don't configure sysklog if already configured (avoid duplicate entries)
+    # Don't configure Rsyslog (old version) if already configured (avoid duplicate entries)
     egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/rsyslog.conf
     if [ $? -ne 0 ]; then
         echo "Configuring (old) rsyslog for OMS logging"
@@ -165,28 +165,6 @@ UnconfigureSyslog_ng() {
     fi
 }
 
-ConfigureSysklog() {
-    # Don't configure sysklog if already configured (avoid duplicate entries)
-    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/syslog.conf
-    if [ $? -ne 0 ]; then
-        echo "Configuring sysklog for OMS logging"
-
-        cat /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf >> /etc/syslog.conf
-        RestartService syslog
-    fi
-}
-
-UnconfigureSysklog() {
-    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/syslog.conf
-    if [ $? -eq 0 ]; then
-        echo "Unconfiguring sysklog for OMS logging"
-
-        cp /etc/syslog.conf /etc/syslog.bak
-        egrep -v "OMS Syslog|@127.0.0.1:25224" /etc/syslog.bak > /etc/syslog.conf
-        RestartService syslog
-    fi
-}
-
 ConfigureSyslog() {
     if [ -f /etc/rsyslog.conf -a -d /etc/rsyslog.d ]; then
         ConfigureRsyslog
@@ -194,10 +172,8 @@ ConfigureSyslog() {
         ConfigureOldRsyslog
     elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
         ConfigureSyslog_ng
-    elif [ -f /etc/syslog.conf ]; then
-        ConfigureSysklog
     else
-        echo "Unable to determine syslog controller for OMS logging"
+        echo "No supported syslog daemon found. Syslog messages will not be processed."
         return 1
     fi
 }
@@ -209,10 +185,8 @@ UnconfigureSyslog() {
         UnconfigureOldRsyslog
     elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
         UnconfigureSyslog_ng
-    elif [ -f /etc/syslog.conf ]; then
-        UnconfigureSysklog
     else
-        echo "Unable to determine syslog controller for OMS logging"
+        echo "No supported syslog daemon found; unable to unconfigure syslog monitoring."
         return 1
     fi
 }
