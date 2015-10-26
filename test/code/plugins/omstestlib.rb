@@ -14,6 +14,14 @@ module OMS
     def debug(message)
       @logs << message
     end
+
+    def info(message)
+      @logs << message
+    end
+
+    def warn(message)
+      @logs << message
+    end
     
     def error(message)
       @logs << message

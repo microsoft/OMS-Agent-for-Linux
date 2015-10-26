@@ -21,6 +21,7 @@ OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
 # File with information about the agent installed 
 INSTALL_INFO=/etc/opt/microsoft/omsagent/sysconf/installinfo.txt
 
+# Ruby helpers
 RUBY=/opt/microsoft/omsagent/ruby/bin/ruby
 AUTH_KEY_SCRIPT=/opt/microsoft/omsagent/bin/auth_key.rb
 
@@ -41,8 +42,11 @@ RESP_HEARTBEAT=$TMP_DIR/resp_heartbeat.xml
 BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
 RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
 
-URL_TLD=opinsights.azure
+AGENT_USER=omsagent
+AGENT_GROUP=omsagent
 
+# Default settings
+URL_TLD=opinsights.azure
 WORKSPACE_ID=""
 AGENT_GUID=""
 LOG_FACILITY=local0
@@ -70,8 +74,8 @@ set_user_agent()
 
 check_user()
 {
-    if [ $EUID -ne 0 -a `id -un` != "omsagent" ]; then
-        log_error "This script must be run as root or as the omsagent user."
+    if [ $EUID -ne 0 -a `id -un` != $AGENT_USER ]; then
+        log_error "This script must be run as root or as the $AGENT_USER user."
         exit 1
     fi
 }
@@ -80,7 +84,7 @@ chown_omsagent()
 {
     # When this script is run as root, we still have to make sure the generated
     # files are owned by omsagent for everything to work properly
-    [ "$EUID" -eq 0 ] && chown omsagent:omsagent $@ > /dev/null 2>&1
+    [ "$EUID" -eq 0 ] && chown $AGENT_USER:$AGENT_GROUP $@ > /dev/null 2>&1
     return 0
 }
 

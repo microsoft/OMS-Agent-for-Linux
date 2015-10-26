@@ -27,20 +27,20 @@ echo "======================== TEST ONBOARDING  ========================" > $DBG
 WORKSPACE_ID=cec9ea66-f775-41cd-a0a6-2d0f0ffdac6f
 SHARED_KEY=qoTgVB0a1393p4FUncrY0nc/U1/CkOYlXz3ok3Oe79gSB6NLa853hiQzcwcyBb10Rjj7iswRvoJGtLJUD/o/yw==
 
-echo "sudo bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY" >> $DBG_ONDBOARD
-sudo bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY >> $DBG_ONDBOARD 2>&1
+echo "bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY" >> $DBG_ONDBOARD
+bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY >> $DBG_ONDBOARD 2>&1
 handle_return_code $? $DBG_ONDBOARD
 
 echo -n "Test Heartbeat...   "
 echo "======================== TEST HEARTBEAT ========================" > $DBG_HEARTBEAT
-echo "sudo bash -x $OMSADMIN -v -b"  >> $DBG_HEARTBEAT
-sudo bash -x $OMSADMIN -v -b  >> $DBG_HEARTBEAT 2>&1
+echo "bash -x $OMSADMIN -v -b"  >> $DBG_HEARTBEAT
+bash -x $OMSADMIN -v -b  >> $DBG_HEARTBEAT 2>&1
 handle_return_code $? $DBG_HEARTBEAT
 
 echo -n "Test Renew certs... "
 echo "======================== TEST RENEW CERTS ========================" > $DBG_RENEWCERT
 echo "bash -x $OMSADMIN -v -r" >> $DBG_RENEWCERT
-sudo bash -x $OMSADMIN -v -r  >> $DBG_RENEWCERT 2>&1
+bash -x $OMSADMIN -v -r  >> $DBG_RENEWCERT 2>&1
 handle_return_code $? $DBG_RENEWCERT
 
 # Leave folder around if there was a failure for post mortem debug
