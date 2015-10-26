@@ -135,7 +135,7 @@ check_if_pkg_is_installed() {
     ulinux_detect_installer
 
     if [ "$INSTALLER" = "DPKG" ]; then
-        dpkg -s $1 | grep Status | grep " installed" 2> /dev/null 1> /dev/null
+        dpkg -s $1 | grep Status | egrep " installed| deinstall" 2> /dev/null 1> /dev/null
     else
         rpm -q $1 2> /dev/null 1> /dev/null
     fi
@@ -361,25 +361,50 @@ then
     if [ -f /opt/microsoft/scx/bin/uninstall ]; then
         /opt/microsoft/scx/bin/uninstall $installMode
     else
-        echo "SCX package is not installed"
+        for i in /opt/microsoft/*-cimprov; do
+            PKG_NAME=`basename $i`
+            if [ "$PKG_NAME" != "*-cimprov" ]; then
+                echo "Removing ${PKG_NAME} ..."
+                pkg_rm ${PKG_NAME}
+            fi
+        done
+
+        # Now just simply pkg_rm scx and omi
+        pkg_rm scx
+        pkg_rm omi
     fi
 
     if [ "$installMode" = "P" ]
     then
         echo "Purging all files in cross-platform agent ..."
-        rm -rf /etc/opt/microsoft/omsconfig /opt/microsoft/omsconfig /var/opt/microsoft/omsconfig \
-            /etc/opt/microsoft/*-cimprov /etc/opt/microsoft/scx /etc/opt/microsoft/omsagent \
-            /opt/microsoft/*-cimprov /opt/microsoft/scx /opt/microsoft/omsagent \
-            /var/opt/microsoft/*-cimprov /var/opt/microsoft/scx /var/opt/microsoft/omsagent
-        rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
 
-        # If OMI is not installed, purge its directories as well.
+        #
+        # Be careful to not remove files if dependent packages are still using them
+        #
+
+        check_if_pkg_is_installed omsconfig
+        if [ $? -ne 0 ]; then
+            rm -rf /etc/opt/microsoft/omsconfig /opt/microsoft/omsconfig /var/opt/microsoft/omsconfig
+        fi
+
+        check_if_pkg_is_installed omsagent
+        if [ $? -ne 0 ]; then
+            rm -rf /etc/opt/microsoft/omsagent /opt/microsoft/omsagent /var/opt/microsoft/omsagent
+        fi
+
+        check_if_pkg_is_installed scx
+        if [ $? -ne 0 ]; then
+            rm -rf /etc/opt/microsoft/scx /opt/microsoft/scx /var/opt/microsoft/scx \
+                /etc/opt/microsoft/*-cimprov /opt/microsoft/*-cimprov /var/opt/microsoft/*-cimprov
+        fi
+
         check_if_pkg_is_installed omi
         if [ $? -ne 0 ]; then
             rm -rf /etc/opt/omi /opt/omi /var/opt/omi
         fi
 
-        rmdir /etc/opt > /dev/null 2> /dev/null || true
+        rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
+        rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
     fi
 fi
 
