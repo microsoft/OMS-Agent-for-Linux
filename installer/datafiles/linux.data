@@ -230,8 +230,6 @@ SudoSupportsIncludeDirective() {
 
 
 %Preinstall_1000
-#include OMSService_funcs
-
 # If our service is already running, stop it
 if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
    /opt/microsoft/omsagent/bin/service_control stop
@@ -258,6 +256,7 @@ fi
 #include Sudoer_Functions
 
 ${{OMI_SERVICE}} reload
+RemoveOMSService
 ConfigureOMSService
 ConfigureSyslog
 
@@ -283,14 +282,13 @@ if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
     /opt/microsoft/omsagent/bin/service_control stop
 fi
 
-RemoveOMSService
-
 %Postuninstall_1000
 #include Syslog_Services
 
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
     UnconfigureSyslog
+    RemoveOMSService
 
     # Restart the OMI server in case an agent is running under service account
     ${{OMI_SERVICE}} restart

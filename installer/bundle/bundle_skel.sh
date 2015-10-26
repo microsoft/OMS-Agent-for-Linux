@@ -135,7 +135,7 @@ check_if_pkg_is_installed() {
     ulinux_detect_installer
 
     if [ "$INSTALLER" = "DPKG" ]; then
-        dpkg -s $1 | grep Status | egrep " installed| deinstall" 2> /dev/null 1> /dev/null
+        dpkg -s $1 2> /dev/null | grep Status | egrep " installed| deinstall" 1> /dev/null
     else
         rpm -q $1 2> /dev/null 1> /dev/null
     fi
