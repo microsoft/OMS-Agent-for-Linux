@@ -21,10 +21,12 @@ case $0 in
         SCRIPT_INDIRECT="`dirname $PWD/$0`"
         ;;
 esac
+
 SCRIPT_DIR="`(cd \"$SCRIPT_INDIRECT\"; pwd -P)`"
 SCRIPT="$SCRIPT_DIR/`basename $0`"
 EXTRACT_DIR="`pwd -P`/omsbundle.$$"
 ONBOARD_FILE=/etc/omsagent-onboard.conf
+DPKG_CONF_QUALS="--force-confold --force-confdef"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -153,7 +155,7 @@ pkg_add() {
     ulinux_detect_installer
     echo "----- Installing package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
-        dpkg --install --refuse-downgrade ${pkg_filename}.deb
+        dpkg ${DPKG_CONF_QUALS} --install --refuse-downgrade ${pkg_filename}.deb
     else
         rpm --install ${pkg_filename}.rpm
     fi
@@ -187,7 +189,7 @@ pkg_upd() {
     echo "----- Updating package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
         [ -z "${forceFlag}" -o "${pkg_name}" = "omi" ] && FORCE="--refuse-downgrade" || FORCE=""
-        dpkg --install $FORCE ${pkg_filename}.deb
+        dpkg ${DPKG_CONF_QUALS} --install $FORCE ${pkg_filename}.deb
 
         export PATH=/usr/local/sbin:/usr/sbin:/sbin:$PATH
     else
