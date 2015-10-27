@@ -259,9 +259,20 @@ onboard()
         log_error "Missing Wokspace ID or Shared Key information for onboarding"
         clean_exit 1
     fi
+    
+    if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
+        # Keep the same agent GUID by loading it from the previous conf
+        AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
+        log_info "Reusing previous agent GUID" 
+    else
+        AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
+        generate_certs
+    fi
 
-    AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
-    generate_certs
+    if [ -z "$AGENT_GUID" ]; then
+        log_error "AGENT_GUID should not be empty"
+        return 1
+    fi
 
     if [ "$VERBOSE" = "1" ]; then
         log_info "Private Key stored in:   $FILE_KEY"
