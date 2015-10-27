@@ -132,10 +132,16 @@ clean-ruby : clean
 
 clean-dsc : clean
 	-make -C $(DSC_DIR) clean
-
-distclean : clean clean-ruby clean-dsc
+	-$(RMDIR) $(DSC_DIR)/config.mak $(DSC_DIR)/intermediate $(DSC_DIR)/output $(DSC_DIR)/release
 	-$(RM) $(DSC_DIR)/omi-1.0.8
+
+clean-scx : clean
 	-make -C $(SCX_DIR)/build distclean
+	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@$(ECHO) "!!!!! PLEASE RE-RUN THE ./configure SCRIPT !!!!!"
+	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+distclean : clean clean-ruby clean-dsc clean-scx
 	-$(RMDIR) $(OMI_ROOT)/output*
 
 	$(RM) $(BASE_DIR)/build/config.mak
