@@ -13,7 +13,7 @@ OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
 /etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf;                     installer/conf/syslog-ng.conf;                         644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux;                    installer/scripts/omsagent.ulinux;                     755; root; root
-/etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/sudoers;                            installer/conf/sudoers;                                664; root; root
 
@@ -31,9 +31,12 @@ RemoveOMSService() {
 
     # Registered as a systemd service?
     if [ -f /usr/lib/systemd/system/omsagent.service ]; then
+        echo "Unconfiguring OMS agent (systemd) service ..."
         /usr/bin/systemctl disable omsagent
         rm -f /usr/lib/systemd/system/omsagent.service
+        /usr/bin/systemctl daemon-reload
     elif [ -f /etc/init.d/omsagent ]; then
+        echo "Unconfiguring OMS agent service ..."
         if [ -f /usr/sbin/update-rc.d ]; then
             /usr/sbin/update-rc.d -f omsagent remove
         elif [ -x /usr/lib/lsb/remove_initd ]; then
@@ -283,6 +286,7 @@ if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
 fi
 
 %Postuninstall_1000
+#include OMSService_funcs
 #include Syslog_Services
 
 # If we're called for upgrade, don't do anything

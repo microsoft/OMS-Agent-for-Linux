@@ -1,6 +1,7 @@
 [Unit]
 Description=Operations Management Suite agent
 After=network.target
+Wants=omiserverd.service
 
 [Service]
 Type=simple
@@ -10,9 +11,11 @@ PIDFile=/var/opt/microsoft/omsagent/run/omsagent.pid
 ExecStart=/opt/microsoft/omsagent/bin/omsagent \
   -d /var/opt/microsoft/omsagent/run/omsagent.pid \
   -o /var/opt/microsoft/omsagent/log/omsagent.log \
-  --no-supervisor 
+  --no-supervisor
+ExecStop=rm -f /var/opt/microsoft/omsagent/run/omsagent.pid
 KillMode=process
 KillSignal=SIGKILL
+TimeoutStartSec=10
 
 [Install]
 WantedBy=multi-user.target
