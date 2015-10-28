@@ -22,9 +22,7 @@ class ZabbixApi
         :params => {
           :user      => @options[:user],
           :password  => @options[:password],
-        },
-		:id => '1',
-		:auth => nil
+        }
       )
     end
 
@@ -43,11 +41,13 @@ class ZabbixApi
       message = {
         :method  => body[:method],
         :params  => body[:params],
-        :auth    => @auth_hash,
         :id      => id,
         :jsonrpc => '2.0'
       }
-      JSON.generate(message)
+
+      message[:auth] = @auth_hash unless (body[:method] == 'apiinfo.version' or body[:method] == 'user.login')
+      
+	  JSON.generate(message)
     end
 
     def http_request(body)
