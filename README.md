@@ -14,3 +14,18 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * **Email:** scdata@microsoft.  Tell us whatever is on your mind
 * **Monthly survey:** if you are an OMS customer, you know we send out a survey every month asking our customers about the features we’re working on next.  
 * **Elite Linux customer panel:** If you are a die-hard OMS Linux user and want to join our weekly calls and talk directly to the product team apply through this survey.
+
+## Supported Linux Operating Systems
+* Amazon Linux 2012.09 --> 2015.09 (x86/x64)
+* CentOS Linux 5,6, and 7 (x86/x64)
+* Oracle Enterprise Linux 5,6, and 7 (x86/x64)
+* Red Hat Enterprise Linux Server 5,6 and 7 (x86/x64)
+* Debian GNU/Linux 6, 7, and 8 (x86/x64)
+* Ubuntu 12.04 LTS, 14.04 LTS, 15.04 (x86/x64)
+* SUSE Linux Enteprise Server 11 and 12 (x86/x64)
+
+## Supported Scenarios
+### Syslog data collection
+### Performance data collection
+### Nagios Core alert collection
+### Zabbix alert collection
