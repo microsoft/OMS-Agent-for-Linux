@@ -18,6 +18,39 @@ OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
 /etc/opt/microsoft/omsagent/sysconf/sudoers;                            installer/conf/sudoers;                                664; root; root
 
 
+%Systemd_resolver
+# Various distributions have different paths for systemd unit files ...
+
+SYSTEMD_UNIT_DIR=""
+ResolveSystemdPaths()
+{
+    local UNIT_DIR_LIST="/usr/lib/systemd/system /lib/systemd/system"
+
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        # Be sure systemctl lives where we expect it to
+        if [ ! -f /bin/systemctl ]; then
+            echo "FATAL: Unable to locate systemctl program" 1>&2
+            exit 1
+        fi
+
+        # Find systemd unit directory
+        for i in ${UNIT_DIR_LIST}; do
+            if [ -d $i ]; then
+                SYSTEMD_UNIT_DIR=${i}
+                return 0
+            fi
+        done
+
+        # Didn't fine unit directory, that's fatal
+        echo "FATAL: Unable to resolve systemd unit directory!" 1>&2
+        exit 1
+    else
+	return 1
+    fi
+}
+
+ResolveSystemdPaths
+
 %OMSService_funcs
 StopOMSService() {
     if [ -f ${{OMS_SERVICE}} ]; then
@@ -30,11 +63,11 @@ RemoveOMSService() {
     StopOMSService
 
     # Registered as a systemd service?
-    if [ -f /usr/lib/systemd/system/omsagent.service ]; then
+    if [ -f ${SYSTEMD_UNIT_DIR}/omsagent.service ]; then
         echo "Unconfiguring OMS agent (systemd) service ..."
-        /usr/bin/systemctl disable omsagent
-        rm -f /usr/lib/systemd/system/omsagent.service
-        /usr/bin/systemctl daemon-reload
+        /bin/systemctl disable omsagent
+        rm -f ${SYSTEMD_UNIT_DIR}/omsagent.service
+        /bin/systemctl daemon-reload
     elif [ -f /etc/init.d/omsagent ]; then
         echo "Unconfiguring OMS agent service ..."
         if [ -f /usr/sbin/update-rc.d ]; then
@@ -54,12 +87,11 @@ RemoveOMSService() {
 
 ConfigureOMSService() {
     echo "Configuring OMS agent service ..."
-    pidof systemd 1> /dev/null 2> /dev/null
-    if [ $? -eq 0 ]; then
+    if pidof systemd 1> /dev/null 2> /dev/null; then
         # systemd
-        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd /usr/lib/systemd/system/omsagent.service
-        /usr/bin/systemctl daemon-reload
-        /usr/bin/systemctl enable omsagent
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd ${SYSTEMD_UNIT_DIR}/omsagent.service
+        /bin/systemctl daemon-reload
+        /bin/systemctl enable omsagent
     else
         cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
 
@@ -89,15 +121,15 @@ RestartService() {
 
     # Does the service exist under systemd?
     pidof systemd 1> /dev/null 2> /dev/null
-    if [ $? -eq 0 -a -f /usr/lib/systemd/system/${1}.service ]; then
-        /usr/bin/systemctl restart $1
+    if [ $? -eq 0 -a -f ${SYSTEMD_UNIT_DIR}/${1}.service ]; then
+        /bin/systemctl restart $1
     else
         if [ -x /usr/sbin/invoke-rc.d ]; then
             /usr/sbin/invoke-rc.d $1 restart
         elif [ -x /sbin/service ]; then
             /sbin/service $1 restart
-        elif [ -x /usr/bin/systemctl ]; then
-            /usr/bin/systemctl restart $1
+        elif [ -x /bin/systemctl ]; then
+            /bin/systemctl restart $1
         else
             echo "Unrecognized service controller to start service $1" 1>&2
 	    return 1
@@ -254,6 +286,7 @@ if [ $? -ne 0 ]; then
 fi
 
 %Postinstall_200
+#include Systemd_resolver
 #include OMSService_funcs
 #include Syslog_Services
 #include Sudoer_Functions
@@ -286,6 +319,7 @@ if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
 fi
 
 %Postuninstall_1000
+#include Systemd_resolver
 #include OMSService_funcs
 #include Syslog_Services
 

@@ -96,16 +96,16 @@ start_omsagent()
     is_omsagent_running
     [ $? -ne 0 ] && return
 
-    # Registered as a systemd service?
-    if [ -f /usr/lib/systemd/system/omsagent.service ]; then
-        /usr/bin/systemctl start omsagent
+    # If systemd lives here, then we have a systemd unit file
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        /bin/systemctl start omsagent
     else
         if [ -x /usr/sbin/invoke-rc.d ]; then
             /usr/sbin/invoke-rc.d omsagent start
         elif [ -x /sbin/service ]; then
             /sbin/service omsagent start
-        elif [ -x /usr/bin/systemctl ]; then
-            /usr/bin/systemctl start omsagent
+        elif [ -x /bin/systemctl ]; then
+            /bin/systemctl start omsagent
         else
             echo "Unrecognized service controller to start OMS Agent service" 1>&2
             exit 1
@@ -117,16 +117,16 @@ stop_omsagent()
 {
     is_omsagent_running
     if [ $? -ne 0 ]; then
-        # Registered as a systemd service?
-        if [ -f /usr/lib/systemd/system/omsagent.service ]; then
-            /usr/bin/systemctl stop omsagent
+        # If systemd lives here, then we have a systemd unit file
+        if pidof systemd 1> /dev/null 2> /dev/null; then
+            /bin/systemctl stop omsagent
         else
             if [ -x /usr/sbin/invoke-rc.d ]; then
                 /usr/sbin/invoke-rc.d omsagent stop
             elif [ -x /sbin/service ]; then
                 /sbin/service omsagent stop
-            elif [ -x /usr/bin/systemctl ]; then
-                /usr/bin/systemctl stop omsagent
+            elif [ -x /bin/systemctl ]; then
+                /bin/systemctl stop omsagent
             else
                 echo "Unrecognized service controller to stop OMS Agent service" 1>&2
                 exit 1
@@ -143,16 +143,16 @@ restart_omsagent()
         return
     fi
 
-    # Registered as a systemd service?
-    if [ -f /usr/lib/systemd/system/omsagent.service ]; then
-        /usr/bin/systemctl restart omsagent
+    # If systemd lives here, then we have a systemd unit file
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        /bin/systemctl restart omsagent
     else
         if [ -x /usr/sbin/invoke-rc.d ]; then
             /usr/sbin/invoke-rc.d omsagent restart
         elif [ -x /sbin/service ]; then
             /sbin/service omsagent restart
-        elif [ -x /usr/bin/systemctl ]; then
-            /usr/bin/systemctl restart omsagent
+        elif [ -x /bin/systemctl ]; then
+            /bin/systemctl restart omsagent
         else
             echo "Unrecognized service controller to restart OMS Agent service" 1>&2
             exit 1
