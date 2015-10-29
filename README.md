@@ -1,8 +1,8 @@
 # Operations Management Suite Agent for Linux Public Preview
 ## Overview
-Welcome to the Operations Management Suite Linux preview! The OMS Agent for Linux preview enables rich and real-time analytics for operational data from select Linux servers with Operations Management Suite.
+Welcome to the OMS Agent for Linux Preview! The OMS Agent for Linux enables rich and real-time analytics for operational data from Linux servers using Operations Management Suite.
 
-Our goals for this preview is to get your feedback about usage. We rely on your feedback to improve both design and implementation of these features. As this is a preview the feature design is subject to changes and should not be production.
+Our goal for this preview is to get your feedback on onboarding the agent, configuring data to be collected, and your general experience using OMS with Linux data. We rely on your feedback to improve both design and implementation of these features. As this is a preview, the feature set is subject to change and should not be considered production ready.
 
 *Note: the features and supported Linux versions in this Technical Preview are a limited subset of planned capabilities*
 
