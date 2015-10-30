@@ -123,6 +123,7 @@ From within the Operations Management Suite portal, access the Log Search tile. 
 
 ### Viewing Zabbix Alerts
 From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar, "* (Type=Alert) SourceSystem=Zabbix" to view all Zabbix Alerts.
+
 ![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/ZabbixSearchView.png?raw=true)
 
 ## Configuring Data Collection
