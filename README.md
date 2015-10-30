@@ -25,7 +25,7 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
 ## Supported Scenarios
-### Syslog data collection
-### Performance data collection
-### Nagios Core alert collection
+### [Syslog data collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
+### [Performance data collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-performance-data)
+### [Nagios Core alert collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-nagios-alerts)
 ### Zabbix alert collection
