@@ -110,6 +110,7 @@ sudo service omsagent restart
 ## Viewing Linux Data
 ### Viewing Syslog events
 From within the Operations Management Suite portal, access the **Log Search** tile. Predefined syslog search queries can be found in the **Log Management** grouping.
+
 ![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/SyslogLogManagement.png?raw=true)
 
 ### Viewing Performance Data
@@ -119,6 +120,10 @@ From within the Operations Management Suite portal, access the Log Search tile. 
 ### Viewing Nagios Alerts
 From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar, "* (Type=Alert) SourceSystem=Nagios" to view all Nagios Alerts.
 ![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/NagiosSearchView.png?raw=true)
+
+### Viewing Zabbix Alerts
+From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar, "* (Type=Alert) SourceSystem=Zabbix" to view all Zabbix Alerts.
+![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/ZabbixSearchView.png?raw=true)
 
 ## Configuring Data Collection
 Data to collect (e.g. syslog events and performance metrics) can be defined centrally in the Operations Management Suite portal, or on the agents directly.  Selections that you define in the portal for data collection will be applied to the agents within 5 minutes. 
