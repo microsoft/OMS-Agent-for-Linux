@@ -260,7 +260,8 @@ onboard()
         clean_exit 1
     fi
     
-    if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
+    PREV_WID=`grep WORKSPACE_ID $CONF_OMSADMIN 2> /dev/null | cut -d= -f2`
+    if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN -a "$PREV_WID" = $WORKSPACE_ID ]; then
         # Keep the same agent GUID by loading it from the previous conf
         AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
         log_info "Reusing previous agent GUID" 
@@ -323,7 +324,12 @@ onboard()
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
         --write-out "%{http_code}\n" \
         https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
-
+    
+    if [ $? -ne 0 ]; then
+        log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
+        return 1
+    fi
+    
     if [ "$RET_CODE" = "200" ]; then
         apply_dsc_endpoint $RESP_ONBOARD
         log_info "Onboarding success"
@@ -335,7 +341,7 @@ onboard()
     save_config
 
     if [ -e $METACONFIG_PY ] && which python; then
-        python $METACONFIG_PY
+        su - omsagent -c $METACONFIG_PY
     fi
     return 0
 }

@@ -25,57 +25,22 @@ class OutOMSTest < Test::Unit::TestCase
     end
   end
 
-  def check_cert_perms(path)
-    stat = File.stat(path)
-    assert_equal(nil, stat.world_readable?, "'#{path}' should not be world readable")
-    assert_equal(nil, stat.world_writable?, "'#{path}' should not be world writable")
-    assert_equal(true, stat.writable?, "'#{path}' should be writable")
-    assert_equal(true, stat.readable?, "'#{path}' should be readable")
-  end
-
   def prep_onboard
     # Setup test onboarding script and folder
     @omsadmin_test_dir = `#{@prep_omsadmin} #{@base_dir} #{@ruby_test_dir}`.strip()
-    result = $?
-    assert_equal(0, result.to_i, "Unexpected failure setting up the test")
-    assert_equal(true, File.directory?(@omsadmin_test_dir), "'#{@omsadmin_test_dir}' does not exist!")
+    assert_equal(0, $?.to_i, "Unexpected failure setting up the test")
   end
   
   def do_onboard
     omsadmin_script = "#{@omsadmin_test_dir}/omsadmin.sh"
-    assert_equal(true, File.file?(omsadmin_script), "'#{omsadmin_script}' does not exist!")
-    assert_equal(true, File.executable?(omsadmin_script), "'#{omsadmin_script}' is not executable.")
     onboard_out = `#{omsadmin_script} -w #{Workspace_id} -s #{Shared_key}`
-    result = $?
-    assert_equal(0, result.to_i, "Unexpected failure onboarding : '#{onboard_out}'")
-    return onboard_out
-  end
-  
-  def post_onboard_validation
-    crt_path = "#{@omsadmin_test_dir}/oms.crt"
-    key_path = "#{@omsadmin_test_dir}/oms.key"
-    # Make sure certs and config was generated
-    assert(File.file?(crt_path), "'#{crt_path}' does not exist!")
-    assert(File.file?(key_path), "'#{key_path}' does not exist!")
-    assert(File.file?("#{@omsadmin_test_dir}/omsadmin.conf"), "omsadmin.conf does not exist!")
-
-    # Check permissions
-    crt_uid = File.stat(crt_path).uid
-    key_uid = File.stat(key_path).uid
-    assert(crt_uid == key_uid, "Key and cert should have the same uid")    
-    check_cert_perms(crt_path)
-    check_cert_perms(key_path)
-  end
-
-  def test_onboard
-    prep_onboard
-    do_onboard
-    post_onboard_validation
+    assert_equal(0, $?.to_i, "Unexpected failure onboarding : '#{onboard_out}'")
   end
 
   def test_send_data
-    # Call test_onboard to create cert and key
-    test_onboard
+    # Onboard to create cert and key
+    prep_onboard
+    do_onboard
     
     # Mock the configuration
     conf = {
@@ -115,27 +80,6 @@ class OutOMSTest < Test::Unit::TestCase
     record = {"DataType"=>"LINUX_NAGIOSALERTS_BLOB", "IPName"=>"AlertManagement", "DataItems"=>["Timestamp"=>"1970-01-01T00:00:00+00:00", "AlertName"=>"SERVICE ALERT", "HostName"=>"host100", "State"=>"alert state", "StateType"=>"state type", "AlertPriority"=>0, "AlertDescription"=>"Alert Description."]} 
     assert(output.handle_record("oms.nagios", record), "Failed to send nagios data : '#{$log.logs}'")
     assert_equal(["Success sending oms.nagios"], $log.logs, "Did not log the expected sucess message")
-  end
-
-  def test_reonboard
-    require 'digest'
-    prep_onboard
-    do_onboard
-
-    crt_path = "#{@omsadmin_test_dir}/oms.crt"
-    key_path = "#{@omsadmin_test_dir}/oms.key"
-
-    # Save state
-    crt_hash = Digest::SHA256.file(crt_path)
-    key_hash = Digest::SHA256.file(key_path)
-    old_guid = `grep AGENT_GUID #{@omsadmin_test_dir}/omsadmin.conf | cut -d= -f2`
-    
-    # Reonbording should not modify the agent GUID or the certs 
-    output = do_onboard
-    assert(output =~ /Reusing/, "Did not find the message informing of agent GUID reuse in the script output")
-    assert_equal(old_guid, `grep AGENT_GUID #{@omsadmin_test_dir}/omsadmin.conf | cut -d= -f2`, "Agent GUID should not change on reonboarding")
-    assert(crt_hash == Digest::SHA256.file(crt_path), "The cert should not change on reonboarding")
-    assert(key_hash == Digest::SHA256.file(key_path), "The key should not change on reonboarding")
   end
 
 end
