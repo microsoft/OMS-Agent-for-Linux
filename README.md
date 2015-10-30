@@ -29,3 +29,5 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 ### [Performance data collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-performance-data)
 ### [Nagios Core alert collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-nagios-alerts)
 ### Zabbix alert collection
+
+## [Full documentation](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md)
