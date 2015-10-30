@@ -19,6 +19,7 @@ omi | 1.0.8.3 | Open Management Infrastructure (OMI) -- a lightweight CIM Server
 scx | 1.6.1 | OMI CIM Providers for operating system performance metrics
 apache-cimprov | 1.0.0 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
 mysql-cimprov | 1.0.0 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
+docker-cimprov | 0.1.0-0 | Docker provider for OMI. Only installed if Docker is detected.
 
 ## Upgrade from a Previous Release
 If you have installed a prior Preview version of the Linux agent for Operations Management Suite, it must be removed (and configuration files purged) prior to installing this version. Upgrade from prior versions is not supported in this release.
