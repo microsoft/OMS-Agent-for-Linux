@@ -1,4 +1,3 @@
-require_relative "zabbix_version"
 require_relative "zabbix_client"
 
 class ZabbixApiWrapper
