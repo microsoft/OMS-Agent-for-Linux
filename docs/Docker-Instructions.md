@@ -44,7 +44,8 @@ Click the solution pack tile. From there you’ll see views organized by:
 •	Host
 •	Errors
 •	Audit Trail
-The container solutions pack works by collecting various performance metrics and log data and sending it to the Operations Management Suite service. Each pane you see on the UI is a visual representation of a search that is run on this data. 
+The container solutions pack works by collecting various performance metrics and log data and sending it to the Operations Management Suite service. Each pane you see on the UI is a visual representation of a search that is run on this data.
+
 **Try it:** Click on the top tile of this pane.
  ![DockerHostsPicture]()
  
