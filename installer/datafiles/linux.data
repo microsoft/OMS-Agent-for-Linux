@@ -265,10 +265,17 @@ SudoSupportsIncludeDirective() {
 
 
 %Preinstall_1000
+#include Systemd_resolver
+#include Syslog_Services
+#include OMSService_funcs
+
 # If our service is already running, stop it
 if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
    /opt/microsoft/omsagent/bin/service_control stop
 fi
+
+UnconfigureSyslog
+RemoveOMSService
 
 # Add the 'omsagent' group if it does not already exist
 # (Can't use useradd with -U since that doesn't exist on older systems)
@@ -292,7 +299,6 @@ fi
 #include Sudoer_Functions
 
 ${{OMI_SERVICE}} reload
-RemoveOMSService
 ConfigureOMSService
 ConfigureSyslog
 
@@ -312,16 +318,19 @@ chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
 
 
 %Preuninstall_10
-#include OMSService_funcs
 
-if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
-    /opt/microsoft/omsagent/bin/service_control stop
+# If we're called for upgrade, don't do anything
+if ${{PERFORMING_UPGRADE_NOT}}; then
+    if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
+        /opt/microsoft/omsagent/bin/service_control stop
+    fi
 fi
+
 
 %Postuninstall_1000
 #include Systemd_resolver
-#include OMSService_funcs
 #include Syslog_Services
+#include OMSService_funcs
 
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
