@@ -78,11 +78,12 @@ This will show you the logs and you can scroll to see the failed container:
 ![DockerContainerFailedSearchView]()
  
 ### Search Logs
-When you’re troubleshooting a specific error, it can help to see where it is occurring in your environment. Become familiar with the types of logs so you can construct queries to get the information you want: 
-•	**ContainerInventory** – Use this type when you’re want information about where containers are located, what their names are, and what images they’re running. 
-•	**ContainerImageInventory** – Use this type when you’re trying to find information organized by image and to get image information such as image IDs or sizes. 
-•	**ContainerLog** – Use this type when you want to find specific error log information and entries.
-•	**ContainerServiceLog** – Use this type when you’re trying to find audit trail information for the Docker daemon, such as start, stop, delete or pull commands.  
+When you’re troubleshooting a specific error, it can help to see where it is occurring in your environment. Become familiar with the types of logs so you can construct queries to get the information you want:
+
+* **ContainerInventory** – Use this type when you’re want information about where containers are located, what their names are, and what images they’re running. 
+* **ContainerImageInventory** – Use this type when you’re trying to find information organized by image and to get image information such as image IDs or sizes. 
+* **ContainerLog** – Use this type when you want to find specific error log information and entries.
+* **ContainerServiceLog** – Use this type when you’re trying to find audit trail information for the Docker daemon, such as start, stop, delete or pull commands.  
 
 **Try it:** Pick an image that you know has failed recently and find the error logs for it. Start by finding a container name that is running that image with a ContainerInventory search: 
 
