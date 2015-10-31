@@ -27,6 +27,7 @@ SCRIPT="$SCRIPT_DIR/`basename $0`"
 EXTRACT_DIR="`pwd -P`/omsbundle.$$"
 ONBOARD_FILE=/etc/omsagent-onboard.conf
 DPKG_CONF_QUALS="--force-confold --force-confdef"
+OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -502,11 +503,26 @@ case "$installMode" in
             OMI_EXIT_STATUS=0
         else
             pkg_add $OMI_PKG omi
-            OMI_EXIT_STATUS=$?  
+            OMI_EXIT_STATUS=$?
+        fi
+
+        # Old TP4 kit kills the 1270 port before the new kit can do anything about it on upgrade;
+        # Before installing new kit, save the https port and restore after upgrade
+        HTTPSPORT=""
+        if [ -f $OMISERV_CONF ]; then
+            echo "----- Saving OMI HTTPS port configuration -----"
+            HTTPSPORT=`grep ^httpsport $OMISERV_CONF | cut -d= -f2`
         fi
 
         pkg_upd $SCX_PKG scx
         SCX_EXIT_STATUS=$?
+
+        # Restore https port
+        if [ -n $HTTPSPORT ]; then
+            echo "----- Restoring OMI HTTPS port configuration -----"
+            /opt/omi/bin/omiconfigeditor httpsport -s $HTTPSPORT < $OMISERV_CONF > ${OMISERV_CONF}.bak
+            mv ${OMISERV_CONF}.bak $OMISERV_CONF
+        fi
 
         pkg_upd $OMS_PKG omsagent
         OMS_EXIT_STATUS=$?
