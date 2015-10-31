@@ -8,8 +8,8 @@ PAM | Pluggable authentication Modules	 |
 
 **Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog, 
 
-# Install the Linux Agent
-The Linux agent for Operations Management Suite comprises multiple packages. The release file contains the following packages, available by running the shell bundle with `--extract`:
+# Install the OMS Agent for Linux
+The Operations Management Suite Agent for Linux comprises multiple packages. The release file contains the following packages, available by running the shell bundle with `--extract`:
 
 **Package** | **Version** | **Description**
 ----------- | ----------- | --------------
@@ -22,7 +22,7 @@ mysql-cimprov | 1.0.0 | MySQL Server performance monitoring provider for OMI. On
 docker-cimprov | 0.1.0-0 | Docker provider for OMI. Only installed if Docker is detected.
 
 ## Upgrade from a Previous Release
-If you have installed a prior Preview version of the Linux agent for Operations Management Suite, it must be removed (and configuration files purged) prior to installing this version. Upgrade from prior versions is not supported in this release.
+If you have installed a prior Preview version of the OMS agent for Linux, it must be removed (and configuration files purged) prior to installing this version. Upgrade from prior versions is not supported in this release.
 
 ### Removing Prior Versions
 **CentOS Linux, Oracle Linux, RHEL, SLES**
@@ -38,18 +38,18 @@ sudo rm -f /etc/opt/microsoft/omsagent/conf/omsagent.conf
 ```
 
 ## Additional Installation Artifacts
-After installing the Linux agent for OMS packages, the following additional system-wide configuration changes are applied. These artifacts are removed when the omsagent package is uninstalled.
+After installing the OMS agent for Linux packages, the following additional system-wide configuration changes are applied. These artifacts are removed when the omsagent package is uninstalled.
 * A non-privileged user named: `omsagent` is created. This is the account the omsagent daemon runs as
 * A sudoers “include” file is created at /etc/sudoers.d/omsagent This authorizes omsagent to restart the syslog and omsagent daemons. If sudo “include” directives are not supported in the installed version of sudo, these entries will be written to /etc/sudoers.
 * •	The syslog configuration is modified to forward a subset of events to the agent. For more information, see the **Configuring Data Collection** section below
 
 ## Steps to install the OMS Agent for Linux
-The Linux agent is provided in a self-extracting and installable shell script bundle. This bundle contains Debian and RPM packages for each of the agent components and can be installed directly or extracted to retrieve the individual packages. One bundle is provided for x64 architectures and one for x86 architectures. 
+The OMS agent for Linux is provided in a self-extracting and installable shell script bundle. This bundle contains Debian and RPM packages for each of the agent components and can be installed directly or extracted to retrieve the individual packages. One bundle is provided for x64 architectures and one for x86 architectures. 
 
 **Installing the agent**
 
 1. Transfer the appropriate bundle (x86 or x64) to your Linux computer, using scp/sftp.
-2. Install the bundle by using the `--install` or `--upgrade` argument. Note: use the `--upgrade` argument if any existing packages are installed, as would be the case if the Linux agent for System Center Operations Manager is already installed. To onboard to Operations Management Suite during installation, provide the `-w <WorkspaceID>` and `-s <Shared Key>` parameters.
+2. Install the bundle by using the `--install` or `--upgrade` argument. Note: use the `--upgrade` argument if any existing packages are installed, as would be the case if the system Center Operations Manager agent for Linux is already installed. To onboard to Operations Management Suite during installation, provide the `-w <WorkspaceID>` and `-s <Shared Key>` parameters.
 
 **To install and onboard directly:**
 ```
@@ -181,7 +181,7 @@ sudo /opt/microsoft/apache-cimprov/bin/apache_config.sh -u
 ```
 
 ## Configuring Collected Data on the Linux Computer
-Syslog events and performance counters to collect can be specified in configuration files on the Linux computers. *If you opt to configure data collection through editing of the agent configuration files, you should disable the centralized configuration*.  Instructions are provided below to configure data collection in the agent’s configuration files as well as to disable central configuration for all Linux agents, or individual computers. 
+Syslog events and performance counters to collect can be specified in configuration files on the Linux computers. *If you opt to configure data collection through editing of the agent configuration files, you should disable the centralized configuration*.  Instructions are provided below to configure data collection in the agent’s configuration files as well as to disable central configuration for all OMS agents for Linux, or individual computers. 
 
 ### Disabling central configuration
 #### Diabling central configuration for all Linux computers
@@ -206,7 +206,7 @@ Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a l
 The default OMS Agent syslog configuration uploads syslog events from all facilities with a severity of warning or higher. 
 *Note: if you edit the syslog configuration, the syslog daemon must be restarted for the changes to take effect.*
  
-The default syslog configuration for the Linux agent for OMS is:
+The default syslog configuration for the OMS agent for Linux is:
 
 #### Rsyslog
 ```
