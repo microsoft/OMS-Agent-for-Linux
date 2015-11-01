@@ -28,6 +28,7 @@ EXTRACT_DIR="`pwd -P`/omsbundle.$$"
 ONBOARD_FILE=/etc/omsagent-onboard.conf
 DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
+OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -506,22 +507,55 @@ case "$installMode" in
             OMI_EXIT_STATUS=$?
         fi
 
-        # Old TP4 kit kills the 1270 port before the new kit can do anything about it on upgrade;
-        # Before installing new kit, save the https port and restore after upgrade
+        # TP4 kit destroys OMI's 'httpsport' on upgrade before the new kit sees
+        # light of day; before installing new kit, save/restore the httpsport
         HTTPSPORT=""
+        CIPHER=""
         if [ -f $OMISERV_CONF ]; then
-            echo "----- Saving OMI HTTPS port configuration -----"
-            HTTPSPORT=`grep ^httpsport $OMISERV_CONF | cut -d= -f2`
+            omiport=`grep ^httpsport $OMISERV_CONF | cut -d= -f2`
+            if [ "${omiport}" != "0" ]; then
+                HTTPSPORT=${omiport}
+                echo "----- Saving OMI HTTPS port configuration -----"
+                echo "  ('httpsport' configuration: ${HTTPSPORT})"
+            fi
+        fi
+
+        # Looks like dpkg installer deletes omiserver.conf before even %Pre (sigh)
+        if [ "$INSTALLER" = "DPKG" ]; then
+            if [ -f $OLD_OMISERV_CONF -a -z "$HTTPSPORT" ]; then
+                omiport=`grep ^httpsport $OLD_OMISERV_CONF | cut -d= -f2`
+                if [ "${omiport}" != "0" ]; then
+                    HTTPSPORT=${omiport}
+                    echo "----- Saving OMI HTTPS port configuration from R2 -----"
+                    echo "  ('httpsport' configuration: ${omiport})"
+                fi
+            fi
+
+            if [ -f $OLD_OMISERV_CONF ]; then
+                cipher=`grep ^sslciphersuite $OLD_OMISERV_CONF`
+                if [ -n "$cipher" ]; then
+                    if ! grep -q ^sslciphersuite $OMISERV_CONF; then 
+                        echo "----- Saving OMI cipher configuration from R2 -----"
+                        CIPHER=${cipher}
+                    fi
+                fi
+            fi
         fi
 
         pkg_upd $SCX_PKG scx
         SCX_EXIT_STATUS=$?
 
-        # Restore https port
-        if [ -n $HTTPSPORT ]; then
+        # Restore HTTPSPORT if we saved something
+        if [ -n "${HTTPSPORT}" ]; then
             echo "----- Restoring OMI HTTPS port configuration -----"
             /opt/omi/bin/omiconfigeditor httpsport -s $HTTPSPORT < $OMISERV_CONF > ${OMISERV_CONF}.bak
             mv ${OMISERV_CONF}.bak $OMISERV_CONF
+        fi
+
+        # And restore SSLCIPHERSUITE if we saved something
+        if [ -n "${CIPHER}" ]; then
+            echo "----- Restoring OMI cipher configuration -----"
+            echo "${CIPHER}" >> $OMISERV_CONF
         fi
 
         pkg_upd $OMS_PKG omsagent
