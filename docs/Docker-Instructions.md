@@ -11,13 +11,15 @@ With this feature, you'll be able to:
 ## Setting up
 Your container hosts must be running:
 * At least Docker 1.8
+
+And one of: 
 * Ubuntu 14.04, 15.04
 * Amazon Linux 2015.09
 * openSUSE 13.2
 * CentOS 7
 * SUSE Linux Enterprise Server 12
 
-You'll need to add the OMS Agent for Linux to each host (instructions here)[INSERT LINK] and then do the following to configure your containers to use the FluentD logging driver:
+You'll need to [install the OMS Agent for Linux] (https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md) on each host and then do the following to configure your containers to use the FluentD logging driver:
 
 * Edit `/etc/default/docker` and add this line:
 ```
