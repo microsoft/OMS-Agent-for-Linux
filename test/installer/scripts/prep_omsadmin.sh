@@ -19,6 +19,7 @@ sed -i s,AUTH_KEY_SCRIPT=.*,AUTH_KEY_SCRIPT=$BASE_DIR/installer/scripts/auth_key
 sed -i s,INSTALL_INFO=.*,INSTALL_INFO=$BASE_DIR/installer/conf/installinfo.txt,1 $OMSADMIN
 sed -i s,AGENT_USER=.*,AGENT_USER=`id -un`,1 $OMSADMIN
 sed -i s,AGENT_GROUP=.*,AGENT_GROUP=`id -gn`,1 $OMSADMIN
+sed -i s,METACONFIG_PY=.*,METACONFIG_PY=$TESTDIR/not_a_file,1 $OMSADMIN
 
 cat <<EOF > $TESTDIR/scx-release
 OSName=Ubuntu
