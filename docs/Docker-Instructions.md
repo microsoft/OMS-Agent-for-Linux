@@ -1,7 +1,7 @@
 # Trying the container solution pack for Operations Management Suite
 ## What can you do with the container solution pack
 With this feature, you'll be able to:
-* See information about all hosts in a single location 
+* See information about all container hosts in a single location 
 * Know which containers are running, what image they’re running, and where they’re running 
 * See an audit trail for actions on containers 
 * Troubleshoot by viewing and searching centralized logs without remoting to the Docker hosts  
@@ -10,7 +10,7 @@ With this feature, you'll be able to:
 
 ## Setting up
 Your container hosts must be running:
-* At least Docker 1.8
+* Docker 1.8 or later
 
 And one of: 
 * Ubuntu 14.04, 15.04
