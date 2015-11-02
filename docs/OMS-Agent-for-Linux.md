@@ -163,7 +163,7 @@ To define a default user account for the MySQL server on localhost:
 ```
 sudo su omsagent -c '/opt/microsoft/mysql-cimprov/bin/mycimprovauth default 127.0.0.1 <username> <password>'
 
-sudo service omiserverd restart
+sudo /opt/omi/bin/service_control restart
 ```
 Alternatively, you can specify the required MySQL credentials in a file, by creating the file: `/var/opt/microsoft/mysql-cimprov/auth/omsagent/mysql-auth`. For more information on managing MySQL credentials for monitoring through the mysql-auth file, see **Appendix C** of this document.
 
@@ -356,7 +356,7 @@ The Operations Management Suite Agent for Linux shares agent binaries with the S
 * Ensure that the line beginning with **httpsport=** defines the port 1270. Such as:
 `httpsport=1270`
 * Restart the OMI server:
-`/opt/omi/bin/service_control restart`
+`sudo /opt/omi/bin/service_control restart`
 
 ## Known Limitations
 * **Ubuntu 15.10**
