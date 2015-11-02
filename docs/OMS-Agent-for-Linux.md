@@ -356,7 +356,7 @@ The Operations Management Suite Agent for Linux shares agent binaries with the S
 * Ensure that the line beginning with **httpsport=** defines the port 1270. Such as:
 `httpsport=1270`
 * Restart the OMI server:
-`service omiserver restart` or `systemctl restart omiserver`
+`/opt/omi/bin/service_control restart`
 
 ## Known Limitations
 * **Ubuntu 15.10**
