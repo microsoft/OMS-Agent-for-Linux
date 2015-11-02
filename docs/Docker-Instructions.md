@@ -19,7 +19,7 @@ And one of:
 * CentOS 7
 * SUSE Linux Enterprise Server 12
 
-You'll need to [install the OMS Agent for Linux] (https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md) on each host and then do the following to configure your containers to use the FluentD logging driver:
+You'll need to [install the OMS Agent for Linux] (https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#steps-to-install-the-oms-agent-for-linux) on each host and then do the following to configure your containers to use the FluentD logging driver:
 
 * Edit `/etc/default/docker` and add this line:
 ```
