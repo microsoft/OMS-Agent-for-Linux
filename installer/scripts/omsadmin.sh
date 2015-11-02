@@ -340,8 +340,19 @@ onboard()
     
     save_config
 
-    if [ -e $METACONFIG_PY ] && which python; then
-        su - omsagent -c $METACONFIG_PY
+    if [ -e $METACONFIG_PY ]; then
+        if [ $EUID -eq 0 ]; then
+            su - omsagent -c $METACONFIG_PY > /dev/null
+        else
+            $METACONFIG_PY > /dev/null
+        fi
+
+        if [ $? -eq 0 ]; then
+            log_info "Configured omsconfig"
+        else
+            log_error "Error configuring omsconfig"
+            return 1
+        fi
     fi
     return 0
 }
