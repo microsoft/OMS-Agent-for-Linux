@@ -26,6 +26,7 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 
 ## Supported Scenarios
 ### [Syslog data collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
+### [Docker collection] (https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/Docker-Instructions.md)
 ### [Performance data collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-performance-data)
 ### [Nagios Core alert collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-nagios-alerts)
 ### [Zabbix alert collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-zabbix-alerts)
