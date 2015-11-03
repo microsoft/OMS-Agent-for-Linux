@@ -1,22 +1,23 @@
 # Operations Management Suite Agent for Linux Public Preview
-## [Download Latest 64-bit kit](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh)
-## [Download Latest 32-bit kit](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x86.sh)
 ## Overview
 Welcome to the OMS Agent for Linux Preview! The OMS Agent for Linux enables rich and real-time analytics for operational data from Linux servers using Operations Management Suite.
 
-Our goal for this preview is to get your feedback on onboarding the agent, configuring data to be collected, and your general experience using OMS with Linux data. We rely on your feedback to improve both design and implementation of these features. As this is a preview, the feature set is subject to change and should not be considered production ready.
+Our goal for this preview is to get your feedback on onboarding the agent, configuring data to be collected, and your general experience using OMS with Linux data. We rely on your feedback to improve both design and implementation of these features. As this is a preview, the feature set is subject to change.
 
 *Note: the features and supported Linux versions in this Technical Preview are a limited subset of planned capabilities*
-
-## [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 ## Quick Install guide
-Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*.
+Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal settings under the **connected sources** tab.
 ```
 $> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh
 $> md5sum omsagent-1.0.0-47.universal.x64.sh
 $> sudo sh ./omsagent-1.0.0-47 --install -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
 [Full installation guide](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
+
+### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
+
+## [Download Latest 64-bit kit](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh)
+## [Download Latest 32-bit kit](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x86.sh)
 ## Feedback
 
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
