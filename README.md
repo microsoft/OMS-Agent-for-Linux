@@ -1,4 +1,6 @@
 # Operations Management Suite Agent for Linux Public Preview
+## [Download Latest 64-bit kit](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh)
+## [Download Latest 32-bit kit](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x86.sh)
 ## Overview
 Welcome to the OMS Agent for Linux Preview! The OMS Agent for Linux enables rich and real-time analytics for operational data from Linux servers using Operations Management Suite.
 
