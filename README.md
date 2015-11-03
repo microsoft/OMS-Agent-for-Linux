@@ -10,6 +10,7 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*.
 ```
 $> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh
+$> chmod +x omsagent-1.0.0-47.universal.x64.sh
 $> md5sum omsagent-1.0.0-47.universal.x64.sh
 $> ./omsagent-1.0.0-47 --install -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
