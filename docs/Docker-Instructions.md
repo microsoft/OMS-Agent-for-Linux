@@ -27,9 +27,10 @@ You'll need to [install the OMS Agent for Linux] (https://github.com/MSFTOSSMgmt
 ```
 DOCKER_OPTS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
 ```
-2. Save the file and then restart the docker service:
+2. Save the file and then restart the docker service and oms service:
 ```
-service docker restart
+sudo service docker restart
+sudo service omsagent restart
 ```
 
 ## What now?
