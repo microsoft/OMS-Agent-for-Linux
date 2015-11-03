@@ -6,6 +6,7 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 
 *Note: the features and supported Linux versions in this Technical Preview are a limited subset of planned capabilities*
 
+## [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 ## Quick Install guide
 Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*.
 ```
