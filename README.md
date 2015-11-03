@@ -6,7 +6,7 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 
 *Note: the features and supported Linux versions in this Technical Preview are a limited subset of planned capabilities*
 ## Quick Install guide
-Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal settings under the **connected sources** tab.
+Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **connected sources** tab.
 ```
 $> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh
 $> md5sum omsagent-1.0.0-47.universal.x64.sh
