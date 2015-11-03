@@ -23,11 +23,11 @@ And one of:
 
 You'll need to [install the OMS Agent for Linux] (https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#steps-to-install-the-oms-agent-for-linux) on each host and then do the following to configure your containers to use the FluentD logging driver:
 
-1. Edit `/etc/default/docker` and add this line:
+ * Edit `/etc/default/docker` and add this line:
 ```
 DOCKER_OPTS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
 ```
-2. Save the file and then restart the docker service and oms service:
+ * Save the file and then restart the docker service and oms service:
 ```
 sudo service docker restart
 sudo service omsagent restart
