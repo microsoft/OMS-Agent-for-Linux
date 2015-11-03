@@ -13,7 +13,7 @@ $> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0
 $> md5sum omsagent-1.0.0-47.universal.x64.sh
 $> ./omsagent-1.0.0-47 --install -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
-[Full installation options](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
+[Full installation guide](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
 ## Feedback
 
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
