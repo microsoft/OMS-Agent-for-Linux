@@ -363,7 +363,22 @@ The Operations Management Suite Agent for Linux shares agent binaries with the S
 Ubuntu Server version 15.10 is not supported in this preview
 * **Azure Diagnostics**
 For Linux virtual machines running in Azure, additional steps are required to allow data collection by Azure Diagnotstics and Operations Management Suite. To install the OMS Agent for Linux on a Linux server with the Azure Diagnostics agent, perform the following steps:
-TODO
+```
+#Install/upgrade
+sudo sh ./omsagent-1.0.0-47.<arch>.sh --upgrade -w <workspace> -s <shared key>
+
+#Link directories
+sudo rm -rf /var/opt/microsoft/omi
+sudo rm –rf /opt/microsoft/omi
+sudo ln -s /var/opt/omi/ /var/opt/microsoft/
+sudo ln -s /opt/omi/ /opt/microsoft/
+
+#restart services
+sudo kill -9 `pgrep mdsd`
+sudo service walinuxagent restart
+sudo /opt/omi/bin/service_control restart
+
+```
 * **Sysklog is not supported**
 Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog. For more information on replacing sysklog with rsyslog, see: http://wiki.rsyslog.com/index.php/Rsyslog_on_CentOS_success_story#Install_the_newly_built_rsyslog_RPM
 
