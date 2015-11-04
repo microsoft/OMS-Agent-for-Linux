@@ -1,0 +1,144 @@
+%Variables
+SHELL_HEADER:            '#!/bin/sh'
+OMSHOME:                 '/opt/microsoft/omsagent'
+CONF_DIR:                '/etc/opt/microsoft/omsagent/conf'
+
+SHORT_NAME:              'omsagent'
+SHORT_NAME_PREFIX:       'MSFT'
+LONG_NAME:               'Microsoft Operations Management Suite for UNIX/Linux agent'
+GROUP:                   'Applications/System'
+LICENSE:                 'none'
+VENDOR:                  'http://www.microsoft.com'
+PROVIDES:                'omsuploads'
+DESCRIPTION:             'Provides agent for the Microsoft Operations Management Suite.'
+MAINTAINER:              'Microsoft Corporation'
+
+%Defines
+
+%Files
+/etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
+/etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
+/etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
+
+/opt/microsoft/omsagent/LICENSE.txt;                                    LICENSE.txt;                                           444; root; root
+
+/opt/microsoft/omsagent/bin/auth_key.rb;                                installer/scripts/auth_key.rb;                         744; root; root
+/opt/microsoft/omsagent/bin/omsadmin.sh;                                installer/scripts/omsadmin.sh;                         755; root; root
+/opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
+
+/opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root
+/opt/microsoft/omsagent/plugin/in_omi.rb;                               source/code/plugins/in_omi.rb;                         744; root; root
+/opt/microsoft/omsagent/plugin/in_oms_omi.rb;                           source/code/plugins/in_oms_omi.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/oms_omi_lib.rb;                          source/code/plugins/oms_omi_lib.rb;                    744; root; root
+/opt/microsoft/omsagent/plugin/oms_common.rb;                           source/code/plugins/oms_common.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/Libomi.so;                               intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
+/opt/microsoft/omsagent/plugin/filter_nagios_log.rb;                    source/code/plugins/filter_nagios_log.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/nagios_parser_lib.rb;                    source/code/plugins/nagios_parser_lib.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/filter_omi.rb;                           source/code/plugins/filter_omi.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/omi_lib.rb;                              source/code/plugins/omi_lib.rb;                        744; root; root
+/opt/microsoft/omsagent/plugin/omslog.rb;                               source/code/plugins/omslog.rb;                         744; root; root
+/opt/microsoft/omsagent/plugin/in_zabbix.rb;                            source/code/plugins/in_zabbix.rb;                      744; root; root
+/opt/microsoft/omsagent/plugin/zabbix_lib.rb;                           source/code/plugins/zabbix_lib.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/zabbix_client.rb;                        source/code/plugins/zabbix_client.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/zabbixapi.rb;                            source/code/plugins/zabbixapi.rb;                      744; root; root
+
+%Links
+/opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
+
+%Directories
+/opt;                                                   755; root; root; sysdir
+/etc;                                                   755; root; root; sysdir
+/etc/opt;                                               755; root; root; sysdir
+/var;                                                   755; root; root; sysdir
+/var/opt;                                               755; root; root; sysdir
+
+/etc/opt/microsoft;                                     755; root; root
+/etc/opt/microsoft/omsagent;                            755; root; root
+/etc/opt/microsoft/omsagent/sysconf;                    755; root; root
+
+/opt/microsoft;                                         755; root; root
+/opt/microsoft/omsagent;                                755; root; root
+/opt/microsoft/omsagent/bin;                            755; root; root
+/opt/microsoft/omsagent/plugin;                         755; root; root
+
+/var/opt/microsoft;                                     755; root; root
+
+%Dependencies
+
+%Postinstall_100
+WriteInstallInfo() {
+    echo "${{VERSION}}-${{RELEASE}} ${{VERSION_IDENT}}" > /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
+    date +%Y-%m-%dT%T.0Z >> /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
+}
+WriteInstallInfo
+
+# Can't use normal mechanisms to create /var directories because they must be
+# owned by omsagent account. So create them as part of Postinstall, after the
+# service account is created.
+
+mkdir -m 700 /etc/opt/microsoft/omsagent/certs/ 2> /dev/null || true
+chown -R omsagent:omsagent /etc/opt/microsoft/omsagent/certs
+
+mkdir -m 755 /var/opt/microsoft/omsagent        2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/log    2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/run    2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/state  2> /dev/null || true
+mkdir -m 755 /var/opt/microsoft/omsagent/tmp    2> /dev/null || true
+chown -R omsagent:omsagent /var/opt/microsoft/omsagent
+
+# Ditto for conf directory in /etc/opt/microsoft/omsagent/conf ...
+
+mkdir -m 755 ${{CONF_DIR}} 2> /dev/null || true
+
+if [ ! -f ${{CONF_DIR}}/omsagent.conf ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf ${{CONF_DIR}}
+fi
+
+# Folder for omsagent.conf includes
+mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
+
+chown -R omsagent:omsagent ${{CONF_DIR}}
+
+%Postinstall_300
+if [ -f /etc/omsagent-onboard.conf ]; then
+   /opt/microsoft/omsagent/bin/omsadmin.sh
+fi
+
+%Postuninstall_10
+# Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
+#   1. Run the %pre section of the RPM being installed.
+#   2. Install the files that the RPM provides.
+#   3. Run the %post section of the RPM.
+#   4. Run the %preun of the old package.
+#   5. Delete any old files not overwritten by the newer version.
+#      (This step deletes files that the new package does not require.)
+#   6. Run the %postun hook of the old package.
+#
+# Thus, if we're an upgrade, skip all of this cleanup
+if ${{PERFORMING_UPGRADE_NOT}}; then
+   # Clean up directory tree (created via PostInstall) if dirs are empty
+   rmdir /etc/opt/microsoft/omsagent/certs/ 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent/tmp 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent/state 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent/run 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent/log 2> /dev/null
+   rmdir /var/opt/microsoft/omsagent 2> /dev/null
+
+   # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
+   rm -f /etc/opt/microsoft/omsagent/sysconf/installinfo.txt*
+   rmdir /etc/opt/microsoft/omsagent/sysconf 2> /dev/null
+   rmdir /etc/opt/microsoft/omsagent 2> /dev/null
+   rmdir /etc/opt/microsoft 2> /dev/null
+   rmdir /etc/opt 2> /dev/null
+fi
+
+%Preinstall_0
+${{SHELL_HEADER}}
+%Postinstall_0
+${{SHELL_HEADER}}
+%Preuninstall_0
+${{SHELL_HEADER}}
+%Postuninstall_0
+${{SHELL_HEADER}}

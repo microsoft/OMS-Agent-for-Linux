@@ -1,0 +1,147 @@
+#!/bin/bash
+##
+# Copyright (c) Microsoft Corporation.  All rights reserved.
+#
+# Contains settings for the Microsoft omsagent Deamon.
+#
+#
+
+### BEGIN INIT INFO
+# Provides:          omsagent
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: OMS Agent
+# Description:       Operations Management Suite (omsagent) Server
+### END INIT INFO
+
+OMS_HOME=/opt/microsoft/omsagent
+OMS_NAME="Operations Management Suite agent"
+
+OMS_BIN=$OMS_HOME/bin/omsagent
+test -x $OMS_BIN || { echo "$OMS_BIN not installed";
+    if [ "$1" = "stop" ]; then exit 0;
+    else exit 5; fi; }
+
+# LOGFILE and PIDFILE picked up from service control helper script
+
+if [ ! -f /opt/microsoft/omsagent/bin/service_control ]; then
+    echo "Could not source service control functions."
+    exit 1
+fi
+
+. /opt/microsoft/omsagent/bin/service_control functions
+
+if [ -f /etc/init.d/functions ]; then
+    INIT_STYLE=R      # INIT_STYLE uses R/S/D for its representative platform RedHat/SuSE/Debian 
+    . /etc/init.d/functions
+elif [ -f /etc/rc.status ]; then
+    INIT_STYLE=S
+    . /etc/rc.status && rc_reset
+elif [ -f /lib/lsb/init-functions ]; then
+    INIT_STYLE=D
+    . /lib/lsb/init-functions
+else
+    echo "Could not source init functions."
+    exit 1
+fi
+
+
+RETVAL=0
+USER_REQ=""
+case "$1" in
+     start)
+        AGENT_RUNNING=is_omsagent_running
+        START_QUALS="-d $PIDFILE --no-supervisor -o $LOGFILE"
+
+        case $INIT_STYLE in
+            D)
+                log_begin_msg "Starting $OMS_NAME: "
+                [ "`id -u`" -eq 0 ] && USER_REQ="--chuid omsagent"
+                $AGENT_RUNNING && /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --name "omsagent" --startas $OMS_BIN -- $START_QUALS
+                RETVAL=$?
+                log_end_msg $RETVAL
+                ;;               
+            R)
+                echo -n "Starting $OMS_NAME: "
+                [ "`id -u`" -eq 0 ] && USER_REQ="--user=omsagent"
+                $AGENT_RUNNING && daemon $USER_REQ $OMS_BIN $START_QUALS
+                RETVAL=$?
+                echo
+                ;;
+            S) 
+                . /etc/sysconfig/language
+                unset LC_ALL
+                LC_CTYPE="$RC_LANG"; export LC_CTYPE
+                echo -n "Starting $OMS_NAME "
+                [ "`id -u`" -eq 0 ] && USER_REQ="-u omsagent"
+                $AGENT_RUNNING && startproc $USER_REQ -p $PIDFILE $OMS_BIN $START_QUALS
+                rc_status -v
+                ;;
+            *)  exit 1   ;;
+        esac  ;;
+
+     stop)
+        LD_LIBRARY_PATH=$OMS_HOME/lib; export LD_LIBRARY_PATH
+        case $INIT_STYLE in
+            D)
+                log_begin_msg "Shutting down $OMS_NAME: "
+                stop_omsagent_process
+                RETVAL=$?
+                log_end_msg $RETVAL
+                ;;
+            R)
+                echo -n "Shutting down $OMS_NAME: "
+                stop_omsagent_process
+                RETVAL=$?
+                if [ $RETVAL -eq 0 ]; then echo_success; else echo_failure; fi
+                echo
+                ;;
+            S)
+                echo -n "Shutting down $OMS_NAME: "
+                stop_omsagent_process
+                rc_status -v
+                ;;
+            *)  exit 1    ;;
+        esac
+        ;;
+
+     restart)
+        $0 stop
+        $0 start
+        case $INIT_STYLE in
+            S)   rc_status  ;;
+          D|R)   RETVAL=$?  ;;
+            *)   exit 1     ;;
+        esac
+        ;;
+
+     status)
+        echo -n "Checking for service $OMS_NAME "
+        case $INIT_STYLE in
+            D)
+                status_of_proc $OMS_BIN
+                RETVAL=$?
+                ;;
+
+            R)
+                status $OMS_BIN
+                RETVAL=$?
+                ;;
+
+            S)
+                checkproc -p $PIDFILE $OMS_BIN
+                rc_status -v
+                ;;
+            *)  exit 1    ;;
+        esac
+        ;;
+
+     *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+if [ $INIT_STYLE == S ]; then rc_exit; else exit $RETVAL; fi

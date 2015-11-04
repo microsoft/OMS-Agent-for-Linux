@@ -1,0 +1,10 @@
+%Variables
+PERFORMING_UPGRADE_NOT: '[ "$1" != "upgrade" -a "$1" != "purge" ]'
+PACKAGE_TYPE: 'DPKG'
+
+%Dependencies
+%% In omsadmin.sh: 'curl' requires 'curl'
+curl
+
+omi (>= 1.0.8-3)
+scx (>= 1.6.1-120)

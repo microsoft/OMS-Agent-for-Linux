@@ -1,0 +1,432 @@
+#!/bin/bash
+
+scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
+scxpal_dir=`(cd ../../pal; pwd -P)`
+scxcim_dir=`(cd ../../opsmgr; pwd -P)`
+
+enable_debug=""
+enable_debug_flag=0
+enable_purify_agent=""
+enable_purify_server=""
+enable_omi_tools=""
+enable_omi_tools_flag=0
+opensource_distro=0
+build_type=Release
+ULINUX=0
+NOULINIX=0
+
+if [ ! -d "$scxomi_dir" ]; then
+    echo "OMI directory ($scxomi_dir) does not exist" >& 2
+    exit 1
+fi
+
+if [ ! -d "$scxpal_dir" ]; then
+    echo "PAL directory ($scxpal_dir) does not exist" >& 2
+    exit 1
+fi
+
+if [ ! -d "$scxcim_dir" ]; then
+    echo "SCX directory ($scxcim_dir) does not exist" >& 2
+    exit 1
+fi
+
+# Make sure we have the obvious build requirements for Ruby ...
+
+ruby -v 2>/dev/null 1>&2
+if [ $? -ne 0 ]; then
+    echo "Any version of Ruby must be installed in order to build Ruby" >& 2
+    exit 1
+fi
+
+bison -V 2>/dev/null 1>&2
+if [ $? -ne 0 ]; then
+    echo "The bison program must be installed in order to build Ruby" >& 2
+    exit 1
+fi
+
+# And some version of git must be installed in order to build fluentd ...
+
+git --version 2>/dev/null 1>&2
+if [ $? -ne 0 ]; then
+    echo "Any version of git must be installed in order to build fluentd" >& 2
+    exit 1
+fi
+
+# Note: Ruby has optimization issues with g++ v4.1.2 due to G++ bug # 18251:
+#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=18251
+#
+# This appears to mostly affect 32-bit platforms. So if we're using an old
+# compiler, warn of this at the end of configure and build Ruby with
+# optimization disabled.
+
+gcc_compiler_bug_18251_resolved() {
+    # POSIX Semantic Version <= Test
+    # Exit code 0 is failure (i.e. false), meaning we still have the bug
+    #
+    # Parameter: "x.y.z" (like "4.2.2"), for major.minor.patch versions
+
+    # Current version installed
+    local MAJOR=`echo $1 | cut -d. -f1`
+    local MINOR=`echo $1 | cut -d. -f2`
+    local PATCH=`echo $1 | cut -d. -f3`
+
+    # Version with the compiler bug
+    local TEST_MAJOR=4
+    local TEST_MINOR=1
+    local TEST_PATCH=2
+
+    # Check bounds on MAJOR
+    if [ $MAJOR -lt $TEST_MAJOR ]; then
+        return 0
+    elif [ $MAJOR -gt $TEST_MAJOR ]; then
+        return 1
+    fi
+
+    # MAJOR matched, so check bounds on MINOR
+    if [ $MINOR -lt $TEST_MINOR ]; then
+        return 0
+    elif [ $MINOR -gt $TEST_MINOR ]; then
+        return 1
+    fi
+
+    # MINOR matched, so check bounds on PATCH
+    if [ $PATCH -lt $TEST_PATCH ]; then
+        return 0
+    elif [ $PATCH -gt $TEST_PATCH ]; then
+        return 1
+    fi
+
+    # GCC version includes fix for compiler bug
+    return 1
+}
+
+number_of_bits() {
+    # Always favor 64-bit if we get something unanticipated
+    case `uname -m` in
+        *64*)
+            echo "64"
+            ;;
+        *86* | *athlon*)
+            echo "32"
+            ;;
+        *)
+            echo "64"
+            ;;
+        esac
+}
+
+GCC_VERSION=`g++ --version | head -1 | sed 's/([^)]*)//' | awk '{print $2}'`
+
+NOOPTIMIZE=0
+gcc_compiler_bug_18251_resolved $GCC_VERSION
+if [ $? -eq 0 -a `number_of_bits` -eq 32 ]; then
+    NOOPTIMIZE=1
+fi
+
+for opt
+do
+
+  arg=`expr "x$opt" : 'x[^=]*=\(.*\)'`
+
+  case $opt in
+
+    -h | --help)
+      help=1
+    ;;
+
+    --enable-debug)
+      enable_debug="--enable-debug"
+      build_type=Debug
+      enable_debug_flag=1
+    ;;
+
+    --enable-ulinux)
+      if [ `uname` != "Linux" ]; then
+          echo "Cannot build for ULINUX on non-Linux platforms" >& 2
+          exit 1
+      fi
+      if [ "$NOULINUX" = "1" ]; then
+          echo "Conflicting qualifers: --enable-ulinux and --noenable-ulinux can't be specified together" >& 2
+          exit 1
+      fi
+      enable_ulinux="--enable-ulinux"
+      ULINUX=1
+    ;;
+
+    --noenable-ulinux)
+      if [ `uname` != "Linux" ]; then
+          echo "Cannot build for ULINUX on non-Linux platforms" >& 2
+          exit 1
+      fi
+      if [ "$ULINUX" = "1" ]; then
+          echo "Conflicting qualifers: --enable-ulinux and --noenable-ulinux can't be specified together" >& 2
+          exit 1
+      fi
+      NOULINUX=1
+    ;;
+
+    --enable-open-source)
+      opensource_distro=1
+    ;;
+
+    *)
+      echo "configure: invalid option '$opt'" >& 2
+      echo "Try configure --help' for more information." >& 2
+      exit 1
+    ;;
+
+  esac
+
+done
+
+if [ "$help" = "1" ]; then
+
+    cat<<EOF
+
+Usage: ./configure [OPTIONS]
+
+OVERVIEW:
+
+This script configures SCXOM for building. Type the following commands.
+
+    $ ./configure
+    $ make
+
+OPTIONS:
+    -h, --help                  Print this help message.
+    --enable-debug              Perform a debug build.
+    --[no]enable-ulinux         Specifies platform as ULINUX (Linux only);
+                                ULINUX is assumed on universal build systems
+    --enable-open-source        Build for open source distribution
+
+EOF
+    exit 0
+fi
+
+scx_configure_quals="${enable_debug} ${enable_ulinux}"
+
+if [ "$ULINUX" -eq 1 -a "$opensource_distro" -eq 1 ]; then
+    echo "*** ULINUX not permitted for open source distributions; ULINUX disabled ***" >& 2
+    ULINUX=0
+fi
+
+if [ "$opensource_distro" -eq 1 ]; then
+    # We really don't want ULINUX, not even defaulted
+    NOULINUX=1
+fi
+
+# And we need our local SSL directories to be able to deal with ULINUX
+
+if [ $ULINUX -eq 1 ]; then
+    if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 ]; then
+        echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
+        exit 1
+    fi
+fi
+
+if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then
+    echo "This appears to be a ULINUX system, but you're not doing a ULINUX build." >& 2
+    echo "Given that OMI makes assumptions based on these directories, there is an" >& 2
+    echo "extraordinarily good chance that your build will fail. You should do a" >& 2
+    echo "ULINUX build (--enable-ulinux) on this system." >& 2
+    exit 1
+fi
+
+# Note: Most of this code came from the PAL configure file
+
+set_ulinux_pf() 
+{
+    PF_MAJOR=1
+    PF_MINOR=0
+    PF_DISTRO=ULINUX
+
+    if [ -e /usr/bin/dpkg ]; then
+        BUILD_DPKG=1
+        PKG_SUFFIX=deb
+    else
+        if [ -e /usr/bin/rpmbuild ]; then
+            BUILD_RPM=1
+        else
+            echo "Can't determine if this system should build .DEB or .RPM packages" >& 2
+            exit 1
+        fi
+    fi
+}
+
+uname=`uname`
+case $uname in
+    Linux)
+        PF=Linux
+        PKG_SUFFIX=rpm
+        if [ -e /etc/SuSE-release ]; then 
+            CHECK_SUSE=1
+        fi
+        if [ -e /etc/redhat-release ]; then
+            CHECK_RHEL_OR_CENTOS=1
+        fi
+        if [ -n "$CHECK_RHEL_OR_CENTOS" ]; then
+            CHECK_CENTOS=`grep -i "Red Hat" /etc/redhat-release || echo 1`
+            if [ "$CHECK_CENTOS" != "1" ]; then
+                CHECK_RHEL=1
+            fi
+        fi
+
+        if [ "$ULINUX" = "1" ]; then
+            set_ulinux_pf
+            BUILD_RPM=1
+            BUILD_DPKG=1
+        elif [ -n "$CHECK_SUSE" ]; then
+            PF_MAJOR=`head -n 1 /etc/SuSE-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
+            PF_MINOR=`(head -n 1 /etc/SuSE-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
+            PF_DISTRO=SUSE
+        elif [ -n "$CHECK_RHEL" ]; then
+            PF_MAJOR=`head -n 1 /etc/redhat-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
+            PF_MINOR=`(head -n 1 /etc/redhat-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
+            PF_DISTRO=REDHAT
+        elif [ -n "$CHECK_CENTOS" ]; then
+            PF_MAJOR=`head -n 1 /etc/redhat-release | sed 's/.* \([0-9][0-9]*\)[ \.].*/\1/'`
+            PF_MINOR=`(head -n 1 /etc/redhat-release | sed 's/.* [0-9][0-9]*[\.]\([0-9][0-9]*\).*/\1/') | grep -v '[^0-9]' || echo '0'`
+            PF_DISTRO=REDHAT
+        elif [ -e /etc/lsb-release ]; then
+            source /etc/lsb-release
+            if [ "$DISTRIB_ID" = "Ubuntu" ]; then
+                PF_MAJOR=`echo $DISTRIB_RELEASE | cut -d '.' -f 1`
+                PF_MINOR=`echo $DISTRIB_RELEASE | cut -d '.' -f 2`
+                PF_DISTRO=UBUNTU
+                PKG_SUFFIX=deb
+                BUILD_DPKG=1
+            else
+                set_ulinux_pf
+            fi
+        else
+            set_ulinux_pf
+        fi
+
+        case `uname -m` in
+            *64*)
+                PF_ARCH=x64
+                ARCH=x64
+                RUBY_ARCH=x86_64-linux
+                RUBY_ARCM=x86_64-linux
+            ;;
+            *86*)
+                PF_ARCH=x86
+                ARCH=ia32
+                RUBY_ARCH=x86-linux
+                RUBY_ARCM=`uname -m`-linux
+            ;;
+            *athlon*)
+                PF_ARCH=x86
+                ARCH=ia32
+                RUBY_ARCH=x86-linux
+                RUBY_ARCM=`uname -m`-linux
+            ;;
+            *)
+                PF_ARCH=UNKNOWN
+                ARCH=UNKNOWN
+            ;;
+        esac
+
+        if [ "$PF_ARCH" = "x86" ]; then
+            PF_WIDTH=32
+        else
+            PF_WIDTH=64
+        fi
+    ;;
+
+esac
+
+if [ "$uname" = "Linux" ]; then
+    BUILD_CONFIGURATION=${PF}_${PF_DISTRO}_${PF_MAJOR}.${PF_MINOR}_${PF_ARCH}_${PF_WIDTH}_${build_type}
+else
+    BUILD_CONFIGURATION=${PF}_${PF_MAJOR}.${PF_MINOR}_${PF_ARCH}_${PF_WIDTH}_${build_type}
+fi
+
+# List of ruby extensions. Disable everything, remove if:
+#   1. We absolutely need something, and
+#   2. We can guarantee (and insure) machine requirements for extension (at both build-time and run-time)
+#
+# Note: To see how Ruby was built (after the fact), use a command like:
+#
+#   ruby -e 'puts RUBY_DESCRIPTION, RbConfig::CONFIG["GCC"], RbConfig::CONFIG["cflags"]'
+#
+# Determine Ruby configuration based on our configuration
+
+RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,ripper,sdbm,tk,win32,win32ole"
+
+if [ $NOOPTIMIZE -eq 1 ]; then
+    ruby_optimize_flag=-O2
+else
+    ruby_optimize_flag=-O3
+fi
+
+ruby_cflags="${ruby_optimize_flag} -fno-fast-math -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration"
+
+ruby_configure_quals=(
+    \"CFLAGS=${ruby_cflags}\"
+    --disable-install-doc
+    --disable-install-rdoc
+    --without-gmp
+    --with-out-ext=${RUBY_EXTENSIONS}
+     )
+
+ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
+ruby_config_quals_testins="--prefix=/usr/local/ruby-2.2.0a"
+
+if [ "$ULINUX" = "1" ]; then
+    ssl_098_dirpath=/usr/local_ssl_0.9.8
+    ruby_configure_quals_098=( --with-openssl-dir=$ssl_098_dirpath
+        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
+
+    ssl_100_dirpath=/usr/local_ssl_1.0.0
+    ruby_configure_quals_100=( --with-openssl-dir=$ssl_100_dirpath
+        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
+fi
+
+cat <<EOF > config.mak
+ENABLE_DEBUG=$enable_debug_flag
+
+BUILD_TYPE=$build_type
+PF=$PF
+PF_MAJOR=$PF_MAJOR
+PF_MINOR=$PF_MINOR
+PF_ARCH=$PF_ARCH
+ARCH=$ARCH
+RUBY_ARCH=$RUBY_ARCH
+RUBY_ARCM=$RUBY_ARCM
+PF_WIDTH=$PF_WIDTH
+PF_DISTRO=$PF_DISTRO
+ULINUX=$ULINUX
+BUILD_CONFIGURATION=$BUILD_CONFIGURATION
+PACKAGE_SUFFIX=$PKG_SUFFIX
+
+RUBY_CONFIGURE_QUALS=( ${ruby_configure_quals[@]} )
+RUBY_CONFIGURE_QUALS_SYSINS="$ruby_config_quals_sysins"
+RUBY_CONFIGURE_QUALS_TESTINS="$ruby_config_quals_testins"
+EOF
+
+if [ "$ULINUX" = "1" ]; then
+    # SSL "lib" directory name can vary based on platform AND OpenSSL version ...
+    ssl_098_libpath=`eval echo ${ssl_098_dirpath}/lib*`
+    ssl_100_libpath=`eval echo ${ssl_100_dirpath}/lib*`
+
+    echo "SSL_098_LIBPATH=${ssl_098_libpath}" >> config.mak
+    echo "RUBY_CONFIGURE_QUALS_098=( ${ruby_configure_quals_098[@]} )" >> config.mak
+    echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
+    echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
+fi
+
+# Fix permissions in case they aren't executable - and then configure SCX
+chmod ug+x ${scxcim_dir}/build/configure
+(cd ${scxcim_dir}/build && ./configure ${scx_configure_quals})
+
+# Display some information for our own configuration
+if [ $NOOPTIMIZE -eq 1 ]; then
+    echo "Notice: Ruby will be built WITH REDUCED optimization!"
+fi
+
+if [ "$ULINUX" = "1" ]; then
+    echo "Configured OMS for ULINUX build"
+else
+    echo "Configured OMS for non-ULINUX build"
+fi

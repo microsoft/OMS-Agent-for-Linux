@@ -1,0 +1,366 @@
+%Variables
+PF:           'Linux'
+RSYSLOG_DEST: '/etc/rsyslog.d/95-omsagent.conf'
+OMI_SERVICE:  '/opt/omi/bin/service_control'
+OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
+
+%Directories
+/etc;                                                   755; root; root; sysdir
+/etc/init.d;                                            755; root; root; sysdir
+
+%Files
+/etc/opt/microsoft/omsagent/sysconf/rsyslog.conf;                       installer/conf/rsyslog.conf;                           644; root; root
+/etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf;                     installer/conf/syslog-ng.conf;                         644; root; root
+
+/etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux;                    installer/scripts/omsagent.ulinux;                     755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    644; root; root
+
+/etc/opt/microsoft/omsagent/sysconf/sudoers;                            installer/conf/sudoers;                                664; root; root
+
+
+%Systemd_resolver
+# Various distributions have different paths for systemd unit files ...
+
+SYSTEMD_UNIT_DIR=""
+ResolveSystemdPaths()
+{
+    local UNIT_DIR_LIST="/usr/lib/systemd/system /lib/systemd/system"
+
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        # Be sure systemctl lives where we expect it to
+        if [ ! -f /bin/systemctl ]; then
+            echo "FATAL: Unable to locate systemctl program" 1>&2
+            exit 1
+        fi
+
+        # Find systemd unit directory
+        for i in ${UNIT_DIR_LIST}; do
+            if [ -d $i ]; then
+                SYSTEMD_UNIT_DIR=${i}
+                return 0
+            fi
+        done
+
+        # Didn't fine unit directory, that's fatal
+        echo "FATAL: Unable to resolve systemd unit directory!" 1>&2
+        exit 1
+    else
+	return 1
+    fi
+}
+
+ResolveSystemdPaths
+
+%OMSService_funcs
+StopOMSService() {
+    if [ -f ${{OMS_SERVICE}} ]; then
+        ${{OMS_SERVICE}} stop
+    fi
+}
+
+RemoveOMSService() {
+    # Stop the server if it's running
+    StopOMSService
+
+    # Registered as a systemd service?
+    if [ -f ${SYSTEMD_UNIT_DIR}/omsagent.service ]; then
+        echo "Unconfiguring OMS agent (systemd) service ..."
+        /bin/systemctl disable omsagent
+        rm -f ${SYSTEMD_UNIT_DIR}/omsagent.service
+        /bin/systemctl daemon-reload
+    elif [ -f /etc/init.d/omsagent ]; then
+        echo "Unconfiguring OMS agent service ..."
+        if [ -f /usr/sbin/update-rc.d ]; then
+            /usr/sbin/update-rc.d -f omsagent remove
+        elif [ -x /usr/lib/lsb/remove_initd ]; then
+            /usr/lib/lsb/remove_initd /etc/init.d/omsagent
+        elif [ -x /sbin/chkconfig ]; then
+            chkconfig --del omsagent > /dev/null
+        else
+            echo "Unrecognized Service Controller to unregister OMS Agent Service."
+            exit 1
+        fi
+
+        rm /etc/init.d/omsagent
+    fi
+}
+
+ConfigureOMSService() {
+    echo "Configuring OMS agent service ..."
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        # systemd
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd ${SYSTEMD_UNIT_DIR}/omsagent.service
+        /bin/systemctl daemon-reload
+        /bin/systemctl enable omsagent
+    else
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
+
+        if [ -x /usr/sbin/update-rc.d ]; then
+            update-rc.d omsagent defaults > /dev/null
+        elif [ -x /usr/lib/lsb/install_initd ]; then
+            /usr/lib/lsb/install_initd /etc/init.d/omsagent
+        elif [ -x /sbin/chkconfig ]; then
+            chkconfig --add omsagent > /dev/null
+        else
+            echo "Unrecognized Service Controller to configure OMS Agent Service."
+            exit 1
+        fi
+    fi
+
+    ${{OMS_SERVICE}} start
+}
+
+%Syslog_Services
+RestartService() {
+    if [ -z "$1" ]; then
+        echo "RestartService requires parameter (service name to restart)" 1>&2
+        return 1
+    fi
+
+    echo "Restarting service: $1"
+
+    # Does the service exist under systemd?
+    pidof systemd 1> /dev/null 2> /dev/null
+    if [ $? -eq 0 -a -f ${SYSTEMD_UNIT_DIR}/${1}.service ]; then
+        /bin/systemctl restart $1
+    else
+        if [ -x /usr/sbin/invoke-rc.d ]; then
+            /usr/sbin/invoke-rc.d $1 restart
+        elif [ -x /sbin/service ]; then
+            /sbin/service $1 restart
+        elif [ -x /bin/systemctl ]; then
+            /bin/systemctl restart $1
+        else
+            echo "Unrecognized service controller to start service $1" 1>&2
+	    return 1
+        fi
+     fi    
+}
+
+ConfigureRsyslog() {
+    if [ ! -f ${{RSYSLOG_DEST}} ]; then
+        echo "Configuring rsyslog for OMS logging"
+
+        cp /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf ${{RSYSLOG_DEST}}
+        chown omsagent:omsagent ${{RSYSLOG_DEST}}
+        RestartService rsyslog
+    fi
+}
+
+UnconfigureRsyslog() {
+    if [ -f ${{RSYSLOG_DEST}} ]; then
+        echo "Unconfiguring rsyslog for OMS logging"
+
+        rm -f ${{RSYSLOG_DEST}}
+        RestartService rsyslog
+    fi
+}
+
+ConfigureOldRsyslog() {
+    # Don't configure Rsyslog (old version) if already configured (avoid duplicate entries)
+    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/rsyslog.conf
+    if [ $? -ne 0 ]; then
+        echo "Configuring (old) rsyslog for OMS logging"
+
+        cat /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf >> /etc/rsyslog.conf
+        RestartService rsyslog
+    fi
+}
+
+UnconfigureOldRsyslog() {
+    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/rsyslog.conf
+    if [ $? -eq 0 ]; then
+        echo "Unconfiguring (old) rsyslog for OMS logging"
+
+        cp /etc/rsyslog.conf /etc/rsyslog.bak
+        egrep -v "OMS Syslog|@127.0.0.1:25224" /etc/rsyslog.bak > /etc/rsyslog.conf
+        RestartService rsyslog
+    fi
+}
+
+ConfigureSyslog_ng() {
+    # Don't reconfigure syslog-ng if already configured (avoid duplicate entries)
+    egrep -q "OMS_|_oms" /etc/syslog-ng/syslog-ng.conf
+    if [ $? -ne 0 ]; then
+        echo "Configuring syslog-ng for OMS logging"
+
+        cat /etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf >> /etc/syslog-ng/syslog-ng.conf
+        RestartService syslog
+    fi
+}
+
+UnconfigureSyslog_ng() {
+    egrep -q "OMS_|_oms" /etc/syslog-ng/syslog-ng.conf
+    if [ $? -eq 0 ]; then
+        echo "Unconfiguring syslog-ng for OMS logging"
+
+        cp /etc/syslog-ng/syslog-ng.conf /etc/syslog-ng/syslog-ng.bak
+        egrep -v "OMS_|_oms" /etc/syslog-ng/syslog-ng.bak > /etc/syslog-ng/syslog-ng.conf
+        RestartService syslog
+    fi
+}
+
+ConfigureSyslog() {
+    if [ -f /etc/rsyslog.conf -a -d /etc/rsyslog.d ]; then
+        ConfigureRsyslog
+    elif [ -f /etc/rsyslog.conf ]; then
+        ConfigureOldRsyslog
+    elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
+        ConfigureSyslog_ng
+    else
+        echo "No supported syslog daemon found. Syslog messages will not be processed."
+        return 1
+    fi
+}
+
+UnconfigureSyslog() {
+    if [ -f /etc/rsyslog.conf -a -d /etc/rsyslog.d ]; then
+        UnconfigureRsyslog
+    elif [ -f /etc/rsyslog.conf ]; then
+        UnconfigureOldRsyslog
+    elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
+        UnconfigureSyslog_ng
+    else
+        echo "No supported syslog daemon found; unable to unconfigure syslog monitoring."
+        return 1
+    fi
+}
+
+%Sudoer_Functions
+GetSudoVersion() {
+    echo `sudo -V | awk '{print $3; exit}'`
+}
+
+CompareSudoVersions() {
+    # Compare two sudo versions (both of form x.y); return 0 if first > second
+
+    local MAJOR=`echo $1 | cut -d. -f1`
+    local MINOR=`echo $1 | cut -d. -f2`
+
+    local MAJOR_TEST=`echo $2 | cut -d. -f1`
+    local MINOR_TEST=`echo $2 | cut -d. -f2`
+
+    # Check the MAJOR version
+    if [ $MAJOR -lt $MAJOR_TEST ]; then
+        return 0
+    elif [ $MAJOR -gt $MAJOR_TEST ]; then
+        return 1
+    fi
+
+    # Check the MINOR version
+    if [ $MINOR -lt $MINOR_TEST ]; then
+        return 0
+    elif [ $MINOR -gt $MINOR_TEST ]; then
+        return 1
+    fi
+
+    # Versions are equal, so return success
+    return 0
+}
+
+SudoSupportsIncludeDirective() {
+    # Versions 1.8 and above supports include directive
+    CompareSudoVersions 1.8 `GetSudoVersion` && [ -d /etc/sudoers.d ]
+}
+
+
+%Preinstall_1000
+#include Systemd_resolver
+#include Syslog_Services
+#include OMSService_funcs
+
+# If our service is already running, stop it
+if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
+   /opt/microsoft/omsagent/bin/service_control stop
+fi
+
+UnconfigureSyslog
+RemoveOMSService
+
+# Add the 'omsagent' group if it does not already exist
+# (Can't use useradd with -U since that doesn't exist on older systems)
+egrep -q "^omsagent:" /etc/group
+if [ $? -ne 0 ]; then
+    echo "Creating omsagent group ..."
+    groupadd -r omsagent
+fi
+
+# Add the 'omsagent' service account if it does not already exist
+egrep -q "^omsagent:" /etc/passwd
+if [ $? -ne 0 ]; then
+    echo "Creating omsagent service account ..."
+    useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -g omsagent -s /bin/bash omsagent
+fi
+
+%Postinstall_200
+#include Systemd_resolver
+#include OMSService_funcs
+#include Syslog_Services
+#include Sudoer_Functions
+
+${{OMI_SERVICE}} reload
+ConfigureOMSService
+ConfigureSyslog
+
+# Deal with sudo (either place in sudoers.d or append to sudoers configuration)
+
+SudoSupportsIncludeDirective
+if [ $? -eq 0 ]; then
+    cp /etc/opt/microsoft/omsagent/sysconf/sudoers /etc/sudoers.d/omsagent
+    chmod 440 /etc/sudoers.d/omsagent
+else
+    # If we're already configured, don't configure again
+    grep -q '# Begin sudo configuration for omsagent' /etc/sudoers
+    [ $? -ne 0 ] && cat /etc/opt/microsoft/omsagent/sysconf/sudoers >> /etc/sudoers
+fi
+
+chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
+
+
+%Preuninstall_10
+
+# If we're called for upgrade, don't do anything
+if ${{PERFORMING_UPGRADE_NOT}}; then
+    if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
+        /opt/microsoft/omsagent/bin/service_control stop
+    fi
+fi
+
+
+%Postuninstall_1000
+#include Systemd_resolver
+#include Syslog_Services
+#include OMSService_funcs
+
+# If we're called for upgrade, don't do anything
+if ${{PERFORMING_UPGRADE_NOT}}; then
+    UnconfigureSyslog
+    RemoveOMSService
+
+    # Restart the OMI server in case an agent is running under service account
+    ${{OMI_SERVICE}} restart
+
+    # Unconfigure sudo configuration
+    if [ -f /etc/sudoers.d/omsagent ]; then
+        rm -f /etc/sudoers.d/omsagent
+    else
+        grep -q '# Begin sudo configuration for omsagent' /etc/sudoers
+        if [ $? -eq 0 ]; then
+            cp /etc/sudoers /etc/sudoers.bak
+            sed '/^##### Begin sudo configuration for omsagent/,/##### End sudo configuration for omsagent$/ d' /etc/sudoers.bak > /etc/sudoers
+        fi
+    fi
+
+    # Remove the service account
+    echo "Deleting omsagent service account ..."
+    userdel omsagent
+
+    if [ $? -eq 0 ]; then
+        # Depending on system settings, the group may not have been deleted
+        egrep -q "^omsagent:" /etc/group
+        if [ $? -eq 0 ]; then
+            echo "Deleting omsagent group ..."
+            groupdel omsagent
+        fi
+    fi
+fi

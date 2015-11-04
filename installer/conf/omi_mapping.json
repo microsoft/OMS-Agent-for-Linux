@@ -1,0 +1,407 @@
+[
+    {
+        "CimClassName": "SCX_ProcessorStatisticalInformation",
+        "ObjectName": "Processor",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "PercentProcessorTime",
+                "CounterName": "% Processor Time"
+            },
+            {
+                "CimPropertyName": "PercentIdleTime",
+                "CounterName": "% Idle Time"
+            },
+            {
+                "CimPropertyName": "PercentUserTime",
+                "CounterName": "% User Time"
+            },
+            {
+                "CimPropertyName": "PercentNiceTime",
+                "CounterName": "% Nice Time"
+            },
+            {
+                "CimPropertyName": "PercentPrivilegedTime",
+                "CounterName": "% Privileged Time"
+            },
+            {
+                "CimPropertyName": "PercentIOWaitTime",
+                "CounterName": "% IO Wait Time"
+            },
+            {
+                "CimPropertyName": "PercentInterruptTime",
+                "CounterName": "% Interrupt Time"
+            },
+            {
+                "CimPropertyName": "PercentDPCTime",
+                "CounterName": "% DPC Time"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_FileSystemStatisticalInformation",
+        "ObjectName": "Logical Disk",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "PercentFreeInodes",
+                "CounterName": "% Free Inodes"
+            },
+            {
+                "CimPropertyName": "PercentUsedInodes",
+                "CounterName": "% Used Inodes"
+            },
+            {
+                "CimPropertyName": "FreeMegabytes",
+                "CounterName": "Free Megabytes"
+            },
+            {
+                "CimPropertyName": "PercentFreeSpace",
+                "CounterName": "% Free Space"
+            },
+            {
+                "CimPropertyName": "PercentUsedSpace",
+                "CounterName": "% Used Space"
+            },
+            {
+                "CimPropertyName": "BytesPerSecond",
+                "CounterName": "Logical Disk Bytes/sec"
+            },
+            {
+                "CimPropertyName": "ReadBytesPerSecond",
+                "CounterName": "Disk Read Bytes/sec"
+            },
+            {
+                "CimPropertyName": "WriteBytesPerSecond",
+                "CounterName": "Disk Write Bytes/sec"
+            },
+            {
+                "CimPropertyName": "TransfersPerSecond",
+                "CounterName": "Disk Transfers/sec"
+            },
+            {
+                "CimPropertyName": "ReadsPerSecond",
+                "CounterName": "Disk Reads/sec"
+            },
+            {
+                "CimPropertyName": "WritesPerSecond",
+                "CounterName": "Disk Writes/sec"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_MemoryStatisticalInformation",
+        "ObjectName": "Memory",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "AvailableMemory",
+                "CounterName": "Available MBytes Memory"
+            },
+            {
+                "CimPropertyName": "PercentAvailableMemory",
+                "CounterName": "% Available Memory"
+            },
+            {
+                "CimPropertyName": "UsedMemory",
+                "CounterName": "Used Memory MBytes"
+            },
+            {
+                "CimPropertyName": "PercentUsedMemory",
+                "CounterName": "% Used Memory"
+            },
+            {
+                "CimPropertyName": "PagesPerSec",
+                "CounterName": "Pages/sec"
+            },
+            {
+                "CimPropertyName": "PagesReadPerSec",
+                "CounterName": "Page Reads/sec"
+            },
+            {
+                "CimPropertyName": "PagesWrittenPerSec",
+                "CounterName": "Page Writes/sec"
+            },
+            {
+                "CimPropertyName": "AvailableSwap",
+                "CounterName": "Available MBytes Swap"
+            },
+            {
+                "CimPropertyName": "PercentAvailableSwap",
+                "CounterName": "% Available Swap Space"
+            },
+            {
+                "CimPropertyName": "UsedSwap",
+                "CounterName": "Used MBytes Swap Space"
+            },
+            {
+                "CimPropertyName": "PercentUsedSwap",
+                "CounterName": "% Used Swap Space"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_DiskDriveStatisticalInformation",
+        "ObjectName": "Physical Disk",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "BytesPerSecond",
+                "CounterName": "Physical Disk Bytes/sec"
+            },
+            {
+                "CimPropertyName": "AverageTransferTime",
+                "CounterName": "Avg. Disk sec/Transfer"
+            },
+            {
+                "CimPropertyName": "AverageReadTime",
+                "CounterName": "Avg. Disk sec/Read"
+            },
+            {
+                "CimPropertyName": "AverageWriteTime",
+                "CounterName": "Avg. Disk sec/Write"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_OperatingSystem",
+        "ObjectName": "System",
+        "InstanceProperty": "Caption",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "NumberOfProcesses",
+                "CounterName": "Processes"
+            },
+            {
+                "CimPropertyName": "NumberOfUsers",
+                "CounterName": "Users"
+            },
+            {
+                "CimPropertyName": "FreeVirtualMemory",
+                "CounterName": "Free Virtual Memory"
+            },
+            {
+                "CimPropertyName": "FreePhysicalMemory",
+                "CounterName": "Free Physical Memory"
+            },
+            {
+                "CimPropertyName": "SizeStoredInPagingFiles",
+                "CounterName": "Size Stored In Paging Files"
+            },
+            {
+                "CimPropertyName": "FreeSpaceInPagingFiles",
+                "CounterName": "Free Space in Paging Files"
+            },
+            {
+                "CimPropertyName": "SystemUpTime",
+                "CounterName": "Uptime"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_UnixProcessStatisticalInformation",
+        "ObjectName": "Process",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "PercentUserTime",
+                "CounterName": "Pct User Time"
+            },
+            {
+                "CimPropertyName": "PercentPrivilegedTime",
+                "CounterName": "Pct Privileged Time"
+            },
+            {
+                "CimPropertyName": "UsedMemory",
+                "CounterName": "Used Memory"
+            },
+            {
+                "CimPropertyName": "VirtualSharedMemory",
+                "CounterName": "Virtual Shared Memory"
+            }
+        ]
+    },
+    {
+        "CimClassName": "Container_ContainerStatistics",
+        "ObjectName": "Container",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/cimv2",
+        "CimProperties":
+        [
+            {
+                "CimPropertyName": "CPUTotal",
+                "CounterName": "Processor Usage sec"
+            },
+            {
+                "CimPropertyName": "CPUTotalPct",
+                "CounterName": "% Processor Time"
+            },
+            {
+                "CimPropertyName": "MemUsedPct",
+                "CounterName": "Memory Usage MB"
+            },
+            {
+                "CimPropertyName": "NetRXBytes",
+                "CounterName": "Network Receive Bytes"
+            },
+            {
+                "CimPropertyName": "NetTXBytes",
+                "CounterName": "Network Send Bytes"
+            },
+            {
+                "CimPropertyName": "DiskBytesRead",
+                "CounterName": "Disk Reads MB"
+            },
+            {
+                "CimPropertyName": "DiskBytesWritten",
+                "CounterName": "Disk Writes MB"
+            }
+        ]
+    },
+    {
+        "CimClassName": "Apache_HTTPDServerStatistics",
+        "ObjectName": "Apache HTTP Server",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/apache",
+        "CimProperties": [
+            {
+                "CimPropertyName": "TotalPctCPU",
+                "CounterName": "Total Pct CPU"
+            },
+            {
+                "CimPropertyName": "IdleWorkers",
+                "CounterName": "Idle Workers"
+            },
+            {
+                "CimPropertyName": "BusyWorkers",
+                "CounterName": "Busy Workers"
+            },
+            {
+                "CimPropertyName": "PctBusyWorkers",
+                "CounterName": "Pct Busy Workers"
+            }
+        ]
+    },
+    {
+        "CimClassName": "Apache_HTTPDVirtualHostStatistics",
+        "ObjectName": "Apache Virtual Host",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/apache",
+        "CimProperties": [
+            {
+                "CimPropertyName": "RequestsPerSecond",
+                "CounterName": "Requests per Second"
+            },
+            {
+                "CimPropertyName": "KBPerRequest",
+                "CounterName": "KB per Request"
+            },
+            {
+                "CimPropertyName": "KBPerSecond",
+                "CounterName": "Requests KB per Second"
+            },
+            {
+                "CimPropertyName": "ErrorsPerMinute400",
+                "CounterName": "Errors per Minute - Client"
+            },
+            {
+                "CimPropertyName": "ErrorsPerMinute500",
+                "CounterName": "Errors per Minute - Server"
+            }   
+        ]
+    },
+    {
+        "CimClassName": "MySQL_Server_Database",
+        "ObjectName": "MySQL Database",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/mysql",
+        "CimProperties": [
+            {
+                "CimPropertyName": "NumberOfTables",
+                "CounterName": "Tables"
+            },
+            {
+                "CimPropertyName": "DiskSpaceInBytes",
+                "CounterName": "Disk Space in Bytes"
+            }
+        ]
+    },
+    {
+        "CimClassName": "MySQL_ServerStatistics",
+        "ObjectName": "MySQL Server",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/mysql",
+        "CimProperties": [
+            {
+                "CimPropertyName": "KeyCacheHitPct",
+                "CounterName": "Key Cache Hit Pct"
+            },
+            {
+                "CimPropertyName": "KeyCacheWritePct",
+                "CounterName": "Key Cache Write Pct"
+            },
+            {
+                "CimPropertyName": "KeyCacheUsePct",
+                "CounterName": "Key Cache Use Pct"
+            },
+            {
+                "CimPropertyName": "QCacheHitPct",
+                "CounterName": "Query Cache Hit Pct"
+            },
+            {
+                "CimPropertyName": "QCachePrunesPct",
+                "CounterName": "Query Cache Prunes Pct"
+            },
+            {
+                "CimPropertyName": "QCacheUsePct",
+                "CounterName": "Query Cache Use Pct"
+            },
+            {
+                "CimPropertyName": "TCacheHitPct",
+                "CounterName": "Table Cache Hit Pct"
+            },
+            {
+                "CimPropertyName": "TableLockContentionPct",
+                "CounterName": "Table Lock Contention Pct"
+            },
+            {
+                "CimPropertyName": "TableCacheUsePct",
+                "CounterName": "Table Cache Use Pct"
+            },
+            {
+                "CimPropertyName": "IDB_BP_HitPct",
+                "CounterName": "InnoDB Buffer Pool Hit Pct"
+            },
+            {
+                "CimPropertyName": "IDB_BP_UsePct",
+                "CounterName": "InnoDB Buffer Pool Use Pct"
+            },
+            {
+                "CimPropertyName": "FullTableScanPct",
+                "CounterName": "Full Table Scan Pct"
+            },
+            {
+                "CimPropertyName": "IDB_BP_UsePct",
+                "CounterName": "InnoDB Buffer Pool Use Pct"
+            },
+            {
+                "CimPropertyName": "ServerDiskUseInBytes",
+                "CounterName": "Disk Space Use in Bytes"
+            },
+            {
+                "CimPropertyName": "ConnectionsUsePct",
+                "CounterName": "Connection Use Pct"
+            },
+            {
+                "CimPropertyName": "AbortedConnectionPct",
+                "CounterName": "Aborted Connection Pct"
+            }
+        ]
+    }
+]

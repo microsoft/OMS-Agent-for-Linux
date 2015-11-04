@@ -1,0 +1,193 @@
+#! /bin/bash
+
+#
+# Helper functions for omsagent service control
+#
+# This script can be "sourced" (if sourcing with the "functions" qualifer),
+# which is used by the service control scripts. This allows for deeper control
+# of the process at a low level.
+#
+# Otherwise (this is the normal case), invoke this with one of the following
+# options:
+#
+#    start:    Start the OMS service via the service control manager
+#    stop:     Stop the OMS service via the service control manager
+#    restart:  Restart the OMS service via the service control manager
+#    reload:   Reload agent configuration
+#
+
+LOGFILE=/var/opt/microsoft/omsagent/log/omsagent.log
+PIDFILE=/var/opt/microsoft/omsagent/run/omsagent.pid
+
+verify_privileges()
+{
+    if [ `id -u` -ne 0 ]; then
+        echo "Must have root privileges for this operation" >& 2
+        exit 1
+    fi
+}
+
+is_omsagent_running()
+{
+    verify_privileges
+
+    # Returns 1 if 'omsagent' is running, 0 otherwise
+    [ -f $PIDFILE ] || return 0
+    ps -p `cat $PIDFILE` | grep -q omsagent
+    STATUS=$?
+
+    # Kill PID file if we're not running any longer
+    if [ $STATUS -ne 0 ]; then
+        rm -f $PIDFILE
+        return 0
+    else
+        return 1
+    fi
+}
+
+wait_until_omsagent_stops()
+{
+    # Required parameter: Number of seconds to wait for agent to stop
+    if [ -z "$1" -o "$1" -le 0 ]; then
+        echo "Function \"wait_until_omsagent_stops\" called with invalid parameter"
+        exit 1
+    fi
+
+    COUNTER=$(( $1 * 2 )) # Since we sleep 0.5 seconds, compute number of seconds
+    while [ $COUNTER -gt 0 ]; do
+        is_omsagent_running && return $?
+        COUNTER=$(( $COUNTER - 1 ))
+        sleep 0.5
+    done
+
+    # One final try for accurate return status (just return status from the call)
+    is_omsagent_running
+}
+
+stop_omsagent_process()
+{
+    # First try sending a graceful shutdown request.
+    # If omsagent doesn't stop, forcefully kill it.
+    #
+    # TODO: omsagent doesn't currently gracefully shut down, we're investigating this later
+
+    is_omsagent_running && return $?
+
+    # kill -sigterm `cat $PIDFILE`
+    # wait_until_omsagent_stops 10 && return $?
+
+    echo -n "(Forced) "
+    kill -sigkill `cat $PIDFILE`
+    wait_until_omsagent_stops 5
+    return $?
+}
+
+start_omsagent_process()
+{
+    is_omsagent_running && /opt/microsoft/omsagent/bin/omsagent -d $PIDFILE --no-supervisor -o $LOGFILE
+}
+
+#
+# Normal usage functions (used by everything except service control scripts)
+#
+
+start_omsagent()
+{
+    is_omsagent_running
+    [ $? -ne 0 ] && return
+
+    # If systemd lives here, then we have a systemd unit file
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        /bin/systemctl start omsagent
+    else
+        if [ -x /usr/sbin/invoke-rc.d ]; then
+            /usr/sbin/invoke-rc.d omsagent start
+        elif [ -x /sbin/service ]; then
+            /sbin/service omsagent start
+        elif [ -x /bin/systemctl ]; then
+            /bin/systemctl start omsagent
+        else
+            echo "Unrecognized service controller to start OMS Agent service" 1>&2
+            exit 1
+        fi
+    fi
+}
+
+stop_omsagent()
+{
+    is_omsagent_running
+    if [ $? -ne 0 ]; then
+        # If systemd lives here, then we have a systemd unit file
+        if pidof systemd 1> /dev/null 2> /dev/null; then
+            /bin/systemctl stop omsagent
+        else
+            if [ -x /usr/sbin/invoke-rc.d ]; then
+                /usr/sbin/invoke-rc.d omsagent stop
+            elif [ -x /sbin/service ]; then
+                /sbin/service omsagent stop
+            elif [ -x /bin/systemctl ]; then
+                /bin/systemctl stop omsagent
+            else
+                echo "Unrecognized service controller to stop OMS Agent service" 1>&2
+                exit 1
+            fi
+        fi
+    fi
+}
+
+restart_omsagent()
+{
+    is_omsagent_running
+    if [ $? -eq 0 ]; then
+        start_omsagent
+        return
+    fi
+
+    # If systemd lives here, then we have a systemd unit file
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        /bin/systemctl restart omsagent
+    else
+        if [ -x /usr/sbin/invoke-rc.d ]; then
+            /usr/sbin/invoke-rc.d omsagent restart
+        elif [ -x /sbin/service ]; then
+            /sbin/service omsagent restart
+        elif [ -x /bin/systemctl ]; then
+            /bin/systemctl restart omsagent
+        else
+            echo "Unrecognized service controller to restart OMS Agent service" 1>&2
+            exit 1
+        fi
+    fi
+}
+
+case "$1" in
+    functions)
+        ;;
+
+    is-running)
+        is_omsagent_running
+        exit $?
+        ;;
+
+    start)
+        start_omsagent
+        ;;
+
+    stop)
+        stop_omsagent
+        ;;
+
+    restart)
+        restart_omsagent
+        ;;
+
+    reload)
+        # TODO: Due to a bug in OMS right now, we can't reload via a signal
+        restart_omsagent
+        ;;
+
+    *)
+        echo "Unknown parameter : $1" 1>&2
+        exit 1
+        ;;
+esac
