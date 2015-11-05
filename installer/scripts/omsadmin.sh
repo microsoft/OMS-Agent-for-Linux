@@ -497,8 +497,6 @@ main()
         # The file contains at least these two lines :
         # WORKSPACE_ID="[...]"
         # SHARED_KEY="[...]"
-        # and an optional line:
-        # URL_TLD=int2.microsoftatlanta-int
 
         if [ -r "$FILE_ONBOARD" ]; then
             log_info "Reading onboarding params from: $FILE_ONBOARD"

@@ -14,7 +14,6 @@ end
 
 desc 'Run test_unit based system tests'
 Rake::TestTask.new(:systemtest) do |t|
-  t.libs << '/home/niroy/dev/work/omsagent/source/ext/fluentd/lib/'
   t.test_files = Dir["#{ENV['BASE_DIR']}/test/**/*_systest.rb"].sort
   t.verbose = true
   # t.warning = true

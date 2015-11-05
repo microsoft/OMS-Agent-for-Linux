@@ -20,8 +20,11 @@ class OmiOms
       return
     end
     
-    common = OMS::Common.new if common == nil
-    @hostname = common.get_hostname
+    if common == nil
+      common = OMS::Common
+    end
+    
+    @hostname = common.get_hostname or "Unknown host" 
 
     if omi_interface
       @omi_interface = omi_interface
@@ -110,8 +113,6 @@ class OmiOms
   def enumerate(time)
     return nil if @conf_error
 
-    timestamp = Time.at(time).utc.iso8601 # UTC with Z at the 
-    
     namespace = @specific_mapping["Namespace"]
     cim_class_name = @specific_mapping["CimClassName"]
     items = [[namespace, cim_class_name]]
@@ -128,7 +129,8 @@ class OmiOms
       $log.error "Regex error on instance_regex : #{e}"
       return
     end
-    
+ 
+    timestamp = OMS::Common.format_time(time)   
     # Convert instances to oms format
     instances.map!{ |instance| 
       omi_to_oms_instance(instance, timestamp)

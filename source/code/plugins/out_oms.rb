@@ -29,11 +29,6 @@ module Fluent
       @loaded_endpoint = false
       @loaded_certs = false
       @uri_endpoint = nil
-
-      @omslog = OMS_Log.new
-      @error_proc = Proc.new {|message| $log.error message }
-      @warn_proc  = Proc.new {|message| $log.warn message }
-      @debug_proc = Proc.new {|message| $log.debug message }
     end
 
     def shutdown
@@ -42,12 +37,12 @@ module Fluent
 
     def test_onboard_file(file_name)
       if !File.file?(file_name)
-        @omslog.log_once(@error_proc, @debug_proc, "Could not find #{file_name} Make sure to onboard.")
+        OMS::Log.error_once("Could not find #{file_name} Make sure to onboard.")
         return false
       end
       
       if !File.readable?(file_name)
-        @omslog.log_once(@error_proc, @debug_proc, "Could not read #{file_name} Check that the read permissions are set for the omsagent user")
+        OMS::Log.error_once("Could not read #{file_name} Check that the read permissions are set for the omsagent user")
         return false
       end
 
@@ -61,17 +56,17 @@ module Fluent
 
       endpoint_lines = IO.readlines(@omsadmin_conf_path).select{ |line| line.start_with?("OMS_ENDPOINT")}
       if endpoint_lines.size == 0
-        @omslog.log_once(@error_proc, @debug_proc, "Could not find OMS_ENDPOINT setting in #{@omsadmin_conf_path}")
+        OMS::Log.error_once("Could not find OMS_ENDPOINT setting in #{@omsadmin_conf_path}")
         return false
       elsif endpoint_lines.size > 1
-        @omslog.log_once(@warn_proc, @debug_proc, "Found more than one OMS_ENDPOINT setting in #{@omsadmin_conf_path}, will use the first one.")
+        OMS::Log.log_warning_once("Found more than one OMS_ENDPOINT setting in #{@omsadmin_conf_path}, will use the first one.")
       end
 
       begin
         endpoint_url = endpoint_lines[0].split("=")[1].strip
         @uri_endpoint = URI.parse( endpoint_url )
       rescue => e
-        @omslog.log_once(@error_proc, @debug_proc, "Error parsing endpoint url. #{e}")
+        OMS::Log.error_once("Error parsing endpoint url. #{e}")
         return false
       else
         @loaded_endpoint = true
@@ -89,7 +84,7 @@ module Fluent
         raw = File.read @key_path
         @key  = OpenSSL::PKey::RSA.new raw
       rescue => e
-        @omslog.log_once(@error_proc, @debug_proc, "Error loading certs: #{e}")
+        OMS::Log.error_once("Error loading certs: #{e}")
         return false
       else
         @loaded_certs = true
@@ -123,7 +118,7 @@ module Fluent
 
       rescue => e # rescue all StandardErrors
         # Server didn't respond
-        @omslog.log_once(@warn_proc, @debug_proc, "Net::HTTP.#{req.method.capitalize} raises exception: #{e.class}, '#{e.message}'")
+        OMS::Log.warning_once("Net::HTTP.#{req.method.capitalize} raises exception: #{e.class}, '#{e.message}'")
         return false
       else
         if res and res.is_a?(Net::HTTPSuccess)
@@ -134,7 +129,7 @@ module Fluent
         else
           res_summary = "(res=nil)"
         end
-        @omslog.log_once(@warn_proc, @debug_proc, "Failed to #{req.method} #{tag} at #{@uri_endpoint} #{res_summary}")
+        OMS::Log.warning_once("Failed to #{req.method} #{tag} at #{@uri_endpoint} #{res_summary}")
         return false
       end # end begin
     end # end start_request
@@ -143,7 +138,7 @@ module Fluent
       req = create_request(record)
       success = start_request(req, tag)
       if success
-        $log.debug "Success sending #{tag}"
+        @log.info "Success sending #{tag}"
       end
       return success
     end

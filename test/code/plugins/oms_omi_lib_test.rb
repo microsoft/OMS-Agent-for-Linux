@@ -28,8 +28,10 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
   end
 
   class MockCommon
-    def get_hostname
-      return 'MockHostname'
+    class << self
+      def get_hostname
+        return 'MockHostname'
+      end
     end
   end
 
@@ -37,7 +39,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
     $log = OMS::MockLog.new
     set_static_mock_data
     @mock = MockOmiInterface.new
-    @common = MockCommon.new
+    @common = MockCommon
     @mapping_path = "#{ENV['BASE_DIR']}/installer/conf/omi_mapping.json"
   end
 
@@ -89,15 +91,6 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
     result = omilib.enumerate(Time.now)
     assert_equal(nil, result, "Enumerate should fail with the invalid object name '#{fake_object_name}'")
     assert_equal([], $log.logs, "There shouldn't be a second error generated when enumerate is called")
-  end
-
-  def test_get_hostname
-    require_relative '../../../source/code/plugins/oms_common'
-    hostname = OMS::Common.new.get_hostname
-    assert_equal([], $log.logs, "There was an error parsing the hostname")
-    # Sanity check
-    assert(hostname.size > 0, "Hostname returned is empty")
-    assert_not_equal("Unknown Host", hostname, "Could not get the hostname")
   end
 
   def test_get_cim_to_oms_mappings

@@ -4,9 +4,10 @@ module Fluent
     Fluent::Plugin.register_filter('filter_syslog', self)
 
     def initialize
-        super
-        require 'socket'
-        require 'time'
+      super
+      require 'socket'
+      require_relative 'omslog'
+      require_relative 'oms_common'
     end
 
     def configure(conf)
@@ -22,18 +23,25 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      record["Timestamp"] = Time.at(time).utc.iso8601
+      record["Timestamp"] = OMS::Common.format_time(time)
 
       record["Host"] = record["host"]
       record.delete "host"
+      record["HostIP"] = "Unknown IP"
 
-      begin
-        addrinfos = Socket::getaddrinfo(Socket.gethostname, "echo", Socket::AF_UNSPEC)
-      rescue => e
-        $log.error "Failed to call getaddrinfo : #{e}"
-        record["HostIP"] = "Unknown IP"
+      hostname = OMS::Common.get_hostname
+      if hostname == nil
+          OMS::Log.warn_once("Failed to get the hostname. Won't be able to get the HostIP.")
       else
-        record["HostIP"] = addrinfos.size >= 1 ? addrinfos[0][3] : "Unknown IP"
+        begin
+          addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)
+        rescue => e
+          OMS::Log.warn_once("Failed to call getaddrinfo : #{e}")
+        else
+          if addrinfos.size >= 1
+            record["HostIP"] = addrinfos[0][3]
+          end
+        end
       end
 
       if record.has_key?("pid")

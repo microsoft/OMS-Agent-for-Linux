@@ -103,10 +103,10 @@ endif
 
 #--------------------------------------------------------------------------------
 # Build targets
-.PHONY: all clean clean-ruby distclean clean-status plugins-status kit
+.PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb systemtestsh
 
-all : $(SCX_TARGET_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) plugins-status $(IN_PLUGINS_LIB) kit
+all : $(SCX_TARGET_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) kit
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
@@ -232,12 +232,10 @@ STATIC_PLUGINS_OBJFILES = $(call src_to_obj,$(STATIC_PLUGINS_SRCFILES))
 $(IN_PLUGINS_LIB) : CXXFLAGS = $(RUBY_COMPILE_FLAGS)
 $(IN_PLUGINS_LIB) : INCLUDES = $(RUBY_INCLUDES) $(OMI_INCLUDES) $(PAL_INCLUDES)
 $(IN_PLUGINS_LIB) : $(STATIC_PLUGINS_OBJFILES)
+	@echo "========================= Performing Building input plugins"
 	$(MKPATH) $(INTERMEDIATE_DIR)
 	$(MKPATH) $(TARGET_DIR)
 	g++ $(SHARED_FLAGS) $(RUBY_INCLUDES) $(OMI_INCLUDES) $(PAL_INCLUDES) -o $@ $(STATIC_PLUGINS_OBJFILES) $(PLUGIN_LINK_LIBRARIES)
-
-plugins-status :
-	@echo "========================= Performing Building input plugins"
 
 #--------------------------------------------------------------------------------
 # Build the distribution kit
