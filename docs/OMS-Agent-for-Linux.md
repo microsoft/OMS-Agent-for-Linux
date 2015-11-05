@@ -185,7 +185,8 @@ Syslog events and performance counters to collect can be specified in configurat
 
 ### Disabling central configuration
 #### Diabling central configuration for all Linux computers
-TODO:
+In order to disable central configuration for all Linux computers ensure that the check marks in Linux Performance Counters and Syslog are unchecked under the data section in settings.
+
 #### Disabling central configuration for an individual Linux computer
 The centralized configuration of data collection can be disabled for an individual Linux computer with the OMS_MetaConfigHelper.py script.  This can be useful if a subset of computers should have a specialized configuration. 
 
