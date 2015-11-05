@@ -184,7 +184,7 @@ sudo /opt/microsoft/apache-cimprov/bin/apache_config.sh -u
 Syslog events and performance counters to collect can be specified in configuration files on the Linux computers. *If you opt to configure data collection through editing of the agent configuration files, you should disable the centralized configuration*.  Instructions are provided below to configure data collection in the agent’s configuration files as well as to disable central configuration for all OMS agents for Linux, or individual computers. 
 
 ### Disabling central configuration
-#### Diabling central configuration for all Linux computers
+#### Disabling central configuration for all Linux computers
 In order to disable central configuration for all Linux computers ensure that the check marks in Linux Performance Counters and Syslog are unchecked under the data section in settings.
 
 #### Disabling central configuration for an individual Linux computer
