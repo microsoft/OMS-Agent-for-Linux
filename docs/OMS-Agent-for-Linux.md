@@ -318,7 +318,20 @@ sudo usermod –a -G nagios omsagent
 sudo service omsagent restart
 ```
 ### Zabbix Alerts
+To collect alerts from a Zabbix server, you'll perform similiar steps to those for Nagios above, except you'll need to specify a user and password in *clear text*. This is not ideal, but we recommend that you create the user and grant permissions to monitor onlu.
 
+An example section of the `omsagent.conf` configuration file `/etc/opt/microsoft/omsagent/conf/omsagent.conf` for Zabbix resembles the following:
+
+```
+<source>
+  type zabbix_alerts
+  run_interval 1m
+  tag oms.zabbix
+  zabbix_url http://localhost/zabbix/api_jsonrpc.php
+  zabbix_username Admin
+  zabbix_password zabbix
+</source>
+```
 ## Agent Logs
 The logs for the Operations Management Suite Agent for Linux can be found at: 
 `/var/opt/microsoft/omsagent/log/`
