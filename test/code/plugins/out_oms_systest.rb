@@ -4,9 +4,10 @@ require_relative ENV['BASE_DIR'] + '/source/code/plugins/out_oms'
 require_relative 'omstestlib'
 
 class OutOMSTest < Test::Unit::TestCase
-  # This is a static workspace ID and shared key that should not change
-  Workspace_id="cec9ea66-f775-41cd-a0a6-2d0f0ffdac6f"
-  Shared_key="qoTgVB0a1393p4FUncrY0nc/U1/CkOYlXz3ok3Oe79gSB6NLa853hiQzcwcyBb10Rjj7iswRvoJGtLJUD/o/yw=="
+
+  # These keys should be loaded in environment variables
+  TEST_WORKSPACE_ID=ENV['TEST_WORKSPACE_ID']
+  TEST_SHARED_KEY=ENV['TEST_SHARED_KEY']
 
   def setup
     Fluent::Test.setup
@@ -33,11 +34,18 @@ class OutOMSTest < Test::Unit::TestCase
   
   def do_onboard
     omsadmin_script = "#{@omsadmin_test_dir}/omsadmin.sh"
-    onboard_out = `#{omsadmin_script} -w #{Workspace_id} -s #{Shared_key}`
+    onboard_out = `#{omsadmin_script} -w #{TEST_WORKSPACE_ID} -s #{TEST_SHARED_KEY}`
     assert_equal(0, $?.to_i, "Unexpected failure onboarding : '#{onboard_out}'")
   end
 
   def test_send_data
+    # Make sure that we read test onboarding information from the environment varibles
+    assert(TEST_WORKSPACE_ID != nil, "TEST_WORKSPACE_ID should be set by the environment for this test to run.") 
+    assert(TEST_SHARED_KEY != nil, "TEST_SHARED_KEY should be set by the environment for this test to run.")
+
+    assert(TEST_WORKSPACE_ID.empty? == false, "TEST_WORKSPACE_ID should not be empty.") 
+    assert(TEST_SHARED_KEY.empty? == false, "TEST_SHARED_KEY should not be empty.")
+
     # Onboard to create cert and key
     prep_onboard
     do_onboard

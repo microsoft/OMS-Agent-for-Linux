@@ -1,5 +1,19 @@
 BASE_DIR=$1
 RUBY_TESTVERS=$2
+
+TEST_KEYS=$BASE_DIR/test/test_keys.sh
+if [ ! -f $TEST_KEYS ]; then
+    echo "The file $TEST_KEYS must exist and define TEST_WORKSPACE_ID and TEST_SHARED_KEY for this test to run." 1>&2
+    exit 1
+fi
+
+. $TEST_KEYS
+
+if [ -z "$TEST_WORKSPACE_ID" -o -z "$TEST_SHARED_KEY" ];then
+    echo "The environment variables TEST_WORKSPACE_ID and TEST_SHARED_KEY must be set for this test to run." 1>&2
+    exit 1
+fi
+
 chmod +x $BASE_DIR/test/installer/scripts/prep_omsadmin.sh
 . $BASE_DIR/test/installer/scripts/prep_omsadmin.sh "$BASE_DIR" "$RUBY_TESTVERS"
 
@@ -23,12 +37,9 @@ DBG_RENEWCERT=$TESTDIR/debug_renew_cert
 
 echo -n "Test Onboarding...  "
 echo "======================== TEST ONBOARDING  ========================" > $DBG_ONDBOARD 
-# This is a static workspace ID and shared key that should not change
-WORKSPACE_ID=cec9ea66-f775-41cd-a0a6-2d0f0ffdac6f
-SHARED_KEY=qoTgVB0a1393p4FUncrY0nc/U1/CkOYlXz3ok3Oe79gSB6NLa853hiQzcwcyBb10Rjj7iswRvoJGtLJUD/o/yw==
 
-echo "bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY" >> $DBG_ONDBOARD
-bash -x $OMSADMIN -v -w $WORKSPACE_ID -s $SHARED_KEY >> $DBG_ONDBOARD 2>&1
+echo "bash -x $OMSADMIN -v -w $TEST_WORKSPACE_ID -s $TEST_SHARED_KEY" >> $DBG_ONDBOARD
+bash -x $OMSADMIN -v -w $TEST_WORKSPACE_ID -s $TEST_SHARED_KEY >> $DBG_ONDBOARD 2>&1
 handle_return_code $? $DBG_ONDBOARD
 
 echo -n "Test Heartbeat...   "

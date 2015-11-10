@@ -469,6 +469,7 @@ systemtest: systemtestrb systemtestsh
 systemtestrb : $(RUBY_TESTING_DIR)
 	# Any tests that are slow or communicate with a remote server
 	@echo "========================= Performing System Test"
+	. $(BASE_DIR)/test/test_keys.sh; \
 	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb systemtest \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \

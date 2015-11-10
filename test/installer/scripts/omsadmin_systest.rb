@@ -1,12 +1,11 @@
 require 'digest'
 
 class OmsadminTest < Test::Unit::TestCase
-  # This is a static workspace ID and shared key that should not change
-  Workspace_id = "cec9ea66-f775-41cd-a0a6-2d0f0ffdac6f"
-  Shared_key   = "qoTgVB0a1393p4FUncrY0nc/U1/CkOYlXz3ok3Oe79gSB6NLa853hiQzcwcyBb10Rjj7iswRvoJGtLJUD/o/yw=="
-
-  Workspace_id_2 = "3e813966-a176-4c68-b7a7-9c30cadfa976"
-  Shared_key_2   = "BYwINiumBea9ZxdL97p18VssthcKYMW0o4S33iptQwbRqT5iq5o7KZSbtWbJ4wHIoVqLxXq0TsSAgylWKu6ztA=="
+  
+  TEST_WORKSPACE_ID=ENV['TEST_WORKSPACE_ID']
+  TEST_SHARED_KEY=ENV['TEST_SHARED_KEY']
+  TEST_WORKSPACE_ID_2=ENV['TEST_WORKSPACE_ID_2']
+  TEST_SHARED_KEY_2=ENV['TEST_SHARED_KEY_2']
 
   def setup
     @base_dir = ENV['BASE_DIR']
@@ -22,6 +21,14 @@ class OmsadminTest < Test::Unit::TestCase
       FileUtils.rm_r @omsadmin_test_dir
       assert_equal(false, File.directory?(@omsadmin_test_dir))
     end
+  end
+
+  def check_test_keys
+    keys = [TEST_WORKSPACE_ID, TEST_SHARED_KEY, TEST_WORKSPACE_ID_2, TEST_SHARED_KEY_2]
+    keys.each_with_index {|key, index| 
+      assert(key != nil, "Keys[#{index}] should be set by the environment for this test to run.") 
+      assert(key.empty? == false, "Keys[#{index}] should not be empty.")
+    }
   end
 
   def prep_omsadmin
@@ -76,14 +83,16 @@ class OmsadminTest < Test::Unit::TestCase
   end
 
   def test_onboard_success
-    output = do_onboard(Workspace_id, Shared_key)
+    check_test_keys()
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_match(/Generating certificate/, output, "Did not find cert generation message")
     post_onboard_validation
   end
 
   def test_onboard_fail
     require 'securerandom'
-    output = do_onboard(SecureRandom.uuid, Shared_key, false)
+    check_test_keys()
+    output = do_onboard(SecureRandom.uuid, TEST_SHARED_KEY, false)
     assert_no_match(/HTTP|code/, output)
     assert_match(/Error during the onboarding request/, output)
   end
@@ -95,7 +104,8 @@ class OmsadminTest < Test::Unit::TestCase
   end
 
   def test_reonboard
-    do_onboard(Workspace_id, Shared_key)
+    check_test_keys()
+    do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
 
     crt_path = "#{@omsadmin_test_dir}/oms.crt"
     key_path = "#{@omsadmin_test_dir}/oms.key"
@@ -106,7 +116,7 @@ class OmsadminTest < Test::Unit::TestCase
     old_guid = get_GUID()
     
     # Reonboarding should not modify the agent GUID or the certs 
-    output = do_onboard(Workspace_id, Shared_key)
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_match(/Reusing previous agent GUID/, output, "Did not find GUID reuse message")
     assert_equal(old_guid, get_GUID(), "Agent GUID should not change on reonboarding")
     assert(crt_hash == Digest::SHA256.file(crt_path), "The cert should not change on reonboarding")
@@ -114,10 +124,11 @@ class OmsadminTest < Test::Unit::TestCase
   end
 
   def test_reonboard_different_workspace_id
-    do_onboard(Workspace_id, Shared_key)
+    check_test_keys()
+    do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     old_guid = get_GUID()
 
-    output = do_onboard(Workspace_id_2, Shared_key_2)
+    output = do_onboard(TEST_WORKSPACE_ID_2, TEST_SHARED_KEY_2)
     new_guid = get_GUID()
 
     assert_not_equal(old_guid, new_guid, "The GUID should change when reonboarding with a different workspace ID")
