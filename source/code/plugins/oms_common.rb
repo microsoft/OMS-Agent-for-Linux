@@ -39,6 +39,10 @@ module OMS
         Time.at(time).utc.iso8601 # UTC with Z at the
       end
 
+      def create_error_tag(tag)
+        "ERROR::#{tag}::"
+      end
+
     end # Class methods
 
     

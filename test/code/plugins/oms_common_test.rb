@@ -76,5 +76,11 @@ module OMS
       assert_equal("2015-11-05T00:12:33Z", formatted_time, "The time should be in the iso8601 format.")
     end
 
+    def test_create_error_tag
+      assert_equal("ERROR::xyzzy::", Common.create_error_tag("xyzzy"))
+      assert_equal("ERROR::123::", Common.create_error_tag(123))
+      assert_equal("ERROR::::", Common.create_error_tag(nil))
+    end
+
   end
 end # Module OMS
