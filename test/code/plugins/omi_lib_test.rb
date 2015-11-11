@@ -167,7 +167,7 @@ class OmiLib_Test < Test::Unit::TestCase
 		transform_validate_records_helper(expected_disk_record, disk_input_record, all_performance_counters, "Disk Input Class Failed!")
 		
 		# Test Container_ContainerStatistics
-		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedPct"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
+		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedMB"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
 		expected_container_record = [{"Host":"testhost","ObjectName":"Container","InstanceName":"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","Collections":[{"CounterName":"Processor Usage sec","Value":"5"},{"CounterName":"% Processor Time","Value":"1"},{"CounterName":"Memory Usage MB","Value":"64"},{"CounterName":"Network Receive Bytes","Value":"256"},{"CounterName":"Network Send Bytes","Value":"256"},{"CounterName":"Disk Reads MB","Value":"10"},{"CounterName":"Disk Writes MB","Value":"2"}]}]
 		transform_validate_records_helper(expected_container_record, container_perf_record, all_performance_counters, "Container Input Class Failed!")
 
@@ -239,7 +239,7 @@ class OmiLib_Test < Test::Unit::TestCase
 		transform_validate_records_helper(expected_disk_record, disk_input_record, filtered_performance_counters, "Disk Filtered Input Class Failed!")
 		
 		# Test Container_ContainerStatistics
-		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedPct"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
+		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedMB"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
 		expected_container_record = [{"Host":"testhost","ObjectName":"Container","InstanceName":"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","Collections":[{"CounterName":"Processor Usage sec","Value":"5"}]}]
 		transform_validate_records_helper(expected_container_record, container_perf_record, filtered_performance_counters, "Filtered Container Input Class Failed!")
 
@@ -296,7 +296,7 @@ class OmiLib_Test < Test::Unit::TestCase
 		transform_validate_records_helper(expected_disk_record, disk_input_record, [], "Disk Filtered Input Class Failed!")
 		
 		# Test Container_ContainerStatistics
-		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedPct"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
+		container_perf_record = [{"ClassName"=>"Container_ContainerStatistics","InstanceID"=>"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","ElementName"=>"hello","CPUTotal"=>"5","CPUTotalPct"=>"1","MemUsedMB"=>"64","NetRXBytes"=>"256","NetTXBytes"=>"256","DiskBytesRead"=>"10","DiskBytesWritten"=>"2"}]
 		expected_container_record = [{"Host":"testhost","ObjectName":"Container","InstanceName":"d1cbb7d89ccbaf29c0f5c90d965cd00e4379a0303041df75bf2ba1c71ee34d3b","Collections":[]}]
 		transform_validate_records_helper(expected_container_record, container_perf_record, [], "Container Input Class with no counters Failed!")
 
