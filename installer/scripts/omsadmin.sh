@@ -184,8 +184,8 @@ parse_args()
     fi
 
     if [ "$VERBOSE" = "1" ]; then
-        log_info "Workspace ID:  $WORKSPACE_ID"
-        log_info "Shared key:    $SHARED_KEY"
+        echo "Workspace ID:  $WORKSPACE_ID"
+        echo "Shared key:    $SHARED_KEY"
     else
         # Suppress curl output
         CURL_VERBOSE=-s

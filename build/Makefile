@@ -4,7 +4,7 @@
 # 2015-08-14
 #-------------------------------------------------------------------------------
 
-BASE_DIR := $(subst /build,,$(PWD))
+BASE_DIR := $(subst /build,,$(CURDIR))
 OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 SCX_DIR := $(shell cd ../../opsmgr; pwd -P)

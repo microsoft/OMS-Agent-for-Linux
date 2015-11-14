@@ -1,6 +1,6 @@
 module Fluent
 
-  class OutputOMS < Output
+  class OutputOMS < BufferedOutput
 
     Plugin.register_output('out_oms', self)
 
@@ -109,54 +109,87 @@ module Fluent
       return req
     end
 
-    def start_request(req, tag)
-      res = nil
-
+    def start_request(req)
+      # Tries to send the passed in request
+      # Raises a RuntimeException if the request fails.
+      # This exception should only be caught by the fluentd engine so that it retries sending this 
       begin
+        res = nil
         secure_http = default_http
         res = secure_http.start { |http|  http.request(req) }
-
       rescue => e # rescue all StandardErrors
         # Server didn't respond
-        OMS::Log.warning_once("Net::HTTP.#{req.method.capitalize} raises exception: #{e.class}, '#{e.message}'")
-        return false
+        raise "Net::HTTP.#{req.method.capitalize} raises exception: #{e.class}, '#{e.message}'"
       else
+        # Exit on sucess 
         if res and res.is_a?(Net::HTTPSuccess)
-          return true
+          return
         end
+        
         if res
           res_summary = "(#{res.code} #{res.message} #{res.body})"
         else
           res_summary = "(res=nil)"
         end
-        OMS::Log.warning_once("Failed to #{req.method} #{tag} at #{@uri_endpoint} #{res_summary}")
-        return false
+        raise "Failed to #{req.method} at #{@uri_endpoint} #{res_summary}"
       end # end begin
     end # end start_request
 
     def handle_record(tag, record)
       req = create_request(record)
-      success = start_request(req, tag)
-      if success
-        @log.info "Success sending #{tag}"
-      end
-      return success
+      start = Time.now
+      
+      start_request(req)
+      
+      ends = Time.now
+      time = ends - start
+      count = record.has_key?('DataItems') ? record['DataItems'].size : 1
+      @log.info "Success sending #{tag} x #{count} in #{time.round(2)}s"
     end
 
-    def emit(tag, es, chain)
+    # This method is called when an event reaches to Fluentd.
+    # Convert the event to a raw string.
+    def format(tag, time, record)
+      @log.trace "Buffering #{tag}"
+      [tag, record].to_msgpack
+    end
+
+    # This method is called every flush interval. Send the buffer chunk to OMS. 
+    # 'chunk' is a buffer chunk that includes multiple formatted
+    # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
+    def write(chunk)
       # Quick exit if we are missing something
       if !load_endpoint or !load_certs
-        return
+        raise 'Missing configuration. Make sure to onboard. Will continue to buffer data.'
       end
 
-      es.each do |time, record|
-        # Ignore empty records
-        if record != nil and record.size > 0
-          handle_record(tag, record)
+      # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
+      datatypes = {}
+      unmergable_records = []
+      chunk.msgpack_each {|(tag, record)|
+        if datatypes.has_key?(tag)
+          # Merge instances of the same datatype together
+          datatypes[tag]['DataItems'] += record['DataItems']
+        else
+          if record.has_key?('DataItems')
+            datatypes[tag] = record
+          else
+            unmergable_records << [tag, record]
+          end
         end
-      end
-      chain.next
-    end
-  end
+      }
 
-end
+      @log.debug "Handling records by types"
+      datatypes.each do |tag, record|
+        handle_record(tag, record)
+      end
+
+      @log.debug "Handling #{unmergable_records.size} unmergeable records"
+      unmergable_records.each { |tag, record|
+        handle_record(tag, record)
+      }
+    end
+   
+  end # class OutputOMS
+
+end # module Fluent
