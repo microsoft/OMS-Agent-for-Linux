@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 set -e
 
@@ -53,6 +53,8 @@ LOG_FACILITY=local0
 CERTIFICATE_UPDATE_ENDPOINT=""
 VERBOSE=0
 
+USER_ID=`id -u`
+
 usage()
 {
     echo "Maintenance tool for OMS:"
@@ -74,7 +76,7 @@ set_user_agent()
 
 check_user()
 {
-    if [ $EUID -ne 0 -a `id -un` != $AGENT_USER ]; then
+    if [ "$USER_ID" -ne "0" -a `id -un` != "$AGENT_USER" ]; then
         log_error "This script must be run as root or as the $AGENT_USER user."
         exit 1
     fi
@@ -84,7 +86,7 @@ chown_omsagent()
 {
     # When this script is run as root, we still have to make sure the generated
     # files are owned by omsagent for everything to work properly
-    [ "$EUID" -eq 0 ] && chown $AGENT_USER:$AGENT_GROUP $@ > /dev/null 2>&1
+    [ "$USER_ID" -eq "0" ] && chown $AGENT_USER:$AGENT_GROUP $@ > /dev/null 2>&1
     return 0
 }
 
@@ -341,7 +343,7 @@ onboard()
     save_config
 
     if [ -e $METACONFIG_PY ]; then
-        if [ $EUID -eq 0 ]; then
+        if [ "$USER_ID" -eq "0" ]; then
             su - omsagent -c $METACONFIG_PY > /dev/null
         else
             $METACONFIG_PY > /dev/null
