@@ -169,7 +169,7 @@ module Fluent
       chunk.msgpack_each {|(tag, record)|
         if datatypes.has_key?(tag)
           # Merge instances of the same datatype together
-          datatypes[tag]['DataItems'] += record['DataItems']
+          datatypes[tag]['DataItems'].concat(record['DataItems'])
         else
           if record.has_key?('DataItems')
             datatypes[tag] = record
