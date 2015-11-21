@@ -43,6 +43,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/zabbix_lib.rb;                           source/code/plugins/zabbix_lib.rb;                     744; root; root
 /opt/microsoft/omsagent/plugin/zabbix_client.rb;                        source/code/plugins/zabbix_client.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/zabbixapi.rb;                            source/code/plugins/zabbixapi.rb;                      744; root; root
+/opt/microsoft/omsagent/plugin/oms_configuration.rb;                    source/code/plugins/oms_configuration.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/out_oms_blob.rb;                         source/code/plugins/out_oms_blob.rb;                   744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root

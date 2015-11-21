@@ -1,5 +1,6 @@
 require 'fluent/test'
 require_relative ENV['BASE_DIR'] + '/source/ext/fluentd/test/helper'
+require_relative ENV['BASE_DIR'] + '/source/code/plugins/oms_configuration'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/out_oms'
 require_relative 'omstestlib'
 
@@ -51,20 +52,22 @@ class OutOMSTest < Test::Unit::TestCase
     do_onboard
     
     # Mock the configuration
+    conf_path = "#{@omsadmin_test_dir}/omsadmin.conf"
+    cert_path = "#{@omsadmin_test_dir}/oms.crt"
+    key_path = "#{@omsadmin_test_dir}/oms.key"
+
     conf = %[
-      omsadmin_conf_path #{@omsadmin_test_dir}/omsadmin.conf
-      cert_path #{@omsadmin_test_dir}/oms.crt
-      key_path #{@omsadmin_test_dir}/oms.key
+      omsadmin_conf_path #{conf_path}
+      cert_path #{cert_path}
+      key_path #{key_path}
     ]
     tag = 'test'
     d = Fluent::Test::OutputTestDriver.new(Fluent::OutputOMS, tag).configure(conf)
+    success = OMS::Configuration.load_configuration(conf_path, cert_path, key_path)
+    assert_equal(true, success, "Configuration should be loaded")
+
     output = d.instance
     output.start
-
-    # Load endpoint from omsadmin_conf_path
-    assert(output.load_endpoint, "Error loading endpoint : '#{$log.logs}'")
-    # Load certs, there should not be permissions issues if they are owned by the current user
-    assert(output.load_certs, "Error loading certs : '#{$log.logs}'")
 
     # Mock syslog data
     record = {"DataType"=>"LINUX_SYSLOGS_BLOB", "IPName"=>"logmanagement", "DataItems"=>[{"ident"=>"niroy", "Timestamp"=>"2015-10-26T05:11:22Z", "Host"=>"niroy64-cent7x-01", "HostIP"=>"fe80::215:5dff:fe81:4c2f%eth0", "Facility"=>"local0", "Severity"=>"warn", "Message"=>"Hello"}]}
@@ -84,7 +87,7 @@ class OutOMSTest < Test::Unit::TestCase
 
     # Mock Nagios data
     $log.clear
-    record = {"DataType"=>"LINUX_NAGIOSALERTS_BLOB", "IPName"=>"AlertManagement", "DataItems"=>[{"Timestamp"=>"1970-01-01T00:00:00+00:00", "AlertName"=>"SERVICE ALERT", "HostName"=>"host100", "State"=>"alert state", "StateType"=>"state type", "AlertPriority"=>0, "AlertDescription"=>"Alert Description."}]} 
+    record = {"DataType"=>"LINUX_NAGIOSALERTS_BLOB", "IPName"=>"AlertManagement", "DataItems"=>[{"Timestamp"=>"1970-01-01T00:00:00+00:00", "AlertName"=>"SERVICE ALERT", "HostName"=>"host100", "State"=>"alert state", "StateType"=>"state type", "AlertPriority"=>0, "AlertDescription"=>"Alert Description."}]}
     assert(output.handle_record("oms.nagios", record), "Failed to send nagios data : '#{$log.logs}'")
   end
 

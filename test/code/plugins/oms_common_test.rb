@@ -1,4 +1,8 @@
 require 'tempfile'
+require 'openssl'
+require 'net/http'
+require 'net/https'
+require 'json'
 require_relative 'omstestlib'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/oms_common'
 
@@ -11,6 +15,18 @@ module OMS
       class << self
         def OSFullName=(os_full_name)
           @@OSFullName = os_full_name
+        end
+      end
+    end
+
+    class OMS::Configuration
+      class << self
+        def cert=(mock_cert)
+          @@Cert = mock_cert
+        end
+        
+        def key=(mock_key)
+          @@Key = mock_key
         end
       end
     end
@@ -82,5 +98,23 @@ module OMS
       assert_equal("ERROR::::", Common.create_error_tag(nil))
     end
 
+    def test_create_secure_http
+      uri = URI.parse('https://www.microsoft.com')
+      http = Common.create_secure_http(uri)
+      assert_not_equal(nil, http, "http is nil")
+      assert_equal(true, http.use_ssl?, "Http should use ssl")
+    end
+
+    def test_create_ods_http
+      uri = URI.parse('https://www.microsoft.com')
+      mock_cert = "this is a mock cert"
+      mock_key = "this is a mock key"
+      Configuration.cert = mock_cert
+      Configuration.key = mock_key
+
+      http = Common.create_ods_http(uri)
+      assert_not_equal(nil, http, "http is nil")
+      assert_equal(true, http.use_ssl?, "Http should use ssl")
+    end
   end
 end # Module OMS
