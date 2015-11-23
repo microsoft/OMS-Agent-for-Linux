@@ -23,6 +23,8 @@ module Fluent
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
 
     def configure(conf)
+      s = conf.add_element("secondary")
+      s["type"] = ChunkErrorHandler::SecondaryName
       super
     end
 
@@ -88,7 +90,75 @@ module Fluent
         handle_record(tag, record)
       }
     end
+
+  private
+
+    class ChunkErrorHandler
+      include Configurable
+      include PluginId
+      include PluginLoggerMixin
+
+      SecondaryName = "__ChunkErrorHandler__"
+
+      Plugin.register_output(SecondaryName, self)
+
+      def initialize
+        @router = nil
+      end
+
+      def secondary_init(primary)
+        @error_handlers = create_error_handlers @router
+      end
+
+      def start
+        # NOP
+      end
+
+      def shutdown
+        # NOP
+      end
+
+      def router=(r)
+        @router = r
+      end
+
+      def write(chunk)
+        chunk.msgpack_each {|(tag, record)|
+          @error_handlers[tag].emit(record)
+        }
+    end
    
+    private
+
+      def create_error_handlers(router)
+        nop_handler = NopErrorHandler.new
+        Hash.new() { |hash, tag|
+          etag = OMS::Common.create_error_tag tag
+          hash[tag] = router.match?(etag) ?
+                      ErrorHandler.new(router, etag) :
+                      nop_handler
+        }
+      end
+
+      class ErrorHandler
+        def initialize(router, etag)
+          @router = router
+          @etag = etag
+        end
+
+        def emit(record)
+          @router.emit(@etag, Fluent::Engine.now, record)
+        end
+      end
+
+      class NopErrorHandler
+        def emit(record)
+          # NOP
+        end
+      end
+
+    end
+
   end # class OutputOMS
 
 end # module Fluent
