@@ -56,6 +56,7 @@ elevate()
 BASE_DIR=`(cd ..; pwd -P)`
 OMS_AGENTDIR=/opt/microsoft/omsagent
 
+PATCHES_SRCDIR=${BASE_DIR}/source/ext/patches
 RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby
 FLUENTD_DIR=${BASE_DIR}/source/ext/fluentd
 
@@ -151,22 +152,26 @@ fi
 # Clean the version of Ruby from any existing files that aren't part of source
 # control
 
+cd ${RUBY_SRCDIR}
 sudo rm -rf ${RUBY_SRCDIR}/.ext
-find ${RUBY_SRCDIR} -type f -perm -u+w -exec rm -f {} \;
-find ${FLUENTD_DIR} -type f -perm -u+w -exec rm {} \;
+git clean -dfx
+
+# Restore the configure script
+
+cp ${PATCHES_SRCDIR}/ruby/configure ${RUBY_SRCDIR}
+
+# Configure and build Ruby
 
 cd ${RUBY_SRCDIR}
 echo "========================= Performing Running Ruby configure"
-chmod u+x configure tool/ifchange
-touch configure
 echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS[@]} ..."
+touch configure
 ./configure "${RUBY_CONFIGURE_QUALS[@]}"
 
 #
-# "Fix" the source tree. Ruby build may modify a few of it's files. Deal with it.
+# "Fix" the source tree.
 #
-# This occurs becuase 'git' allows files to be writable while still under source
-# control, but 'tfs' does not.
+# Ruby build may modify a few of it's files. Deal with it.
 #
 
 echo "========================= Performing Repairing Ruby sources"
@@ -174,33 +179,8 @@ echo "========================= Performing Repairing Ruby sources"
 # RUBY_REPAIR_LIST is set reletive to the Ruby source directory
 RUBY_REPAIR_LIST="enc/unicode/name2ctype.h enc/jis/props.h"
 
-# Are we running under Jenkins? If so, no access to TFS ...
-
 cd ${RUBY_SRCDIR}
-
-if [ -n "$WORKSPACE" ]; then
-    if [ -d "$WORKSPACE" ]; then
-        if [ -e "$WORKSPACE/ruby_backup.tar" ]; then
-            echo "Restoring Ruby-modified files from backup ..."
-            tar -xvf $WORKSPACE/ruby_backup.tar
-        else
-            echo "Creating backup for Ruby-modified files ..."
-            chmod u+w ${RUBY_REPAIR_LIST}
-            tar -cvf $WORKSPACE/ruby_backup.tar ${RUBY_REPAIR_LIST}
-        fi
-    else
-        echo "Jenkins \"WORKSPACE\" is defined ($WORKSPACE), but is not a directory" 1>& 2
-        exit 1
-    fi
-else
-    # Not running under Jenkins, so just use TFS to recover Ruby files
-    tf get -force ${RUBY_REPAIR_LIST}
-    chmod u+w ${RUBY_REPAIR_LIST}
-fi
-
-# and clean up files that we know don't exist in a clean Ruby tree
-
-rm -f ${RUBY_SRCDIR}/lex.c
+git checkout -- ${RUBY_REPAIR_LIST}
 
 #
 # Now build Ruby ...

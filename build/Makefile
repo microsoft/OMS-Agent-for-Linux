@@ -124,12 +124,12 @@ clean-ruby : clean
 	# Warning: This step will clean out checked out files from Ruby directory
 	#
 	@echo "Cleaning RUBY source directory ..."
-	find $(RUBY_DIR) -type f -perm -u+w -exec rm -f {} \;
+	cd $(RUBY_DIR); git clean -dfx
 	#
 	# Warning: This step will clean out checked out files from fluentd directory
 	#
 	@echo "Cleaning fluentd source directory ..."
-	find $(FLUENTD_DIR) -type f -perm -u+w -print -exec rm {} \;
+	cd $(FLUENTD_DIR); git clean -dfx
 
 clean-dsc : clean
 	-make -C $(DSC_DIR) clean
@@ -145,6 +145,7 @@ clean-scx : clean
 distclean : clean clean-ruby clean-dsc clean-scx
 	-$(RMDIR) $(OMI_ROOT)/output*
 
+	cd $(BASE_DIR)/source/ext/fluentd; git checkout -- lib/fluent/env.rb
 	$(RM) $(BASE_DIR)/build/config.mak
 	-$(RM) $(PAL_DIR)/build/config.mak
 

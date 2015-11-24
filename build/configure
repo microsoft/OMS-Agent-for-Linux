@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
+base_dir=`(cd ..; pwd -P)`
 scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
 scxpal_dir=`(cd ../../pal; pwd -P)`
 scxcim_dir=`(cd ../../opsmgr; pwd -P)`
@@ -231,6 +232,15 @@ if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then
     echo "ULINUX build (--enable-ulinux) on this system." >& 2
     exit 1
 fi
+
+# We need a pre-built configure script (just from a new autoconf) for Ruby
+
+cp ${base_dir}/source/ext/patches/ruby/configure ${base_dir}/source/ext/ruby/configure
+
+# We modify fluentd for branding purposes (omsagent), copy those changes
+
+cp ${base_dir}/source/ext/patches/fluentd/env.rb ${base_dir}/source/ext/fluentd/lib/fluent/env.rb
+cp -R ${base_dir}/source/ext/patches/fluentd/vendor ${base_dir}/source/ext/fluentd/
 
 # Note: Most of this code came from the PAL configure file
 
