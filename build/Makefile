@@ -251,71 +251,71 @@ ifeq ($(ULINUX),1)
 
 kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh
 
-$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 	@echo "========================= Performing Building shell bundle"
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
 
-$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
-	$(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
+	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
+	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building .tar file"
 
 	# Gather the OMI bits that we need and rename them in a non-SCX manner (easier to deal with)
 	# Note: We take care to only copy the latest version of OMI if there are multiple versions
-	$(RM) $(TARGET_DIR)/098/omi-*.{rpm,deb} $(TARGET_DIR)/100/omi-*.{rpm,deb}
+	$(RM) $(INTERMEDIATE_DIR)/098/omi-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omi-*.{rpm,deb}
 
-	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(TARGET_DIR)/098
-	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(TARGET_DIR)/098
-	cd $(TARGET_DIR)/098; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
-	cd $(TARGET_DIR)/098; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
+	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
+	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
+	cd $(INTERMEDIATE_DIR)/098; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
+	cd $(INTERMEDIATE_DIR)/098; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
 
-	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(TARGET_DIR)/100
-	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(TARGET_DIR)/100
-	cd $(TARGET_DIR)/100; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
-	cd $(TARGET_DIR)/100; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
+	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
+	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
+	cd $(INTERMEDIATE_DIR)/100; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
+	cd $(INTERMEDIATE_DIR)/100; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
 
 	# Gather the SCX bits that we need (due to scx-cimprov versioning; names are fine as is)
 	# Note: We take care to only copy the latest version if there are multiple versions
-	$(RM) $(TARGET_DIR)/098/scx-*.{rpm,deb} $(TARGET_DIR)/100/scx-*.{rpm,deb}
+	$(RM) $(INTERMEDIATE_DIR)/098/scx-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/scx-*.{rpm,deb}
 
-	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.rpm | sort | tail -1` $(TARGET_DIR)/098
-	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.deb | sort | tail -1` $(TARGET_DIR)/098
+	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
+	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
 
-	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.rpm | sort | tail -1` $(TARGET_DIR)/100
-	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.deb | sort | tail -1` $(TARGET_DIR)/100
+	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
+	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
 
 	# Gather the DSC bits that we need
-	$(RM) $(TARGET_DIR)/098/omsconfig-*.{rpm,deb} $(TARGET_DIR)/100/omsconfig-*.{rpm,deb}
+	$(RM) $(INTERMEDIATE_DIR)/098/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb}
 
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.rpm | sort | tail -1` $(TARGET_DIR)/098
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.deb | sort | tail -1` $(TARGET_DIR)/098
-	cd $(TARGET_DIR)/098; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_098././'` ; $(MV) $$SOURCE $$DEST; done
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
+	cd $(INTERMEDIATE_DIR)/098; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_098././'` ; $(MV) $$SOURCE $$DEST; done
 
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.rpm | sort | tail -1` $(TARGET_DIR)/100
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(TARGET_DIR)/100
-	cd $(TARGET_DIR)/100; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_100././'` ; $(MV) $$SOURCE $$DEST; done
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
+	cd $(INTERMEDIATE_DIR)/100; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_100././'` ; $(MV) $$SOURCE $$DEST; done
 
 	# Pick up the OSS (Open Source) providers
-	$(RMDIR) $(TARGET_DIR)/oss-kits
-	$(MKPATH) $(TARGET_DIR)/oss-kits
-	cd $(SCX_DIR)/installer/oss-kits; $(COPY) $(OSS_KITS) $(TARGET_DIR)/oss-kits
-	cd $(BASE_DIR)/installer/oss-kits; $(COPY) $(OMS_OSS_KITS) $(TARGET_DIR)/oss-kits
-	chmod +x $(TARGET_DIR)/oss-kits/*.sh
+	$(RMDIR) $(INTERMEDIATE_DIR)/oss-kits
+	$(MKPATH) $(INTERMEDIATE_DIR)/oss-kits
+	cd $(SCX_DIR)/installer/oss-kits; $(COPY) $(OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
+	cd $(BASE_DIR)/installer/oss-kits; $(COPY) $(OMS_OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
+	chmod +x $(INTERMEDIATE_DIR)/oss-kits/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
-	cd $(TARGET_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/*
 
 
-$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm:
+$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm:
 	@echo "========================= Performing Building RPM package (SSL 0.9.8)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
-	$(MKPATH) $(TARGET_DIR)/098
+	$(MKPATH) $(INTERMEDIATE_DIR)/098
 
 	sudo $(RMDIR) $(STAGING_DIR)
 	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
-		--TARGET_DIR=$(TARGET_DIR) \
+		--TARGET_DIR=$(INTERMEDIATE_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
@@ -333,17 +333,17 @@ $(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm:
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_RPM)
-	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/098
+	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098
 
-$(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb:
+$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb:
 	@echo "========================= Performing Building DEB package (SSL 0.9.8)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
-	$(MKPATH) $(TARGET_DIR)/098
+	$(MKPATH) $(INTERMEDIATE_DIR)/098
 
 	sudo $(RMDIR) $(STAGING_DIR)
 	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
-		--TARGET_DIR=$(TARGET_DIR) \
+		--TARGET_DIR=$(INTERMEDIATE_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
@@ -362,17 +362,17 @@ $(TARGET_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb:
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)
-	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(TARGET_DIR)/098
+	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/098
 
-$(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm:
+$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm:
 	@echo "========================= Performing Building RPM package (SSL 1.0)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
-	$(MKPATH) $(TARGET_DIR)/100
+	$(MKPATH) $(INTERMEDIATE_DIR)/100
 
 	sudo $(RMDIR) $(STAGING_DIR)
 	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
-		--TARGET_DIR=$(TARGET_DIR) \
+		--TARGET_DIR=$(INTERMEDIATE_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
@@ -390,17 +390,17 @@ $(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm:
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_RPM)
-	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(TARGET_DIR)/100
+	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100
 
-$(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb:
+$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb:
 	@echo "========================= Performing Building DEB package (SSL 1.0)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
-	$(MKPATH) $(TARGET_DIR)/100
+	$(MKPATH) $(INTERMEDIATE_DIR)/100
 
 	sudo $(RMDIR) $(STAGING_DIR)
 	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
 		--BASE_DIR=$(BASE_DIR) \
-		--TARGET_DIR=$(TARGET_DIR) \
+		--TARGET_DIR=$(INTERMEDIATE_DIR) \
 		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
@@ -419,7 +419,7 @@ $(TARGET_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb:
 		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)
-	mv $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(TARGET_DIR)/100
+	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/100
 
 else
 

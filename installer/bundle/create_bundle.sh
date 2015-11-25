@@ -19,10 +19,10 @@ set +x
 
 usage()
 {
-    echo "usage: $0 directory tar-file"
+    echo "usage: $0 target-dir intermediate-dir tar-file"
     echo "  where"
-    echo "    directory is directory path to package file (target directory)"
-    echo "    intermediate is dir path to intermediate dir (where installer_tmp lives)"
+    echo "    target-dir is directory path to create shell bundle file (target directory)"
+    echo "    intermediate-dir is dir path to intermediate dir (where installer_tmp lives)"
     echo "    tar-file is the name of the tar file that contains the .deb/.rpm files"
     echo
     echo "This script, and the associated bundle skeleton, are intended to work only"
@@ -77,8 +77,8 @@ if [ -z "$TAR_FILE" ]; then
     exit 1
 fi
 
-if [ ! -f "$DIRECTORY/$TAR_FILE" ]; then
-    echo "Can't file tar file at location $DIRECTORY/$TAR_FILE" >&2
+if [ ! -f "$INTERMEDIATE/$TAR_FILE" ]; then
+    echo "Can't file tar file at location $INTERMEDIATE/$TAR_FILE" >&2
     echo ""
     usage
     exit 1
@@ -87,7 +87,7 @@ fi
 INTERMEDIATE_DIR=`(cd $INTERMEDIATE/installer_tmp; pwd -P)`
 
 # Switch to one of the output directories to avoid directory prefixes
-cd $DIRECTORY/098
+cd $INTERMEDIATE/098
 
 SCX_PACKAGE=`ls scx-*.rpm | sed 's/.rpm$//'`
 OMI_PACKAGE=`ls omi-*.rpm | sed 's/.rpm$//'`
@@ -104,7 +104,6 @@ cd $INTERMEDIATE_DIR
 
 # Fetch the bundle skeleton file
 cp $SOURCE_DIR/$BUNDLE_FILE .
-chmod u+w $BUNDLE_FILE
 
 # Edit the bundle file for hard-coded values
 sed -i "s/TAR_FILE=<TAR_FILE>/TAR_FILE=$TAR_FILE/" $BUNDLE_FILE
@@ -124,7 +123,7 @@ sed -i "s/SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>/SCRIPT_LEN_PLUS_ONE=${SCRIPT_LEN_PL
 BUNDLE_OUTFILE=$OUTPUT_DIR/`echo $TAR_FILE | sed -e "s/.tar//"`.sh
 echo "Generating bundle in target named: `basename $BUNDLE_OUTFILE` ..."
 
-gzip -c $OUTPUT_DIR/$TAR_FILE | cat $BUNDLE_FILE - > $BUNDLE_OUTFILE
+gzip -c $INTERMEDIATE/$TAR_FILE | cat $BUNDLE_FILE - > $BUNDLE_OUTFILE
 chmod +x $BUNDLE_OUTFILE
 
 # Clean up
