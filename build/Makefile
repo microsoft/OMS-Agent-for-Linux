@@ -185,7 +185,7 @@ $(RUBY_TESTING_DIR) :
 	#
 	@$(ECHO) "========================= Performing Building Ruby for testing"
 	sudo $(RMDIR) /usr/local/ruby-2.2.0*
-	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh test
+	$(BASE_DIR)/build/buildRuby.sh test
 
 # Build the version of Ruby that we distribute
 
@@ -195,12 +195,12 @@ $(RUBY_DEST_DIR) :
 	#
 ifeq ($(ULINUX),1)
 	@$(ECHO) "========================= Performing Building Ruby for SSL v0.9.8 ..."
-	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh 098
+	$(BASE_DIR)/build/buildRuby.sh 098
 	@$(ECHO) "========================= Performing Building Ruby for SSL v1.0.0 ..."
-	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh 100
+	$(BASE_DIR)/build/buildRuby.sh 100
 else
 	@$(ECHO) "========================= Performing Building Ruby"
-	chmod +x $(BASE_DIR)/build/buildRuby.sh; $(BASE_DIR)/build/buildRuby.sh
+	$(BASE_DIR)/build/buildRuby.sh
 endif
 
 #================================================================================
@@ -252,7 +252,6 @@ kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 	@echo "========================= Performing Building shell bundle"
-	chmod +x ../installer/bundle/create_bundle.sh
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
