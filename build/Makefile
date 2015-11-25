@@ -146,7 +146,8 @@ distclean : clean clean-ruby clean-dsc clean-scx
 	-$(RMDIR) $(OMI_ROOT)/output*
 
 	cd $(BASE_DIR)/source/ext/fluentd; git checkout -- lib/fluent/env.rb
-	$(RM) $(BASE_DIR)/build/config.mak
+	-$(RM) $(BASE_DIR)/build/Makefile.version
+	-$(RM) $(BASE_DIR)/build/config.mak
 	-$(RM) $(PAL_DIR)/build/config.mak
 
 clean-status :

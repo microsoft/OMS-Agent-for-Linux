@@ -393,6 +393,24 @@ if [ "$ULINUX" = "1" ]; then
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 fi
 
+# Do we have a version file from the super project? If not, make one
+
+if [ -f ../../omsagent.version ]; then
+    rm -f Makefile.version
+    ln -s ../../omsagent.version Makefile.version
+else
+    cat <<EOF > Makefile.version
+OMS_BUILDVERSION_MAJOR=0
+OMS_BUILDVERSION_MINOR=0
+OMS_BUILDVERSION_PATCH=0
+OMS_BUILDVERSION_BUILDNR=0
+OMS_BUILDVERSION_DATE=20150101
+OMS_BUILDVERSION_STATUS=Developer_Build
+EOF
+fi
+
+# Generate the config.mak file
+
 cat <<EOF > config.mak
 ENABLE_DEBUG=$enable_debug_flag
 

@@ -1,6 +1,8 @@
 [submodule "source/ext/ruby"]
 	path = source/ext/ruby
 	url = git@github.com:ruby/ruby.git
+	ignore = dirty
 [submodule "source/ext/fluentd"]
 	path = source/ext/fluentd
 	url = git@github.com:fluent/fluentd.git
+	ignore = dirty
