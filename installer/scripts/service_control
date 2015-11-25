@@ -160,6 +160,91 @@ restart_omsagent()
     fi
 }
 
+
+find_systemd_dir()
+{
+    # Various distributions have different paths for systemd unit files ...
+    local UNIT_DIR_LIST="/usr/lib/systemd/system /lib/systemd/system"
+
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        # Be sure systemctl lives where we expect it to
+        if [ ! -f /bin/systemctl ]; then
+            echo "FATAL: Unable to locate systemctl program" 1>&2
+            exit 1
+        fi
+
+        # Find systemd unit directory
+        for i in ${UNIT_DIR_LIST}; do
+            if [ -d $i ]; then
+                echo ${i}
+                return 0
+            fi
+        done
+
+        # Didn't find unit directory, that's fatal
+        echo "FATAL: Unable to resolve systemd unit directory!" 1>&2
+        exit 1
+    else
+        return 1
+    fi
+}
+
+enable_omsagent_service()
+{
+    echo "Configuring OMS agent service ..."
+    if pidof systemd 1> /dev/null 2> /dev/null; then
+        # systemd
+        local systemd_dir=$(find_systemd_dir)
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd ${systemd_dir}/omsagent.service
+        /bin/systemctl daemon-reload
+        /bin/systemctl enable omsagent
+    else
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
+
+        if [ -x /usr/sbin/update-rc.d ]; then
+            update-rc.d omsagent defaults > /dev/null
+        elif [ -x /usr/lib/lsb/install_initd ]; then
+            /usr/lib/lsb/install_initd /etc/init.d/omsagent
+        elif [ -x /sbin/chkconfig ]; then
+            chkconfig --add omsagent > /dev/null
+        else
+            echo "Could not find a service controller to configure the OMS Agent Service."
+            exit 1
+        fi
+    fi
+
+    start_omsagent
+}
+
+disable_omsagent_service()
+{
+    # Stop the server if it's running
+    stop_omsagent
+
+    # Registered as a systemd service?
+    local systemd_dir=$(find_systemd_dir)
+    if [ -f ${systemd_dir}/omsagent.service ]; then
+        echo "Unconfiguring OMS agent (systemd) service ..."
+        /bin/systemctl disable omsagent
+        rm -f ${systemd_dir}/omsagent.service
+        /bin/systemctl daemon-reload
+    elif [ -f /etc/init.d/omsagent ]; then
+        echo "Unconfiguring OMS agent service ..."
+        if [ -f /usr/sbin/update-rc.d ]; then
+            /usr/sbin/update-rc.d -f omsagent remove
+        elif [ -x /usr/lib/lsb/remove_initd ]; then
+            /usr/lib/lsb/remove_initd /etc/init.d/omsagent
+        elif [ -x /sbin/chkconfig ]; then
+            chkconfig --del omsagent > /dev/null
+        else
+            echo "Unrecognized Service Controller to unregister OMS Agent Service."
+            exit 1
+        fi
+
+        rm /etc/init.d/omsagent
+    fi
+}
+
 case "$1" in
     functions)
         ;;
@@ -184,6 +269,18 @@ case "$1" in
     reload)
         # TODO: Due to a bug in OMS right now, we can't reload via a signal
         restart_omsagent
+        ;;
+
+    find-systemd-dir)
+        find_systemd_dir
+        ;;
+
+    enable)
+        enable_omsagent_service
+        ;;
+
+    disable)
+        disable_omsagent_service
         ;;
 
     *)
