@@ -110,9 +110,13 @@ cp $SOURCE_DIR/$BUNDLE_FILE .
 if [ -f ../../../.gitmodules ]; then
     TEMP_FILE=/tmp/create_bundle.$$
 
+    # Get the git reference hashes in a file
     SOURCE_REFS=`(cd ../../..; git submodule foreach git rev-parse HEAD > $TEMP_FILE)`
+
     # Change lines like: "Entering 'dsc'\n<refhash>" to "dsc: <refhash>"
     perl -i -pe "s/Entering '([^\n]*)'\n/\$1: /" $TEMP_FILE
+
+    # Grab the reference hashes in a variable
     SOURCE_REFS=`cat $TEMP_FILE`
     rm $TEMP_FILE
 
