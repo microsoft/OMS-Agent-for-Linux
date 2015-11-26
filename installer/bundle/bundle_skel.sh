@@ -50,7 +50,8 @@ usage()
     echo "  --install              Install the package from the system."
     echo "  --purge                Uninstall the package and remove all related data."
     echo "  --remove               Uninstall the package from the system."
-    echo "  --restart-deps         Reconfigure and restart dependent service"
+    echo "  --restart-deps         Reconfigure and restart dependent service(s)."
+    echo "  --source-references    Show source code reference hashes."
     echo "  --upgrade              Upgrade the package in the system."
     echo "  --debug                use shell debug mode."
     echo
@@ -58,6 +59,13 @@ usage()
     echo "  -s key, --shared key   Use <key> as the shared key for automatic onboarding."
     echo
     echo "  -? | --help            shows this usage text."
+}
+
+source_references()
+{
+    cat <<EOF
+-- Source code references --
+EOF
 }
 
 cleanup_and_exit()
@@ -329,6 +337,11 @@ do
         -s|--shared)
             onboardKey=$2
             shift 2
+            ;;
+
+        --source-references)
+            source_references
+            cleanup_and_exit 0
             ;;
 
         --int)

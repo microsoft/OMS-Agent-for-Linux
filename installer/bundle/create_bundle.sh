@@ -84,7 +84,7 @@ if [ ! -f "$INTERMEDIATE/$TAR_FILE" ]; then
     exit 1
 fi
 
-INTERMEDIATE_DIR=`(cd $INTERMEDIATE/installer_tmp; pwd -P)`
+INTERMEDIATE_DIR=`(cd $INTERMEDIATE; pwd -P)`
 
 # Switch to one of the output directories to avoid directory prefixes
 cd $INTERMEDIATE/098
@@ -104,6 +104,21 @@ cd $INTERMEDIATE_DIR
 
 # Fetch the bundle skeleton file
 cp $SOURCE_DIR/$BUNDLE_FILE .
+
+# See if we can resolve git references for output
+# (See if we can find the master project)
+if [ -f ../../../.gitmodules ]; then
+    TEMP_FILE=/tmp/create_bundle.$$
+
+    SOURCE_REFS=`(cd ../../..; git submodule foreach git rev-parse HEAD > $TEMP_FILE)`
+    # Change lines like: "Entering 'dsc'\n<refhash>" to "dsc: <refhash>"
+    perl -i -pe "s/Entering '([^\n]*)'\n/\$1: /" $TEMP_FILE
+    SOURCE_REFS=`cat $TEMP_FILE`
+    rm $TEMP_FILE
+
+    # Update the bundle file w/the ref hash (much easier with perl since multi-line)
+    perl -i -pe "s/-- Source code references --/${SOURCE_REFS}/" $BUNDLE_FILE
+fi
 
 # Edit the bundle file for hard-coded values
 sed -i "s/TAR_FILE=<TAR_FILE>/TAR_FILE=$TAR_FILE/" $BUNDLE_FILE
