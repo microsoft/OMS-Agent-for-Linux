@@ -46,7 +46,7 @@ module Fluent
     end
 
     def enumerate
-      time = Engine.now
+      time = Time.now.to_f
       wrapper = @omi_lib.enumerate(time)
       router.emit(@tag, time, wrapper) if wrapper
     end

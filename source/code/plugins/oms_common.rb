@@ -41,7 +41,7 @@ module OMS
       end
 
       def format_time(time)
-        Time.at(time).utc.iso8601 # UTC with Z at the
+        Time.at(time).utc.iso8601(3) # UTC with milliseconds
       end
 
       def create_error_tag(tag)
