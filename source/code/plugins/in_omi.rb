@@ -21,7 +21,7 @@ class OMIInput < Input
     end
 
     def enumerate
-        time = Engine.now
+        time = Time.now.to_f
         record_txt = @omi_interface.enumerate(@items)
         record = JSON.parse record_txt
 

@@ -13,7 +13,7 @@ module Fluent
 			require_relative 'zabbix_lib'
 			
 			@watermark_file = '/var/opt/microsoft/omsagent/state/zabbix_watermark'
-			@default_watermark = Time.now.utc.to_i
+			@default_watermark = Time.now.to_i
 		end
 
 		config_param :run_interval, :time, :default => nil
@@ -26,7 +26,7 @@ module Fluent
 		end
 
 		def get_alerts
-			time = Engine.now
+			time = Time.now.to_f
 			records = @zabbix_lib.get_and_wrap
 			router.emit(@tag, time, records)
 		end

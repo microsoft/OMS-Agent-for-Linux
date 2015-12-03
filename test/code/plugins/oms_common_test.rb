@@ -89,7 +89,9 @@ module OMS
 
     def test_format_time
       formatted_time = Common.format_time(1446682353)
-      assert_equal("2015-11-05T00:12:33Z", formatted_time, "The time should be in the iso8601 format.")
+      assert_equal("2015-11-05T00:12:33.000Z", formatted_time, "The time is not in the correct iso8601 format with millisecond precision.")
+      formatted_time = Common.format_time(1447984563.078218)
+      assert_equal("2015-11-20T01:56:03.078Z", formatted_time, "The time is not in the correct iso8601 format with millisecond precision.")
     end
 
     def test_create_error_tag
