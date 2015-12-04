@@ -197,7 +197,7 @@ enable_omsagent_service()
         local systemd_dir=$(find_systemd_dir)
         cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd ${systemd_dir}/omsagent.service
         /bin/systemctl daemon-reload
-        /bin/systemctl enable omsagent
+        /bin/systemctl -q enable omsagent
     else
         cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
 
@@ -225,7 +225,7 @@ disable_omsagent_service()
     local systemd_dir=$(find_systemd_dir)
     if [ -f ${systemd_dir}/omsagent.service ]; then
         echo "Unconfiguring OMS agent (systemd) service ..."
-        /bin/systemctl disable omsagent
+        /bin/systemctl -q disable omsagent
         rm -f ${systemd_dir}/omsagent.service
         /bin/systemctl daemon-reload
     elif [ -f /etc/init.d/omsagent ]; then

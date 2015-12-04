@@ -227,10 +227,8 @@ chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
 #include Syslog_Services
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
-    if [ -f ${{OMS_SERVICE}} ]; then
-        UnconfigureSyslog
-        ${{OMS_SERVICE}} disable
-    fi
+    UnconfigureSyslog
+    ${{OMS_SERVICE}} disable
 fi
 
 
