@@ -4,6 +4,7 @@
  Glibc |	GNU C Library	| 2.5-12 
 Openssl	| OpenSSL Libraries | 0.9.8b or 1.0
 Curl | cURL web client | 7.15.5
+Python-ctypes | | 
 PAM | Pluggable authentication Modules	 | 
 
 **Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog, 
