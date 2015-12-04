@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 base_dir=`(cd ..; pwd -P)`
 scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
 scxpal_dir=`(cd ../../pal; pwd -P)`
@@ -205,6 +203,9 @@ OPTIONS:
 EOF
     exit 0
 fi
+
+# No errors allowed from this point forward
+set -e
 
 scx_configure_quals="${enable_debug} ${enable_ulinux}"
 
