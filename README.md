@@ -10,7 +10,7 @@ Run the following commands to download the omsagent, validate the checksum, and 
 ```
 $> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh
 $> md5sum ./omsagent-1.0.0-47.universal.x64.sh
-$> sudo sh ./omsagent-1.0.0-47.universal.x64.sh --install -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
+$> sudo sh ./omsagent-1.0.0-47.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
 [Full installation guide](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
 
