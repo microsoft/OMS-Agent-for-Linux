@@ -176,8 +176,8 @@ SudoSupportsIncludeDirective() {
 #include Syslog_Services
 
 # If our service is already running, stop it
-if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
-   /opt/microsoft/omsagent/bin/service_control stop
+if [ -f ${{OMS_SERVICE}} ]; then
+   ${{OMS_SERVICE}} stop
 fi
 
 UnconfigureSyslog
@@ -224,23 +224,19 @@ chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
 
 
 %Preuninstall_10
-
+#include Syslog_Services
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
-    if [ -f /opt/microsoft/omsagent/bin/service_control ]; then
-        /opt/microsoft/omsagent/bin/service_control stop
+    if [ -f ${{OMS_SERVICE}} ]; then
+        UnconfigureSyslog
+        ${{OMS_SERVICE}} disable
     fi
 fi
 
 
 %Postuninstall_1000
-#include Syslog_Services
-
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
-    UnconfigureSyslog
-    ${{OMS_SERVICE}} disable
-
     # Restart the OMI server in case an agent is running under service account
     ${{OMI_SERVICE}} restart
 
