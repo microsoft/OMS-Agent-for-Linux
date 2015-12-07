@@ -6,6 +6,7 @@ class OmsadminTest < Test::Unit::TestCase
   TEST_SHARED_KEY=ENV['TEST_SHARED_KEY']
   TEST_WORKSPACE_ID_2=ENV['TEST_WORKSPACE_ID_2']
   TEST_SHARED_KEY_2=ENV['TEST_SHARED_KEY_2']
+  TEST_PROXY_SETTING=ENV['TEST_PROXY_SETTING']
 
   def setup
     @base_dir = ENV['BASE_DIR']
@@ -44,6 +45,14 @@ class OmsadminTest < Test::Unit::TestCase
     assert_equal(true, File.executable?(@omsadmin_script), "'#{@omsadmin_script}' is not executable.")
   end
 
+  def prep_proxy(proxy_setting)
+    assert_match(/http:\/\/\w+:\w+@\d+\.\d+\.\d+\.\d+:\d+/, proxy_setting, "Proxy setting not in a valid format : http://<user>:<password>@<ipv4>:<port>")
+    assert(@omsadmin_test_dir, "No test directory setup")
+    proxy_conf = "#{@omsadmin_test_dir}/proxy.conf"
+    File.write(proxy_conf, proxy_setting)
+    assert(File.file?(proxy_conf), "Proxy conf file missing!")
+  end
+
   def check_cert_perms(path)
     stat = File.stat(path)
     assert_equal(nil, stat.world_readable?, "'#{path}' should not be world readable")
@@ -80,6 +89,21 @@ class OmsadminTest < Test::Unit::TestCase
     assert(crt_uid == key_uid, "Key and cert should have the same uid")    
     check_cert_perms(crt_path)
     check_cert_perms(key_path)
+  end
+
+  def test_onboard_proxy_sucess
+    prep_proxy(TEST_PROXY_SETTING)
+    check_test_keys()
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    assert_match(/Using proxy settings/, output, "Did not find using proxy settings message")
+  end
+
+  def test_onboard_proxy_failure
+    bad_proxy_setting = TEST_PROXY_SETTING.sub(/(http:\/\/\w+):\w+/, '\1:badpassword')
+    prep_proxy(bad_proxy_setting)
+    check_test_keys()
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY, should_succeed = false)
+    assert_match(/Using proxy settings/, output, "Did not find using proxy settings message")
   end
 
   def test_onboard_success

@@ -15,6 +15,9 @@ CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
 # Omsagent daemon configuration
 CONF_OMSAGENT=$CONF_DIR/omsagent.conf
 
+# Omsagent proxy configuration
+CONF_PROXY=$CONF_DIR/proxy.conf
+
 # File with OS information for telemetry
 OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
 
@@ -255,6 +258,17 @@ set_FQDN()
     fi
 }
 
+set_proxy_setting()
+{
+    PROXY_SETTING=""
+    local conf_proxy_content=""
+    [ -r "$CONF_PROXY" ] && conf_proxy_content=`cat $CONF_PROXY`
+    if [ -n "$conf_proxy_content" ]; then
+        PROXY_SETTING="--proxy $conf_proxy_content"
+        log_info "Using proxy settings from '$CONF_PROXY'"
+    fi
+}
+
 onboard()
 {
     if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
@@ -312,7 +326,6 @@ onboard()
     fi
 
     # Send the request to the registration server
-    # TODO Save the GUID to a file along with the <ManagementGroupId> from the response
 
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "x-ms-version: August, 2014" \
@@ -324,7 +337,7 @@ onboard()
         --data-binary @$BODY_ONBOARD \
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
-        --write-out "%{http_code}\n" \
+        --write-out "%{http_code}\n" $PROXY_SETTING \
         https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
     
     if [ $? -ne 0 ]; then
@@ -421,7 +434,7 @@ heartbeat()
         --data-binary @$BODY_HEARTBEAT \
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_HEARTBEAT" $CURL_VERBOSE \
-        --write-out "%{http_code}\n" \
+        --write-out "%{http_code}\n" $PROXY_SETTING \
         https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
 
     if [ "$RET_CODE" = "200" ]; then
@@ -464,7 +477,7 @@ renew_cert()
     --data-binary @$BODY_RENEW_CERT \
     --cert "$FILE_CRT".old --key "$FILE_KEY".old \
     --output "$RESP_RENEW_CERT" $CURL_VERBOSE \
-    --write-out "%{http_code}\n" \
+    --write-out "%{http_code}\n" $PROXY_SETTING \
     "$CERTIFICATE_UPDATE_ENDPOINT"`
 
     if [ "$RET_CODE" = "200" ]; then
@@ -512,6 +525,7 @@ main()
 
     check_user
     set_user_agent
+    set_proxy_setting
     parse_args $@
 
     [ "$ONBOARDING" = "1" ] && (onboard || clean_exit 1)

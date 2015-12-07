@@ -25,33 +25,21 @@ module OMS
     end
 
     def setup
-      prepare_files
-
       # Reset the states
       Configuration.configurationLoaded = false
       Common.OSFullName = nil
-    end
-
-    def teardown
-      tmp_conf_path = @tmp_conf_file.path
-      tmp_cert_path = @tmp_cert_file.path
-      tmp_key_path = @tmp_key_file.path
-      assert_equal(true, File.file?(tmp_conf_path))
-      assert_equal(true, File.file?(tmp_cert_path))
-      assert_equal(true, File.file?(tmp_key_path))
-      @tmp_conf_file.unlink
-      @tmp_cert_file.unlink
-      @tmp_key_file.unlink
-      assert_equal(false, File.file?(tmp_conf_path))
-      assert_equal(false, File.file?(tmp_cert_path))
-      assert_equal(false, File.file?(tmp_key_path))
-    end
-
-    def prepare_files
       @tmp_conf_file = Tempfile.new('oms_conf_file')
       @tmp_cert_file = Tempfile.new('temp_cert_file')
       @tmp_key_file = Tempfile.new('temp_key_file')
+    end
 
+    def teardown
+      [@tmp_conf_file, @tmp_cert_file, @tmp_key_file].each { |tmpfile|
+        tmpfile.unlink
+      }
+    end
+
+    def prepare_files
       conf = "WORKSPACE_ID=#{TEST_WORKSPACE_ID}\n" \
       "AGENT_GUID=#{TEST_AGENT_GUID}\n" \
       "LOG_FACILITY=local0\n" \
@@ -123,6 +111,7 @@ module OMS
     end
 
     def test_load_configuration()
+      prepare_files
       $log = MockLog.new
       success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
       puts $log.logs
@@ -136,6 +125,7 @@ module OMS
     end
 
     def test_load_configuration_wrong_path()
+      prepare_files
       fake_conf_path = @tmp_conf_file.path + '.fake'
       assert_equal(false, File.file?(fake_conf_path))
       success = Configuration.load_configuration(fake_conf_path, @tmp_cert_file.path, @tmp_key_file.path)
@@ -158,5 +148,60 @@ module OMS
       assert_equal([], $log.logs, "There was an error loading the configuration")
     end
 
+    def test_parse_proxy_config()
+      configs = ["http://proxyuser:proxypass@proxyhost:8080",
+                 "proxyuser:proxypass@proxyhost:8080",
+                 "http://proxyhost:8080",
+                 "http://proxyuser:proxypass@proxyhost",
+                 "proxyhost:8080",
+                 "http://proxyhost",
+                 "proxyuser:proxypass@proxyhost",
+                 "proxyhost",
+                 "https://1.2.3.4:1234"]
+      
+      expected = [{:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
+                  {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
+                  {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>"8080"},
+                  {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>nil},
+                  {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>"8080"},
+                  {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>nil},
+                  {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>nil},
+                  {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>nil},
+                  {:user=>nil,         :pass=>nil,         :addr=>"1.2.3.4",   :port=>"1234"}]
+      
+      assert_equal(configs.size, expected.size, "Test array and result array should have the same size")
+      
+      expected.zip(configs).each { |expect, config|
+        parsed = Configuration.parse_proxy_config(config)
+        assert_equal(expect, parsed, "Parsing failed for this partial configuration : '#{config}'")
+      }
+    end
+
+    def test_parse_proxy_config_failure()
+      bad_configs = [ "http://proxyuser:proxypass@proxyhost:",    # Missing port
+                      "http://proxyuser:proxypass/proxyhost:8080",# Wrong '@' separator
+                      "http://proxyuserandpass@proxyhost:8080",   # Missing ':' separator
+                      "proxyuser:pass:pass@proxyhost:8080",       # Two passwords
+                      "socks://proxyuser:proxypass@proxyhost:8080"] # Unsupported protocol
+      bad_configs.each { |config|
+        parsed = Configuration.parse_proxy_config(config)
+        assert_equal(nil, parsed, "Parsing should have failed for '#{config}'")
+      }
+    end
+
+    def test_get_proxy_config_failure()
+      config = Configuration.get_proxy_config("fake_file_path")
+      assert_equal({}, config, "Config should have failed to load anything.")
+    end
+
+    def test_get_proxy_config_success()
+      @tmp_conf_file = Tempfile.new('proxy.conf')
+      config = "http://proxyconfig:proxypass@proxyhost:8080"
+      expected = {:user=>"proxyconfig", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"}
+
+      File.write(@tmp_conf_file.path, config)
+      parsed = Configuration.get_proxy_config(@tmp_conf_file.path)
+      assert_equal(expected, parsed, "Failed to load expected config")
+    end
   end
 end # Module OMS

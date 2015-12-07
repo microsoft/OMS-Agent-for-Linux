@@ -28,6 +28,7 @@ module Fluent
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
     config_param :blob_uri_expiry, :string, :default => '00:10:00'
     config_param :url_suffix_template, :string, :default => "custom_data_type + '/00000000-0000-0000-0000-000000000002/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + suffix + '.log'"
+    config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/proxy.conf'
 
     def configure(conf)
       super
@@ -35,6 +36,7 @@ module Fluent
 
     def start
       super
+      @proxy_config = OMS::Configuration.get_proxy_config(@proxy_conf_path)
     end
 
     def shutdown
@@ -98,7 +100,8 @@ module Fluent
 
       req = OMS::Common.create_ods_request(OMS::Configuration.get_blob_ods_endpoint.path, data)
 
-      body = OMS::Common.start_request(req, OMS::Common.create_ods_http(OMS::Configuration.get_blob_ods_endpoint))
+      ods_http = OMS::Common.create_ods_http(OMS::Configuration.get_blob_ods_endpoint, @proxy_config)
+      body = OMS::Common.start_request(req, ods_http)
 
       # remove the BOM (Byte Order Marker)
       clean_body = body.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => "")
@@ -143,7 +146,8 @@ module Fluent
     def get_committed_blocks(uri)
       blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
       get_blocklist_req = create_blob_get_request(blocklist_uri)
-      body = OMS::Common.start_request(get_blocklist_req, OMS::Common.create_secure_http(blocklist_uri), true)
+      http = OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
+      body = OMS::Common.start_request(get_blocklist_req, http, true)
 
       blocks_committed = []
       doc = REXML::Document.new body
@@ -163,7 +167,8 @@ module Fluent
       append_uri = URI.parse("#{uri.to_s}&comp=block&blockid=#{base64_blockid}")
 
       put_block_req = create_blob_put_request(append_uri, msg)
-      OMS::Common.start_request(put_block_req, OMS::Common.create_secure_http(append_uri))
+      http = OMS::Common.create_secure_http(append_uri, @proxy_config)
+      OMS::Common.start_request(put_block_req, http)
 
       return base64_blockid
     end # upload_block
@@ -183,7 +188,8 @@ module Fluent
 
       blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
       put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg)
-      OMS::Common.start_request(put_blocklist_req, OMS::Common.create_secure_http(blocklist_uri))
+      OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
+      OMS::Common.start_request(put_blocklist_req, http)
     end # commit_blocks
 
     # parse the tag to get the settings and append the message to blob

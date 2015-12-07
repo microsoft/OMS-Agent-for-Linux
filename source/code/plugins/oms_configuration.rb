@@ -32,6 +32,31 @@ module OMS
         return true
       end
 
+      def get_proxy_config(proxy_conf_path)
+        begin
+          proxy_config = parse_proxy_config(File.read(proxy_conf_path))
+        rescue SystemCallError # Error::ENOENT
+          return {}
+        end
+
+        if proxy_config.nil?
+          Log.error_once("Failed to parse the proxy configuration in '#{proxy_conf_path}'")
+          return {}
+        end
+
+        return proxy_config
+      end
+
+      def parse_proxy_config(proxy_conf_str)
+          re = /^(?:https?:\/\/)?(?:(?<user>\w+):(?<pass>\w+)@)?(?<addr>[^:@]+)(?::(?<port>\d+))?$/
+          matches = re.match(proxy_conf_str)
+          if matches.nil? or matches[:addr].nil? 
+            return nil
+          end
+          # Convert nammed matches to a hash
+          Hash[ matches.names.map{ |name| name.to_sym}.zip( matches.captures ) ]
+      end
+
       # load the configuration from the configuration file, cert, and key path
       def load_configuration(conf_path, cert_path, key_path)
         return true if @@ConfigurationLoaded

@@ -21,6 +21,7 @@ module Fluent
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
     config_param :cert_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.crt'
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
+    config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/proxy.conf'
 
     def configure(conf)
       s = conf.add_element("secondary")
@@ -30,6 +31,7 @@ module Fluent
 
     def start
       super
+      @proxy_config = OMS::Configuration.get_proxy_config(@proxy_conf_path)
     end
 
     def shutdown
@@ -38,9 +40,11 @@ module Fluent
 
     def handle_record(tag, record)
       req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record)
+      http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
       start = Time.now
       
-      OMS::Common.start_request(req, OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint))
+      # This method will raise on failure alerting the engine to retry sending this data
+      OMS::Common.start_request(req, http)
       
       ends = Time.now
       time = ends - start

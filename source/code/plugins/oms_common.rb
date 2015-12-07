@@ -49,8 +49,13 @@ module OMS
       end
 
       # create an HTTP object which uses HTTPS
-      def create_secure_http(uri)
-        http = Net::HTTP.new( uri.host, uri.port )
+      def create_secure_http(uri, proxy={})
+        if proxy.empty?
+          http = Net::HTTP.new( uri.host, uri.port )
+        else
+          http = Net::HTTP.new( uri.host, uri.port,
+                                proxy[:addr], proxy[:port], proxy[:user], proxy[:pass])
+        end
         http.use_ssl = true
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         http.open_timeout = 30
@@ -58,8 +63,8 @@ module OMS
       end # create_secure_http
 
       # create an HTTP object to ODS
-      def create_ods_http(ods_uri)
-        http = create_secure_http(ods_uri)
+      def create_ods_http(ods_uri, proxy={})
+        http = create_secure_http(ods_uri, proxy)
         http.cert = Configuration.cert
         http.key = Configuration.key
         return http
