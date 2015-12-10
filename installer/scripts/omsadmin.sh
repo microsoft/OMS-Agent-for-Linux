@@ -201,6 +201,7 @@ generate_certs()
 {
     log_info "Generating certificate ..."
     local tmp_key="$FILE_KEY.tmp"
+    local error=0
 
     # Set safe certificate permissions before to prevent timing attacks
     touch "$tmp_key" "$FILE_KEY" "$FILE_CRT"
@@ -208,9 +209,9 @@ generate_certs()
     chmod 600 "$tmp_key" "$FILE_KEY" "$FILE_CRT"
 
     openssl req -subj "/CN=$WORKSPACE_ID/CN=$AGENT_GUID/OU=Linux Monitoring Agent/O=Microsoft" -new -newkey \
-        rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$tmp_key" -out "$FILE_CRT" > /dev/null 2>&1
+        rsa:2048 -days 365 -nodes -x509 -sha256 -keyout "$tmp_key" -out "$FILE_CRT" > /dev/null 2>&1 || error=$?
 
-    if [ "$?" -ne 0 -o ! -e "$tmp_key" -o ! -e "$FILE_CRT" ]; then
+    if [ $error -ne 0 -o ! -e "$tmp_key" -o ! -e "$FILE_CRT" ]; then
         log_error "Error generating certs"
         clean_exit 1
     fi
@@ -271,6 +272,7 @@ set_proxy_setting()
 
 onboard()
 {
+    local error=0
     if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
         log_error "Missing Wokspace ID or Shared Key information for onboarding"
         clean_exit 1
@@ -326,7 +328,6 @@ onboard()
     fi
 
     # Send the request to the registration server
-
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
@@ -338,9 +339,9 @@ onboard()
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
         --write-out "%{http_code}\n" $PROXY_SETTING \
-        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
+        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
     
-    if [ $? -ne 0 ]; then
+    if [ $error -ne 0 ]; then
         log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
         return 1
     fi
@@ -359,10 +360,10 @@ onboard()
         if [ "$USER_ID" -eq "0" ]; then
             su - omsagent -c $METACONFIG_PY > /dev/null
         else
-            $METACONFIG_PY > /dev/null
+            $METACONFIG_PY > /dev/null || error=$?
         fi
 
-        if [ $? -eq 0 ]; then
+        if [ $error -eq 0 ]; then
             log_info "Configured omsconfig"
         else
             log_error "Error configuring omsconfig"
@@ -452,6 +453,7 @@ heartbeat()
 
 renew_cert()
 {
+    local error=0
     load_config
 
     if [ -z "$CERTIFICATE_UPDATE_ENDPOINT" ]; then
@@ -482,9 +484,9 @@ renew_cert()
 
     if [ "$RET_CODE" = "200" ]; then
         # Do one heartbeat for the server to acknowledge the change
-        heartbeat
+        heartbeat || error=$?
 
-        if [ $? -eq 0 ]; then
+        if [ $error -eq 0 ]; then
             log_info "Certificates successfully renewed"
             rm "$FILE_CRT".old "$FILE_KEY".old
         else
@@ -528,9 +530,17 @@ main()
     set_proxy_setting
     parse_args $@
 
-    [ "$ONBOARDING" = "1" ] && (onboard || clean_exit 1)
-    [ "$HEARTBEAT"  = "1" ] && (heartbeat || clean_exit 1)
-    [ "$RENEW_CERT" = "1" ] && (renew_cert || clean_exit 1)
+    if [ "$ONBOARDING" = "1" ]; then
+        onboard || clean_exit 1
+    fi
+
+    if [ "$HEARTBEAT"  = "1" ]; then
+        heartbeat || clean_exit 1
+    fi
+
+    if [ "$RENEW_CERT" = "1" ]; then
+        renew_cert || clean_exit 1
+    fi
 
     # If we reach this point, onboarding was successful, we can remove the
     # onboard conf to prevent accidentally re-onboarding
