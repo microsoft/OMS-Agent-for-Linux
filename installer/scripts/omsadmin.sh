@@ -21,7 +21,7 @@ CONF_PROXY=$CONF_DIR/proxy.conf
 # File with OS information for telemetry
 OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
 
-# File with information about the agent installed 
+# File with information about the agent installed
 INSTALL_INFO=/etc/opt/microsoft/omsagent/sysconf/installinfo.txt
 
 # Ruby helpers
@@ -60,15 +60,21 @@ USER_ID=`id -u`
 
 usage()
 {
+    local basename=`basename $0`
+    echo
     echo "Maintenance tool for OMS:"
     echo "Onboarding:"
-    echo "$0 -w <workspace id> -s <shared key>"
-    echo 
+    echo "$basename -w <workspace id> -s <shared key>"
+    echo
     echo "Heartbeat:"
-    echo "$0 -b"
+    echo "$basename -b"
     echo
     echo "Renew certificates:"
-    echo "$0 -r"
+    echo "$basename -r"
+    echo
+    echo "Define proxy settings ('-u' will prompt for password):"
+    echo "$basename [-u user] -p host[:port]"
+
     clean_exit 1
 }
 
@@ -156,7 +162,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:brv" opt; do
+    while getopts "h?s:w:brvp:u:" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -179,6 +185,12 @@ parse_args()
             VERBOSE=1
             CURL_VERBOSE=-v
             ;;
+        p)
+            PROXY_HOST=$OPTARG
+            ;;
+        u)
+            PROXY_USER=$OPTARG
+            ;;
         esac
     done
     shift $((OPTIND-1))
@@ -186,6 +198,21 @@ parse_args()
     if [ "$@ " != " " ]; then
         log_error "Parsing error: '$@' is unparsed"
         usage
+    fi
+
+    if [ -n "$PROXY_USER" -a -z "$PROXY_HOST" ]; then
+        log_error "Cannot specify the proxy user without specifying the proxy host"
+        usage
+    fi
+
+    if [ -n "$PROXY_HOST" ]; then
+        if [ -n "$PROXY_USER" ]; then
+            read -s -p "Proxy password for $PROXY_USER: " PROXY_PASS
+            echo
+            create_proxy_conf "$PROXY_USER:$PROXY_PASS@$PROXY_HOST"
+        else
+            create_proxy_conf "$PROXY_HOST"
+        fi
     fi
 
     if [ "$VERBOSE" = "1" ]; then
@@ -215,7 +242,7 @@ generate_certs()
         log_error "Error generating certs"
         clean_exit 1
     fi
-    
+
     # Convert key to rsa format for older systems
     openssl rsa -in "$tmp_key" -out "$FILE_KEY" > /dev/null 2>&1
     rm "$tmp_key"
@@ -259,9 +286,23 @@ set_FQDN()
     fi
 }
 
+create_proxy_conf()
+{
+    local conf_proxy_content=$1
+    touch $CONF_PROXY
+    chown_omsagent $CONF_PROXY
+    chmod 600 $CONF_PROXY
+    echo -n $conf_proxy_content > $CONF_PROXY
+    log_info "Created proxy configuration: $CONF_PROXY"
+}
+
 set_proxy_setting()
 {
-    PROXY_SETTING=""
+    if [ -n "$PROXY" ]; then
+        PROXY_SETTING="--proxy $PROXY"
+        create_proxy_conf "$PROXY"
+        return
+    fi
     local conf_proxy_content=""
     [ -r "$CONF_PROXY" ] && conf_proxy_content=`cat $CONF_PROXY`
     if [ -n "$conf_proxy_content" ]; then
@@ -277,12 +318,12 @@ onboard()
         log_error "Missing Wokspace ID or Shared Key information for onboarding"
         clean_exit 1
     fi
-    
+
     PREV_WID=`grep WORKSPACE_ID $CONF_OMSADMIN 2> /dev/null | cut -d= -f2`
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN -a "$PREV_WID" = $WORKSPACE_ID ]; then
         # Keep the same agent GUID by loading it from the previous conf
         AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
-        log_info "Reusing previous agent GUID" 
+        log_info "Reusing previous agent GUID"
     else
         AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
         generate_certs
@@ -319,13 +360,15 @@ onboard()
     rm "$SHARED_KEY_FILE"
 
     CONTENT_HASH=`echo $AUTHS | cut -d" " -f1`
-    AUTHORIZATION_KEY=`echo $AUTHS | cut -d" " -f2` 
+    AUTHORIZATION_KEY=`echo $AUTHS | cut -d" " -f2`
 
     if [ $VERBOSE -ne 0 ]; then
         echo
         echo "Generated request:"
         cat $BODY_ONBOARD
     fi
+
+    set_proxy_setting
 
     # Send the request to the registration server
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
@@ -345,7 +388,7 @@ onboard()
         log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
         return 1
     fi
-    
+
     if [ "$RET_CODE" = "200" ]; then
         apply_dsc_endpoint $RESP_ONBOARD
         log_info "Onboarding success"
@@ -353,7 +396,7 @@ onboard()
         log_error "Error onboarding. HTTP code $RET_CODE"
         return 1
     fi
-    
+
     save_config
 
     if [ -e $METACONFIG_PY ]; then
@@ -427,6 +470,8 @@ heartbeat()
     append_telemetry $BODY_HEARTBEAT
     echo "</AgentTopologyRequest>" >> $BODY_HEARTBEAT
 
+    set_proxy_setting
+
     REQ_DATE=`date +%Y-%m-%dT%T.%N%:z`
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "User-Agent: $USER_AGENT" \
@@ -474,6 +519,8 @@ renew_cert()
     echo '<CertificateUpdateRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/">' >> $BODY_RENEW_CERT
     echo "   <NewCertificate>${CERT_SERVER}</NewCertificate>" >> $BODY_RENEW_CERT
     echo "</CertificateUpdateRequest>" >> $BODY_RENEW_CERT
+
+    set_proxy_setting
 
     RET_CODE=`curl --insecure \
     --data-binary @$BODY_RENEW_CERT \
@@ -527,7 +574,6 @@ main()
 
     check_user
     set_user_agent
-    set_proxy_setting
     parse_args $@
 
     if [ "$ONBOARDING" = "1" ]; then

@@ -57,8 +57,10 @@ usage()
     echo
     echo "  -w id, --id id         Use workspace ID <id> for automatic onboarding."
     echo "  -s key, --shared key   Use <key> as the shared key for automatic onboarding."
+    echo "  -p conf, --proxy conf  Use <conf> as the proxy configuration."
+    echo "                         ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo
-    echo "  -? | --help            shows this usage text."
+    echo "  -? | -h | --help       shows this usage text."
 }
 
 source_references()
@@ -313,6 +315,11 @@ do
             shift 1
             ;;
 
+        -p|--proxy)
+            proxy=$2
+            shift 2
+            ;;
+
         --purge)
             verifyNoInstallationOption
             verifyPrivileges "purge"
@@ -373,13 +380,14 @@ do
             shift 1
             ;;
 
-        -? | --help)
+        -\? | -h | --help)
             usage `basename $0` >&2
             cleanup_and_exit 0
             ;;
 
-        *)
-            usage `basename $0` >&2
+         *)
+            echo "Unknown argument: '$1'" >&2
+            echo "Use -h or --help for usage" >&2
             cleanup_and_exit 1
             ;;
     esac
@@ -413,6 +421,10 @@ if [ -n "$onboardID" -a -n "$onboardKey" ]; then
     chmod 600 $ONBOARD_FILE
     echo "WORKSPACE_ID=$onboardID" >> $ONBOARD_FILE
     echo "SHARED_KEY=$onboardKey" >> $ONBOARD_FILE
+
+    if [ -n "$proxy" ]; then
+        echo "PROXY=$proxy" >> $ONBOARD_FILE
+    fi
 
     if [ "$onboardINT" -ne 0 ]; then
         echo "URL_TLD=int2.microsoftatlanta-int" >> $ONBOARD_FILE
@@ -531,7 +543,7 @@ case "$installMode" in
         check_if_pkg_is_installed omi
         if [ $? -eq 0 ]; then
             pkg_upd $OMI_PKG omi
-            # It is acceptable that this fails due to the new omi being 
+            # It is acceptable that this fails due to the new omi being
             # the same version (or less) than the one currently installed.
             OMI_EXIT_STATUS=0
         else
@@ -541,7 +553,7 @@ case "$installMode" in
 
         pkg_add $SCX_PKG scx
         SCX_EXIT_STATUS=$?
-        
+
         pkg_add $OMS_PKG omsagent
         OMS_EXIT_STATUS=$?
 
@@ -573,7 +585,7 @@ case "$installMode" in
         check_if_pkg_is_installed omi
         if [ $? -eq 0 ]; then
             pkg_upd $OMI_PKG omi
-            # It is acceptable that this fails due to the new omi being 
+            # It is acceptable that this fails due to the new omi being
             # the same version (or less) than the one currently installed.
             OMI_EXIT_STATUS=0
         else
@@ -608,7 +620,7 @@ case "$installMode" in
             if [ -f $OLD_OMISERV_CONF ]; then
                 cipher=`grep ^sslciphersuite $OLD_OMISERV_CONF`
                 if [ -n "$cipher" ]; then
-                    if ! grep -q ^sslciphersuite $OMISERV_CONF; then 
+                    if ! grep -q ^sslciphersuite $OMISERV_CONF; then
                         echo "----- Saving OMI cipher configuration from R2 -----"
                         CIPHER=${cipher}
                     fi

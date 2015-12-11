@@ -43,14 +43,16 @@ class OmsadminTest < Test::Unit::TestCase
     @omsadmin_script = "#{@omsadmin_test_dir}/omsadmin.sh"
     assert_equal(true, File.file?(@omsadmin_script), "'#{@omsadmin_script}' does not exist!")
     assert_equal(true, File.executable?(@omsadmin_script), "'#{@omsadmin_script}' is not executable.")
+    @proxy_conf = "#{@omsadmin_test_dir}/proxy.conf"
   end
 
   def prep_proxy(proxy_setting)
-    assert_match(/http:\/\/\w+:\w+@\d+\.\d+\.\d+\.\d+:\d+/, proxy_setting, "Proxy setting not in a valid format : http://<user>:<password>@<ipv4>:<port>")
+    proxy_re = /^(https?:\/\/)?(\w+:\w+@)?[^:]+(:\d+)?/
+    assert_match(proxy_re, proxy_setting,
+                 "Proxy setting not in a valid format : [protocol://][user:password@]proxyhost[:port]")
     assert(@omsadmin_test_dir, "No test directory setup")
-    proxy_conf = "#{@omsadmin_test_dir}/proxy.conf"
-    File.write(proxy_conf, proxy_setting)
-    assert(File.file?(proxy_conf), "Proxy conf file missing!")
+    File.write(@proxy_conf, proxy_setting)
+    assert(File.file?(@proxy_conf), "Proxy conf file missing!")
   end
 
   def check_cert_perms(path)
@@ -62,6 +64,7 @@ class OmsadminTest < Test::Unit::TestCase
   end
   
   def do_onboard(workspace_id, shared_key, should_succeed = true)
+    check_test_keys()
     onboard_out = `#{@omsadmin_script} -w #{workspace_id} -s #{shared_key}`
     result = $?
     if should_succeed
@@ -91,9 +94,19 @@ class OmsadminTest < Test::Unit::TestCase
     check_cert_perms(key_path)
   end
 
+  def test_create_proxy_file
+    assert(!File.file?(@proxy_conf), "Proxy file should not be present beforehand.")
+    output = `#{@omsadmin_script} -p proxy_host:8080`
+    assert_equal(0, $?.to_i, "Unexpected failure creating proxy file.")
+    assert_match(/Created proxy configuration/, output, "Did not find proxy config create message")
+    assert(File.file?(@proxy_conf), "Failed to find generated proxy file.")
+    check_cert_perms(@proxy_conf)
+    proxy_setting = File.read(@proxy_conf)
+    assert_equal("proxy_host:8080", proxy_setting, "Did not find the expected setting in the proxy conf file.")
+  end
+
   def test_onboard_proxy_sucess
     prep_proxy(TEST_PROXY_SETTING)
-    check_test_keys()
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_match(/Using proxy settings/, output, "Did not find using proxy settings message")
   end
@@ -107,7 +120,6 @@ class OmsadminTest < Test::Unit::TestCase
   end
 
   def test_onboard_success
-    check_test_keys()
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_match(/Generating certificate/, output, "Did not find cert generation message")
     post_onboard_validation
@@ -115,7 +127,6 @@ class OmsadminTest < Test::Unit::TestCase
 
   def test_onboard_fail
     require 'securerandom'
-    check_test_keys()
     output = do_onboard(SecureRandom.uuid, TEST_SHARED_KEY, false)
     assert_no_match(/HTTP|code/, output)
     assert_match(/Error during the onboarding request/, output)
@@ -128,7 +139,6 @@ class OmsadminTest < Test::Unit::TestCase
   end
 
   def test_reonboard
-    check_test_keys()
     do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
 
     crt_path = "#{@omsadmin_test_dir}/oms.crt"
@@ -148,7 +158,6 @@ class OmsadminTest < Test::Unit::TestCase
   end
 
   def test_reonboard_different_workspace_id
-    check_test_keys()
     do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     old_guid = get_GUID()
 
