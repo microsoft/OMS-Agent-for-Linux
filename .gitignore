@@ -4,3 +4,4 @@ intermediate
 target
 build/config.mak
 build/Makefile.version
+test/config

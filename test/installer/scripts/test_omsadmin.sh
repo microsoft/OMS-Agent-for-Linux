@@ -1,14 +1,6 @@
 BASE_DIR=$1
 RUBY_TESTVERS=$2
 
-TEST_KEYS=$BASE_DIR/test/test_keys.sh
-if [ ! -f $TEST_KEYS ]; then
-    echo "The file $TEST_KEYS must exist and define TEST_WORKSPACE_ID and TEST_SHARED_KEY for this test to run." 1>&2
-    exit 1
-fi
-
-. $TEST_KEYS
-
 if [ -z "$TEST_WORKSPACE_ID" -o -z "$TEST_SHARED_KEY" ];then
     echo "The environment variables TEST_WORKSPACE_ID and TEST_SHARED_KEY must be set for this test to run." 1>&2
     exit 1

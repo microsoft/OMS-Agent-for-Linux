@@ -101,6 +101,9 @@ else
   OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).$(PF_DISTRO_LC).$(PF_MAJOR).$(PF_ARCH)
 endif
 
+# Test
+SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
+
 #--------------------------------------------------------------------------------
 # Build targets
 .PHONY: all clean clean-ruby distclean clean-status kit
@@ -467,19 +470,28 @@ unittest : $(RUBY_TESTING_DIR)
 
 systemtest: systemtestrb systemtestsh
 
+ifneq (,$(wildcard $(SYSTEST_CONFIG)))
 systemtestrb : $(RUBY_TESTING_DIR)
 	# Any tests that are slow or communicate with a remote server
 	@echo "========================= Performing System Test"
-	. $(BASE_DIR)/test/test_keys.sh; \
+	. $(SYSTEST_CONFIG); \
 	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb systemtest \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
 		RUBY_TESTING_DIR=$(RUBY_TESTING_DIR)
+else
+systemtestrb:
+	@echo "Warning: ruby system tests will not run without $(SYSTEST_CONFIG)" >&2
+endif
 
+ifneq (,$(wildcard $(SYSTEST_CONFIG)))
 systemtestsh :
 	@echo "========================= Performing Test omsadmin.sh"
+	. $(SYSTEST_CONFIG); \
 	bash $(BASE_DIR)/test/installer/scripts/test_omsadmin.sh $(BASE_DIR) $(RUBY_TESTING_DIR)
-
+else
+	@echo "Warning: shell system tests will not run without $(SYSTEST_CONFIG)" >&2
+endif
 
 omstest : unittest systemtest
 
