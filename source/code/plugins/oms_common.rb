@@ -126,4 +126,54 @@ module OMS
 
   end # class Common
 
+  class IPcache
+    
+    def initialize(refresh_interval_seconds)
+      @cache = {}
+      @cache_lock = Mutex.new
+      @refresh_interval_seconds = refresh_interval_seconds
+      @condition = ConditionVariable.new
+      @thread = Thread.new(&method(:refresh_cache))
+    end
+
+    def get_ip(hostname)
+      @cache_lock.synchronize {
+        if @cache.has_key?(hostname)
+          return @cache[hostname]
+        else
+          ip = get_ip_from_socket(hostname)
+          @cache[hostname] = ip
+          return ip
+        end
+      }
+    end
+
+    private
+    
+    def get_ip_from_socket(hostname)
+      begin
+        addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)
+      rescue => e
+        return nil
+      end
+
+      if addrinfos.size >= 1
+        return addrinfos[0][3]
+      end
+
+      return nil
+    end
+
+    def refresh_cache
+      while true
+        @cache_lock.synchronize {
+          @condition.wait(@cache_lock, @refresh_interval_seconds)
+          # Flush the cache completely to prevent it from growing indefinitly
+          @cache = {}
+        }
+      end
+    end
+
+  end
+
 end # module OMS

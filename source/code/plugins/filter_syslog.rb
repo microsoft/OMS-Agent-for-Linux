@@ -10,8 +10,12 @@ module Fluent
       require_relative 'oms_common'
     end
 
+    # Interval in seconds to refresh the cache
+    config_param :ip_cache_refresh_interval, :integer, :default => 300
+
     def configure(conf)
       super
+      @ip_cache = OMS::IPcache.new @ip_cache_refresh_interval
     end
 
     def start
@@ -26,23 +30,16 @@ module Fluent
       # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
       # The time may be slightly in the future from the ingestion time.
       record["Timestamp"] = OMS::Common.format_time(Time.now.to_f)
-      record["Host"] = record["host"]
+      hostname = record["host"]
+      record["Host"] = hostname
       record.delete "host"
       record["HostIP"] = "Unknown IP"
 
-      hostname = OMS::Common.get_hostname
-      if hostname == nil
-          OMS::Log.warn_once("Failed to get the hostname. Won't be able to get the HostIP.")
+      host_ip = @ip_cache.get_ip(hostname)
+      if host_ip.nil?
+          OMS::Log.warn_once("Failed to get the IP for #{hostname}.")
       else
-        begin
-          addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)
-        rescue => e
-          OMS::Log.warn_once("Failed to call getaddrinfo : #{e}")
-        else
-          if addrinfos.size >= 1
-            record["HostIP"] = addrinfos[0][3]
-          end
-        end
+        record["HostIP"] = host_ip
       end
 
       if record.has_key?("pid")
