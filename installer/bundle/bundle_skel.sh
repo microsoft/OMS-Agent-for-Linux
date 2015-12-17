@@ -87,7 +87,6 @@ cleanup_and_exit()
     fi
 }
 
-
 verifyNoInstallationOption()
 {
     if [ -n "${installMode}" ]; then
@@ -210,10 +209,32 @@ pkg_upd() {
     fi
 }
 
+python_ctypes_installed() {
+    # Check for Python ctypes library (required for omsconfig)
+
+    hasCtypes=1
+    tempFile=`mktemp`
+    echo "Checking for ctypes python module ..."
+
+    cat <<EOF > $tempFile
+#! /usr/bin/python
+import ctypes
+EOF
+
+    chmod u+x $tempFile
+    $tempFile 1> /dev/null 2> /dev/null
+    [ $? -eq 0 ] && hasCtypes=0
+    rm $tempFile
+    return $hasCtypes
+}
+
+# ----------------------------------------------------------------------------
+#
 # This code is here to allow upgrade from version 47-48
 # It was moved to the OMS service_control script but is also needed here
 # because version 47-48 do not have the 'disable' option in that script
 # and it is called in preinstall
+
 resolve_systemd_paths(){
     # Various distributions have different paths for systemd unit files ...
     SYSTEMD_UNIT_DIR=""
@@ -269,7 +290,9 @@ disable_omsagent_service() {
         rm /etc/init.d/omsagent
     fi
 }
-# End of temporary upgradecode
+
+# End of temporary upgrade code
+# ----------------------------------------------------------------------------
 
 
 #
@@ -441,29 +464,33 @@ cd $EXTRACT_DIR
 
 # Do we need to remove the package?
 set +e
-if [ "$installMode" = "R" -o "$installMode" = "P" ]
-then
+if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
     pkg_rm omsconfig
     pkg_rm omsagent
 
-    if [ -f /opt/microsoft/scx/bin/uninstall ]; then
-        /opt/microsoft/scx/bin/uninstall $installMode
-    else
-        for i in /opt/microsoft/*-cimprov; do
-            PKG_NAME=`basename $i`
-            if [ "$PKG_NAME" != "*-cimprov" ]; then
-                echo "Removing ${PKG_NAME} ..."
-                pkg_rm ${PKG_NAME}
-            fi
-        done
+    # If MDSD is installed and we're just removing (not purging), leave SCX
 
-        # Now just simply pkg_rm scx and omi
-        pkg_rm scx
-        pkg_rm omi
+    if [ ! -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd -o "$installMode" = "P" ]; then
+	if [ -f /opt/microsoft/scx/bin/uninstall ]; then
+	    /opt/microsoft/scx/bin/uninstall $installMode
+	else
+	    for i in /opt/microsoft/*-cimprov; do
+		PKG_NAME=`basename $i`
+		if [ "$PKG_NAME" != "*-cimprov" ]; then
+		    echo "Removing ${PKG_NAME} ..."
+		    pkg_rm ${PKG_NAME}
+		fi
+	    done
+
+            # Now just simply pkg_rm scx and omi
+	    pkg_rm scx
+	    pkg_rm omi
+	fi
+    else
+	echo "--- MDSD detected; not removing SCX or OMI packages ---"
     fi
 
-    if [ "$installMode" = "P" ]
-    then
+    if [ "$installMode" = "P" ]; then
         echo "Purging all files in cross-platform agent ..."
 
         #
@@ -507,6 +534,23 @@ fi
 # validate space, platform, uninstall a previous version, backup config data, etc...
 #
 
+# Pre-flight if omsconfig installation will fail ...
+
+if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
+    python_ctypes_installed
+    if [ $? -ne 0 ]; then
+	if [ -z "${forceFlag}"]; then
+	    echo "Python ctypes library was not found, installation cannot continue. Please" >&2
+	    echo "install the Python ctypes library or package (python-ctypes). If you wish," >&2
+	    echo "you can run this shell bundle with --force; in this case, we will install" >&2
+	    echo "omsagent, but omsconfig (DSC configuration) will not be available." >&2
+	    cleanup_and_exit 1
+	else
+	    echo "Python ctypes library not found, will continue without installing omsconfig."
+	fi
+    fi
+fi
+
 #
 # Extract the binary here.
 #
@@ -532,6 +576,8 @@ OMS_EXIT_STATUS=0
 DSC_EXIT_STATUS=0
 BUNDLE_EXIT_STATUS=0
 
+# Now do our installation work (or just exit)
+
 case "$installMode" in
     E)
         # Files are extracted, so just exit
@@ -539,45 +585,53 @@ case "$installMode" in
         ;;
 
     I)
-        echo "Installing OMS agent ..."
+        check_if_pkg_is_installed scx
+	scx_installed=$?
         check_if_pkg_is_installed omi
-        if [ $? -eq 0 ]; then
-            pkg_upd $OMI_PKG omi
-            # It is acceptable that this fails due to the new omi being
-            # the same version (or less) than the one currently installed.
-            OMI_EXIT_STATUS=0
-        else
-            pkg_add $OMI_PKG omi
-            OMI_EXIT_STATUS=$?
-        fi
+	omi_installed=$?
 
-        pkg_add $SCX_PKG scx
-        SCX_EXIT_STATUS=$?
+	if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
+	    echo "Installing OMS agent ..."
 
-        pkg_add $OMS_PKG omsagent
-        OMS_EXIT_STATUS=$?
+	    pkg_add $OMI_PKG omi
+	    OMI_EXIT_STATUS=$?
 
-        pkg_add $DSC_PKG omsconfig
-        DSC_EXIT_STATUS=$?
+	    pkg_add $SCX_PKG scx
+	    SCX_EXIT_STATUS=$?
 
-        # Install bundled providers
-        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        echo "----- Installing bundled packages -----"
-        for i in oss-kits/*-oss-test.sh; do
-            # If filespec didn't expand, break out of loop
-            [ ! -f $i ] && break
+	    pkg_add $OMS_PKG omsagent
+	    OMS_EXIT_STATUS=$?
 
-            # It's possible we have a test file without a kit; if so, ignore it
-            OSS_BUNDLE=`basename $i -oss-test.sh`
-            [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
+	    python_ctypes_installed
+	    if [ $? -eq 0 ]; then
+		pkg_add $DSC_PKG omsconfig
+		DSC_EXIT_STATUS=$?
+	    else
+		DSC_EXIT_STATUS=0
+	    fi
 
-            ./$i
-            if [ $? -eq 0 ]; then
-                ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
-                TEMP_STATUS=$?
-                [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
-            fi
-        done
+            # Install bundled providers
+	    [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+	    echo "----- Installing bundled packages -----"
+	    for i in oss-kits/*-oss-test.sh; do
+                # If filespec didn't expand, break out of loop
+		[ ! -f $i ] && break
+
+                # It's possible we have a test file without a kit; if so, ignore it
+		OSS_BUNDLE=`basename $i -oss-test.sh`
+		[ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
+
+		./$i
+		if [ $? -eq 0 ]; then
+		    ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
+		    TEMP_STATUS=$?
+		    [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+		fi
+	    done
+	else
+	    echo "The omi or scx package is already installed. Please run the" >&2
+	    echo "installer with --upgrade (instead of --install) to continue." >&2
+	fi
         ;;
 
     U)
@@ -648,8 +702,13 @@ case "$installMode" in
         pkg_upd $OMS_PKG omsagent
         OMS_EXIT_STATUS=$?
 
-        pkg_upd $DSC_PKG omsconfig
-        DSC_EXIT_STATUS=$?
+	python_ctypes_installed
+	if [ $? -eq 0 ]; then
+	    pkg_upd $DSC_PKG omsconfig
+	    DSC_EXIT_STATUS=$?
+	else
+	    DSC_EXIT_STATUS=0
+	fi
 
         # Upgrade bundled providers
         #   Temporarily force upgrades via --force; this will unblock the test team
