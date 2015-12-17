@@ -49,7 +49,7 @@ module Fluent
       ends = Time.now
       time = ends - start
       count = record.has_key?('DataItems') ? record['DataItems'].size : 1
-      @log.info "Success sending #{tag} x #{count} in #{time.round(2)}s"
+      @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
     end
 
     # This method is called when an event reaches to Fluentd.
@@ -84,12 +84,11 @@ module Fluent
         end
       }
 
-      @log.debug "Handling records by types"
       datatypes.each do |tag, record|
         handle_record(tag, record)
       end
 
-      @log.debug "Handling #{unmergable_records.size} unmergeable records"
+      @log.trace "Handling #{unmergable_records.size} unmergeable records"
       unmergable_records.each { |tag, record|
         handle_record(tag, record)
       }
