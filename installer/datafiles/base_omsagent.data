@@ -16,6 +16,8 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
+/etc/logrotate.d/omsagent;                                              installer/conf/logrotate.conf;                         644; root; root
+
 /etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
@@ -52,6 +54,7 @@ MAINTAINER:              'Microsoft Corporation'
 %Directories
 /opt;                                                   755; root; root; sysdir
 /etc;                                                   755; root; root; sysdir
+/etc/logrotate.d;                                       755; root; root; sysdir
 /etc/opt;                                               755; root; root; sysdir
 /var;                                                   755; root; root; sysdir
 /var/opt;                                               755; root; root; sysdir
