@@ -1,6 +1,6 @@
 [
     {
-        "CimClassName": "SCX_ProcessorStatisticalInformation",
+        "CimClassName": "SCX_RTProcessorStatisticalInformation",
         "ObjectName": "Processor",
         "InstanceProperty": "Name",
         "Namespace": "root/scx",
