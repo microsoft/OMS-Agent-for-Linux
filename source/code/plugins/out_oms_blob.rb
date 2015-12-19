@@ -188,7 +188,7 @@ module Fluent
 
       blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
       put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg)
-      OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
+      http = OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
       OMS::Common.start_request(put_blocklist_req, http)
     end # commit_blocks
 
