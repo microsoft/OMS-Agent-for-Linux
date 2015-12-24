@@ -207,7 +207,7 @@ fi
 # No errors allowed from this point forward
 set -e
 
-scx_configure_quals="${enable_debug} ${enable_ulinux}"
+scx_configure_quals="${enable_debug} ${enable_ulinux} --disable-listener"
 
 if [ "$ULINUX" -eq 1 -a "$opensource_distro" -eq 1 ]; then
     echo "*** ULINUX not permitted for open source distributions; ULINUX disabled ***" >& 2

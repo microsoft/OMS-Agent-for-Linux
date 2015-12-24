@@ -19,7 +19,7 @@ ifndef ENABLE_DEBUG
 $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
-SCX_TARGET_DIR := $(SCX_DIR)/target/$(BUILD_CONFIGURATION)
+SCX_INTERMEDIATE_DIR := $(SCX_DIR)/intermediate/$(BUILD_CONFIGURATION)
 DSC_TARGET_DIR := $(DSC_DIR)/release
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
@@ -109,7 +109,7 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb systemtestsh
 
-all : $(SCX_TARGET_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) kit
+all : $(SCX_INTERMEDIATE_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) kit
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
@@ -159,7 +159,7 @@ clean-status :
 #--------------------------------------------------------------------------------
 # Build SCX project (special mode to only build the provider itself if ulinux)
 
-$(SCX_TARGET_DIR) : 
+$(SCX_INTERMEDIATE_DIR) : 
 	$(MAKE) -C $(SCX_DIR)/build all
 
 #--------------------------------------------------------------------------------
@@ -264,29 +264,24 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	@echo "========================= Performing Building .tar file"
 
-	# Gather the OMI bits that we need and rename them in a non-SCX manner (easier to deal with)
 	# Note: We take care to only copy the latest version of OMI if there are multiple versions
 	$(RM) $(INTERMEDIATE_DIR)/098/omi-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omi-*.{rpm,deb}
 
 	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
 	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(INTERMEDIATE_DIR)/098; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
-	cd $(INTERMEDIATE_DIR)/098; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
 
 	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
 	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
-	cd $(INTERMEDIATE_DIR)/100; SOURCE=`ls omi-*.rpm` ; DEST=`echo $$SOURCE | sed 's/r.1././'` ; $(MV) $$SOURCE $$DEST
-	cd $(INTERMEDIATE_DIR)/100; SOURCE=`ls omi-*.deb` ; DEST=`echo $$SOURCE | sed 's/d.1././'` ; $(MV) $$SOURCE $$DEST
 
-	# Gather the SCX bits that we need (due to scx-cimprov versioning; names are fine as is)
+	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
 	$(RM) $(INTERMEDIATE_DIR)/098/scx-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/scx-*.{rpm,deb}
 
-	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(SCX_TARGET_DIR)/098; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
+	cd $(SCX_INTERMEDIATE_DIR)/098; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
+	cd $(SCX_INTERMEDIATE_DIR)/098; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
 
-	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
-	cd $(SCX_TARGET_DIR)/100; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
+	cd $(SCX_INTERMEDIATE_DIR)/100; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
+	cd $(SCX_INTERMEDIATE_DIR)/100; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
 
 	# Gather the DSC bits that we need
 	$(RM) $(INTERMEDIATE_DIR)/098/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb}
