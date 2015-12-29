@@ -660,28 +660,6 @@ case "$installMode" in
             fi
         fi
 
-        # Looks like dpkg installer deletes omiserver.conf before even %Pre (sigh)
-        if [ "$INSTALLER" = "DPKG" ]; then
-            if [ -f $OLD_OMISERV_CONF -a -z "$HTTPSPORT" ]; then
-                omiport=`grep ^httpsport $OLD_OMISERV_CONF | cut -d= -f2`
-                if [ "${omiport}" != "0" ]; then
-                    HTTPSPORT=${omiport}
-                    echo "----- Saving OMI HTTPS port configuration from R2 -----"
-                    echo "  ('httpsport' configuration: ${omiport})"
-                fi
-            fi
-
-            if [ -f $OLD_OMISERV_CONF ]; then
-                cipher=`grep ^sslciphersuite $OLD_OMISERV_CONF`
-                if [ -n "$cipher" ]; then
-                    if ! grep -q ^sslciphersuite $OMISERV_CONF; then
-                        echo "----- Saving OMI cipher configuration from R2 -----"
-                        CIPHER=${cipher}
-                    fi
-                fi
-            fi
-        fi
-
         pkg_upd $SCX_PKG scx
         SCX_EXIT_STATUS=$?
 
@@ -690,12 +668,6 @@ case "$installMode" in
             echo "----- Restoring OMI HTTPS port configuration -----"
             /opt/omi/bin/omiconfigeditor httpsport -s $HTTPSPORT < $OMISERV_CONF > ${OMISERV_CONF}.bak
             mv ${OMISERV_CONF}.bak $OMISERV_CONF
-        fi
-
-        # And restore SSLCIPHERSUITE if we saved something
-        if [ -n "${CIPHER}" ]; then
-            echo "----- Restoring OMI cipher configuration -----"
-            echo "${CIPHER}" >> $OMISERV_CONF
         fi
 
         disable_omsagent_service
