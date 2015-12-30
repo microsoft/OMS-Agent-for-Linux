@@ -111,7 +111,12 @@ if [ -f ../../../.gitmodules ]; then
     TEMP_FILE=/tmp/create_bundle.$$
 
     # Get the git reference hashes in a file
-    SOURCE_REFS=`(cd ../../..; git submodule foreach git rev-parse HEAD > $TEMP_FILE)`
+    (
+	cd ../../..
+	echo "Entering 'superproject'" > $TEMP_FILE
+	git rev-parse HEAD >> $TEMP_FILE
+	git submodule foreach git rev-parse HEAD >> $TEMP_FILE
+    )
 
     # Change lines like: "Entering 'dsc'\n<refhash>" to "dsc: <refhash>"
     perl -i -pe "s/Entering '([^\n]*)'\n/\$1: /" $TEMP_FILE
