@@ -127,6 +127,9 @@ if [ -f ../../../.gitmodules ]; then
 
     # Update the bundle file w/the ref hash (much easier with perl since multi-line)
     perl -i -pe "s/-- Source code references --/${SOURCE_REFS}/" $BUNDLE_FILE
+else
+    echo "Unable to find git superproject!" >& 2
+    exit 1
 fi
 
 # Edit the bundle file for hard-coded values
