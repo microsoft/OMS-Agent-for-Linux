@@ -1,4 +1,5 @@
 # Operations Management Suite Agent for Linux Public Preview
+
 ## Overview
 Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
 
@@ -12,12 +13,12 @@ $> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0
 $> md5sum ./omsagent-1.0.0-47.universal.x64.sh
 $> sudo sh ./omsagent-1.0.0-47.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
-[Full installation guide](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
+[Full installation guide](docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
 
 ### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 
-## [Download Latest OMS Agent for Linux (64-bit) ](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh)
-## [Download Latest OMS Agent for Linux (32-bit ) ](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x86.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (32-bit)](releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x86.sh)
 ## Feedback
 
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
@@ -37,10 +38,10 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
 ## Supported Scenarios
-### [Syslog data collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
-### [Docker collection] (https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/Docker-Instructions.md)
-### [Performance data collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-performance-data)
-### [Nagios Core alert collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-nagios-alerts)
-### [Zabbix alert collection](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#viewing-zabbix-alerts)
+### [Syslog data collection](docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
+### [Docker collection](docs/Docker-Instructions.md)
+### [Performance data collection](docs/OMS-Agent-for-Linux.md#viewing-performance-data)
+### [Nagios Core alert collection](docs/OMS-Agent-for-Linux.md#viewing-nagios-alerts)
+### [Zabbix alert collection](docs/OMS-Agent-for-Linux.md#viewing-zabbix-alerts)
 
-## [Full documentation](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md)
+## [Full documentation](docs/OMS-Agent-for-Linux.md)

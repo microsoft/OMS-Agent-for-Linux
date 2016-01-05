@@ -113,20 +113,20 @@ sudo service omsagent restart
 ### Viewing Syslog events
 From within the Operations Management Suite portal, access the **Log Search** tile. Predefined syslog search queries can be found in the **Log Management** grouping.
 
-![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/SyslogLogManagement.png?raw=true)
+![](pictures/SyslogLogManagement.png?raw=true)
 
 ### Viewing Performance Data
 From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar. "* (Type=Perf)" to view all performance counters.
-![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/PerfSearchView.png?raw=true)
+![](pictures/PerfSearchView.png?raw=true)
 
 ### Viewing Nagios Alerts
 From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar, "* (Type=Alert) SourceSystem=Nagios" to view all Nagios Alerts.
-![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/NagiosSearchView.png?raw=true)
+![](pictures/NagiosSearchView.png?raw=true)
 
 ### Viewing Zabbix Alerts
 From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar, "* (Type=Alert) SourceSystem=Zabbix" to view all Zabbix Alerts.
 
-![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/ZabbixSearchView.png?raw=true)
+![](pictures/ZabbixSearchView.png?raw=true)
 
 ## Configuring Data Collection
 Data to collect (e.g. syslog events and performance metrics) can be defined centrally in the Operations Management Suite portal, or on the agents directly.  Selections that you define in the portal for data collection will be applied to the agents within 5 minutes. 
@@ -138,7 +138,7 @@ Data to collect (e.g. syslog events and performance metrics) can be defined cent
 * Select **Syslogs** from the left-hand settings list
 * Add or remove *facilities* to collect. For each facility, you can select relevant *severities* to collect
 
-![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/SyslogConfig.png?raw=true)
+![](pictures/SyslogConfig.png?raw=true)
 
 ### Configuring Linux Performance Counter collection from the OMS portal
 * Log into the Operations Management Suite **Portal**
@@ -152,7 +152,7 @@ Data to collect (e.g. syslog events and performance metrics) can be defined cent
     * **(/|/var)** – will match Logical Disk instances named: `/` or `/var`
     * **_Total** – will match Processor instances named _Total
 
-![](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/blob/master/docs/pictures/PerfConfig.png?raw=true)
+![](pictures/PerfConfig.png?raw=true)
 
 ## Enabling Application Performance Counters
 ### Enabling MySQL Performance Counters
