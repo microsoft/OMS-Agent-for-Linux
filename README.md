@@ -1,4 +1,4 @@
-# Operations Management Suite Agent for Linux Public Preview
+# Operations Management Suite Agent for Linux Public Preview (2016-01)
 
 ## Overview
 Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
@@ -6,19 +6,29 @@ Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and rea
 Our goal for this preview is to get your feedback on onboarding the agent, configuring data to be collected, and your general experience using OMS with Linux data. We rely on your feedback to improve both design and implementation of these features. As this is a preview, the feature set is subject to change.
 
 *Note: the features and supported Linux versions in this Technical Preview are a limited subset of planned capabilities*
+
+##Release History
+*	1.1.0-2: 
+	*	Agent HTTP(s) proxy support
+	*	Improved performance and message throughput. 
+	*	Disk-buffered output
+	*	Ubuntu 15.10 support	
+*	1.0.0-47: Initial Public Preview release
+
+
 ## Quick Install guide
 Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **connected sources** tab.
 ```
-$> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh
-$> md5sum ./omsagent-1.0.0-47.universal.x64.sh
-$> sudo sh ./omsagent-1.0.0-47.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
+$> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.1.0-2/omsagent-1.1.0-2.universal.x64.sh
+$> sha256sum./omsagent-1.1.0-2.universal.x64.sh
+$> sudo sh ./omsagent-1.1.0-2.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
 [Full installation guide](docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
 
 ### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 
-## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x64.sh)
-## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.0.0-47/omsagent-1.0.0-47.universal.x86.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](releases/download/1.1.0-2/omsagent-1.1.0-2.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (32-bit)](releases/download/1.1.0-2/omsagent-1.1.0-2.universal.x86.sh)
 ## Feedback
 
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
@@ -34,7 +44,7 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * Oracle Linux 5,6, and 7 (x86/x64)
 * Red Hat Enterprise Linux Server 5,6 and 7 (x86/x64)
 * Debian GNU/Linux 6, 7, and 8 (x86/x64)
-* Ubuntu 12.04 LTS, 14.04 LTS, 15.04 (x86/x64)
+* Ubuntu 12.04 LTS, 14.04 LTS, 15.04, 15.10 (x86/x64)
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
 ## Supported Scenarios
