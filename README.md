@@ -27,8 +27,8 @@ $> sudo sh ./omsagent-1.1.0-2.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE 
 
 ### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 
-## [Download Latest OMS Agent for Linux (64-bit)](releases/download/v1.1.0-2/omsagent-1.1.0-2.universal.x64.sh)
-## [Download Latest OMS Agent for Linux (32-bit)](releases/download/v1.1.0-2/omsagent-1.1.0-2.universal.x86.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-2/omsagent-1.1.0-2.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-2/omsagent-1.1.0-2.universal.x86.sh)
 ## Feedback
 
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
