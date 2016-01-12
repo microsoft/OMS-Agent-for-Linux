@@ -19,7 +19,7 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 ## Quick Install guide
 Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **connected sources** tab.
 ```
-$> wget https://github.com/MSFTOSSMgmt/OMS-Agent-for-Linux/releases/download/1.1.0-2/omsagent-1.1.0-2.universal.x64.sh
+$> wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-2/omsagent-1.1.0-2.universal.x64.sh
 $> sha256sum./omsagent-1.1.0-2.universal.x64.sh
 $> sudo sh ./omsagent-1.1.0-2.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
@@ -27,8 +27,8 @@ $> sudo sh ./omsagent-1.1.0-2.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE 
 
 ### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 
-## [Download Latest OMS Agent for Linux (64-bit)](releases/download/1.1.0-2/omsagent-1.1.0-2.universal.x64.sh)
-## [Download Latest OMS Agent for Linux (32-bit)](releases/download/1.1.0-2/omsagent-1.1.0-2.universal.x86.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](releases/download/v1.1.0-2/omsagent-1.1.0-2.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (32-bit)](releases/download/v1.1.0-2/omsagent-1.1.0-2.universal.x86.sh)
 ## Feedback
 
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
