@@ -14,7 +14,7 @@ module OMS
         log_once(@@error_proc, @@debug_proc, message, tag)
       end
 
-      def warning_once(message, tag=nil)
+      def warn_once(message, tag=nil)
         log_once(@@warn_proc, @@debug_proc, message, tag)
       end
 
