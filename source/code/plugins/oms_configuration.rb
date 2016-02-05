@@ -67,7 +67,7 @@ module OMS
           Log.error_once("Could not find OMS_ENDPOINT setting in #{conf_path}")
           return false
         elsif endpoint_lines.size > 1
-          Log.log_warning_once("Found more than one OMS_ENDPOINT setting in #{conf_path}, will use the first one.")
+          Log.warn_once("Found more than one OMS_ENDPOINT setting in #{conf_path}, will use the first one.")
         end
 
         begin
@@ -85,7 +85,7 @@ module OMS
           Log.error_once("Could not find AGENT_GUID setting in #{conf_path}")
           return false
         elsif agentid_lines.size > 1
-          Log.log_warning_once("Found more than one AGENT_GUID setting in #{conf_path}, will use the first one.")
+          Log.warn_once("Found more than one AGENT_GUID setting in #{conf_path}, will use the first one.")
         end
 
         begin
