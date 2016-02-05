@@ -6,5 +6,5 @@ PACKAGE_TYPE: 'DPKG'
 %% In omsadmin.sh: 'curl' requires 'curl'
 curl
 
-omi (>= 1.0.8-3)
-scx (>= 1.6.2-129)
+omi (>= 1.0.8.3)
+scx (>= 1.6.2.129)
