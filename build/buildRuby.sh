@@ -228,8 +228,9 @@ if [ $RUNNING_FOR_TEST -eq 0 ]; then
 
     # Variable ${INT_APPEND_DIR} will either be blank, or something like "/100"
     mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
-    sudo rm -rf ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}/ruby
+    rm -rf ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}/ruby
     sudo mv ${RUBY_DESTDIR} ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
+    sudo chown -R `id -u`:`id -g` ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}${INT_APPEND_DIR}
     sudo rm -rf ${OMS_AGENTDIR}
 
     # Pacify Make (Make doesn't know that the generated Ruby directory can vary)
