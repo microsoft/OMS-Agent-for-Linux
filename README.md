@@ -25,6 +25,11 @@ $> wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.
 $> sha256sum ./omsagent-1.1.0-28.universal.x64.sh
 $> sudo sh ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
+## Azure Install guide
+If you are an Azure customer, we have an Azure VM Extension that allows you to onboard with a couple of clicks.
+* [OMS Agent for Linux Azure VM Extension Documentation](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/VM-Extension.md)
+* [Azure Video walkthrough](https://www.youtube.com/watch?v=mF1wtHPEzT0)
+
 [Full installation guide](docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
 
 ### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
