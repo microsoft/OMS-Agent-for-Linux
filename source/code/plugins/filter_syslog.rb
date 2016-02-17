@@ -56,7 +56,7 @@ module Fluent
         $log.error "The syslog tag does not have 4 parts #{tag}"
       end
 
-      record["Message"] = record["message"]
+      record["Message"] = record["message"].encode('utf-8', 'iso-8859-1')
       record.delete "message"
 
       wrapper = {
