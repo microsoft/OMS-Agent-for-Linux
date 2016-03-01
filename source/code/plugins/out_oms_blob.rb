@@ -98,7 +98,7 @@ module Fluent
         "Suffix" => url_suffix
       }
 
-      req = OMS::Common.create_ods_request(OMS::Configuration.get_blob_ods_endpoint.path, data)
+      req = OMS::Common.create_ods_request(OMS::Configuration.get_blob_ods_endpoint.path, data, compress=false)
 
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.get_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
