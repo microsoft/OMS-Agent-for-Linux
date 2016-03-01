@@ -261,16 +261,24 @@ append_telemetry()
         return 1
     fi
 
+    if [ -f /root/.dockerenv -o -f /root/.dockerinit ]; then
+        InContainer=1
+    else
+        InContainer=0
+    fi
+    
     # We grep instead of sourcing because parentheses in the file cause syntax errors
     OSName=`grep OSName $OS_INFO | cut -d= -f2`
     OSManufacturer=`grep OSManufacturer $OS_INFO | cut -d= -f2`
     OSVersion=`grep OSVersion $OS_INFO | cut -d= -f2`
+    
 
     echo "   <OperatingSystem>" >> $1
     echo "      <Name>$OSName</Name>" >> $1
     echo "      <Manufacturer>$OSManufacturer</Manufacturer>" >> $1
     echo "      <ProcessorArchitecture>x64</ProcessorArchitecture>" >> $1
     echo "      <Version>$OSVersion</Version>" >> $1
+#    echo "      <InContainer>$InContainer<InContainer>" >> $1
     echo "   </OperatingSystem>" >> $1
 }
 
