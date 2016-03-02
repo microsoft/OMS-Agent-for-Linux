@@ -22,6 +22,7 @@ module Fluent
     config_param :cert_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.crt'
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
     config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/proxy.conf'
+    config_param :compress, :bool, :default => true
 
     def configure(conf)
       s = conf.add_element("secondary")
@@ -39,7 +40,7 @@ module Fluent
     end
 
     def handle_record(tag, record)
-      req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record)
+      req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record, @compress)
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
         start = Time.now

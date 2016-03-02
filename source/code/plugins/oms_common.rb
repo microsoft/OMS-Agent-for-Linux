@@ -75,9 +75,10 @@ module OMS
       # parameters:
       #   path: string. path of the request
       #   record: Hash. body of the request
+      #   compress: bool. Whether the body of the request should be compressed
       # returns:
       #   HTTPRequest. request to ODS
-      def create_ods_request(path, record, compress=true)
+      def create_ods_request(path, record, compress)
         headers = {}
         headers["Content-Type"] = "application/json"
         if compress == true
