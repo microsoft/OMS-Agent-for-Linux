@@ -108,7 +108,7 @@ module OMS
             # at this point we've given up up, we don't recognize
             # the encode, so return nil and log_warning for the 
             # record
-            Log.warning_once("Skipping due to failed encoding for #{record}: #{error}")
+            Log.warn_once("Skipping due to failed encoding for #{record}: #{error}")
           end
         end
         return msg
