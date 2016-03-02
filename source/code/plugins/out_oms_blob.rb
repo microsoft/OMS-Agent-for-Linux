@@ -212,13 +212,7 @@ module Fluent
           # extra tags for CustomLog:
           # tags[4]: custom data type
           custom_data_type = tags[4]
-
-          # tags[5..-1]: monitoring file name
-          # concat all the rest parts with .
-          suffix = Time.now.utc.strftime("d=%Y%m%d/h=%H/")
-          tags[5..-1].each { |s| suffix << "#{s}." }
-          # remove the last .
-          suffix = suffix[0..-2]
+          suffix = Time.now.utc.strftime("d=%Y%m%d/h=%H/#{SecureRandom.uuid}")
         else
           custom_data_type = nil
           suffix = nil
