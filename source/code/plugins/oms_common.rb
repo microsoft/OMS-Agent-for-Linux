@@ -111,7 +111,12 @@ module OMS
         rescue => error 
           # failed encoding, encode to utf-8, iso-8859-1 and try again
           begin
-            msg = JSON.dump(record.encode('utf-8', 'iso-8859-1'))
+            if !record["DataItems"].nil?
+              record["DataItems"].each do |item|
+                item["Message"] = item["Message"].encode('utf-8', 'iso-8859-1')
+              end
+            end
+            msg = JSON.dump(record)
           rescue => error
             # at this point we've given up up, we don't recognize
             # the encode, so return nil and log_warning for the 
