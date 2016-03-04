@@ -95,6 +95,15 @@ module Fluent
       unmergable_records.each { |tag, record|
         handle_record(tag, record)
       }
+    rescue OMS::RetryRequestException => e
+      @log.debug "Encountered retryable exception. Will retry sending data later. #{e}"
+      # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
+      raise e
+    rescue => e
+      # We encountered something unexpected. We drop the data because
+      # if bad data caused the exception, the engine will continuously
+      # try and fail to resend it. (Infinite failure loop)
+      Log.error_once("Unexpecting exception, dropping data. #{e}")
     end
 
   private

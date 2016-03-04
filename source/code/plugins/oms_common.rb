@@ -1,5 +1,10 @@
 module OMS
 
+  class RetryRequestException < Exception
+    # Throw this exception to tell the fluentd engine to retry and
+    # inform the output plugin that it is indeed retryable
+  end
+
   class Common
     require 'json'
     require 'net/http'
@@ -144,23 +149,32 @@ module OMS
           res = secure_http.start { |http|  http.request(req) }
         rescue => e # rescue all StandardErrors
           # Server didn't respond
-          raise "Net::HTTP.#{req.method.capitalize} raises exception: #{e.class}, '#{e.message}'"
+          raise RetryRequestException, "Net::HTTP.#{req.method.capitalize} raises exception: #{e.class}, '#{e.message}'"
         else
-          if res and res.is_a?(Net::HTTPSuccess)
+          if res.nil?
+            raise RetryRequestException, "Failed to #{req.method} at #{req.to_s} (res=nil)"
+          end
+
+          if res.is_a?(Net::HTTPSuccess)
             return res.body
           end
 
-          if res
-            if ignore404 and res.code == "404"
-              return ''
-            end
-
-            res_summary = "(#{res.code} #{res.message} #{res.body})"
-          else
-            res_summary = "(res=nil)"
+          if ignore404 and res.code == "404"
+            return ''
           end
 
-          raise "Failed to #{req.method} at #{req.to_s} #{res_summary}"  
+          res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
+
+          if res.is_a?(Net::HTTPClientError)
+            # Client errors should not be retired, do not raise
+            Log.error_once("Client Error, dropping data. #{res_summary}")
+          elsif res.is_a?(Net::HTTPServerError)
+            raise RetryRequestException, "Server error, will continue buffering and retry later. #{res_summmary}"
+          else
+            # Unkown response, do not raise because we don't know if the error is retryable 
+            Log.error_once("Unsupported response from server, dropping data. #{res_summary}")
+          end # res type check
+
         end # end begin
       end # end start_request
     end # Class methods
