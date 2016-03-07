@@ -175,8 +175,10 @@ sudo ./omsadmin.sh -w <WorkspaceID> -s <Shared Key>
 1.	Create the file `/etc/omsagent-onboard.conf` The file must be readable and writable for the user omsagent. 
 `sudo su omsagent vi /etc/omsagent-onboard.conf`
 2.	Insert the following lines in the file with your Workspace ID and Shared Key:
-`WORKSPACE_ID=<WorkspaceID>`
-`SHARED_KEY=<Shared Key>`
+```
+WORKSPACE_ID=<WorkspaceID>
+SHARED_KEY=<Shared Key>
+```
 3.	Restart the omsagent:
 `sudo service omsagent restart`
 4.	The file will be deleted on successful onboarding
@@ -471,22 +473,20 @@ Logs for the OMI and SCX components (which provide performance metrics data) can
 `/var/opt/omi/log/ and /var/opt/microsoft/scx/log`
 
 # Uninstalling the OMS Agent for Linux
-The agent packages can be uninstalled using dpkg or rpm, or by running the bundle .sh file with the `--remove` argument. 
+The agent packages can be uninstalled using dpkg or rpm, or by running the bundle .sh file with the `--remove` argument. Additionally, if you want to completely remove all pieces of the OMS Agent for Linux you can run the bundle .sh file with the `--purge` arguement. 
 
 **Debian & Ubuntu:**
 ```
-> sudo dpkg –P omsconfig
+> sudo dpkg -P omsconfig
 > sudo dpkg -P omsagent
-> sudo dpkg -P scx
-> sudo dpkg -P omi
+> sudo /opt/microsoft/scx/bin/uninstall
 ```
 
 **CentOS, Oracle Linux, RHEL, and SLES:**
 ```
-> sudo rpm –e omsconfig
+> sudo rpm -e omsconfig
 > sudo rpm -e omsagent
-> sudo rpm -e scx
-> sudo rpm -e omi
+> sudo /opt/microsoft/scx/bin/uninstall
 ```
 
 # Compatibility with System Center Operations Manager
