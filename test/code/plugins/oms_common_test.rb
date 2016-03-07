@@ -118,5 +118,15 @@ module OMS
       assert_not_equal(nil, http, "http is nil")
       assert_equal(true, http.use_ssl?, "Http should use ssl")
     end
+
+    def test_parse_json_record_encoding
+      record = "syslog record"
+      parsed_record = Common.parse_json_record_encoding(record);
+      assert_equal(record.to_json,parsed_record, "parse json record no encoding failed");
+      
+      record = "iPhone\xAE";
+      parsed_record = Common.parse_json_record_encoding(record);
+      assert_equal("iPhone®".to_json,parsed_record, "parse json record utf-8 encoding failed");
+    end	
   end
 end # Module OMS
