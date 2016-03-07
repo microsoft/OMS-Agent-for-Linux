@@ -89,11 +89,7 @@ module OMS
         if json_msg.nil?
           return nil
         else
-          if compress == true
-            req.body = Zlib::Deflate.deflate(json_msg)
-          else
-            req.body = json_msg
-          end
+          req.body = json_msg
         end
         return req
       end # create_ods_request
@@ -111,12 +107,7 @@ module OMS
         rescue => error 
           # failed encoding, encode to utf-8, iso-8859-1 and try again
           begin
-            if !record["DataItems"].nil?
-              record["DataItems"].each do |item|
-                item["Message"] = item["Message"].encode('utf-8', 'iso-8859-1')
-              end
-            end
-            msg = JSON.dump(record)
+            msg = JSON.dump(record.encode('utf-8', 'iso-8859-1'))
           rescue => error
             # at this point we've given up up, we don't recognize
             # the encode, so return nil and log_warning for the 

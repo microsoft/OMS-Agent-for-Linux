@@ -122,12 +122,11 @@ module OMS
     def test_parse_json_record_encoding
       record = "syslog record"
       parsed_record = Common.parse_json_record_encoding(record);
-      assert_equal(record.to_json, parsed_record, "parse json record no encoding failed");
+      assert_equal(record.to_json,parsed_record, "parse json record no encoding failed");
       
-      record = {}
-      record["DataItems"] = [ {"Message" => "iPhone\xAE"} ];
+      record = "iPhone\xAE";
       parsed_record = Common.parse_json_record_encoding(record);
-      assert_equal("{\"DataItems\":[{\"Message\":\"iPhone®\"}]}", parsed_record, "parse json record utf-8 encoding failed");
+      assert_equal("iPhone®".to_json,parsed_record, "parse json record utf-8 encoding failed");
     end	
   end
 end # Module OMS
