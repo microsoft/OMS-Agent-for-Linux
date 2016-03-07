@@ -81,11 +81,38 @@ module OMS
         headers["Content-Type"] = "application/json"
 
         req = Net::HTTP::Post.new(path, headers)
-        # Serialize the record
-        msg = JSON.dump(record)
-        req.body = msg
+        json_msg = parse_json_record_encoding(record)
+        if json_msg.nil?
+          return nil
+        else
+          req.body = json_msg
+        end
         return req
       end # create_ods_request
+
+      # parses the json record with appropriate encoding
+      # parameters:
+      #   record: Hash. body of the request
+      # returns:
+      #   json represention of object, 
+      # nil if encoding cannot be applied 
+      def parse_json_record_encoding(record)
+        msg = nil
+        begin
+          msg = JSON.dump(record)
+        rescue => error 
+          # failed encoding, encode to utf-8, iso-8859-1 and try again
+          begin
+            msg = JSON.dump(record.encode('utf-8', 'iso-8859-1'))
+          rescue => error
+            # at this point we've given up up, we don't recognize
+            # the encode, so return nil and log_warning for the 
+            # record
+            Log.warning_once("Skipping due to failed encoding for #{record}: #{error}")
+          end
+        end
+        return msg
+      end
 
       # start a request
       # parameters:
