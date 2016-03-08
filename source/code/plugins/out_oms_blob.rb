@@ -224,12 +224,12 @@ module Fluent
       start = Time.now
       blob_uri = get_blob_uri(container_type, data_type, custom_data_type, suffix)
       time = Time.now - start
-      @log.info "Success getting the BLOB uri in #{time.round(3)}s"
+      @log.debug "Success getting the BLOB uri in #{time.round(3)}s"
 
       start = Time.now
       append_blob(blob_uri, records)
       time = Time.now - start
-      @log.info "Success sending the data to BLOB #{time.round(3)}s"
+      @log.debug "Success sending the data to BLOB #{time.round(3)}s"
 
     end # handle_record
 
