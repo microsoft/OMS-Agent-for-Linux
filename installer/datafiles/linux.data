@@ -135,40 +135,36 @@ UnconfigureSyslog() {
 }
 
 %Sudoer_Functions
-GetSudoVersion() {
-    echo `sudo -V | awk '{print $3; exit}'`
-}
+RemoveSudoersSupport() {
+    # Unconfigure sudo configuration
+    #
+    # Just unconfigure everything we could have done so things are left in clean state
 
-CompareSudoVersions() {
-    # Compare two sudo versions (both of form x.y); return 0 if first > second
-
-    local MAJOR=`echo $1 | cut -d. -f1`
-    local MINOR=`echo $1 | cut -d. -f2`
-
-    local MAJOR_TEST=`echo $2 | cut -d. -f1`
-    local MINOR_TEST=`echo $2 | cut -d. -f2`
-
-    # Check the MAJOR version
-    if [ $MAJOR -lt $MAJOR_TEST ]; then
-        return 0
-    elif [ $MAJOR -gt $MAJOR_TEST ]; then
-        return 1
+    if [ -f /etc/sudoers.d/omsagent ]; then
+        rm -f /etc/sudoers.d/omsagent
     fi
 
-    # Check the MINOR version
-    if [ $MINOR -lt $MINOR_TEST ]; then
-        return 0
-    elif [ $MINOR -gt $MINOR_TEST ]; then
-        return 1
+    grep -q '# Begin sudo configuration for omsagent' /etc/sudoers
+    if [ $? -eq 0 ]; then
+        cp /etc/sudoers /etc/sudoers.bak
+        sed '/^# Begin sudo configuration for omsagent/,/# End sudo configuration for omsagent$/ d' /etc/sudoers.bak > /etc/sudoers
     fi
-
-    # Versions are equal, so return success
-    return 0
 }
 
 SudoSupportsIncludeDirective() {
-    # Versions 1.8 and above supports include directive
-    CompareSudoVersions 1.8 `GetSudoVersion` && [ -d /etc/sudoers.d ]
+    # Algorithm:
+    #   If    #includedir exists in /etc/sudoers AND /etc/sudoers.d exists,
+    #   Then  Use /etc/sudoers.d
+    #   Else  Append to /etc/sudoers
+
+    INCLUDEDIR=0
+    egrep -q "^#includedir" /etc/sudoers && INCLUDEDIR=1
+
+    if [ $INCLUDEDIR -eq 1 -a -d /etc/sudoers.d ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 
@@ -208,16 +204,18 @@ ${{OMI_SERVICE}} reload
 ${{OMS_SERVICE}} enable
 ConfigureSyslog
 
-# Deal with sudo (either place in sudoers.d or append to sudoers configuration)
+# Unconfigure sudo if it's already configured
+
+RemoveSudoersSupport
+
+# Configure sudo (either place in sudoers.d or append to sudoers configuration)
 
 SudoSupportsIncludeDirective
 if [ $? -eq 0 ]; then
     cp /etc/opt/microsoft/omsagent/sysconf/sudoers /etc/sudoers.d/omsagent
     chmod 440 /etc/sudoers.d/omsagent
 else
-    # If we're already configured, don't configure again
-    grep -q '# Begin sudo configuration for omsagent' /etc/sudoers
-    [ $? -ne 0 ] && cat /etc/opt/microsoft/omsagent/sysconf/sudoers >> /etc/sudoers
+    cat /etc/opt/microsoft/omsagent/sysconf/sudoers >> /etc/sudoers
 fi
 
 chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
@@ -233,21 +231,15 @@ fi
 
 
 %Postuninstall_1000
+#include Sudoer_Functions
+
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
     # Restart the OMI server in case an agent is running under service account
     ${{OMI_SERVICE}} restart
 
-    # Unconfigure sudo configuration
-    if [ -f /etc/sudoers.d/omsagent ]; then
-        rm -f /etc/sudoers.d/omsagent
-    else
-        grep -q '# Begin sudo configuration for omsagent' /etc/sudoers
-        if [ $? -eq 0 ]; then
-            cp /etc/sudoers /etc/sudoers.bak
-            sed '/^##### Begin sudo configuration for omsagent/,/##### End sudo configuration for omsagent$/ d' /etc/sudoers.bak > /etc/sudoers
-        fi
-    fi
+    # Unconfigure sudo if it's already configured
+    RemoveSudoersSupport
 
     # Remove the service account
     echo "Deleting omsagent service account ..."
