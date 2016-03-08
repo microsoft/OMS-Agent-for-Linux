@@ -89,10 +89,10 @@ INTERMEDIATE_DIR=`(cd $INTERMEDIATE; pwd -P)`
 # Switch to one of the output directories to avoid directory prefixes
 cd $INTERMEDIATE/098
 
-SCX_PACKAGE=`ls scx-*.rpm | sed 's/.rpm$//'`
-OMI_PACKAGE=`ls omi-*.rpm | sed 's/.rpm$//'`
-OMS_PACKAGE=`ls omsagent-*.rpm | sed 's/.rpm$//'`
-DSC_PACKAGE=`ls omsconfig-*.rpm | sed 's/.rpm$//'`
+SCX_PACKAGE=`ls scx-*.rpm | sed 's/.rpm$//' | tail -1`
+OMI_PACKAGE=`ls omi-*.rpm | sed 's/.rpm$//' | tail -1`
+OMS_PACKAGE=`ls omsagent-*.rpm | sed 's/.rpm$//' | tail -1`
+DSC_PACKAGE=`ls omsconfig-*.rpm | sed 's/.rpm$//' | tail -1`
 
 # TODO : Add verification to insure all flavors exist
 
