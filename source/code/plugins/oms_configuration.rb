@@ -48,7 +48,15 @@ module OMS
       end
 
       def parse_proxy_config(proxy_conf_str)
-          re = /^(?:https?:\/\/)?(?:(?<user>\w+):(?<pass>\w+)@)?(?<addr>[^:@]+)(?::(?<port>\d+))?$/
+          # Remove the http(s) protocol
+          proxy_conf_str = proxy_conf_str.gsub(/^(https?:\/\/)?/, "")
+
+          # Check for unsupported protocol
+          if proxy_conf_str[/^[a-z]+:\/\//]
+            return nil
+          end
+
+          re = /^(?:(?<user>[^:]+):(?<pass>[^@]+)@)?(?<addr>[^:@]+)(?::(?<port>\d+))?$/ 
           matches = re.match(proxy_conf_str)
           if matches.nil? or matches[:addr].nil? 
             return nil

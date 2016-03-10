@@ -157,7 +157,8 @@ module OMS
                  "http://proxyhost",
                  "proxyuser:proxypass@proxyhost",
                  "proxyhost",
-                 "https://1.2.3.4:1234"]
+                 "https://1.2.3.4:1234",
+                 "proxyuser:pass:pass@proxyhost:8080"]
       
       expected = [{:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
                   {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
@@ -167,7 +168,8 @@ module OMS
                   {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>nil},
                   {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>nil},
                   {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>nil},
-                  {:user=>nil,         :pass=>nil,         :addr=>"1.2.3.4",   :port=>"1234"}]
+                  {:user=>nil,         :pass=>nil,         :addr=>"1.2.3.4",   :port=>"1234"},
+                  {:user=>"proxyuser", :pass=>"pass:pass", :addr=>"proxyhost", :port=>"8080"}]
       
       assert_equal(configs.size, expected.size, "Test array and result array should have the same size")
       
@@ -181,7 +183,6 @@ module OMS
       bad_configs = [ "http://proxyuser:proxypass@proxyhost:",    # Missing port
                       "http://proxyuser:proxypass/proxyhost:8080",# Wrong '@' separator
                       "http://proxyuserandpass@proxyhost:8080",   # Missing ':' separator
-                      "proxyuser:pass:pass@proxyhost:8080",       # Two passwords
                       "socks://proxyuser:proxypass@proxyhost:8080"] # Unsupported protocol
       bad_configs.each { |config|
         parsed = Configuration.parse_proxy_config(config)
