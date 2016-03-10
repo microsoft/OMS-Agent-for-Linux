@@ -28,6 +28,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/bin/auth_key.rb;                                installer/scripts/auth_key.rb;                         744; root; root
 /opt/microsoft/omsagent/bin/omsadmin.sh;                                installer/scripts/omsadmin.sh;                         755; root; root
 /opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
+/opt/microsoft/omsagent/bin/uninstall;                                  installer/scripts/uninstall.sh;                        755; root; root
 
 /opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root
