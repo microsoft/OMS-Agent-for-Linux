@@ -398,61 +398,71 @@ cd $EXTRACT_DIR
 # Do we need to remove the package?
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
-    pkg_rm omsconfig
-    pkg_rm omsagent
-
-    # If MDSD is installed and we're just removing (not purging), leave SCX
-
-    if [ ! -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd -o "$installMode" = "P" ]; then
-	if [ -f /opt/microsoft/scx/bin/uninstall ]; then
-	    /opt/microsoft/scx/bin/uninstall $installMode
-	else
-	    for i in /opt/microsoft/*-cimprov; do
-		PKG_NAME=`basename $i`
-		if [ "$PKG_NAME" != "*-cimprov" ]; then
-		    echo "Removing ${PKG_NAME} ..."
-		    pkg_rm ${PKG_NAME}
-		fi
-	    done
-
-            # Now just simply pkg_rm scx and omi
-	    pkg_rm scx
-	    pkg_rm omi
-	fi
+    if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
+	/opt/microsoft/omsagent/bin/uninstall $installMode
     else
-	echo "--- MDSD detected; not removing SCX or OMI packages ---"
-    fi
+	echo "---------- WARNING WARNING WARNING ----------"
+	echo "Using new shell bundle to remove older kit."
+	echo "Using fallback code to perform kit removal."
+	echo "---------- WARNING WARNING WARNING ----------"
+	echo
 
-    if [ "$installMode" = "P" ]; then
-        echo "Purging all files in cross-platform agent ..."
+	pkg_rm omsconfig
+	pkg_rm omsagent
 
-        #
-        # Be careful to not remove files if dependent packages are still using them
-        #
+	# If MDSD is installed and we're just removing (not purging), leave SCX
 
-        check_if_pkg_is_installed omsconfig
-        if [ $? -ne 0 ]; then
-            rm -rf /etc/opt/microsoft/omsconfig /opt/microsoft/omsconfig /var/opt/microsoft/omsconfig
-        fi
+	if [ ! -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd -o "$installMode" = "P" ]; then
+	    if [ -f /opt/microsoft/scx/bin/uninstall ]; then
+		/opt/microsoft/scx/bin/uninstall $installMode
+	    else
+		for i in /opt/microsoft/*-cimprov; do
+		    PKG_NAME=`basename $i`
+		    if [ "$PKG_NAME" != "*-cimprov" ]; then
+			echo "Removing ${PKG_NAME} ..."
+			pkg_rm ${PKG_NAME}
+		    fi
+		done
 
-        check_if_pkg_is_installed omsagent
-        if [ $? -ne 0 ]; then
-            rm -rf /etc/opt/microsoft/omsagent /opt/microsoft/omsagent /var/opt/microsoft/omsagent
-        fi
+		# Now just simply pkg_rm scx and omi
+		pkg_rm scx
+		pkg_rm omi
+	    fi
+	else
+	    echo "--- MDSD detected; not removing SCX or OMI packages ---"
+	fi
 
-        check_if_pkg_is_installed scx
-        if [ $? -ne 0 ]; then
-            rm -rf /etc/opt/microsoft/scx /opt/microsoft/scx /var/opt/microsoft/scx \
-                /etc/opt/microsoft/*-cimprov /opt/microsoft/*-cimprov /var/opt/microsoft/*-cimprov
-        fi
+	if [ "$installMode" = "P" ]; then
+            echo "Purging all files in cross-platform agent ..."
 
-        check_if_pkg_is_installed omi
-        if [ $? -ne 0 ]; then
-            rm -rf /etc/opt/omi /opt/omi /var/opt/omi
-        fi
+            #
+            # Be careful to not remove files if dependent packages are still using them
+            #
 
-        rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
-        rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
+            check_if_pkg_is_installed omsconfig
+            if [ $? -ne 0 ]; then
+		rm -rf /etc/opt/microsoft/omsconfig /opt/microsoft/omsconfig /var/opt/microsoft/omsconfig
+            fi
+
+            check_if_pkg_is_installed omsagent
+            if [ $? -ne 0 ]; then
+		rm -rf /etc/opt/microsoft/omsagent /opt/microsoft/omsagent /var/opt/microsoft/omsagent
+            fi
+
+            check_if_pkg_is_installed scx
+            if [ $? -ne 0 ]; then
+		rm -rf /etc/opt/microsoft/scx /opt/microsoft/scx /var/opt/microsoft/scx \
+                    /etc/opt/microsoft/*-cimprov /opt/microsoft/*-cimprov /var/opt/microsoft/*-cimprov
+            fi
+
+            check_if_pkg_is_installed omi
+            if [ $? -ne 0 ]; then
+		rm -rf /etc/opt/omi /opt/omi /var/opt/omi
+            fi
+
+            rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
+            rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
+	fi
     fi
 fi
 
