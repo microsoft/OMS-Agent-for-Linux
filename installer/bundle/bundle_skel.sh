@@ -228,73 +228,6 @@ EOF
     return $hasCtypes
 }
 
-# ----------------------------------------------------------------------------
-#
-# This code is here to allow upgrade from version 47-48
-# It was moved to the OMS service_control script but is also needed here
-# because version 47-48 do not have the 'disable' option in that script
-# and it is called in preinstall
-
-resolve_systemd_paths(){
-    # Various distributions have different paths for systemd unit files ...
-    SYSTEMD_UNIT_DIR=""
-    if pidof systemd 1> /dev/null 2> /dev/null; then
-        # Be sure systemctl lives where we expect it to
-        if [ ! -f /bin/systemctl ]; then
-            echo "FATAL: Unable to locate systemctl program" 1>&2
-            exit 1
-        fi
-
-        # Find systemd unit directory
-        UNIT_DIR_LIST="/usr/lib/systemd/system /lib/systemd/system"
-        for i in ${UNIT_DIR_LIST}; do
-            if [ -d $i ]; then
-                SYSTEMD_UNIT_DIR=${i}
-                return
-            fi
-        done
-
-        echo "FATAL: Unable to resolve systemd unit directory!" 1>&2
-        exit 1
-    fi
-}
-
-disable_omsagent_service() {
-    OMS_SERVICE='/opt/microsoft/omsagent/bin/service_control'
-    # Stop the server if it's running
-    if [ -f ${OMS_SERVICE} ]; then
-        ${OMS_SERVICE} stop
-    fi
-
-    resolve_systemd_paths
-
-    # Registered as a systemd service?
-    if [ -f ${SYSTEMD_UNIT_DIR}/omsagent.service ]; then
-        echo "Unconfiguring OMS agent (systemd) service ..."
-        /bin/systemctl disable omsagent
-        rm -f ${SYSTEMD_UNIT_DIR}/omsagent.service
-        /bin/systemctl daemon-reload
-    elif [ -f /etc/init.d/omsagent ]; then
-        echo "Unconfiguring OMS agent service ..."
-        if [ -f /usr/sbin/update-rc.d ]; then
-            /usr/sbin/update-rc.d -f omsagent remove
-        elif [ -x /usr/lib/lsb/remove_initd ]; then
-            /usr/lib/lsb/remove_initd /etc/init.d/omsagent
-        elif [ -x /sbin/chkconfig ]; then
-            chkconfig --del omsagent > /dev/null
-        else
-            echo "Unrecognized Service Controller to unregister OMS Agent Service."
-            exit 1
-        fi
-
-        rm /etc/init.d/omsagent
-    fi
-}
-
-# End of temporary upgrade code
-# ----------------------------------------------------------------------------
-
-
 #
 # Main script follows
 #
@@ -670,7 +603,6 @@ case "$installMode" in
             mv ${OMISERV_CONF}.bak $OMISERV_CONF
         fi
 
-        disable_omsagent_service
         pkg_upd $OMS_PKG omsagent
         OMS_EXIT_STATUS=$?
 
