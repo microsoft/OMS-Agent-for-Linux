@@ -52,7 +52,18 @@ module Fluent
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
-      end  
+      end
+    rescue OMS::DropRequestException => e
+      OMS::Log.error_once("Dropping data. Error:'#{e}'")
+    rescue OMS::RetryRequestException => e
+      @log.debug "Encountered retryable exception. Will retry sending data later. Error:'#{e}'"
+      # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
+      raise e
+    rescue => e
+      # We encountered something unexpected. We drop the data because
+      # if bad data caused the exception, the engine will continuously
+      # try and fail to resend it. (Infinite failure loop)
+      OMS::Log.error_once("Unexpecting exception, dropping data. Error:'#{e}'")
     end
 
     # This method is called when an event reaches to Fluentd.
@@ -95,15 +106,6 @@ module Fluent
       unmergable_records.each { |tag, record|
         handle_record(tag, record)
       }
-    rescue OMS::RetryRequestException => e
-      @log.debug "Encountered retryable exception. Will retry sending data later. Error:'#{e}'"
-      # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
-      raise e
-    rescue => e
-      # We encountered something unexpected. We drop the data because
-      # if bad data caused the exception, the engine will continuously
-      # try and fail to resend it. (Infinite failure loop)
-      OMS::Log.error_once("Unexpecting exception, dropping data. #{e}")
     end
 
   private

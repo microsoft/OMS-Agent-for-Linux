@@ -5,6 +5,10 @@ module OMS
     # inform the output plugin that it is indeed retryable
   end
 
+  class DropRequestException < Exception
+    # Throw this exception to tell the output plugin that data should be dropped
+  end
+
   class Common
     require 'json'
     require 'net/http'
@@ -166,13 +170,16 @@ module OMS
           res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
 
           if res.is_a?(Net::HTTPClientError)
-            # Client errors should not be retired, do not raise
-            Log.error_once("Client Error, dropping data. #{res_summary}")
+            raise DropRequestException, "Client Error: #{res_summary}"
           elsif res.is_a?(Net::HTTPServerError)
-            raise RetryRequestException, "Server error, will continue buffering and retry later. #{res_summmary}"
+            if res.code == "500"
+              raise DropRequestException, "Server Error: #{res_summary}"
+            else
+              raise RetryRequestException, "Server error: #{res_summary}"
+            end
           else
-            # Unkown response, do not raise because we don't know if the error is retryable 
-            Log.error_once("Unsupported response from server, dropping data. #{res_summary}")
+            # Unkown response we don't know if the error is retryable
+            raise DropRequestException, "Unsupported response from server, dropping data. #{res_summary}"
           end # res type check
 
         end # end begin
