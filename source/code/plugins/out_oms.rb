@@ -68,7 +68,7 @@ module Fluent
     def write(chunk)
       # Quick exit if we are missing something
       if !OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
-        raise 'Missing configuration. Make sure to onboard. Will continue to buffer data.'
+        raise OMS::RetryRequestException, 'Missing configuration. Make sure to onboard.'
       end
 
       # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
@@ -96,14 +96,14 @@ module Fluent
         handle_record(tag, record)
       }
     rescue OMS::RetryRequestException => e
-      @log.debug "Encountered retryable exception. Will retry sending data later. #{e}"
+      @log.debug "Encountered retryable exception. Will retry sending data later. Error:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
       raise e
     rescue => e
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously
       # try and fail to resend it. (Infinite failure loop)
-      Log.error_once("Unexpecting exception, dropping data. #{e}")
+      OMS::Log.error_once("Unexpecting exception, dropping data. #{e}")
     end
 
   private
