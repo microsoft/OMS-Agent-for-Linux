@@ -115,12 +115,17 @@ module Fluent
     #   msgs: string[]. messages
     def append_blob(uri, msgs)
       if msgs.size == 0
-        return true
+        return 0
       end
 
       # concatenate the messages
       msg = ''
       msgs.each { |s| msg << "#{s}\r\n" if s.to_s.length > 0 }
+      dataSize = msg..length
+
+      if dataSize == 0
+        return 0
+      end
 
       # get committed blocks
       blocks_committed = get_committed_blocks(uri)
@@ -136,6 +141,7 @@ module Fluent
 
       # commit blocks
       commit_blocks(uri, blocks_committed, blocks_uncommitted)
+      return dataSize
     end # append_blob
 
     # get committed blocks from the blob
@@ -227,9 +233,9 @@ module Fluent
       @log.debug "Success getting the BLOB uri in #{time.round(3)}s"
 
       start = Time.now
-      append_blob(blob_uri, records)
+      dataSize = append_blob(blob_uri, records)
       time = Time.now - start
-      @log.debug "Success sending the data to BLOB #{time.round(3)}s"
+      @log.debug "Success sending #{dataSize} bytes of data to BLOB #{time.round(3)}s"
 
     end # handle_record
 
