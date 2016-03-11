@@ -158,7 +158,8 @@ module OMS
                  "proxyuser:proxypass@proxyhost",
                  "proxyhost",
                  "https://1.2.3.4:1234",
-                 "proxyuser:pass:pass@proxyhost:8080"]
+                 "proxyuser:pass:pass@proxyhost:8080",
+                 "123.2.3.456:3456"]
       
       expected = [{:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
                   {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
@@ -169,7 +170,8 @@ module OMS
                   {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>nil},
                   {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>nil},
                   {:user=>nil,         :pass=>nil,         :addr=>"1.2.3.4",   :port=>"1234"},
-                  {:user=>"proxyuser", :pass=>"pass:pass", :addr=>"proxyhost", :port=>"8080"}]
+                  {:user=>"proxyuser", :pass=>"pass:pass", :addr=>"proxyhost", :port=>"8080"},
+                  {:user=>nil,         :pass=>nil,         :addr=>"123.2.3.456",:port=>"3456"}]
       
       assert_equal(configs.size, expected.size, "Test array and result array should have the same size")
       
