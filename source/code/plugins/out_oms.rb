@@ -143,7 +143,7 @@ module Fluent
         chunk.msgpack_each {|(tag, record)|
           @error_handlers[tag].emit(record)
         }
-    end
+      end
    
     private
 
