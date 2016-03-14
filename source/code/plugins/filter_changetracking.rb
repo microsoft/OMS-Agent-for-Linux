@@ -40,6 +40,14 @@ module Fluent
       #formatter.compact = true
       #formatter.write(xml, $stdout)
       
+      if rand(2) == 1
+        state = "true"
+      else
+        state = "false"
+      end
+
+      @log.debug state
+
       out_schema = {
         "DataType" => "CONFIG_CHANGE_BLOB",
         "IPName" => "changetracking",
@@ -56,7 +64,7 @@ module Fluent
                                               "State": "Stopped",
                                               "Path": "/etc/rc.d/init.d/iprdump",
                                               "Runlevels": "2, 3, 4, 5",
-                                              "Enabled": "false",
+                                              "Enabled": state,
                                               "Controller": "iprdump controller value"
                                             },
                                             {
@@ -66,7 +74,7 @@ module Fluent
                                               "State": "Running",
                                               "Path": "/path/where/network/lives",
                                               "Runlevels": "2, 3, 4, 5",
-                                              "Enabled": "true",
+                                              "Enabled": state,
                                               "Controller": "network controller value"
                                             }
 
