@@ -6,7 +6,6 @@
 
 # This script is a skeleton bundle file for ULINUX only for project OMS.
 
-set -e
 PATH=/usr/bin:/usr/sbin:/bin:/sbin
 umask 022
 
@@ -53,6 +52,8 @@ usage()
     echo "  --restart-deps         Reconfigure and restart dependent service(s)."
     echo "  --source-references    Show source code reference hashes."
     echo "  --upgrade              Upgrade the package in the system."
+    echo "  --version              Version of this shell bundle."
+    echo "  --version-check        Check versions already installed to see if upgradable."
     echo "  --debug                use shell debug mode."
     echo
     echo "  -w id, --id id         Use workspace ID <id> for automatic onboarding."
@@ -85,6 +86,80 @@ cleanup_and_exit()
     else
         exit 0
     fi
+}
+
+check_version_installable() {
+    # POSIX Semantic Version <= Test
+    # Exit code 0 is true (i.e. installable).
+    # Exit code non-zero means existing version is >= version to install.
+    #
+    # Parameter:
+    #   Installed: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
+    #   Available: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
+
+    if [ $# -ne 2 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_version_installable" >&2
+        cleanup_and_exit 1
+    fi
+
+    # Current version installed
+    local INS_MAJOR=`echo $1 | cut -d. -f1`
+    local INS_MINOR=`echo $1 | cut -d. -f2`
+    local INS_PATCH=`echo $1 | cut -d. -f3`
+    local INS_BUILD=`echo $1 | cut -d. -f4`
+
+    # Available version number
+    local AVA_MAJOR=`echo $2 | cut -d. -f1`
+    local AVA_MINOR=`echo $2 | cut -d. -f2`
+    local AVA_PATCH=`echo $2 | cut -d. -f3`
+    local AVA_BUILD=`echo $2 | cut -d. -f4`
+
+    # Check bounds on MAJOR
+    if [ $INS_MAJOR -lt $AVA_MAJOR ]; then
+        return 0
+    elif [ $INS_MAJOR -gt $AVA_MAJOR ]; then
+        return 1
+    fi
+
+    # MAJOR matched, so check bounds on MINOR
+    if [ $INS_MINOR -lt $AVA_MINOR ]; then
+        return 0
+    elif [ $INS_MINOR -gt $INS_MINOR ]; then
+        return 1
+    fi
+
+    # MINOR matched, so check bounds on PATCH
+    if [ $INS_PATCH -lt $AVA_PATCH ]; then
+        return 0
+    elif [ $INS_PATCH -gt $AVA_PATCH ]; then
+        return 1
+    fi
+
+    # PATCH matched, so check bounds on BUILD
+    if [ $INS_BUILD -lt $AVA_BUILD ]; then
+        return 0
+    elif [ $INS_BUILD -gt $AVA_BUILD ]; then
+        return 1
+    fi
+
+    # Version available is idential to installed version, so don't install
+    return 1
+}
+
+getVersionNumber()
+{
+    # Parse a version number from a string.
+    #
+    # Parameter 1: string to parse version number string from
+    #     (should contain something like mumble-4.2.2.135.universal.x86.tar)
+    # Parameter 2: prefix to remove ("mumble-" in above example)
+
+    if [ $# -ne 2 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to getVersionNumber" >&2
+        cleanup_and_exit 1
+    fi
+
+    echo $1 | sed -e "s/$2//" -e 's/\.universal\..*//' -e 's/\.x64.*//' -e 's/\.x86.*//' -e 's/-/./'
 }
 
 verifyNoInstallationOption()
@@ -143,10 +218,8 @@ ulinux_detect_installer()
 
 # $1 - The name of the package to check as to whether it's installed
 check_if_pkg_is_installed() {
-    ulinux_detect_installer
-
     if [ "$INSTALLER" = "DPKG" ]; then
-        dpkg -s $1 2> /dev/null | grep Status | egrep " installed| deinstall" 1> /dev/null
+        dpkg -s $1 2> /dev/null | grep Status | egrep " installed" 1> /dev/null
     else
         rpm -q $1 2> /dev/null 1> /dev/null
     fi
@@ -163,7 +236,6 @@ pkg_add() {
     ulinux_detect_openssl_version
     pkg_filename=$TMPBINDIR/$pkg_filename
 
-    ulinux_detect_installer
     echo "----- Installing package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
         dpkg ${DPKG_CONF_QUALS} --install --refuse-downgrade ${pkg_filename}.deb
@@ -174,7 +246,6 @@ pkg_add() {
 
 # $1 - The package name of the package to be uninstalled
 pkg_rm() {
-    ulinux_detect_installer
     echo "----- Removing package: $1 -----"
     if [ "$INSTALLER" = "DPKG" ]; then
         if [ "$installMode" = "P" ]; then
@@ -189,22 +260,31 @@ pkg_rm() {
 
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed
+# $3 - Okay to upgrade the package? (Optional)
 pkg_upd() {
     pkg_filename=$1
     pkg_name=$2
+    pkg_allowed=$3
+
+    echo "----- Updating package: $2 ($1) -----"
+
+    if [ -z "${forceFlag}" -a -n "$3" ]; then
+        if [ $3 -ne 0 ]; then
+            echo "Skipping package since existing version >= version available"
+            return 0
+        fi
+    fi
 
     ulinux_detect_openssl_version
     pkg_filename=$TMPBINDIR/$pkg_filename
 
-    ulinux_detect_installer
-    echo "----- Updating package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
-        [ -z "${forceFlag}" -o "${pkg_name}" = "omi" ] && FORCE="--refuse-downgrade" || FORCE=""
+        [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
         dpkg ${DPKG_CONF_QUALS} --install $FORCE ${pkg_filename}.deb
 
         export PATH=/usr/local/sbin:/usr/sbin:/sbin:$PATH
     else
-        [ -n "${forceFlag}" -o "${pkg_name}" = "omi" ] && FORCE="--force" || FORCE=""
+        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         rpm --upgrade $FORCE ${pkg_filename}.rpm
     fi
 }
@@ -228,9 +308,70 @@ EOF
     return $hasCtypes
 }
 
+getInstalledVersion()
+{
+    # Parameter: Package to check if installed
+    # Returns: Printable string (version installed or "None")
+    if check_if_pkg_is_installed $1; then
+        if [ "$INSTALLER" = "DPKG" ]; then
+            local version=`dpkg -s $1 2> /dev/null | grep "Version: "`
+            getVersionNumber $version "Version: "
+        else
+            local version=`rpm -q $1 2> /dev/null`
+            getVersionNumber $version ${1}-
+        fi
+    else
+        echo "None"
+    fi
+}
+
+shouldInstall_omi()
+{
+    local versionInstalled=`getInstalledVersion omi`
+    [ "$versionInstalled" = "None" ] && return 0
+    local versionAvailable=`getVersionNumber $OMI_PKG omi-`
+
+    check_version_installable $versionInstalled $versionAvailable
+}
+
+shouldInstall_scx()
+{
+    local versionInstalled=`getInstalledVersion scx`
+    [ "$versionInstalled" = "None" ] && return 0
+    local versionAvailable=`getVersionNumber $SCX_PKG scx-cimprov-`
+
+    check_version_installable $versionInstalled $versionAvailable
+}
+
+shouldInstall_omsagent()
+{
+    local versionInstalled=`getInstalledVersion omsagent`
+    [ "$versionInstalled" = "None" ] && return 0
+    local versionAvailable=`getVersionNumber $OMS_PKG omsagent-`
+
+    check_version_installable $versionInstalled $versionAvailable
+}
+
+shouldInstall_omsconfig()
+{
+    # Package omsconfig will never install without Python ctypes ...
+    if python_ctypes_installed 1> /dev/null 2> /dev/null; then
+        local versionInstalled=`getInstalledVersion omsconfig`
+        [ "$versionInstalled" = "None" ] && return 0
+        local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
+
+        check_version_installable $versionInstalled $versionAvailable
+    else
+        return 1
+    fi
+}
+
 #
 # Main script follows
 #
+
+ulinux_detect_installer
+set -e
 
 onboardINT=0
 
@@ -305,6 +446,42 @@ do
         --source-references)
             source_references
             cleanup_and_exit 0
+            ;;
+
+        --version)
+            echo "Version: `getVersionNumber $OMS_PKG omsagent-`"
+            exit 0
+            ;;
+
+        --version-check)
+            printf '%-15s%-15s%-15s%-15s\n\n' Package Installed Available Install?
+
+            # omi
+            versionInstalled=`getInstalledVersion omi`
+            versionAvailable=`getVersionNumber $OMI_PKG omi-`
+            if shouldInstall_omi; then shouldInstall="Yes"; else shouldInstall="No"; fi
+            printf '%-15s%-15s%-15s%-15s\n' omi $versionInstalled $versionAvailable $shouldInstall
+
+            # scx
+            versionInstalled=`getInstalledVersion scx`
+            versionAvailable=`getVersionNumber $SCX_PKG scx-cimprov-`
+            if shouldInstall_scx; then shouldInstall="Yes"; else shouldInstall="No"; fi
+            printf '%-15s%-15s%-15s%-15s\n' scx $versionInstalled $versionAvailable $shouldInstall
+
+            # OMS agent itself
+            versionInstalled=`getInstalledVersion omsagent`
+            versionAvailable=`getVersionNumber $OMS_PKG omsagent-`
+            if shouldInstall_omsagent; then shouldInstall="Yes"; else shouldInstall="No"; fi
+            printf '%-15s%-15s%-15s%-15s\n' omsagent $versionInstalled $versionAvailable $shouldInstall
+
+            # omsconfig
+            versionInstalled=`getInstalledVersion omsconfig`
+            versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
+            if ! pytyon_ctypes_installed 1> /dev/null 2> /dev/null; then ctypes_text=" (No ctypes)"; fi
+            if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No${ctypes_text}"; fi
+            printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
+
+            exit 0
             ;;
 
         --int)
@@ -399,40 +576,40 @@ cd $EXTRACT_DIR
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
     if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
-	/opt/microsoft/omsagent/bin/uninstall $installMode
+        /opt/microsoft/omsagent/bin/uninstall $installMode
     else
-	echo "---------- WARNING WARNING WARNING ----------"
-	echo "Using new shell bundle to remove older kit."
-	echo "Using fallback code to perform kit removal."
-	echo "---------- WARNING WARNING WARNING ----------"
-	echo
+        echo "---------- WARNING WARNING WARNING ----------"
+        echo "Using new shell bundle to remove older kit."
+        echo "Using fallback code to perform kit removal."
+        echo "---------- WARNING WARNING WARNING ----------"
+        echo
 
-	pkg_rm omsconfig
-	pkg_rm omsagent
+        pkg_rm omsconfig
+        pkg_rm omsagent
 
-	# If MDSD is installed and we're just removing (not purging), leave SCX
+        # If MDSD is installed and we're just removing (not purging), leave SCX
 
-	if [ ! -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd -o "$installMode" = "P" ]; then
-	    if [ -f /opt/microsoft/scx/bin/uninstall ]; then
-		/opt/microsoft/scx/bin/uninstall $installMode
-	    else
-		for i in /opt/microsoft/*-cimprov; do
-		    PKG_NAME=`basename $i`
-		    if [ "$PKG_NAME" != "*-cimprov" ]; then
-			echo "Removing ${PKG_NAME} ..."
-			pkg_rm ${PKG_NAME}
-		    fi
-		done
+        if [ ! -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd -o "$installMode" = "P" ]; then
+            if [ -f /opt/microsoft/scx/bin/uninstall ]; then
+                /opt/microsoft/scx/bin/uninstall $installMode
+            else
+                for i in /opt/microsoft/*-cimprov; do
+                    PKG_NAME=`basename $i`
+                    if [ "$PKG_NAME" != "*-cimprov" ]; then
+                        echo "Removing ${PKG_NAME} ..."
+                        pkg_rm ${PKG_NAME}
+                    fi
+                done
 
-		# Now just simply pkg_rm scx and omi
-		pkg_rm scx
-		pkg_rm omi
-	    fi
-	else
-	    echo "--- MDSD detected; not removing SCX or OMI packages ---"
-	fi
+                # Now just simply pkg_rm scx and omi
+                pkg_rm scx
+                pkg_rm omi
+            fi
+        else
+            echo "--- MDSD detected; not removing SCX or OMI packages ---"
+        fi
 
-	if [ "$installMode" = "P" ]; then
+        if [ "$installMode" = "P" ]; then
             echo "Purging all files in cross-platform agent ..."
 
             #
@@ -441,28 +618,28 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
 
             check_if_pkg_is_installed omsconfig
             if [ $? -ne 0 ]; then
-		rm -rf /etc/opt/microsoft/omsconfig /opt/microsoft/omsconfig /var/opt/microsoft/omsconfig
+                rm -rf /etc/opt/microsoft/omsconfig /opt/microsoft/omsconfig /var/opt/microsoft/omsconfig
             fi
 
             check_if_pkg_is_installed omsagent
             if [ $? -ne 0 ]; then
-		rm -rf /etc/opt/microsoft/omsagent /opt/microsoft/omsagent /var/opt/microsoft/omsagent
+                rm -rf /etc/opt/microsoft/omsagent /opt/microsoft/omsagent /var/opt/microsoft/omsagent
             fi
 
             check_if_pkg_is_installed scx
             if [ $? -ne 0 ]; then
-		rm -rf /etc/opt/microsoft/scx /opt/microsoft/scx /var/opt/microsoft/scx \
+                rm -rf /etc/opt/microsoft/scx /opt/microsoft/scx /var/opt/microsoft/scx \
                     /etc/opt/microsoft/*-cimprov /opt/microsoft/*-cimprov /var/opt/microsoft/*-cimprov
             fi
 
             check_if_pkg_is_installed omi
             if [ $? -ne 0 ]; then
-		rm -rf /etc/opt/omi /opt/omi /var/opt/omi
+                rm -rf /etc/opt/omi /opt/omi /var/opt/omi
             fi
 
             rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
             rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
-	fi
+        fi
     fi
 fi
 
@@ -482,15 +659,15 @@ fi
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     python_ctypes_installed
     if [ $? -ne 0 ]; then
-	if [ -z "${forceFlag}"]; then
-	    echo "Python ctypes library was not found, installation cannot continue. Please" >&2
-	    echo "install the Python ctypes library or package (python-ctypes). If you wish," >&2
-	    echo "you can run this shell bundle with --force; in this case, we will install" >&2
-	    echo "omsagent, but omsconfig (DSC configuration) will not be available." >&2
-	    cleanup_and_exit 1
-	else
-	    echo "Python ctypes library not found, will continue without installing omsconfig."
-	fi
+        if [ -z "${forceFlag}" ]; then
+            echo "Python ctypes library was not found, installation cannot continue. Please" >&2
+            echo "install the Python ctypes library or package (python-ctypes). If you wish," >&2
+            echo "you can run this shell bundle with --force; in this case, we will install" >&2
+            echo "omsagent, but omsconfig (DSC configuration) will not be available." >&2
+            cleanup_and_exit 1
+        else
+            echo "Python ctypes library not found, will continue without installing omsconfig."
+        fi
     fi
 fi
 
@@ -529,62 +706,61 @@ case "$installMode" in
 
     I)
         check_if_pkg_is_installed scx
-	scx_installed=$?
+        scx_installed=$?
         check_if_pkg_is_installed omi
-	omi_installed=$?
+        omi_installed=$?
 
-	if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
-	    echo "Installing OMS agent ..."
+        if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
+            echo "Installing OMS agent ..."
 
-	    pkg_add $OMI_PKG omi
-	    OMI_EXIT_STATUS=$?
+            pkg_add $OMI_PKG omi
+            OMI_EXIT_STATUS=$?
 
-	    pkg_add $SCX_PKG scx
-	    SCX_EXIT_STATUS=$?
+            pkg_add $SCX_PKG scx
+            SCX_EXIT_STATUS=$?
 
-	    pkg_add $OMS_PKG omsagent
-	    OMS_EXIT_STATUS=$?
+            pkg_add $OMS_PKG omsagent
+            OMS_EXIT_STATUS=$?
 
-	    python_ctypes_installed
-	    if [ $? -eq 0 ]; then
-		pkg_add $DSC_PKG omsconfig
-		DSC_EXIT_STATUS=$?
-	    else
-		DSC_EXIT_STATUS=0
-	    fi
+            python_ctypes_installed
+            if [ $? -eq 0 ]; then
+                pkg_add $DSC_PKG omsconfig
+                DSC_EXIT_STATUS=$?
+            else
+                DSC_EXIT_STATUS=0
+            fi
 
             # Install bundled providers
-	    [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-	    echo "----- Installing bundled packages -----"
-	    for i in oss-kits/*-oss-test.sh; do
+            [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+            echo "----- Installing bundled packages -----"
+            for i in oss-kits/*-oss-test.sh; do
                 # If filespec didn't expand, break out of loop
-		[ ! -f $i ] && break
+                [ ! -f $i ] && break
 
                 # It's possible we have a test file without a kit; if so, ignore it
-		OSS_BUNDLE=`basename $i -oss-test.sh`
-		[ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
+                OSS_BUNDLE=`basename $i -oss-test.sh`
+                [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
-		./$i
-		if [ $? -eq 0 ]; then
-		    ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
-		    TEMP_STATUS=$?
-		    [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
-		fi
-	    done
-	else
-	    echo "The omi or scx package is already installed. Please run the" >&2
-	    echo "installer with --upgrade (instead of --install) to continue." >&2
-	fi
+                ./$i
+                if [ $? -eq 0 ]; then
+                    ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
+                    TEMP_STATUS=$?
+                    [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+                fi
+            done
+        else
+            echo "The omi or scx package is already installed. Please run the" >&2
+            echo "installer with --upgrade (instead of --install) to continue." >&2
+        fi
         ;;
 
     U)
         echo "Updating OMS agent ..."
         check_if_pkg_is_installed omi
         if [ $? -eq 0 ]; then
-            pkg_upd $OMI_PKG omi
-            # It is acceptable that this fails due to the new omi being
-            # the same version (or less) than the one currently installed.
-            OMI_EXIT_STATUS=0
+            shouldInstall_omi
+            pkg_upd $OMI_PKG omi $?
+            OMI_EXIT_STATUS=$?
         else
             pkg_add $OMI_PKG omi
             OMI_EXIT_STATUS=$?
@@ -603,7 +779,8 @@ case "$installMode" in
             fi
         fi
 
-        pkg_upd $SCX_PKG scx
+        shouldInstall_scx
+        pkg_upd $SCX_PKG scx $?
         SCX_EXIT_STATUS=$?
 
         # Restore HTTPSPORT if we saved something
@@ -613,16 +790,18 @@ case "$installMode" in
             mv ${OMISERV_CONF}.bak $OMISERV_CONF
         fi
 
-        pkg_upd $OMS_PKG omsagent
+        shouldInstall_omsagent
+        pkg_upd $OMS_PKG omsagent $?
         OMS_EXIT_STATUS=$?
 
-	python_ctypes_installed
-	if [ $? -eq 0 ]; then
-	    pkg_upd $DSC_PKG omsconfig
-	    DSC_EXIT_STATUS=$?
-	else
-	    DSC_EXIT_STATUS=0
-	fi
+        python_ctypes_installed
+        if [ $? -eq 0 ]; then
+            shouldInstall_omsconfig
+            pkg_upd $DSC_PKG omsconfig $?
+            DSC_EXIT_STATUS=$?
+        else
+            DSC_EXIT_STATUS=0
+        fi
 
         # Upgrade bundled providers
         #   Temporarily force upgrades via --force; this will unblock the test team
