@@ -1,6 +1,7 @@
 require "rexml/document"
 require "cgi"
 
+require_relative 'changetracking_lib'
 require_relative 'oms_common'
 
 module Fluent
@@ -29,63 +30,10 @@ module Fluent
     end
 
     def filter(tag, time, record)
-        
-      
       xml_string = record['xml']
-      xml_unescaped_string = CGI::unescapeHTML(xml_string)
+      out_schema = ChangeTracking.transform_and_wrap(xml_string, @hostname, time)
       @log.trace "Filtering xml" # #{xml_unescaped_string}"
-      xml = REXML::Document.new xml_string
-      
-      #formatter = REXML::Formatters::Pretty.new(2)
-      #formatter.compact = true
-      #formatter.write(xml, $stdout)
-      
-      if rand(2) == 1
-        state = "true"
-      else
-        state = "false"
-      end
-
-      @log.debug state
-
-      out_schema = {
-        "DataType" => "CONFIG_CHANGE_BLOB",
-        "IPName" => "changetracking",
-        "DataItems" => [
-                        {
-                          "Timestamp" => OMS::Common.format_time(time),
-                          "Computer" => @hostname,
-                          "ConfigChangeType" => "Daemons",
-                          "Collections" => [
-                                            {
-                                              "CollectionName": "iprdump",
-                                              "Name": "iprdump",
-                                              "Description": "iprdump description goes here",
-                                              "State": "Stopped",
-                                              "Path": "/etc/rc.d/init.d/iprdump",
-                                              "Runlevels": "2, 3, 4, 5",
-                                              "Enabled": state,
-                                              "Controller": "iprdump controller value"
-                                            },
-                                            {
-                                              "CollectionName": "network",
-                                              "Name": "network",
-                                              "Description": "networking networky things",
-                                              "State": "Running",
-                                              "Path": "/path/where/network/lives",
-                                              "Runlevels": "2, 3, 4, 5",
-                                              "Enabled": state,
-                                              "Controller": "network controller value"
-                                            }
-
-                                           ]
-                        }
-                       ]
-      }
-
-      #record
       out_schema
-
     end # filter
 
   end # class

@@ -56,7 +56,7 @@ module ChangeTracking
                 "Timestamp" => OMS::Common.format_time(time),
                 "Computer" => host,
                 "ConfigChangeType"=> "Daemons",
-                "Collections": data_items
+                "Collections"=> data_items
               ]
             }
             return wrapper

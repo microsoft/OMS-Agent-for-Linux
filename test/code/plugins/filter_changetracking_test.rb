@@ -3,7 +3,7 @@ require_relative '../../../source/code/plugins/changetracking_lib'
 #include ChangeTracking
 
 class ChangeTrackingTest < Test::Unit::TestCase
-  
+
   def setup
     #Fluent::Test.setup
     @xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxServiceResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;-l:&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Runlevels&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;unknown option&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Enabled&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;State&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;stopped&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Controller&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;init&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Path&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Description&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
@@ -38,41 +38,41 @@ class ChangeTrackingTest < Test::Unit::TestCase
   end
 
   def test_transform_xml_to_hash
-    instanceXMLstr =%{
+    instanceXMLstr = %{
       <INSTANCE CLASSNAME="MSFT_nxServiceResource">
-        <PROPERTY NAME="Name" TYPE="string">
-          <VALUE>iprdump</VALUE>
-        </PROPERTY>
-        <PROPERTY NAME="Runlevels" TYPE="string">
-          <VALUE>2, 3, 4, 5</VALUE>
-        </PROPERTY>
-        <PROPERTY NAME="Enabled" TYPE="boolean">
-          <VALUE>false</VALUE>
-        </PROPERTY>
-        <PROPERTY NAME="State" TYPE="string">
-          <VALUE>stopped</VALUE>
-        </PROPERTY>
-        <PROPERTY NAME="Controller" TYPE="string">
-          <VALUE>init</VALUE>
-        </PROPERTY>
-        <PROPERTY NAME="Path" TYPE="string">
-          <VALUE>/etc/rc.d/init.d/iprdump</VALUE>
-        </PROPERTY>
-        <PROPERTY NAME="Description" TYPE="string">
-          <VALUE>IBM Power RAID adapter dump utility</VALUE>
-        </PROPERTY>
+      <PROPERTY NAME="Name" TYPE="string">
+      <VALUE>iprdump</VALUE>
+      </PROPERTY>
+      <PROPERTY NAME="Runlevels" TYPE="string">
+      <VALUE>2, 3, 4, 5</VALUE>
+      </PROPERTY>
+      <PROPERTY NAME="Enabled" TYPE="boolean">
+      <VALUE>false</VALUE>
+      </PROPERTY>
+      <PROPERTY NAME="State" TYPE="string">
+      <VALUE>stopped</VALUE>
+      </PROPERTY>
+      <PROPERTY NAME="Controller" TYPE="string">
+      <VALUE>init</VALUE>
+      </PROPERTY>
+      <PROPERTY NAME="Path" TYPE="string">
+      <VALUE>/etc/rc.d/init.d/iprdump</VALUE>
+      </PROPERTY>
+      <PROPERTY NAME="Description" TYPE="string">
+      <VALUE>IBM Power RAID adapter dump utility</VALUE>
+      </PROPERTY>
       </INSTANCE>
     }
     expectedHash = {
-                    "CollectionName"=> "iprdump",
-                    "Name"=> "iprdump",
-                    "Description"=> "IBM Power RAID adapter dump utility",
-                    "State"=> "Stopped",
-                    "Path"=> "/etc/rc.d/init.d/iprdump",
-                    "Runlevels"=> "2, 3, 4, 5",
-                    "Enabled"=> "false",
-                    "Controller"=> "init"
-                  }
+      "CollectionName"=> "iprdump",
+      "Name"=> "iprdump",
+      "Description"=> "IBM Power RAID adapter dump utility",
+      "State"=> "Stopped",
+      "Path"=> "/etc/rc.d/init.d/iprdump",
+      "Runlevels"=> "2, 3, 4, 5",
+      "Enabled"=> "false",
+      "Controller"=> "init"
+    }
     instanceXML = ChangeTracking::strToXML(instanceXMLstr)
     instanceHash = ChangeTracking::instanceXMLtoHash(instanceXML)
     assert_equal(expectedHash, instanceHash)
@@ -80,8 +80,32 @@ class ChangeTrackingTest < Test::Unit::TestCase
 
 
   def test_transform_and_wrap
-    ChangeTracking::transform_and_wrap(@xml_str, "HostName", Time.now)
-    #puts wrapped
+    expectedHash = {
+                      "DataType"=>"CONFIG_CHANGE_BLOB",
+                      "IPName"=>"changetracking",
+                      "DataItems"=>[
+                        {
+                         "Timestamp"=>"2016-03-15T19:02:38.577Z",
+                         "Computer"=>"HostName",
+                         "ConfigChangeType"=>"Daemons",
+                         "Collections"=>[
+                          {
+                           "Name"=>"-l:",
+                           "CollectionName"=>"-l:",
+                           "Description"=>"",
+                           "State"=>"Stopped",
+                           "Path"=>"",
+                           "Runlevels"=>"unknown option",
+                           "Enabled"=>"false",
+                           "Controller"=>"init"
+                         }
+                       ]
+                     }
+                   ]
+                 }
+    expectedTime = Time.utc(2016,3,15,19,2,38.5776)
+    wrappedHash = ChangeTracking::transform_and_wrap(@xml_str, "HostName", expectedTime)
+    assert_equal(expectedHash, wrappedHash)
   end
 
 
