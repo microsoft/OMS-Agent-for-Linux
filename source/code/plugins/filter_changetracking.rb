@@ -11,7 +11,7 @@ module Fluent
 
     # config_param works like other plugins
     # Force sending the change tracking data even if it is identical to the previous snapshot
-    config_param :force_send, :boolean, :default => false
+    config_param :force_send, :bool, :default => false
 
     def configure(conf)
       super
