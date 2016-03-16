@@ -45,6 +45,7 @@ class ChangeTracking
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
         if hash == @@prev_hash and force_send == false
+            $log.info "Discarding duplicate inventory data."
             return {}
         end
         @@prev_hash = hash

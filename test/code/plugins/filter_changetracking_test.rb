@@ -134,7 +134,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
   end
 
   def test_force_send_false
-    # If we don't 
+    # If we don't force to send up the inventory data and it doesn't change, discard it.
     inventoryXMLstr = File.read(@inventoryPath)
     wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, false)
     wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, false)

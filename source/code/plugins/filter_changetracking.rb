@@ -38,6 +38,7 @@ module Fluent
         log_tmp = $log
         $log = @log
         out_schema = ChangeTracking.transform_and_wrap(xml_string, @hostname, time, @force_send)
+        # @log.debug "#{out_schema}"
       rescue => e
         @log.debug e
       ensure
