@@ -1,51 +1,55 @@
-require "rexml/document"
-require "cgi"
+require 'rexml/document'
+require 'cgi'
+require 'digest'
 
 require_relative 'oms_common'
 
-module ChangeTracking
+class ChangeTracking
 
-    def self.getInstanceXMLproperty(instanceXML, property)
-        search = "//PROPERTY[@NAME='#{property}']" 
-        propertyNode = REXML::XPath.first(instanceXML, search)
-        # puts search, property, propertyNode#, value
-        rexmlText = propertyNode.get_text('VALUE')
-        if rexmlText
-            return rexmlText.value
-        else
-            return ''
-        end    
+    @@prev_hash = ""
+    def ChangeTracking::prev_hash= (value)
+        @@prev_hash = value
     end
 
     def self.instanceXMLtoHash(instanceXML)
+        # $log.trace "instanceXMLtoHash"
         ret = {}
-        
-        ret['Name'] = getInstanceXMLproperty(instanceXML, 'Name')
-        ret['CollectionName'] = ret['Name']
-        ret['Description'] = getInstanceXMLproperty(instanceXML, 'Description')
-        ret['State'] = getInstanceXMLproperty(instanceXML, 'State').capitalize
-        ret['Path'] = getInstanceXMLproperty(instanceXML, 'Path')
-        ret['Runlevels'] = getInstanceXMLproperty(instanceXML, 'Runlevels')
-        ret['Enabled'] = getInstanceXMLproperty(instanceXML, 'Enabled')
-        ret['Controller'] = getInstanceXMLproperty(instanceXML, 'Controller')
-
+        propertyXPath = "PROPERTY"
+        instanceXML.elements.each(propertyXPath) { |inst| 
+            name = inst.attributes['NAME']
+            rexmlText = REXML::XPath.first(inst, 'VALUE').get_text
+            value = rexmlText ? rexmlText.value : ''
+            ret[name] = value
+        }
+        ret["CollectionName"] = ret["Name"]
         ret
     end
 
     def self.strToXML(xml_string)
+        $log.trace "strToXML"
         xml_unescaped_string = CGI::unescapeHTML(xml_string)
         REXML::Document.new xml_unescaped_string
     end
 
     # Returns an array of xml instances
     def self.getInstancesXML(inventoryXML)
+        $log.trace "getInstancesXML"
         instances = []
         xpathFilter = "INSTANCE/PROPERTY.ARRAY/VALUE.ARRAY/VALUE/INSTANCE"
         inventoryXML.elements.each(xpathFilter) { |inst| instances << inst }
         instances
     end
 
-    def self.transform_and_wrap(inventoryXMLstr, host, time)
+    def self.transform_and_wrap(inventoryXMLstr, host, time, force_send = false)
+
+        # Do not send duplicate data if we are not forced to
+        hash = Digest::SHA256.hexdigest(inventoryXMLstr)
+        if hash == @@prev_hash and force_send == false
+            return {}
+        end
+        @@prev_hash = hash
+
+        $log.trace "transform_and_wrap"
         inventoryXML = strToXML(inventoryXMLstr)
         data_items = getInstancesXML(inventoryXML).map { |inst| instanceXMLtoHash(inst) }
         if (data_items != nil and data_items.size > 0)

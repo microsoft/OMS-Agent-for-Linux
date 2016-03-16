@@ -10,6 +10,8 @@ module Fluent
     Fluent::Plugin.register_filter('filter_changetracking', self)
 
     # config_param works like other plugins
+    # Force sending the change tracking data even if it is identical to the previous snapshot
+    config_param :force_send, :boolean, :default => false
 
     def configure(conf)
       super
@@ -30,9 +32,20 @@ module Fluent
     end
 
     def filter(tag, time, record)
+      @log.trace "Filtering xml #{record['xml'].size}" # #{xml_unescaped_string}"
       xml_string = record['xml']
-      out_schema = ChangeTracking.transform_and_wrap(xml_string, @hostname, time)
-      @log.trace "Filtering xml" # #{xml_unescaped_string}"
+      begin
+        log_tmp = $log
+        $log = @log
+        out_schema = ChangeTracking.transform_and_wrap(xml_string, @hostname, time, @force_send)
+      rescue => e
+        @log.debug e
+      ensure
+        $log = log_tmp
+      end
+      #@log.trace xml_string
+      #@log.trace out_schema
+      @log.trace "End filtering"
       out_schema
     end # filter
 

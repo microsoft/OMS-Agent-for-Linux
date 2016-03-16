@@ -1,5 +1,6 @@
 require 'test/unit'
 require_relative '../../../source/code/plugins/changetracking_lib'
+require_relative 'omstestlib'
 #include ChangeTracking
 
 class ChangeTrackingTest < Test::Unit::TestCase
@@ -7,7 +8,9 @@ class ChangeTrackingTest < Test::Unit::TestCase
   def setup
     #Fluent::Test.setup
     @xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxServiceResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;-l:&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Runlevels&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;unknown option&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Enabled&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;State&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;stopped&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Controller&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;init&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Path&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Description&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
-    #$log = OMS::MockLog.new
+    $log = OMS::MockLog.new
+    @inventoryPath = File.join(File.dirname(__FILE__), 'Inventory.xml')
+    ChangeTracking.prev_hash = nil
   end
 
   def teardown
@@ -40,40 +43,42 @@ class ChangeTrackingTest < Test::Unit::TestCase
   def test_transform_xml_to_hash
     instanceXMLstr = %{
       <INSTANCE CLASSNAME="MSFT_nxServiceResource">
-      <PROPERTY NAME="Name" TYPE="string">
-      <VALUE>iprdump</VALUE>
-      </PROPERTY>
-      <PROPERTY NAME="Runlevels" TYPE="string">
-      <VALUE>2, 3, 4, 5</VALUE>
-      </PROPERTY>
-      <PROPERTY NAME="Enabled" TYPE="boolean">
-      <VALUE>false</VALUE>
-      </PROPERTY>
-      <PROPERTY NAME="State" TYPE="string">
-      <VALUE>stopped</VALUE>
-      </PROPERTY>
-      <PROPERTY NAME="Controller" TYPE="string">
-      <VALUE>init</VALUE>
-      </PROPERTY>
-      <PROPERTY NAME="Path" TYPE="string">
-      <VALUE>/etc/rc.d/init.d/iprdump</VALUE>
-      </PROPERTY>
-      <PROPERTY NAME="Description" TYPE="string">
-      <VALUE>IBM Power RAID adapter dump utility</VALUE>
-      </PROPERTY>
+        <PROPERTY NAME="Name" TYPE="string">
+          <VALUE>iprdump</VALUE>
+        </PROPERTY>
+        <PROPERTY NAME="Runlevels" TYPE="string">
+          <VALUE>2, 3, 4, 5</VALUE>
+        </PROPERTY>
+        <PROPERTY NAME="Enabled" TYPE="boolean">
+          <VALUE>false</VALUE>
+        </PROPERTY>
+        <PROPERTY NAME="State" TYPE="string">
+          <VALUE>stopped</VALUE>
+        </PROPERTY>
+        <PROPERTY NAME="Controller" TYPE="string">
+          <VALUE>init</VALUE>
+        </PROPERTY>
+        <PROPERTY NAME="Path" TYPE="string">
+          <VALUE>/etc/rc.d/init.d/iprdump</VALUE>
+        </PROPERTY>
+        <PROPERTY NAME="Description" TYPE="string">
+          <VALUE>IBM Power RAID adapter dump utility</VALUE>
+        </PROPERTY>
       </INSTANCE>
     }
     expectedHash = {
       "CollectionName"=> "iprdump",
       "Name"=> "iprdump",
       "Description"=> "IBM Power RAID adapter dump utility",
-      "State"=> "Stopped",
+      "State"=> "stopped",
       "Path"=> "/etc/rc.d/init.d/iprdump",
       "Runlevels"=> "2, 3, 4, 5",
       "Enabled"=> "false",
       "Controller"=> "init"
     }
-    instanceXML = ChangeTracking::strToXML(instanceXMLstr)
+    instanceXML = ChangeTracking::strToXML(instanceXMLstr).root
+    assert_equal("INSTANCE", instanceXML.name)
+    assert_equal("MSFT_nxServiceResource", instanceXML.attributes['CLASSNAME'])
     instanceHash = ChangeTracking::instanceXMLtoHash(instanceXML)
     assert_equal(expectedHash, instanceHash)
   end
@@ -93,7 +98,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
                            "Name"=>"-l:",
                            "CollectionName"=>"-l:",
                            "Description"=>"",
-                           "State"=>"Stopped",
+                           "State"=>"stopped",
                            "Path"=>"",
                            "Runlevels"=>"unknown option",
                            "Enabled"=>"false",
@@ -106,6 +111,35 @@ class ChangeTrackingTest < Test::Unit::TestCase
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
     wrappedHash = ChangeTracking::transform_and_wrap(@xml_str, "HostName", expectedTime)
     assert_equal(expectedHash, wrappedHash)
+  end
+
+  def test_performance
+    inventoryXMLstr = File.read(@inventoryPath)
+
+    start = Time.now
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now)
+    finish = Time.now
+    time_spent = finish - start
+    assert_equal(216, wrappedHash["DataItems"][0]["Collections"].size, "Expected 216 instances.")
+    assert(time_spent < 0.5, "transform_and_wrap too slow, it took #{time_spent}s to complete.")
+  end
+
+  def test_force_send_true
+    inventoryXMLstr = File.read(@inventoryPath)
+    t = Time.now
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, true)
+    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, true)
+    assert_equal(wrappedHash, wrappedHash2)
+    assert_not_equal({}, wrappedHash2)
+  end
+
+  def test_force_send_false
+    # If we don't 
+    inventoryXMLstr = File.read(@inventoryPath)
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, false)
+    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, false)
+    assert_not_equal({}, wrappedHash)
+    assert_equal({}, wrappedHash2)
   end
 
 
