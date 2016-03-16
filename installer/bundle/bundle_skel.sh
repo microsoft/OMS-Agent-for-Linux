@@ -219,7 +219,7 @@ ulinux_detect_installer()
 # $1 - The name of the package to check as to whether it's installed
 check_if_pkg_is_installed() {
     if [ "$INSTALLER" = "DPKG" ]; then
-        dpkg -s $1 2> /dev/null | grep Status | egrep " installed" 1> /dev/null
+        dpkg -s $1 2> /dev/null | grep Status | grep " installed" 1> /dev/null
     else
         rpm -q $1 2> /dev/null 1> /dev/null
     fi
