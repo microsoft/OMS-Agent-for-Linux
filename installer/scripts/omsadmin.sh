@@ -378,9 +378,10 @@ onboard()
         --header "User-Agent: $USER_AGENT" \
         --header "Accept-Language: en-US" \
         --insecure \
+        --verbose \
         --data-binary @$BODY_ONBOARD \
         --cert "$FILE_CRT" --key "$FILE_KEY" \
-        --output "$RESP_ONBOARD" $CURL_VERBOSE \
+        --output "$RESP_ONBOARD" \
         --write-out "%{http_code}\n" $PROXY_SETTING \
         https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
     
