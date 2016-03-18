@@ -32,21 +32,15 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      @log.trace "Filtering xml #{record['xml'].size}" # #{xml_unescaped_string}"
+      @log.trace "ChangeTracking filtering xml size=#{record['xml'].size}"
       xml_string = record['xml']
       begin
         log_tmp = $log
         $log = @log
         out_schema = ChangeTracking.transform_and_wrap(xml_string, @hostname, time, @force_send)
-        # @log.debug "#{out_schema}"
-      rescue => e
-        @log.debug e
       ensure
         $log = log_tmp
       end
-      #@log.trace xml_string
-      #@log.trace out_schema
-      @log.trace "End filtering"
       out_schema
     end # filter
 

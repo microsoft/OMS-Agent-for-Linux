@@ -1,12 +1,11 @@
 require 'test/unit'
+
 require_relative '../../../source/code/plugins/changetracking_lib'
 require_relative 'omstestlib'
-#include ChangeTracking
 
 class ChangeTrackingTest < Test::Unit::TestCase
 
   def setup
-    #Fluent::Test.setup
     @xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxServiceResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;-l:&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Runlevels&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;unknown option&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Enabled&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;State&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;stopped&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Controller&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;init&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Path&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Description&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
     $log = OMS::MockLog.new
     @inventoryPath = File.join(File.dirname(__FILE__), 'Inventory.xml')
@@ -21,7 +20,6 @@ class ChangeTrackingTest < Test::Unit::TestCase
     xml = ChangeTracking.strToXML(@xml_str)
     assert(xml.is_a?(REXML::Document), "Expected return type is REXML::Document")
   end
-
 
   def test_strToXML_fail
     assert_raise REXML::ParseException do
@@ -83,7 +81,6 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal(expectedHash, instanceHash)
   end
 
-
   def test_transform_and_wrap
     expectedHash = {
                       "DataType"=>"CONFIG_CHANGE_BLOB",
@@ -120,8 +117,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now)
     finish = Time.now
     time_spent = finish - start
-    assert_equal(216, wrappedHash["DataItems"][0]["Collections"].size, "Expected 216 instances.")
-    assert(time_spent < 0.5, "transform_and_wrap too slow, it took #{time_spent}s to complete.")
+    assert_equal(210, wrappedHash["DataItems"][0]["Collections"].size, "Expected 210 instances.")
+    assert(time_spent < 1.0, "transform_and_wrap too slow, it took #{time_spent}s to complete.")
   end
 
   def test_force_send_true
@@ -142,16 +139,17 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal({}, wrappedHash2)
   end
 
-
-  # def test_transform
-
-  #   # Make sure that we read test onboarding information from the environment varibles
-  #   assert(TEST_WORKSPACE_ID != nil, "TEST_WORKSPACE_ID should be set by the environment for this test to run.") 
-  #   assert(TEST_SHARED_KEY.empty? == false, "TEST_SHARED_KEY should not be empty.")
-  #   assert_equal(true, success, "Configuration should be loaded")
-  #   assert_nothing_raised(RuntimeError, "Failed to send syslog data : '#{$log.logs}'") do
-  #     output.handle_record("oms.syslog.local0.warn", record)
-  #   end
-  # end
+  def test_remove_duplicates
+    inventoryXMLstr = File.read(@inventoryPath)
+    inventoryXML = ChangeTracking::strToXML(inventoryXMLstr)
+    data_items = ChangeTracking::getInstancesXML(inventoryXML).map { |inst| ChangeTracking::instanceXMLtoHash(inst) }
+    assert_equal(216, data_items.size)
+    collectionNames = data_items.map { |data_item| data_item["CollectionName"] }
+    collectionNamesSet = Set.new collectionNames
+    assert_equal(210, collectionNamesSet.size) # 6 duplicates
+    assert(collectionNamesSet.size < collectionNames.size, "Test data does not contain duplicate Collection Names")
+    data_items_dedup = ChangeTracking::removeDuplicateCollectionNames(data_items)
+    assert_equal(collectionNamesSet.size, data_items_dedup.size, "Deduplication failed")
+  end
 
 end

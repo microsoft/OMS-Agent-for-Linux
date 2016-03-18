@@ -1,6 +1,7 @@
 require 'rexml/document'
 require 'cgi'
 require 'digest'
+require 'set'
 
 require_relative 'oms_common'
 
@@ -40,6 +41,13 @@ class ChangeTracking
         instances
     end
 
+    def self.removeDuplicateCollectionNames(data_items)
+        collection_names = Set.new
+        data_items.select { |data_item|
+            collection_names.add?(data_item["CollectionName"]) && true || false
+        }
+    end
+
     def self.transform_and_wrap(inventoryXMLstr, host, time, force_send = false)
 
         # Do not send duplicate data if we are not forced to
@@ -53,6 +61,7 @@ class ChangeTracking
         $log.trace "transform_and_wrap"
         inventoryXML = strToXML(inventoryXMLstr)
         data_items = getInstancesXML(inventoryXML).map { |inst| instanceXMLtoHash(inst) }
+        data_items = removeDuplicateCollectionNames(data_items)
         if (data_items != nil and data_items.size > 0)
             wrapper = {
               "DataType"=>"CONFIG_CHANGE_BLOB",
