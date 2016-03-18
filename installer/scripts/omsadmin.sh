@@ -215,10 +215,7 @@ parse_args()
         fi
     fi
 
-    if [ "$VERBOSE" = "1" ]; then
-        echo "Workspace ID:  $WORKSPACE_ID"
-        echo "Shared key:    $SHARED_KEY"
-    else
+    if [ $VERBOSE -eq 0 ]; then
         # Suppress curl output
         CURL_VERBOSE=-s
     fi
@@ -313,6 +310,11 @@ set_proxy_setting()
 
 onboard()
 {
+    if [ $VERBOSE -eq 1 ]; then
+        echo "Workspace ID:  $WORKSPACE_ID"
+        echo "Shared key:    $SHARED_KEY"
+    fi
+
     local error=0
     if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
         log_error "Missing Wokspace ID or Shared Key information for onboarding"
@@ -555,7 +557,11 @@ renew_cert()
 
 main()
 {
-    if [ $# -eq 0 ]; then
+    check_user
+    set_user_agent
+    parse_args $@
+
+    if [ $# -eq 0 ] || [ $# -eq 1 -a "$VERBOSE" = "1" ]; then
 
         # Allow onboarding params to be loaded from a file
         # The file contains at least these two lines :
@@ -571,10 +577,6 @@ main()
             usage
         fi
     fi
-
-    check_user
-    set_user_agent
-    parse_args $@
 
     if [ "$ONBOARDING" = "1" ]; then
         onboard || clean_exit 1
