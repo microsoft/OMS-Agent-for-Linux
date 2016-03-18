@@ -314,8 +314,8 @@ getInstalledVersion()
     # Returns: Printable string (version installed or "None")
     if check_if_pkg_is_installed $1; then
         if [ "$INSTALLER" = "DPKG" ]; then
-            local version=`dpkg -s $1 2> /dev/null | grep "Version: "`
-            getVersionNumber $version "Version: "
+            local version="`dpkg -s $1 2> /dev/null | grep 'Version: '`"
+            getVersionNumber "$version" "Version: "
         else
             local version=`rpm -q $1 2> /dev/null`
             getVersionNumber $version ${1}-
