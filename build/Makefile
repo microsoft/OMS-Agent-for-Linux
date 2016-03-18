@@ -175,8 +175,10 @@ ifeq ($(ULINUX),1)
 	ln -fs $(OMI_ROOT) $(DSC_DIR)/omi-1.0.8
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_0.9.8 output
 	$(MAKE) -C $(DSC_DIR) dsc098
+	$(MAKE) -C $(DSC_DIR) dsckit098
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.0.0 output
 	$(MAKE) -C $(DSC_DIR) dsc100
+	$(MAKE) -C $(DSC_DIR) dsckit100
 	cd $(OMI_ROOT); $(RMDIR) output
 endif
 
