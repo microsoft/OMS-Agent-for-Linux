@@ -79,10 +79,10 @@ endif
 
 ifeq ($(ULINUX),1)
   ifeq ($(PF_ARCH),x86)
-    OSS_KITS := $(shell cd $(SCX_DIR)/installer/oss-kits; ls *-oss-test.sh *.i686.sh)
+    OSS_KITS := $(shell cd $(SCX_DIR)/../opsmgr-kits; ls *-oss-test.sh *.i686.sh)
     OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh *.i686.sh)
   else ifeq ($(PF_ARCH),x64)
-    OSS_KITS := $(shell cd $(SCX_DIR)/installer/oss-kits; ls *-oss-test.sh *.x86_64.sh)
+    OSS_KITS := $(shell cd $(SCX_DIR)/../opsmgr-kits; ls *-oss-test.sh *.x86_64.sh)
     OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh *.x86_64.sh)
   endif
 endif
@@ -297,7 +297,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Pick up the OSS (Open Source) providers
 	$(RMDIR) $(INTERMEDIATE_DIR)/oss-kits
 	$(MKPATH) $(INTERMEDIATE_DIR)/oss-kits
-	cd $(SCX_DIR)/installer/oss-kits; $(COPY) $(OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
+	cd $(SCX_DIR)/../opsmgr-kits; $(COPY) $(OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
 	cd $(BASE_DIR)/installer/oss-kits; $(COPY) $(OMS_OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
 	chmod +x $(INTERMEDIATE_DIR)/oss-kits/*.sh
 
