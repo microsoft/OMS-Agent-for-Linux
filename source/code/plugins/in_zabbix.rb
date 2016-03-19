@@ -28,7 +28,10 @@ module Fluent
 		def get_alerts
 			time = Time.now.to_f
 			records = @zabbix_lib.get_and_wrap
-			router.emit(@tag, time, records)
+			# only emit non empty records
+			if !records.empty?
+				router.emit(@tag, time, records)
+			end
 		end
 
 		def start
