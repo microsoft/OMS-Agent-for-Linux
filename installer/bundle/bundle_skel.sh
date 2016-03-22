@@ -804,10 +804,7 @@ case "$installMode" in
         fi
 
         # Upgrade bundled providers
-        #   Temporarily force upgrades via --force; this will unblock the test team
-        #   This change may or may not be permanent; we'll see
-        # [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        FORCE="--force"
+        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         echo "----- Updating bundled packages -----"
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
