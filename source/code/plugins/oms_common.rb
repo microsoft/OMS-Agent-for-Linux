@@ -5,10 +5,6 @@ module OMS
     # inform the output plugin that it is indeed retryable
   end
 
-  class DropRequestException < Exception
-    # Throw this exception to tell the output plugin that data should be dropped
-  end
-
   class Common
     require 'json'
     require 'net/http'
@@ -146,7 +142,7 @@ module OMS
       #   string. body of the response
       def start_request(req, secure_http, ignore404 = false)
         # Tries to send the passed in request
-        # Raises a RuntimeException if the request fails.
+        # Raises an exception if the request fails.
         # This exception should only be caught by the fluentd engine so that it retries sending this 
         begin
           res = nil
@@ -169,18 +165,10 @@ module OMS
 
           res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
 
-          if res.is_a?(Net::HTTPClientError)
-            raise DropRequestException, "Client Error: #{res_summary}"
-          elsif res.is_a?(Net::HTTPServerError)
-            if res.code == "500"
-              raise DropRequestException, "Server Error: #{res_summary}"
-            else
-              raise RetryRequestException, "Server error: #{res_summary}"
-            end
-          else
-            # Unkown response we don't know if the error is retryable
-            raise DropRequestException, "Unsupported response from server, dropping data. #{res_summary}"
-          end # res type check
+          if res.code != "200"
+            # Retry all failure error codes...
+            raise RetryRequestException, "Server error: #{res_summary}"
+          end
 
         end # end begin
       end # end start_request

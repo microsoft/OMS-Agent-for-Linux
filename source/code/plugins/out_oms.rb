@@ -56,8 +56,6 @@ module Fluent
           @log.debug "Packages x #{record['DataItems'][0]["Collections"].size} Services x #{record['DataItems'][1]["Collections"].size}"
         end
       end
-    rescue OMS::DropRequestException => e
-      OMS::Log.error_once("Dropping data. Error:'#{e}'")
     rescue OMS::RetryRequestException => e
       @log.debug "Encountered retryable exception. Will retry sending data later. Error:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
