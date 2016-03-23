@@ -6,7 +6,8 @@ require_relative 'omstestlib'
 class ChangeTrackingTest < Test::Unit::TestCase
 
   def setup
-    @xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxServiceResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;-l:&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Runlevels&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;unknown option&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Enabled&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;State&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;stopped&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Controller&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;init&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Path&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Description&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
+    @package_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxPackageResource&quot;&gt;&lt;PROPERTY NAME=&quot;Publisher&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;CentOS BuildSystem &amp;lt;http://bugs.centos.org&amp;gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ReturnCode&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;rsyslog&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FilePath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageGroup&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Installed&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;InstalledOn&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1445271183&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;7.4.7&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Ensure&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;present&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;x86_64&amp;#10;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Arguments&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageManager&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageDescription&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Enhanced system logging and kernel message trapping daemon&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Size&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;2033615&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
+    @service_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxServiceResource&quot;&gt;&lt;PROPERTY NAME=&quot;Publisher&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;(none)&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ReturnCode&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;omsagent&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FilePath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageGroup&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Installed&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;InstalledOn&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1458339065&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1.1.0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Ensure&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;present&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;x86_64&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Arguments&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageManager&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageDescription&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Microsoft Operations Management Suite for UNIX/Linux agent&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Size&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;38487871&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
     $log = OMS::MockLog.new
     @inventoryPath = File.join(File.dirname(__FILE__), 'Inventory.xml')
     ChangeTracking.prev_hash = nil
@@ -17,7 +18,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
   end
 
   def test_strToXML
-    xml = ChangeTracking.strToXML(@xml_str)
+    xml = ChangeTracking.strToXML(@service_xml_str)
     assert(xml.is_a?(REXML::Document), "Expected return type is REXML::Document")
   end
 
@@ -28,7 +29,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
   end
 
   def test_getInstancesXML
-    xml = ChangeTracking.strToXML(@xml_str)
+    xml = ChangeTracking.strToXML(@service_xml_str)
     assert(xml.root != nil, 'Failed find the root of the xml document')
     assert_equal("INSTANCE", xml.root.name)
     instances = ChangeTracking.getInstancesXML(xml)
@@ -38,7 +39,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal("MSFT_nxServiceResource", instances[0].attributes['CLASSNAME'])
   end
 
-  def test_transform_xml_to_hash
+  def test_serviceXMLtoHash
     instanceXMLstr = %{
       <INSTANCE CLASSNAME="MSFT_nxServiceResource">
         <PROPERTY NAME="Name" TYPE="string">
@@ -77,36 +78,106 @@ class ChangeTrackingTest < Test::Unit::TestCase
     instanceXML = ChangeTracking::strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
     assert_equal("MSFT_nxServiceResource", instanceXML.attributes['CLASSNAME'])
-    instanceHash = ChangeTracking::instanceXMLtoHash(instanceXML)
+    instanceHash = ChangeTracking::serviceXMLtoHash(instanceXML)
+    assert_equal(expectedHash, instanceHash)
+  end
+
+
+  def test_packageXMLtoHash
+    instanceXMLstr = %{
+      <INSTANCE CLASSNAME="MSFT_nxPackageResource">
+          <PROPERTY NAME="Publisher" TYPE="string">
+            <VALUE>MicrosoftPublisher</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="ReturnCode" TYPE="uint32">
+            <VALUE>0</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="Name" TYPE="string">
+            <VALUE>omsagent</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="FilePath" TYPE="string">
+            <VALUE></VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="PackageGroup" TYPE="boolean">
+            <VALUE>false</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="Installed" TYPE="boolean">
+            <VALUE>true</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="InstalledOn" TYPE="string">
+            <VALUE>1458339065</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="Version" TYPE="string">
+            <VALUE>1.1.0</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="Ensure" TYPE="string">
+            <VALUE>present</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="Architecture" TYPE="string">
+            <VALUE>x86_64</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="Arguments" TYPE="string">
+            <VALUE></VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="PackageManager" TYPE="string">
+            <VALUE></VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="PackageDescription" TYPE="string">
+            <VALUE>Microsoft Operations Management Suite for UNIX/Linux agent</VALUE>
+          </PROPERTY>
+          <PROPERTY NAME="Size" TYPE="uint32">
+            <VALUE>38487871</VALUE>
+          </PROPERTY>
+        </INSTANCE>
+    }
+
+    expectedHash = {
+      "CollectionName"=> "omsagent",
+      "Name"=> "omsagent",
+      "Publisher"=> "MicrosoftPublisher",
+      "CurrentVersion"=> "1.1.0",
+      "Timestamp"=> "2016-03-18T22:11:05.000Z",
+      "Architecture"=> "x86_64",
+      "Size"=> "38487871"
+    }
+
+    instanceXML = ChangeTracking::strToXML(instanceXMLstr).root
+    assert_equal("INSTANCE", instanceXML.name)
+    assert_equal("MSFT_nxPackageResource", instanceXML.attributes['CLASSNAME'])
+    instanceHash = ChangeTracking::packageXMLtoHash(instanceXML)
     assert_equal(expectedHash, instanceHash)
   end
 
   def test_transform_and_wrap
-    expectedHash = {
-                      "DataType"=>"CONFIG_CHANGE_BLOB",
-                      "IPName"=>"changetracking",
-                      "DataItems"=>[
-                        {
-                         "Timestamp"=>"2016-03-15T19:02:38.577Z",
-                         "Computer"=>"HostName",
-                         "ConfigChangeType"=>"Daemons",
-                         "Collections"=>[
-                          {
-                           "Name"=>"-l:",
-                           "CollectionName"=>"-l:",
-                           "Description"=>"",
-                           "State"=>"stopped",
-                           "Path"=>"",
-                           "Runlevels"=>"unknown option",
-                           "Enabled"=>"false",
-                           "Controller"=>"init"
-                         }
-                       ]
-                     }
-                   ]
-                 }
+    expectedHash = {"DataItems"=>
+      [{"Collections"=>[],
+        "Computer"=>"HostName",
+        "ConfigChangeType"=>"Software.Packages",
+        "Timestamp"=>"2016-03-15T19:02:38.577Z"},
+        {"Collections"=>
+          [{"Architecture"=>"x86_64",
+           "Arguments"=>"",
+           "CollectionName"=>"omsagent",
+           "Ensure"=>"present",
+           "FilePath"=>"",
+           "Installed"=>"true",
+           "InstalledOn"=>"1458339065",
+           "Name"=>"omsagent",
+           "PackageDescription"=>
+           "Microsoft Operations Management Suite for UNIX/Linux agent",
+           "PackageGroup"=>"false",
+           "PackageManager"=>"",
+           "Publisher"=>"(none)",
+           "ReturnCode"=>"0",
+           "Size"=>"38487871",
+           "Version"=>"1.1.0"}],
+           "Computer"=>"HostName",
+           "ConfigChangeType"=>"Daemons",
+           "Timestamp"=>"2016-03-15T19:02:38.577Z"}],
+           "DataType"=>"CONFIG_CHANGE_BLOB",
+           "IPName"=>"changetracking"}
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = ChangeTracking::transform_and_wrap(@xml_str, "HostName", expectedTime)
+    wrappedHash = ChangeTracking::transform_and_wrap(@service_xml_str, "HostName", expectedTime)
     assert_equal(expectedHash, wrappedHash)
   end
 
@@ -117,8 +188,11 @@ class ChangeTrackingTest < Test::Unit::TestCase
     wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now)
     finish = Time.now
     time_spent = finish - start
-    assert_equal(210, wrappedHash["DataItems"][0]["Collections"].size, "Expected 210 instances.")
-    assert(time_spent < 1.0, "transform_and_wrap too slow, it took #{time_spent}s to complete.")
+    assert_equal(1374, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of package instances.")
+    assert_equal(216, wrappedHash["DataItems"][1]["Collections"].size, "Got the wrong number of service instances.")
+    if time_spent > 1.0
+      warn("Method transform_and_wrap too slow, it took #{time_spent}s to complete.")
+    end
   end
 
   def test_force_send_true
@@ -139,7 +213,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal({}, wrappedHash2)
   end
 
-  def test_remove_duplicates
+  def notest_remove_duplicates
     inventoryXMLstr = File.read(@inventoryPath)
     inventoryXML = ChangeTracking::strToXML(inventoryXMLstr)
     data_items = ChangeTracking::getInstancesXML(inventoryXML).map { |inst| ChangeTracking::instanceXMLtoHash(inst) }

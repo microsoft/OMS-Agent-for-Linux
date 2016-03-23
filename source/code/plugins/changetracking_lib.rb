@@ -18,11 +18,29 @@ class ChangeTracking
         propertyXPath = "PROPERTY"
         instanceXML.elements.each(propertyXPath) { |inst| 
             name = inst.attributes['NAME']
-            rexmlText = REXML::XPath.first(inst, 'VALUE').get_text
-            value = rexmlText ? rexmlText.value : ''
+            rexmlText = REXML::XPath.first(inst, 'VALUE').get_text # TODO escape unicode chars like "&amp;"
+            value = rexmlText ? rexmlText.value.strip : ''
             ret[name] = value
         }
-        ret["CollectionName"] = ret["Name"]
+        ret
+    end
+
+    def self.serviceXMLtoHash(serviceXML)
+        serviceHash = instanceXMLtoHash(serviceXML)
+        serviceHash["CollectionName"] = serviceHash["Name"]
+        serviceHash
+    end
+
+    def self.packageXMLtoHash(packageXML)
+        packageHash = instanceXMLtoHash(packageXML)
+        ret = {}
+        ret["Architecture"] = packageHash["Architecture"]
+        ret["CollectionName"] = packageHash["Name"]
+        ret["CurrentVersion"] = packageHash["Version"]
+        ret["Name"] = packageHash["Name"]
+        ret["Publisher"] = packageHash["Publisher"]
+        ret["Size"] = packageHash["Size"]
+        ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
         ret
     end
 
@@ -32,7 +50,7 @@ class ChangeTracking
         REXML::Document.new xml_unescaped_string
     end
 
-    # Returns an array of xml instances
+    # Returns an array of xml instances (all types)
     def self.getInstancesXML(inventoryXML)
         $log.trace "getInstancesXML"
         instances = []
@@ -60,17 +78,47 @@ class ChangeTracking
 
         $log.trace "transform_and_wrap"
         inventoryXML = strToXML(inventoryXMLstr)
-        data_items = getInstancesXML(inventoryXML).map { |inst| instanceXMLtoHash(inst) }
-        data_items = removeDuplicateCollectionNames(data_items)
-        if (data_items != nil and data_items.size > 0)
+        instancesXML = getInstancesXML(inventoryXML)
+
+
+        # Split packages from services 
+        packagesXML = []
+        servicesXML = []
+        instancesXML.each do |inst|
+            classname = inst.attributes['CLASSNAME']
+            if classname == 'MSFT_nxPackageResource'
+                packagesXML << inst
+            elsif classname == 'MSFT_nxServiceResource'
+                servicesXML << inst
+            else
+                raise "Unknown classname '#{classname}' for instance."
+            end
+        end
+
+        # Convert to xml to hash/json representation
+        packages = packagesXML.map { |package|  packageXMLtoHash(package)}
+        services = servicesXML.map { |service|  serviceXMLtoHash(service)}
+
+        #data_items = getInstancesXML(inventoryXML).map { |inst| instanceXMLtoHash(inst) }
+        #data_items = removeDuplicateCollectionNames(data_items)
+        if (packages.size > 0 or services.size > 0)
+            timestamp = OMS::Common.format_time(time)
             wrapper = {
               "DataType"=>"CONFIG_CHANGE_BLOB",
               "IPName"=>"changetracking",
               "DataItems"=>[
-                "Timestamp" => OMS::Common.format_time(time),
-                "Computer" => host,
-                "ConfigChangeType"=> "Daemons",
-                "Collections"=> data_items
+                {
+                    "Timestamp" => timestamp,
+                    "Computer" => host,
+                    "ConfigChangeType"=> "Software.Packages",
+                    "Collections"=> packages
+                },
+                {
+                    "Timestamp" => timestamp,
+                    "Computer" => host,
+                    "ConfigChangeType"=> "Daemons",
+                    "Collections"=> services
+                }
               ]
             }
             return wrapper
