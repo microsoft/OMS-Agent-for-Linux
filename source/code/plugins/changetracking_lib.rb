@@ -7,13 +7,17 @@ require_relative 'oms_common'
 
 class ChangeTracking
 
+    @@log = nil
+    def self.log= (value)
+        @@log = value
+    end
+
     @@prev_hash = ""
-    def ChangeTracking::prev_hash= (value)
+    def self.prev_hash= (value)
         @@prev_hash = value
     end
 
     def self.instanceXMLtoHash(instanceXML)
-        # $log.trace "instanceXMLtoHash"
         ret = {}
         propertyXPath = "PROPERTY"
         instanceXML.elements.each(propertyXPath) { |inst| 
@@ -45,14 +49,14 @@ class ChangeTracking
     end
 
     def self.strToXML(xml_string)
-        $log.trace "strToXML"
+        @@log.trace "strToXML"
         xml_unescaped_string = CGI::unescapeHTML(xml_string)
         REXML::Document.new xml_unescaped_string
     end
 
     # Returns an array of xml instances (all types)
     def self.getInstancesXML(inventoryXML)
-        $log.trace "getInstancesXML"
+        @@log.trace "getInstancesXML"
         instances = []
         xpathFilter = "INSTANCE/PROPERTY.ARRAY/VALUE.ARRAY/VALUE/INSTANCE"
         inventoryXML.elements.each(xpathFilter) { |inst| instances << inst }
@@ -79,12 +83,12 @@ class ChangeTracking
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
         if hash == @@prev_hash and force_send == false
-            $log.debug "Discarding duplicate inventory data. Hash=#{hash[0..5]}"
+            @@log.debug "Discarding duplicate inventory data. Hash=#{hash[0..5]}"
             return {}
         end
         @@prev_hash = hash
 
-        $log.trace "transform_and_wrap"
+        @@log.trace "transform_and_wrap"
         # Extract the instances in xml format
         inventoryXML = strToXML(inventoryXMLstr)
         instancesXML = getInstancesXML(inventoryXML)
