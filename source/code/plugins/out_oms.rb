@@ -52,6 +52,9 @@ module Fluent
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
+        if tag == 'oms.changetracking.service'
+          @log.debug "Packages x #{record['DataItems'][0]["Collections"].size} Services x #{record['DataItems'][1]["Collections"].size}"
+        end
       end
     rescue OMS::DropRequestException => e
       OMS::Log.error_once("Dropping data. Error:'#{e}'")

@@ -188,7 +188,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now)
     finish = Time.now
     time_spent = finish - start
-    assert_equal(1374, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of package instances.")
+    # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
+    assert_equal(1371, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of package instances.")
     assert_equal(209, wrappedHash["DataItems"][1]["Collections"].size, "Got the wrong number of service instances.")
     if time_spent > 1.0
       warn("Method transform_and_wrap too slow, it took #{time_spent}s to complete.")

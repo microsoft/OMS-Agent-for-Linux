@@ -99,6 +99,7 @@ class ChangeTracking
 
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
         services = removeDuplicateCollectionNames(services)
+        packages = removeDuplicateCollectionNames(packages)
         #data_items = getInstancesXML(inventoryXML).map { |inst| instanceXMLtoHash(inst) }
         if (packages.size > 0 or services.size > 0)
             timestamp = OMS::Common.format_time(time)
