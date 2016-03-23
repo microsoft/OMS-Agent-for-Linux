@@ -49,14 +49,12 @@ class ChangeTracking
     end
 
     def self.strToXML(xml_string)
-        @@log.trace "strToXML"
         xml_unescaped_string = CGI::unescapeHTML(xml_string)
         REXML::Document.new xml_unescaped_string
     end
 
     # Returns an array of xml instances (all types)
     def self.getInstancesXML(inventoryXML)
-        @@log.trace "getInstancesXML"
         instances = []
         xpathFilter = "INSTANCE/PROPERTY.ARRAY/VALUE.ARRAY/VALUE/INSTANCE"
         inventoryXML.elements.each(xpathFilter) { |inst| instances << inst }
@@ -83,7 +81,7 @@ class ChangeTracking
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
         if hash == @@prev_hash and force_send == false
-            @@log.debug "Discarding duplicate inventory data. Hash=#{hash[0..5]}"
+            @@log.debug "ChangeTracking : Discarding duplicate inventory data. Hash=#{hash[0..5]}"
             return {}
         end
         @@prev_hash = hash
@@ -125,6 +123,7 @@ class ChangeTracking
                 }
               ]
             }
+            @@log.debug "ChangeTracking : Packages x #{packages.size}, Services x #{services.size}"
             return wrapper
         else
             # no data items, send a empty array that tells ODS

@@ -33,8 +33,8 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      @log.trace "ChangeTracking filtering xml size=#{record['xml'].size}"
       xml_string = record['xml']
+      @log.debug "ChangeTracking : Filtering xml size=#{xml_string.size}"
       return ChangeTracking.transform_and_wrap(xml_string, @hostname, time, @force_send)
     end # filter
 

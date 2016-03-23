@@ -163,11 +163,10 @@ module OMS
             return ''
           end
 
-          res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
-
           if res.code != "200"
             # Retry all failure error codes...
-            raise RetryRequestException, "Server error: #{res_summary}"
+            res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
+            raise RetryRequestException, "HTTP error: #{res_summary}"
           end
 
         end # end begin
