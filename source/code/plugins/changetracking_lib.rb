@@ -66,41 +66,40 @@ class ChangeTracking
         }
     end
 
+    def self.isPackageInstanceXML(instanceXML)
+        instanceXML.attributes['CLASSNAME'] == 'MSFT_nxPackageResource'
+    end
+
+    def self.isServiceInstanceXML(instanceXML)
+        instanceXML.attributes['CLASSNAME'] == 'MSFT_nxServiceResource'
+    end
+
     def self.transform_and_wrap(inventoryXMLstr, host, time, force_send = false)
 
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
         if hash == @@prev_hash and force_send == false
-            $log.info "Discarding duplicate inventory data."
+            $log.debug "Discarding duplicate inventory data. Hash=#{hash[0..5]}"
             return {}
         end
         @@prev_hash = hash
 
         $log.trace "transform_and_wrap"
+        # Extract the instances in xml format
         inventoryXML = strToXML(inventoryXMLstr)
         instancesXML = getInstancesXML(inventoryXML)
 
-
         # Split packages from services 
-        packagesXML = []
-        servicesXML = []
-        instancesXML.each do |inst|
-            classname = inst.attributes['CLASSNAME']
-            if classname == 'MSFT_nxPackageResource'
-                packagesXML << inst
-            elsif classname == 'MSFT_nxServiceResource'
-                servicesXML << inst
-            else
-                raise "Unknown classname '#{classname}' for instance."
-            end
-        end
+        packagesXML = instancesXML.select { |instanceXML| isPackageInstanceXML(instanceXML) }
+        servicesXML = instancesXML.select { |instanceXML| isServiceInstanceXML(instanceXML) }
 
         # Convert to xml to hash/json representation
         packages = packagesXML.map { |package|  packageXMLtoHash(package)}
         services = servicesXML.map { |service|  serviceXMLtoHash(service)}
 
+        # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
+        services = removeDuplicateCollectionNames(services)
         #data_items = getInstancesXML(inventoryXML).map { |inst| instanceXMLtoHash(inst) }
-        #data_items = removeDuplicateCollectionNames(data_items)
         if (packages.size > 0 or services.size > 0)
             timestamp = OMS::Common.format_time(time)
             wrapper = {

@@ -189,7 +189,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     finish = Time.now
     time_spent = finish - start
     assert_equal(1374, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of package instances.")
-    assert_equal(216, wrappedHash["DataItems"][1]["Collections"].size, "Got the wrong number of service instances.")
+    assert_equal(209, wrappedHash["DataItems"][1]["Collections"].size, "Got the wrong number of service instances.")
     if time_spent > 1.0
       warn("Method transform_and_wrap too slow, it took #{time_spent}s to complete.")
     end
@@ -213,16 +213,20 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal({}, wrappedHash2)
   end
 
-  def notest_remove_duplicates
+  def test_remove_duplicates
     inventoryXMLstr = File.read(@inventoryPath)
     inventoryXML = ChangeTracking::strToXML(inventoryXMLstr)
-    data_items = ChangeTracking::getInstancesXML(inventoryXML).map { |inst| ChangeTracking::instanceXMLtoHash(inst) }
-    assert_equal(216, data_items.size)
-    collectionNames = data_items.map { |data_item| data_item["CollectionName"] }
+    instancesXML = ChangeTracking::getInstancesXML(inventoryXML)
+    servicesXML = instancesXML.select { |instanceXML| ChangeTracking::isServiceInstanceXML(instanceXML) }
+    services = servicesXML.map { |service| ChangeTracking::serviceXMLtoHash(service)}
+    assert_equal(216, services.size)
+
+    collectionNames = services.map { |service| service["CollectionName"] }
     collectionNamesSet = Set.new collectionNames
-    assert_equal(210, collectionNamesSet.size) # 6 duplicates
+    assert_equal(209, collectionNamesSet.size) # 7 duplicates
     assert(collectionNamesSet.size < collectionNames.size, "Test data does not contain duplicate Collection Names")
-    data_items_dedup = ChangeTracking::removeDuplicateCollectionNames(data_items)
+
+    data_items_dedup = ChangeTracking::removeDuplicateCollectionNames(services)
     assert_equal(collectionNamesSet.size, data_items_dedup.size, "Deduplication failed")
   end
 
