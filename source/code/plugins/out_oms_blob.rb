@@ -121,7 +121,7 @@ module Fluent
       # concatenate the messages
       msg = ''
       msgs.each { |s| msg << "#{s}\r\n" if s.to_s.length > 0 }
-      dataSize = msg..length
+      dataSize = msg.length
 
       if dataSize == 0
         return 0
