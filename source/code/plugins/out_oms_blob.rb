@@ -10,6 +10,7 @@ module Fluent
       super
 	  
       require 'base64'
+      require 'digest'
       require 'json'
       require 'net/http'
       require 'net/https'
@@ -37,6 +38,7 @@ module Fluent
     def start
       super
       @proxy_config = OMS::Configuration.get_proxy_config(@proxy_conf_path)
+      @sha256 = Digest::SHA256.new
     end
 
     def shutdown
@@ -218,10 +220,16 @@ module Fluent
           # extra tags for CustomLog:
           # tags[4]: custom data type
           custom_data_type = tags[4]
-          suffix = Time.now.utc.strftime("d=%Y%m%d/h=%H/#{SecureRandom.uuid}")
+
+          # tags[5..-1]: monitoring file name
+          # concat all the rest parts with /
+          filePath = tags[5..-1].join('/')
+
+          # calculate the digest and convert it to hex
+          suffix = Time.now.utc.strftime("d=%Y%m%d/#{@sha256.hexdigest(filePath)}")
         else
           custom_data_type = nil
-          suffix = nil
+          suffix = Time.now.utc.strftime("d=%Y%m%d/h=%H/#{SecureRandom.uuid}")
         end
       else
         @log.error "The tag does not have at least 4 parts #{tag}"
