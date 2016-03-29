@@ -52,14 +52,27 @@ module Fluent
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
-      end  
+      end
+    rescue OMS::RetryRequestException => e
+      @log.debug "Encountered retryable exception. Will retry sending data later. Error:'#{e}'"
+      # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
+      raise e
+    rescue => e
+      # We encountered something unexpected. We drop the data because
+      # if bad data caused the exception, the engine will continuously
+      # try and fail to resend it. (Infinite failure loop)
+      OMS::Log.error_once("Unexpecting exception, dropping data. Error:'#{e}'")
     end
 
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
-      @log.trace "Buffering #{tag}"
-      [tag, record].to_msgpack
+      if record != {}
+        @log.trace "Buffering #{tag}"
+        return [tag, record].to_msgpack
+      else
+        return ""
+      end
     end
 
     # This method is called every flush interval. Send the buffer chunk to OMS. 
@@ -95,15 +108,6 @@ module Fluent
       unmergable_records.each { |tag, record|
         handle_record(tag, record)
       }
-    rescue OMS::RetryRequestException => e
-      @log.debug "Encountered retryable exception. Will retry sending data later. Error:'#{e}'"
-      # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
-      raise e
-    rescue => e
-      # We encountered something unexpected. We drop the data because
-      # if bad data caused the exception, the engine will continuously
-      # try and fail to resend it. (Infinite failure loop)
-      OMS::Log.error_once("Unexpecting exception, dropping data. #{e}")
     end
 
   private
@@ -141,7 +145,7 @@ module Fluent
         chunk.msgpack_each {|(tag, record)|
           @error_handlers[tag].emit(record)
         }
-    end
+      end
    
     private
 

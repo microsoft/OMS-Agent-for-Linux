@@ -10,6 +10,10 @@ module OMS
     def clear
       @logs = []
     end
+
+    def trace(message)
+      @logs << message
+    end
     
     def debug(message)
       @logs << message

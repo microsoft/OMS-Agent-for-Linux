@@ -22,6 +22,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
 /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
 
 /opt/microsoft/omsagent/LICENSE.txt;                                    LICENSE.txt;                                           444; root; root
 
@@ -49,6 +50,9 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/oms_configuration.rb;                    source/code/plugins/oms_configuration.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/out_oms_blob.rb;                         source/code/plugins/out_oms_blob.rb;                   744; root; root
 
+/opt/microsoft/omsagent/plugin/filter_changetracking.rb;                source/code/plugins/filter_changetracking.rb;          744; root; root
+/opt/microsoft/omsagent/plugin/changetracking_lib.rb;                   source/code/plugins/changetracking_lib.rb;             744; root; root
+
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
 
@@ -63,6 +67,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft;                                     755; root; root
 /etc/opt/microsoft/omsagent;                            755; root; root
 /etc/opt/microsoft/omsagent/sysconf;                    755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d;         755; root; root
 
 /opt/microsoft;                                         755; root; root
 /opt/microsoft/omsagent;                                755; root; root
@@ -105,6 +110,10 @@ fi
 # Folder for omsagent.conf includes
 mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
 
+# Copy over standalone plugin configurations
+cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/* ${{CONF_DIR}}/omsagent.d
+
+# The real conf directory has to be owned by omsagent to be readable by the omsagent daemon
 chown -R omsagent:omsagent ${{CONF_DIR}}
 
 %Postinstall_300

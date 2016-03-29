@@ -142,7 +142,7 @@ module OMS
       #   string. body of the response
       def start_request(req, secure_http, ignore404 = false)
         # Tries to send the passed in request
-        # Raises a RuntimeException if the request fails.
+        # Raises an exception if the request fails.
         # This exception should only be caught by the fluentd engine so that it retries sending this 
         begin
           res = nil
@@ -163,17 +163,11 @@ module OMS
             return ''
           end
 
-          res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
-
-          if res.is_a?(Net::HTTPClientError)
-            # Client errors should not be retired, do not raise
-            Log.error_once("Client Error, dropping data. #{res_summary}")
-          elsif res.is_a?(Net::HTTPServerError)
-            raise RetryRequestException, "Server error, will continue buffering and retry later. #{res_summmary}"
-          else
-            # Unkown response, do not raise because we don't know if the error is retryable 
-            Log.error_once("Unsupported response from server, dropping data. #{res_summary}")
-          end # res type check
+          if res.code != "200"
+            # Retry all failure error codes...
+            res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
+            raise RetryRequestException, "HTTP error: #{res_summary}"
+          end
 
         end # end begin
       end # end start_request
