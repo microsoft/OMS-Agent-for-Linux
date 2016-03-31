@@ -54,7 +54,8 @@ module Fluent
         @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
       end
     rescue OMS::RetryRequestException => e
-      @log.debug "Encountered retryable exception. Will retry sending data later. Error:'#{e}'"
+      @log.info "Encountered retryable exception. Will retry sending data later."
+      @log.debug "Error:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
       raise e
     rescue => e
