@@ -72,22 +72,22 @@ The OMS agent for Linux is provided in a self-extracting and installable shell s
 
 **To install and onboard directly:**
 ```
-sudo sh ./omsagent-1.1.0-2.universal.x86.sh --upgrade –w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade –w <workspaceid> -s <shared key>
 ```
 
 **To install and onboard directly using an HTTP proxy:**
 ```
-sudo sh ./omsagent-1.1.0-2.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> –w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> –w <workspaceid> -s <shared key>
 ```
 
 **To install the agent packages and onboard at a later time:**
 ```
-sudo sh ./omsagent-1.1.0-2.universal.x86.sh --upgrade
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade
 ```
 
 **To extract the agent packages from the bundle without installing:**
 ```
-sudo sh ./omsagent-1.1.0-2.universal.x86.sh –-extract
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh –-extract
 ```
 
 **All bundle operations:**
@@ -113,9 +113,8 @@ Options:
 ##SHA256 Checksums##
 
 ```
-ebe3eab909c1f29476eee5ae011376d6bd14ccc3b4e9788606f542cd99320cdf  omsagent-1.1.0-2.universal.x64.sh
-2cee79f5b3023e4dfce90ef5a4bd520556c8e15d6753b16e9cfdb7a5f405195b  omsagent-1.1.0-2.universal.x86.sh
-
+a7cb3457cb5542bd6e76ad809e29a9002fb56f93d4da10816c54e79a8472f1f3  omsagent-1.1.0-28.universal.x64.sh
+3a764632e402f3138c63f315ae34e8b0d91dcfc766d27c0c9f3fab50c07023d3  omsagent-1.1.0-28.universal.x86.sh
 ```
 
 ##Configuring the agent for use with an HTTP proxy server
@@ -142,7 +141,7 @@ The proxy server can be specified during installation or directly in a file (at 
 The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use. 
 
 ```
-sudo sh ./omsagent-1.1.0-2.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> –w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> –w <workspaceid> -s <shared key>
 ```
 
 **Define the proxy configuration in a file **
