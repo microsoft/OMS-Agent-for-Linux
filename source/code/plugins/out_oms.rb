@@ -40,16 +40,18 @@ module Fluent
 
     def handle_record(tag, record)
       req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record)
-      http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
-      start = Time.now
-      
-      # This method will raise on failure alerting the engine to retry sending this data
-      OMS::Common.start_request(req, http)
-      
-      ends = Time.now
-      time = ends - start
-      count = record.has_key?('DataItems') ? record['DataItems'].size : 1
-      @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
+      unless req.nil?
+        http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
+        start = Time.now
+          
+        # This method will raise on failure alerting the engine to retry sending this data
+        OMS::Common.start_request(req, http)
+          
+        ends = Time.now
+        time = ends - start
+        count = record.has_key?('DataItems') ? record['DataItems'].size : 1
+        @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
+      end  
     end
 
     # This method is called when an event reaches to Fluentd.

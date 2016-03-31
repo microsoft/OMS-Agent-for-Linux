@@ -5,6 +5,7 @@ module OMS
     require 'net/http'
     require 'net/https'
     require 'time'
+    require 'zlib'
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
@@ -76,14 +77,24 @@ module OMS
       #   record: Hash. body of the request
       # returns:
       #   HTTPRequest. request to ODS
-      def create_ods_request(path, record)
+      def create_ods_request(path, record, compress=true)
         headers = {}
         headers["Content-Type"] = "application/json"
+        if compress == true
+          headers["Content-Encoding"] = "deflate"
+        end
 
         req = Net::HTTP::Post.new(path, headers)
-        # Serialize the record
-        msg = JSON.dump(record)
-        req.body = msg
+        json_msg = parse_json_record_encoding(record)
+        if json_msg.nil?
+          return nil
+        else
+          if compress == true
+            req.body = Zlib::Deflate.deflate(json_msg)
+          else
+            req.body = json_msg
+          end
+        end
         return req
       end # create_ods_request
 
