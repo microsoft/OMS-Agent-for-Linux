@@ -105,6 +105,13 @@ class OmsadminTest < Test::Unit::TestCase
     assert_equal("proxy_host:8080", proxy_setting, "Did not find the expected setting in the proxy conf file.")
   end
 
+  def test_proxy_server_working
+    output = `curl --proxy #{TEST_PROXY_SETTING} example.com 2>/dev/null`
+    return_code = $?.to_i
+    assert_equal(0, return_code)
+    assert_match(/Example Domain/, output)
+  end
+
   def test_onboard_proxy_sucess
     prep_proxy(TEST_PROXY_SETTING)
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
@@ -112,7 +119,7 @@ class OmsadminTest < Test::Unit::TestCase
   end
 
   def test_onboard_proxy_failure
-    bad_proxy_setting = TEST_PROXY_SETTING.sub(/(http:\/\/\w+):\w+/, '\1:badpassword')
+    bad_proxy_setting = TEST_PROXY_SETTING.sub(/(http:\/\/\w+:)\w+(@.*)/, '\1badpassword\2')
     prep_proxy(bad_proxy_setting)
     check_test_keys()
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY, should_succeed = false)
