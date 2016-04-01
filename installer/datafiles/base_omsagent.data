@@ -111,7 +111,7 @@ fi
 mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
 
 # Copy over standalone plugin configurations
-cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/* ${{CONF_DIR}}/omsagent.d
+#cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/* ${{CONF_DIR}}/omsagent.d
 
 # The real conf directory has to be owned by omsagent to be readable by the omsagent daemon
 chown -R omsagent:omsagent ${{CONF_DIR}}
