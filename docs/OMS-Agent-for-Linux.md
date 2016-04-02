@@ -361,6 +361,7 @@ If you are using selinux, the semanage tool can be used to allow TCP traffic for
 	  tag oms.syslog
 </source>
 ```
+**Note:** ports 0-1024 are privileged, and require special permissions. As the OMS Agent for Linux runs as the `omsagent` user trying to allocate a source port of 0 to 1024 results in agent startup failure
 
 ### Performance metrics
 Performance metrics to collect are controlled by the configuration in `/etc/opt/microsoft/omsagent/conf/omsagent.conf`. The appendix to this document details available classes and metrics in this release of the agent.
