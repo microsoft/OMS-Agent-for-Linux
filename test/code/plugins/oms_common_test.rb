@@ -3,6 +3,7 @@ require 'openssl'
 require 'net/http'
 require 'net/https'
 require 'json'
+require 'fileutils'
 require_relative 'omstestlib'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/oms_common'
 
@@ -15,6 +16,14 @@ module OMS
       class << self
         def OSFullName=(os_full_name)
           @@OSFullName = os_full_name
+        end
+
+        def CurrentTimeZone=(timezone)
+          @@CurrentTimeZone = timezone
+        end
+
+        def tzLocalTimePath=(localtimepath)
+          @@tzLocalTimePath = localtimepath
         end
       end
     end
@@ -33,14 +42,21 @@ module OMS
 
     def setup
       @tmp_conf_file = Tempfile.new('oms_conf_file')
+      @tmp_localtime_file = Tempfile.new('oms_localtime_file')
       # Reset the OS name between tests
       Common.OSFullName = nil
+      Common.CurrentTimeZone = nil
+      Common.tzLocalTimePath = '/etc/localtime'
     end
 
     def teardown
       tmp_path = @tmp_conf_file.path
       assert_equal(true, File.file?(tmp_path))
       @tmp_conf_file.unlink
+      assert_equal(false, File.file?(tmp_path))
+      tmp_path = @tmp_localtime_file.path
+      assert_equal(true, File.file?(tmp_path))
+      @tmp_localtime_file.unlink
       assert_equal(false, File.file?(tmp_path))
     end
 
@@ -129,5 +145,27 @@ module OMS
       parsed_record = Common.parse_json_record_encoding(record);
       assert_equal("{\"DataItems\":[{\"Message\":\"iPhone®\"}]}", parsed_record, "parse json record utf-8 encoding failed");
     end	
+    
+    def test_get_current_timezone
+      $log = MockLog.new
+      File.delete(@tmp_localtime_file.path)
+      FileUtils.cp('/usr/share/zoneinfo/Asia/Shanghai', @tmp_localtime_file.path)
+      Common.tzLocalTimePath = @tmp_localtime_file.path
+      timezone = Common.get_current_timezone
+      assert_equal([], $log.logs, "There was an error parsing the timezone")
+      # sanity check
+      assert_equal('China Standard Time', timezone, "timezone is not expected")
+    end
+    
+    def test_get_current_timezone_symlink
+      $log = MockLog.new
+      File.delete(@tmp_localtime_file.path)
+      File.symlink('/usr/share/zoneinfo/right/America/Los_Angeles', @tmp_localtime_file.path)
+      Common.tzLocalTimePath = @tmp_localtime_file.path
+      timezone = Common.get_current_timezone
+      assert_equal([], $log.logs, "There was an error parsing the timezone")
+      # sanity check
+      assert_equal('Pacific Standard Time', timezone, "timezone is not expected")
+    end
   end
 end # Module OMS
