@@ -729,4 +729,13 @@ module OMS
 
   end
 
+  class CaseSensitiveString < String
+    def downcase
+        self
+    end
+    def capitalize
+        self
+    end
+  end
+
 end # module OMS

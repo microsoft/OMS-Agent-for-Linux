@@ -70,7 +70,7 @@ module Fluent
     def create_blob_put_request(uri, msg)
       headers = {}
 
-      headers["x-ms-meta-timezoneid"] = OMS::Common.get_current_timezone
+      headers[OMS::CaseSensitiveString.new("x-ms-meta-timezoneid")] = OMS::Common.get_current_timezone
       headers["Content-Type"] = "application/octet-stream"
       headers["Content-Length"] = msg.bytesize.to_s
 
