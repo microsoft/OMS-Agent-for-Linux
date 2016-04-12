@@ -64,17 +64,17 @@ MAINTAINER:              'Microsoft Corporation'
 /var;                                                   755; root; root; sysdir
 /var/opt;                                               755; root; root; sysdir
 
-/etc/opt/microsoft;                                     755; root; root
+/etc/opt/microsoft;                                     755; root; root; sysdir
 /etc/opt/microsoft/omsagent;                            755; root; root
 /etc/opt/microsoft/omsagent/sysconf;                    755; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d;         755; root; root
 
-/opt/microsoft;                                         755; root; root
+/opt/microsoft;                                         755; root; root; sysdir
 /opt/microsoft/omsagent;                                755; root; root
 /opt/microsoft/omsagent/bin;                            755; root; root
 /opt/microsoft/omsagent/plugin;                         755; root; root
 
-/var/opt/microsoft;                                     755; root; root
+/var/opt/microsoft;                                     755; root; root; sysdir
 
 %Dependencies
 
