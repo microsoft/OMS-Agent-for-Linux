@@ -401,6 +401,14 @@ onboard()
     if [ "$RET_CODE" = "200" ]; then
         apply_dsc_endpoint $RESP_ONBOARD
         log_info "Onboarding success"
+    elif [ "$RET_CODE" = "403" ]; then
+        REASON=`cat $RESP_ONBOARD | sed -n 's:.*<Reason>\(.*\)</Reason>.*:\1:p'`
+        if [ "$REASON" = "ClockSkew" ]; then
+            log_error "Onboarding Failed -- Time on server needs to be corrected"
+        else
+            log_error "Error onboarding. HTTP code $RET_CODE"
+        fi
+        return 1
     else
         log_error "Error onboarding. HTTP code $RET_CODE"
         return 1
