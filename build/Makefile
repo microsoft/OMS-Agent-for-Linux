@@ -261,8 +261,8 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
 
 $(TARGET_DIR)/dsc : $(DSC_TARGET_DIR)
-        @echo "========================= Performing Copying DSC resources"
-        $(MKPATH) $(TARGET_DIR)/dsc; $(COPY) $(DSC_TARGET_DIR)/*.zip $(TARGET_DIR)/dsc/
+	@echo "========================= Performing Copying DSC resources"
+	$(MKPATH) $(TARGET_DIR)/dsc; $(COPY) $(DSC_TARGET_DIR)/*.zip $(TARGET_DIR)/dsc/
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
