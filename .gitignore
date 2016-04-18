@@ -1,7 +1,9 @@
 # git ignore file for omsagent project
 
-intermediate
-target
-build/config.mak
-build/Makefile.version
-test/config
+/intermediate
+/target
+/build/config.mak
+/build/Makefile.version
+/test/config
+/build/x64
+/build/x86
