@@ -12,6 +12,8 @@ class ChangeTracking
         @@log = value
     end
 
+    @@force_send_last_upload = Time.now
+
     @@prev_hash = ""
     def self.prev_hash= (value)
         @@prev_hash = value
@@ -76,11 +78,15 @@ class ChangeTracking
         instanceXML.attributes['CLASSNAME'] == 'MSFT_nxServiceResource'
     end
 
-    def self.transform_and_wrap(inventoryXMLstr, host, time, force_send = false)
+    def self.transform_and_wrap(inventoryXMLstr, host, time, force_send_run_interval = 0)
 
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
-        if hash == @@prev_hash and force_send == false
+
+        if force_send_run_interval > 0 and Time.now - @@force_send_last_upload > force_send_run_interval
+            @@log.debug "Changetracking : Force sending inventory data"
+            @@force_send_last_upload = Time.now
+        elsif hash == @@prev_hash
             @@log.debug "ChangeTracking : Discarding duplicate inventory data. Hash=#{hash[0..5]}"
             return {}
         end
@@ -99,9 +105,9 @@ class ChangeTracking
         services = servicesXML.map { |service|  serviceXMLtoHash(service)}
 
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
-        services = removeDuplicateCollectionNames(services)
         packages = removeDuplicateCollectionNames(packages)
-        #data_items = getInstancesXML(inventoryXML).map { |inst| instanceXMLtoHash(inst) }
+        services = removeDuplicateCollectionNames(services)
+
         if (packages.size > 0 or services.size > 0)
             timestamp = OMS::Common.format_time(time)
             wrapper = {

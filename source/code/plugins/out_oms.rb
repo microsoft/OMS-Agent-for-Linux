@@ -40,6 +40,7 @@ module Fluent
     end
 
     def handle_record(tag, record)
+      @log.trace "Handling record : #{tag}"
       req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record, @compress)
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)

@@ -11,7 +11,7 @@ module Fluent
 
     # config_param works like other plugins
     # Force sending the change tracking data even if it is identical to the previous snapshot
-    config_param :force_send, :bool, :default => false
+    config_param :force_send_run_interval, :time, default: 0
 
     def configure(conf)
       super
@@ -35,7 +35,7 @@ module Fluent
     def filter(tag, time, record)
       xml_string = record['xml']
       @log.debug "ChangeTracking : Filtering xml size=#{xml_string.size}"
-      return ChangeTracking.transform_and_wrap(xml_string, @hostname, time, @force_send)
+      return ChangeTracking.transform_and_wrap(xml_string, @hostname, time, @force_send_run_interval)
     end # filter
 
   end # class

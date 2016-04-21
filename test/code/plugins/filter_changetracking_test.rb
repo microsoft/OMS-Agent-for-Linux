@@ -198,8 +198,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
   def test_force_send_true
     inventoryXMLstr = File.read(@inventoryPath)
     t = Time.now
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, true)
-    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, true)
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, 1)
+    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, 1)
     assert_equal(wrappedHash, wrappedHash2)
     assert_not_equal({}, wrappedHash2)
   end
@@ -207,8 +207,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
   def test_force_send_false
     # If we don't force to send up the inventory data and it doesn't change, discard it.
     inventoryXMLstr = File.read(@inventoryPath)
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, false)
-    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, false)
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 0)
+    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 0)
     assert_not_equal({}, wrappedHash)
     assert_equal({}, wrappedHash2)
   end
