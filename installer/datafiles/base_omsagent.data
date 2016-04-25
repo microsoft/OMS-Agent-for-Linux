@@ -24,6 +24,9 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
 
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
+
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
 /opt/microsoft/omsagent/bin/auth_key.rb;                                installer/scripts/auth_key.rb;                         744; root; root
@@ -52,6 +55,8 @@ MAINTAINER:              'Microsoft Corporation'
 
 /opt/microsoft/omsagent/plugin/filter_changetracking.rb;                source/code/plugins/filter_changetracking.rb;          744; root; root
 /opt/microsoft/omsagent/plugin/changetracking_lib.rb;                   source/code/plugins/changetracking_lib.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/filter_collectd.rb;                      source/code/plugins/filter_collectd.rb;                744; root; root
+/opt/microsoft/omsagent/plugin/collectd_lib.rb;                         source/code/plugins/collectd_lib.rb;                   744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
@@ -112,6 +117,13 @@ mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
 
 # Copy over standalone plugin configurations
 #cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/* ${{CONF_DIR}}/omsagent.d
+
+# Copy collectd conf files only if collectd_marker.conf exists 
+if [ -f /etc/collectd_marker.conf ]; then
+    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd/collectd.conf.d/oms.conf
+    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf ${{CONF_DIR}}/omsagent.d/collectd.conf
+    rm /etc/collectd_marker.conf
+fi
 
 # The real conf directory has to be owned by omsagent to be readable by the omsagent daemon
 chown -R omsagent:omsagent ${{CONF_DIR}}

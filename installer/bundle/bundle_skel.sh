@@ -28,6 +28,7 @@ ONBOARD_FILE=/etc/omsagent-onboard.conf
 DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
+COLLECTD_DIR="/etc/collectd/collectd.conf.d/"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -55,6 +56,7 @@ usage()
     echo "  --version              Version of this shell bundle."
     echo "  --version-check        Check versions already installed to see if upgradable."
     echo "  --debug                use shell debug mode."
+    echo "  --collectd             Enable collectd."
     echo
     echo "  -w id, --id id         Use workspace ID <id> for automatic onboarding."
     echo "  -s key, --shared key   Use <key> as the shared key for automatic onboarding."
@@ -509,6 +511,16 @@ do
             shift 1
             ;;
 
+        --collectd)
+            if [ -d "${COLLECTD_DIR}" ]; then
+                touch /etc/collectd_marker.conf
+            else
+                echo "${COLLECTD_DIR} - directory does not exist. Please make sure collectd is installed properly"
+                cleanup_and_exit 1
+            fi
+            shift 1
+            ;;
+
         -\? | -h | --help)
             usage `basename $0` >&2
             cleanup_and_exit 0
@@ -636,6 +648,9 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
             rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
         fi
+    fi
+    if [ -f ${COLLECTD_DIR}/oms.conf ]; then
+        rm ${COLLECTD_DIR}/oms.conf > /dev/null 2> /dev/null
     fi
 fi
 
