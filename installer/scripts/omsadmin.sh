@@ -45,6 +45,8 @@ RESP_HEARTBEAT=$TMP_DIR/resp_heartbeat.xml
 BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
 RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
 
+PROCESS_STATS=$TMP_DIR/process_stats_$$
+
 AGENT_USER=omsagent
 AGENT_GROUP=omsagent
 
@@ -264,6 +266,14 @@ append_telemetry()
         InContainer=False
     fi
 
+    # Get OMSagent process statistics
+    /opt/omi/bin/omicli wql root/scx "SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'" | grep = > "$PROCESS_STATS"
+
+    PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
+    PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
+    UsedMemory=`grep UsedMemory $PROCESS_STATS | cut -d= -f2`
+    PercentUsedMemory=`grep PercentUsedMemory $PROCESS_STATS | cut -d= -f2`
+
     # We grep instead of sourcing because parentheses in the file cause syntax errors
     OSName=`grep OSName $OS_INFO | cut -d= -f2`
     OSManufacturer=`grep OSManufacturer $OS_INFO | cut -d= -f2`
@@ -275,6 +285,8 @@ append_telemetry()
     echo "      <ProcessorArchitecture>x64</ProcessorArchitecture>" >> $1
     echo "      <Version>$OSVersion</Version>" >> $1
     echo "      <InContainer>$InContainer</InContainer>" >> $1
+    echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\" \
+                UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
     echo "   </OperatingSystem>" >> $1
 }
 
