@@ -24,7 +24,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
 
-/opt/microsoft/omsagent/LICENSE.txt;                                    LICENSE.txt;                                           444; root; root
+/opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
 /opt/microsoft/omsagent/bin/auth_key.rb;                                installer/scripts/auth_key.rb;                         744; root; root
 /opt/microsoft/omsagent/bin/omsadmin.sh;                                installer/scripts/omsadmin.sh;                         755; root; root
