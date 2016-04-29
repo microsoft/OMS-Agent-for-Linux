@@ -8,6 +8,10 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 *Note: the features and supported Linux versions in this Technical Preview are a limited subset of planned capabilities*
 
 ##Release History
+*	1.1.0-124:
+	*	Custom Log Public Preview
+	*	Improved performance and message throughput
+	*	Bug fixes
 *	1.1.0-28:
 	*	Nagios/Zabbix empty record fix
 *	1.1.0-2: 
@@ -21,9 +25,9 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 ## Quick Install guide
 Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **connected sources** tab.
 ```
-$> wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-28/omsagent-1.1.0-28.universal.x64.sh
-$> sha256sum ./omsagent-1.1.0-28.universal.x64.sh
-$> sudo sh ./omsagent-1.1.0-28.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
+$> wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-124/omsagent-1.1.0-124.universal.x64.sh
+$> sha256sum ./omsagent-1.1.0-124.universal.x64.sh
+$> sudo sh ./omsagent-1.1.0-124.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
 ## Azure Install guide
 If you are an Azure customer, we have an Azure VM Extension that allows you to onboard with a couple of clicks.
@@ -41,7 +45,6 @@ If you are an Azure customer, we have an Azure VM Extension that allows you to o
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
 
 * **UserVoice:** Post ideas for new OMS features to work on [here](http://feedback.azure.com/forums/267889-azure-operational-insights)
-* **Email:** scdata@microsoft.  Tell us whatever is on your mind
 * **Monthly survey:** if you are an OMS customer, you know we send out a survey every month asking our customers about the features we’re working on next.  
 * **Elite Linux customer panel:** If you are a die-hard OMS Linux user and want to join our weekly calls and talk directly to the product team apply through this **[survey](https://www.surveymonkey.com/r/6MTHN3P).**
 
