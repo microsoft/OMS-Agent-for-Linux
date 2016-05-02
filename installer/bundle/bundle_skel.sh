@@ -799,6 +799,16 @@ case "$installMode" in
             shouldInstall_omsconfig
             pkg_upd $DSC_PKG omsconfig $?
             DSC_EXIT_STATUS=$?
+            
+            if [ $DSC_EXIT_STATUS -eq 0 ]; then
+                if [ ! -f /opt/microsoft/omsconfig/Scripts/2.6x-2.7x/Scripts/nxOMSAgent.py ]; then
+                    su - omsagent -c "/opt/microsoft/omsconfig/Scripts/InstallModule.py /opt/microsoft/omsconfig/module_packages/nxOMSAgent_1.0.zip 0"
+                fi
+                if [ ! -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf ]; then
+                    cp -f /opt/microsoft/omsconfig/etc/omsconfig.consistencyinvoker.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
+                    chown omsagent /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
+                fi
+            fi
         else
             DSC_EXIT_STATUS=0
         fi
