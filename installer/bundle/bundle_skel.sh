@@ -229,7 +229,7 @@ check_if_pkg_is_installed() {
 
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed (for future compatibility)
-pkg_add() {
+pkg_add_list() {
     pkg_filename=$1
     pkg_name=$2
 
@@ -238,9 +238,9 @@ pkg_add() {
 
     echo "----- Installing package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
-        dpkg ${DPKG_CONF_QUALS} --install --refuse-downgrade ${pkg_filename}.deb
+        add_list="${add_list} ${pkg_filename}.deb"
     else
-        rpm --install ${pkg_filename}.rpm
+        add_list="${add_list} ${pkg_filename}.rpm"
     fi
 }
 
@@ -261,12 +261,12 @@ pkg_rm() {
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed
 # $3 - Okay to upgrade the package? (Optional)
-pkg_upd() {
+pkg_upd_list() {
     pkg_filename=$1
     pkg_name=$2
     pkg_allowed=$3
 
-    echo "----- Updating package: $2 ($1) -----"
+    echo "----- Checking package: $2 ($1) -----"
 
     if [ -z "${forceFlag}" -a -n "$3" ]; then
         if [ $3 -ne 0 ]; then
@@ -279,13 +279,10 @@ pkg_upd() {
     pkg_filename=$TMPBINDIR/$pkg_filename
 
     if [ "$INSTALLER" = "DPKG" ]; then
-        [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
-        dpkg ${DPKG_CONF_QUALS} --install $FORCE ${pkg_filename}.deb
-
-        export PATH=/usr/local/sbin:/usr/sbin:/sbin:$PATH
+        upd_list="${upd_list} ${pkg_filename}.deb"
+        # export PATH=/usr/local/sbin:/usr/sbin:/sbin:$PATH
     else
-        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        rpm --upgrade $FORCE ${pkg_filename}.rpm
+        upd_list="${upd_list} ${pkg_filename}.rpm"
     fi
 }
 
@@ -713,22 +710,22 @@ case "$installMode" in
         if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
             echo "Installing OMS agent ..."
 
-            pkg_add $OMI_PKG omi
-            OMI_EXIT_STATUS=$?
-
-            pkg_add $SCX_PKG scx
-            SCX_EXIT_STATUS=$?
-
-            pkg_add $OMS_PKG omsagent
-            OMS_EXIT_STATUS=$?
+            pkg_add_list $OMI_PKG omi
+            pkg_add_list $SCX_PKG scx
+            pkg_add_list $OMS_PKG omsagent
 
             python_ctypes_installed
             if [ $? -eq 0 ]; then
-                pkg_add $DSC_PKG omsconfig
-                DSC_EXIT_STATUS=$?
-            else
-                DSC_EXIT_STATUS=0
+                pkg_add_list $DSC_PKG omsconfig
             fi
+
+            # Now actually install of the "queued" packages
+            if [ "$INSTALLER" = "DPKG" ]; then
+                dpkg ${DPKG_CONF_QUALS} --install --refuse-downgrade ${add_list}
+            else
+                rpm -ivh ${add_list}
+            fi
+            KIT_STATUS=$?
 
             # Install bundled providers
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
@@ -756,51 +753,49 @@ case "$installMode" in
 
     U)
         echo "Updating OMS agent ..."
-        check_if_pkg_is_installed omi
-        if [ $? -eq 0 ]; then
-            shouldInstall_omi
-            pkg_upd $OMI_PKG omi $?
-            OMI_EXIT_STATUS=$?
-        else
-            pkg_add $OMI_PKG omi
-            OMI_EXIT_STATUS=$?
-        fi
 
-        # TP4 kit destroys OMI's 'httpsport' on upgrade before the new kit sees
-        # light of day; before installing new kit, save/restore the httpsport
-        HTTPSPORT=""
-        CIPHER=""
-        if [ -f $OMISERV_CONF ]; then
-            omiport=`grep ^httpsport $OMISERV_CONF | cut -d= -f2`
-            if [ "${omiport}" != "0" ]; then
-                HTTPSPORT=${omiport}
-                echo "----- Saving OMI HTTPS port configuration -----"
-                echo "  ('httpsport' configuration: ${HTTPSPORT})"
-            fi
-        fi
+        shouldInstall_omi
+        pkg_upd_list $OMI_PKG omi $?
 
         shouldInstall_scx
-        pkg_upd $SCX_PKG scx $?
-        SCX_EXIT_STATUS=$?
-
-        # Restore HTTPSPORT if we saved something
-        if [ -n "${HTTPSPORT}" ]; then
-            echo "----- Restoring OMI HTTPS port configuration -----"
-            /opt/omi/bin/omiconfigeditor httpsport -s $HTTPSPORT < $OMISERV_CONF > ${OMISERV_CONF}.bak
-            mv ${OMISERV_CONF}.bak $OMISERV_CONF
-        fi
+        pkg_upd_list $SCX_PKG scx $?
 
         shouldInstall_omsagent
-        pkg_upd $OMS_PKG omsagent $?
-        OMS_EXIT_STATUS=$?
+        pkg_upd_list $OMS_PKG omsagent $?
 
         python_ctypes_installed
         if [ $? -eq 0 ]; then
             shouldInstall_omsconfig
-            pkg_upd $DSC_PKG omsconfig $?
-            DSC_EXIT_STATUS=$?
+            pkg_upd_list $DSC_PKG omsconfig $?
+        fi
+
+        # Now actually install of the "queued" packages
+        if [ "$INSTALLER" = "DPKG" ]; then
+            [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
+            dpkg ${DPKG_CONF_QUALS} --install $FORCE ${upd_list}
         else
-            DSC_EXIT_STATUS=0
+            [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+            rpm -Uvh $FORCE ${upd_list}
+        fi
+        KIT_STATUS=$?
+
+        if [ $KIT_STATUS -eq 0 ]; then
+            if [ -d /opt/microsoft/omsconfig ]; then
+                if [ ! -f /opt/microsoft/omsconfig/Scripts/2.6x-2.7x/Scripts/nxOMSAgent.py ]; then
+                    if ! su - omsagent -c "/opt/microsoft/omsconfig/Scripts/InstallModule.py /opt/microsoft/omsconfig/module_packages/nxOMSAgent_1.0.zip 0"; then
+                        echo "Failure to install nxOMSAgent module"
+                        KIT_STATUS=1
+                    fi
+                fi
+                if [ ! -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf ]; then
+                    if ! cp -f /opt/microsoft/omsconfig/etc/omsconfig.consistencyinvoker.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf; then
+                        echo "Failure to copy consistencyinvoker.conf file"
+                        KIT_STATUS=1
+                    else
+                        chown omsagent /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
+                    fi
+                fi
+            fi
         fi
 
         # Upgrade bundled providers
@@ -830,7 +825,7 @@ esac
 
 # Remove temporary files (now part of cleanup_and_exit) and exit
 
-if [ "$OMS_EXIT_STATUS" -ne 0 -o "$DSC_EXIT_STATUS" -ne 0 -o "$SCX_EXIT_STATUS" -ne 0 -o "$OMI_EXIT_STATUS" -ne 0 -o "$BUNDLE_EXIT_STATUS" -ne 0 ]; then
+if [ "$KIT_STATUS" -ne 0 -o "$BUNDLE_EXIT_STATUS" -ne 0 ]; then
     cleanup_and_exit 1
 else
     cleanup_and_exit 0
