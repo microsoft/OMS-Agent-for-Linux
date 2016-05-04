@@ -80,7 +80,8 @@ endif
 ifeq ($(ULINUX),1)
   ifeq ($(PF_ARCH),x86)
     OSS_KITS := $(shell cd $(SCX_DIR)/../opsmgr-kits; ls *-oss-test.sh *.i686.sh)
-    OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh *.i686.sh)
+    # OMS OSS directory doesn't include any 32-bit kits, so don't look for *.i686.sh ...
+    OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh)
   else ifeq ($(PF_ARCH),x64)
     OSS_KITS := $(shell cd $(SCX_DIR)/../opsmgr-kits; ls *-oss-test.sh *.x86_64.sh)
     OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh *.x86_64.sh)
