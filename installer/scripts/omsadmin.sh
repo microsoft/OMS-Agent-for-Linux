@@ -271,7 +271,7 @@ append_telemetry()
 
     PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
     PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
-    UsedMemory=`grep UsedMemory $PROCESS_STATS | cut -d= -f2`
+    UsedMemory=`grep " UsedMemory" $PROCESS_STATS | cut -d= -f2`
     PercentUsedMemory=`grep PercentUsedMemory $PROCESS_STATS | cut -d= -f2`
 
     # We grep instead of sourcing because parentheses in the file cause syntax errors
@@ -285,8 +285,8 @@ append_telemetry()
     echo "      <ProcessorArchitecture>x64</ProcessorArchitecture>" >> $1
     echo "      <Version>$OSVersion</Version>" >> $1
     echo "      <InContainer>$InContainer</InContainer>" >> $1
-    echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\" \
-                UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
+    echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\"" >> $1
+    echo "       UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
     echo "   </OperatingSystem>" >> $1
 }
 
