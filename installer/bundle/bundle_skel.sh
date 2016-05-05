@@ -280,7 +280,6 @@ pkg_upd_list() {
 
     if [ "$INSTALLER" = "DPKG" ]; then
         upd_list="${upd_list} ${pkg_filename}.deb"
-        # export PATH=/usr/local/sbin:/usr/sbin:/sbin:$PATH
     else
         upd_list="${upd_list} ${pkg_filename}.rpm"
     fi
@@ -686,11 +685,7 @@ fi
 # Do stuff after extracting the binary here, such as actually installing the package.
 #
 
-EXIT_STATUS=0
-SCX_EXIT_STATUS=0
-OMI_EXIT_STATUS=0
-OMS_EXIT_STATUS=0
-DSC_EXIT_STATUS=0
+KIT_STATUS=0
 BUNDLE_EXIT_STATUS=0
 
 # Now do our installation work (or just exit)
@@ -720,12 +715,16 @@ case "$installMode" in
             fi
 
             # Now actually install of the "queued" packages
-            if [ "$INSTALLER" = "DPKG" ]; then
-                dpkg ${DPKG_CONF_QUALS} --install --refuse-downgrade ${add_list}
+            if [ -n "${add_list}" ]; then
+                if [ "$INSTALLER" = "DPKG" ]; then
+                    dpkg ${DPKG_CONF_QUALS} --install --refuse-downgrade ${add_list}
+                else
+                    rpm -ivh ${add_list}
+                fi
+                KIT_STATUS=$?
             else
-                rpm -ivh ${add_list}
+                echo "----- No base kits to install -----"
             fi
-            KIT_STATUS=$?
 
             # Install bundled providers
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
@@ -748,6 +747,7 @@ case "$installMode" in
         else
             echo "The omi or scx package is already installed. Please run the" >&2
             echo "installer with --upgrade (instead of --install) to continue." >&2
+            KIT_STATUS=1
         fi
         ;;
 
@@ -770,14 +770,18 @@ case "$installMode" in
         fi
 
         # Now actually install of the "queued" packages
-        if [ "$INSTALLER" = "DPKG" ]; then
-            [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
-            dpkg ${DPKG_CONF_QUALS} --install $FORCE ${upd_list}
+        if [ -n "${upd_list}" ]; then
+            if [ "$INSTALLER" = "DPKG" ]; then
+                [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
+                dpkg ${DPKG_CONF_QUALS} --install $FORCE ${upd_list}
+            else
+                [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+                rpm -Uvh $FORCE ${upd_list}
+            fi
+            KIT_STATUS=$?
         else
-            [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-            rpm -Uvh $FORCE ${upd_list}
+            echo "----- No base kits to update -----"
         fi
-        KIT_STATUS=$?
 
         if [ $KIT_STATUS -eq 0 ]; then
             if [ -d /opt/microsoft/omsconfig ]; then
