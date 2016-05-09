@@ -800,6 +800,7 @@ case "$installMode" in
                     fi
                 fi
             fi
+            /opt/omi/bin/service_control restart
         fi
 
         # Upgrade bundled providers
