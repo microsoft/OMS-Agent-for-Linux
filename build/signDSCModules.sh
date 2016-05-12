@@ -1,6 +1,39 @@
 #!/bin/bash
 
-#Assumes that ./x64 and ./x86 exist and contain the arch-specific copies of a DSC resource module
+# Assume we're running from superproject (with version file)
+
+if [ ! -f omsagent.version ]; then
+    echo "Is current directory wrong? Can find version file omsagent.version ..."
+    exit 1
+fi
+
+# Read in the version file
+
+source omsagent.version
+
+if [ -z "$OMS_BUILDVERSION_MAJOR" -o -z "$OMS_BUILDVERSION_MINOR" -o -z "$OMS_BUILDVERSION_PATCH" -o -z "$OMS_BUILDVERSION_BUILDNR" ]; then
+    echo "Missing environment variables for build version"
+    exit 1
+fi
+
+BUILD_VERS=$OMS_BUILDVERSION_MAJOR.$OMS_BUILDVERSION_MINOR.$OMS_BUILDVERSION_PATCH-$OMS_BUILDVERSION_BUILDNR
+
+# We assume that our build share is mounted at: /mnt/ostcdata. Verify that
+# our build directory is under that as expected ...
+
+BUILD_BASEDIR=/mnt/ostcdata/OSTCData/Builds/omsagent/develop
+
+if [ ! -d $BUILD_BASEDIR ]; then
+    echo "Not finding Build share mounted at $BUILD_BASEDIR ..."
+    exit 1
+fi
+
+BUILD_BASEDIR=${BUILD_BASEDIR}/${BUILD_VERS}
+
+if [ ! -d $BUILD_BASEDIR ]; then
+    echo "Not finding build output for version $BUILD_VERS at: $BUILD_BASEDIR"
+    exit 1
+fi
 
 zip -L >/dev/null 2>&1
 if [ $? != 0 ]; then
@@ -14,12 +47,18 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
+# Drop into build directory for remainder of operations
+
+cd omsagent/build
+
+# Set definitions and sign
+
 IntermediateDir="../intermediate"
 TargetDir="../target"
 DscModuleIntermediateDir="$IntermediateDir/merging_dsc_modules"
-DscModuleTargetDir="$TargetDir/dsc_modules"
-X64Dir="./x64"
-X86Dir="./x86"
+DscModuleTargetDir="$TargetDir/dsc_signed"
+X64Dir="$BUILD_BASEDIR/Linux_ULINUX_1.0_x64_64_Release/dsc"
+X86Dir="$BUILD_BASEDIR/Linux_ULINUX_1.0_x86_32_Release/dsc"
 TestSigningDir=$1
 
 if [ "$TestSigningDir" = "" ]
@@ -96,7 +135,7 @@ do
         echo "Did not find x64 module .zip: "$X64Dir/$ModuleFileName""
         exit 1
     fi
-    
+
     if [ -f "$X86Dir/$ModuleFileName" ]
     then
         echo "Found x86 module .zip: "$X86Dir/$ModuleFileName""
@@ -106,8 +145,8 @@ do
     fi
     
     #Merge modules to ./intermediate/ModuleFileName
-    unzip -o $X86Dir/$ModuleFileName -d ./$DscModuleIntermediateDir
-    unzip -o $X64Dir/$ModuleFileName -d ./$DscModuleIntermediateDir
+    unzip -q -o $X86Dir/$ModuleFileName -d ./$DscModuleIntermediateDir
+    unzip -q -o $X64Dir/$ModuleFileName -d ./$DscModuleIntermediateDir
     
     WorkingDir="./$DscModuleIntermediateDir/$ModuleName/"
     
@@ -119,18 +158,18 @@ do
     
         #Test Sha256sums
         echo "Test sha256sums..."
-        sha256sum -c $ModuleName.sha256sums
+        sha256sum --quiet -c $ModuleName.sha256sums
     )
 
     #Test sign module
     echo "Signing .sha256sums file..."
-    if ! cat $SigningKeyPassphrase | gpg --no-default-keyring --keyring $SigningKeyFilePath --yes --passphrase-fd 0 --output ./$WorkingDir/$ModuleName.asc --armor --detach-sign ./$WorkingDir/$ModuleName.sha256sums; then
+    if ! cat $SigningKeyPassphrase | gpg --quiet --batch --no-default-keyring --keyring $SigningKeyFilePath --yes --passphrase-fd 0 --output ./$WorkingDir/$ModuleName.asc --armor --detach-sign ./$WorkingDir/$ModuleName.sha256sums; then
         echo "Failed to sign the .sha256sums file"
         exit 1
     fi
 
     echo "Verifying signature..."
-    if ! gpg --no-default-keyring --keyring $SigningKeyFilePath --verify  ./$WorkingDir/$ModuleName.asc ./$WorkingDir/$ModuleName.sha256sums; then
+    if ! gpg --quiet --no-default-keyring --keyring $SigningKeyFilePath --verify  ./$WorkingDir/$ModuleName.asc ./$WorkingDir/$ModuleName.sha256sums; then
         echo "Signature is invalid"
         exit 1
     fi
@@ -138,8 +177,10 @@ do
     (
         echo "Producing .zip file"
         cd $DscModuleIntermediateDir
-        zip -r $ModuleName.zip $ModuleName/*
+        zip -q -r $ModuleName.zip $ModuleName/*
     )
+
+    echo
 done
 
 if [ -d "$DscModuleTargetDir" ]
