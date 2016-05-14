@@ -196,6 +196,9 @@ if [ $? -ne 0 ]; then
     useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -g omsagent -s /bin/bash omsagent
 fi
 
+# Ensure omsagent is in the omiusers group, but leave omsagent as a group
+/usr/sbin/usermod -g omiusers omsagent 1> /dev/null 2> /dev/null
+
 %Postinstall_200
 #include Syslog_Services
 #include Sudoer_Functions
@@ -243,7 +246,7 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
 
     # Remove the service account
     echo "Deleting omsagent service account ..."
-    userdel omsagent
+    userdel omsagent 2> /dev/null
 
     if [ $? -eq 0 ]; then
         # Depending on system settings, the group may not have been deleted
