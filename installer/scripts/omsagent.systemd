@@ -6,7 +6,7 @@ Wants=omid.service
 [Service]
 Type=simple
 User=omsagent
-Group=omsagent
+Group=omiusers
 PIDFile=/var/opt/microsoft/omsagent/run/omsagent.pid
 ExecStart=/opt/microsoft/omsagent/bin/omsagent \
   -d /var/opt/microsoft/omsagent/run/omsagent.pid \
