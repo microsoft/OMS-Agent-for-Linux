@@ -3,7 +3,7 @@
 # Assume we're running from superproject (with version file)
 
 if [ ! -f omsagent.version ]; then
-    echo "Is current directory wrong? Can find version file omsagent.version ..."
+    echo "Is current directory wrong? Can't find version file omsagent.version ..."
     exit 1
 fi
 
@@ -61,30 +61,24 @@ X64Dir="$BUILD_BASEDIR/Linux_ULINUX_1.0_x64_64_Release/dsc"
 X86Dir="$BUILD_BASEDIR/Linux_ULINUX_1.0_x86_32_Release/dsc"
 TestSigningDir=$1
 
-if [ "$TestSigningDir" = "" ]
-then
+if [ "$TestSigningDir" = "" ]; then
     TestSigningDir="../test/config/testsigning"
 fi
 
-if [ -d "$TestSigningDir" ]
-then
-    gpg --list-secret-keys
-    if [ $? != 0 ]
-    then
+if [ -d "$TestSigningDir" ]; then
+    gpg --version > /dev/null
+    if [ $? != 0 ]; then
         echo "Failed to run the gpg command"
         exit 1
     fi
 
     gpg --list-secret-keys | grep -q '2048R/8C3B51C6'
-    if [ $? != 0 ]
-    then
+    if [ $? != 0 ]; then
         TestGPGKey="$TestSigningDir/gpg.asc"
-        if [ -f "$TestGPGKey" ]
-        then
+        if [ -f "$TestGPGKey" ]; then
             echo "Import the test GPG key"
             gpg --import $TestGPGKey
-            if [ $? != 0 ]
-            then
+            if [ $? != 0 ]; then
                 echo "Failed to import the test GPG key"
                 exit 1
             fi
@@ -97,14 +91,12 @@ then
     SigningKeyFilePath="$TestSigningDir/signingkeys.gpg"
     SigningKeyPassphrase="$TestSigningDir/passphrase"
 
-    if [ ! -f "$SigningKeyFilePath" ]
-    then
+    if [ ! -f "$SigningKeyFilePath" ]; then
         echo "GPG key file is not found"
         exit 1
     fi
 
-    if [ ! -f "$SigningKeyPassphrase" ]
-    then
+    if [ ! -f "$SigningKeyPassphrase" ]; then
         echo "GPG key passphrase is not found"
         exit 1
     fi
@@ -115,8 +107,7 @@ fi
 
 set -e
 
-if [ -d "$DscModuleIntermediateDir" ]
-then
+if [ -d "$DscModuleIntermediateDir" ]; then
     rm -rf "$DscModuleIntermediateDir"
 fi
 
