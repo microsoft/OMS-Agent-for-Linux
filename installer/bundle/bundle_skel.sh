@@ -801,6 +801,7 @@ case "$installMode" in
                 fi
             fi
             /opt/omi/bin/service_control restart
+            /opt/microsoft/omsagent/bin/service_control restart
         fi
 
         # Upgrade bundled providers
