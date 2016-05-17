@@ -784,6 +784,7 @@ case "$installMode" in
         fi
 
         if [ $KIT_STATUS -eq 0 ]; then
+            # These conditionals exist due to some upgrade bugs in the postuninstall scripts of previous kits. These can be removed after GA.
             if [ -d /opt/microsoft/omsconfig ]; then
                 if [ ! -f /opt/microsoft/omsconfig/Scripts/2.6x-2.7x/Scripts/nxOMSAgent.py ]; then
                     if ! su - omsagent -c "/opt/microsoft/omsconfig/Scripts/InstallModule.py /opt/microsoft/omsconfig/module_packages/nxOMSAgent_1.0.zip 0"; then
@@ -797,6 +798,7 @@ case "$installMode" in
                         KIT_STATUS=1
                     else
                         chown omsagent /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
+                        /opt/microsoft/omsagent/bin/service_control reload
                     fi
                 fi
             fi
