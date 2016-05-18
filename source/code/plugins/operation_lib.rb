@@ -1,0 +1,59 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+module OperationModule
+  class LoggingBase
+    def log_error(text)
+    end
+  end
+  
+  class RuntimeError < LoggingBase
+    def log_error(text)
+      $log.info "RuntimeError: #{text}"
+    end
+  end
+  
+  class Operation
+    require_relative 'oms_common'
+
+    BUFFER_QUEUE_WARNING_THRESHOLD_PERCENTAGE = 90
+
+    def initialize(error_handler)
+      @error_handler = error_handler
+    end
+    
+    def filter(record, time)
+      if record.is_a?(Hash) && record['type'] == 'out_oms' && record['config'].is_a?(Hash) && record['config']['buffer_queue_limit'].is_a?(String) && record['buffer_queue_length'].is_a?(Integer)
+        buffer_queue_limit = record['config']['buffer_queue_limit'].to_i
+        buffer_queue_length = record['buffer_queue_length']
+        if buffer_queue_limit != 0 && (buffer_queue_length * 100 / buffer_queue_limit) >= BUFFER_QUEUE_WARNING_THRESHOLD_PERCENTAGE
+          return {
+            "Timestamp"=>OMS::Common.format_time(time),
+            "OperationStatus"=>"Warning",
+            "Computer"=>`hostname`.strip,
+            "Detail"=>"OMS Agent for Linux buffer queue is 90% full - adjust agent configuration for higher throughput.",
+            "Category"=>"OMS Agent for Linux buffer is 90% full",
+            "Solution"=>"Log Management",
+            "HelpLink"=>""
+          }
+        end
+      end
+
+      return {}
+    end
+ 
+    def filter_and_wrap(record, time)
+      data_item = filter(record, time)
+      if (data_item != nil and data_item.size > 0)
+        wrapper = {
+         "DataType"=>"OPERATION_BLOB",
+         "IPName"=>"LogManagement",
+         "DataItems"=>[data_item]
+        }
+        return wrapper
+      else
+        return {}
+      end
+    end
+
+  end
+end
+
