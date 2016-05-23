@@ -5,6 +5,8 @@ set -e
 TMP_DIR=/var/opt/microsoft/omsagent/tmp
 CERT_DIR=/etc/opt/microsoft/omsagent/certs
 CONF_DIR=/etc/opt/microsoft/omsagent/conf
+SYSCONF_DIR=/etc/opt/microsoft/omsagent/sysconf
+COLLECTD_DIR=/etc/collectd/collectd.conf.d
 
 # Optional file with initial onboarding credentials
 FILE_ONBOARD=/etc/omsagent-onboard.conf
@@ -76,6 +78,9 @@ usage()
     echo
     echo "Define proxy settings ('-u' will prompt for password):"
     echo "$basename [-u user] -p host[:port]"
+    echo
+    echo "Enable collectd:"
+    echo "$basename --collectd"
 
     clean_exit 1
 }
@@ -164,7 +169,14 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:brvp:u:" opt; do
+    for arg in "$@"; do
+        if [ "$arg" = "--collectd" ]; then
+          set -- "$@" "-c"
+        fi
+        shift;
+    done
+
+    while getopts "h?s:w:brvp:u:c" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -192,6 +204,10 @@ parse_args()
             ;;
         u)
             PROXY_USER=$OPTARG
+            ;;
+        c) 
+            COLLECTD=1
+            echo "Setting up collectd for OMS..."
             ;;
         esac
     done
@@ -582,6 +598,19 @@ renew_cert()
     fi
 }
 
+collectd()
+{
+    if [ -d "$COLLECTD_DIR" ]; then
+        cp $SYSCONF_DIR/omsagent.d/oms.conf $COLLECTD_DIR/oms.conf
+        cp $SYSCONF_DIR/omsagent.d/collectd.conf $CONF_DIR/omsagent.d/collectd.conf
+        chown omsagent:omsagent $CONF_DIR/omsagent.d/collectd.conf
+        /opt/microsoft/omsagent/bin/service_control restart 
+    else
+        echo "$COLLECTD_DIR - directory does not exist. Please make sure collectd is installed properly"
+        return 1
+    fi
+    echo "...Done"
+}
 main()
 {
     check_user
@@ -617,6 +646,10 @@ main()
         renew_cert || clean_exit 1
     fi
 
+    if [ "$COLLECTD" = "1" ]; then
+        collectd || clean_exit 1
+    fi
+	
     # If we reach this point, onboarding was successful, we can remove the
     # onboard conf to prevent accidentally re-onboarding
     [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
