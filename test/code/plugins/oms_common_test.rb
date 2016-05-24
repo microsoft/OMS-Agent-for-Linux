@@ -18,6 +18,22 @@ module OMS
           @@OSFullName = os_full_name
         end
 
+        def OSName=(os_name)
+          @@OSName = os_name
+        end
+
+        def OSVersion=(os_version)
+          @@OSVersion = os_version
+        end
+      
+        def InstalledDate=(installed_date)
+          @@InstalledDate = installed_date
+        end
+
+        def AgentVersion=(agent_version)
+          @@AgentVersion = agent_version
+        end
+
         def CurrentTimeZone=(timezone)
           @@CurrentTimeZone = timezone
         end
@@ -45,6 +61,10 @@ module OMS
       @tmp_localtime_file = Tempfile.new('oms_localtime_file')
       # Reset the OS name between tests
       Common.OSFullName = nil
+      Common.OSName = nil
+      Common.OSVersion = nil
+      Common.InstalledDate = nil
+      Common.AgentVersion = nil
       Common.CurrentTimeZone = nil
       Common.tzLocalTimePath = '/etc/localtime'
     end
@@ -60,18 +80,37 @@ module OMS
       assert_equal(false, File.file?(tmp_path))
     end
 
+     @@OSConf = "OSName=CentOS Linux\n" \
+      "OSVersion=7.0\n" \
+      "OSFullName=CentOS Linux 7.0 (x86_64)\n" \
+      "OSAlias=UniversalR\n" \
+      "OSManufacturer=Central Logistics GmbH\n"
+
     def test_get_os_full_name()
-      conf = 'OSName=CentOS Linux\n' \
-      'OSVersion=7.0\n' \
-      'OSFullName=CentOS Linux 7.0 (x86_64)\n'\
-      'OSAlias=UniversalR\n'\
-      'OSManufacturer=Central Logistics GmbH\n'
-      File.write(@tmp_conf_file.path, conf)
+      File.write(@tmp_conf_file.path, @@OSConf)
       os_full_name = Common.get_os_full_name(@tmp_conf_file.path)
       assert_equal('CentOS Linux 7.0 (x86_64)', os_full_name, 'Did not extract the full os name correctly')
 
       os_full_name_2 = Common.get_os_full_name()
-      assert_equal(os_full_name, os_full_name_2, "Getting the os full name a second time should return the cashed result")
+      assert_equal(os_full_name, os_full_name_2, "Getting the os full name a second time should return the cached result")
+    end
+
+    def test_get_os_name()
+      File.write(@tmp_conf_file.path, @@OSConf)
+      os_name = Common.get_os_name(@tmp_conf_file.path)
+      assert_equal('CentOS Linux', os_name, 'Did not extract the os name correctly')
+
+      os_name_2 = Common.get_os_name()
+      assert_equal(os_name, os_name_2, "Getting the os name a second time should return the cached result")
+    end
+
+    def test_get_os_version()
+      File.write(@tmp_conf_file.path, @@OSConf)
+      os_version = Common.get_os_version(@tmp_conf_file.path)
+      assert_equal('7.0', os_version, 'Did not extract the os version correctly')
+
+      os_version_2 = Common.get_os_version()
+      assert_equal(os_version, os_version_2, "Getting the os version a second time should return the cached result")
     end
 
     def test_get_os_full_name_wrong_path()
@@ -81,17 +120,54 @@ module OMS
       assert_equal(nil, os_full_name, "Should not find data in a non existing file")
       
       # Should retry the second time since it did not find anything before
-      File.write(@tmp_conf_file.path, 'OSFullName=Ubuntu 14.04 (x86_64)\n')    
+      File.write(@tmp_conf_file.path, "OSFullName=Ubuntu 14.04 (x86_64)\n")
       os_full_name = Common.get_os_full_name(@tmp_conf_file.path)
       assert_equal('Ubuntu 14.04 (x86_64)', os_full_name, 'Did not extract the full os name correctly')
     end
 
+    def test_get_os_name_wrong_path()
+      fake_conf_path = @tmp_conf_file.path + '.fake'
+      assert_equal(false, File.file?(fake_conf_path))
+      os_name = Common.get_os_name(fake_conf_path)
+      assert_equal(nil, os_name, "Should not find data in a non existing file")
+
+      # Should retry the second time since it did not find anything before
+      File.write(@tmp_conf_file.path, "OSName=Ubuntu\n")
+      os_name = Common.get_os_name(@tmp_conf_file.path)
+      assert_equal('Ubuntu', os_name, 'Did not extract the os name correctly')
+    end
+
+    def test_get_os_version_wrong_path()
+      fake_conf_path = @tmp_conf_file.path + '.fake'
+      assert_equal(false, File.file?(fake_conf_path))
+      os_version = Common.get_os_version(fake_conf_path)
+      assert_equal(nil, os_version, "Should not find data in a non existing file")
+
+      # Should retry the second time since it did not find anything before
+      File.write(@tmp_conf_file.path, "OSVersion=14.04\n")
+      os_version = Common.get_os_version(@tmp_conf_file.path)
+      assert_equal('14.04', os_version, 'Did not extract the os version correctly')
+    end
+
     def test_get_os_full_name_missing_field()
-      conf = 'OSName=CentOS Linux\n' \
-      'OSManufacturer=Central Logistics GmbH\n'
+      conf = @@OSConf.gsub(/OSFullName=.*\n/, "")
       File.write(@tmp_conf_file.path, conf)
       os_full_name = Common.get_os_full_name(@tmp_conf_file.path)
       assert_equal(nil, os_full_name, "Should not find data when field is missing")
+    end
+
+    def test_get_os_name_missing_field()
+      conf = @@OSConf.gsub(/OSName=.*\n/, "")
+      File.write(@tmp_conf_file.path, conf)
+      os_name = Common.get_os_name(@tmp_conf_file.path)
+      assert_equal(nil, os_name, "Should not find data when field is missing")
+    end
+
+    def test_get_os_version_missing_field()
+      conf = @@OSConf.gsub(/OSVersion=.*\n/, "")
+      File.write(@tmp_conf_file.path, conf)
+      os_version = Common.get_os_version(@tmp_conf_file.path)
+      assert_equal(nil, os_version, "Should not find data when field is missing")
     end
 
     def test_get_hostname
@@ -101,6 +177,74 @@ module OMS
       # Sanity check
       assert_not_equal(nil, hostname, "Could not get the hostname")
       assert(hostname.size > 0, "Hostname returned is empty")
+    end
+
+    def test_get_fqdn
+      $log = MockLog.new
+      fqdn = Common.get_fully_qualified_domain_name
+      assert_equal([], $log.logs, "There was an error getting the fqdn")
+      # Sanity check
+      assert_not_equal(nil, fqdn, "Could not get the fqdn")
+      assert(fqdn.size > 0, "Fqdn returned is empty")
+    end
+
+    @@InstallConf = "1.1.0-124 20160412 Release_Build\n" \
+      "2016-05-24T00:27:55.0Z\n" 
+
+    def test_get_agent_version()
+      File.write(@tmp_conf_file.path, @@InstallConf)
+      agent_version = Common.get_agent_version(@tmp_conf_file.path)
+      assert_equal('1.1.0-124', agent_version, 'Did not extract the agent version correctly')
+
+      agent_version_2 = Common.get_agent_version()
+      assert_equal(agent_version, agent_version_2, "Getting the agent version a second time should return the cached result")
+    end
+
+    def test_get_agent_version_wrong_path()
+      fake_conf_path = @tmp_conf_file.path + '.fake'
+      assert_equal(false, File.file?(fake_conf_path))
+      agent_version = Common.get_agent_version(fake_conf_path)
+      assert_equal(nil, agent_version, "Should not find data in a non existing file")
+
+      # Should retry the second time since it did not find anything before
+      File.write(@tmp_conf_file.path, "1.1.0-124 20160412\n2016-05-24T00:27:55.0Z")
+      agent_version = Common.get_agent_version(@tmp_conf_file.path)
+      assert_equal('1.1.0-124', agent_version, 'Did not extract the agent version correctly')
+    end
+
+    def test_get_agent_version_missing()
+      conf = "  "
+      File.write(@tmp_conf_file.path, conf)
+      agent_version = Common.get_agent_version(@tmp_conf_file.path)
+      assert_equal(nil, agent_version, "Should not find data when line is missing")
+    end
+
+    def test_get_installed_date()
+      File.write(@tmp_conf_file.path, @@InstallConf)
+      installed_date = Common.get_installed_date(@tmp_conf_file.path)
+      assert_equal('2016-05-24T00:27:55.0Z', installed_date, 'Did not extract the installed date correctly')
+
+      installed_date_2 = Common.get_installed_date()
+      assert_equal(installed_date, installed_date_2, "Getting the installed date a second time should return the cached result")
+    end
+
+    def test_get_installed_date_wrong_path()
+      fake_conf_path = @tmp_conf_file.path + '.fake'
+      assert_equal(false, File.file?(fake_conf_path))
+      installed_date = Common.get_installed_date(fake_conf_path)
+      assert_equal(nil, installed_date, "Should not find data in a non existing file")
+
+      # Should retry the second time since it did not find anything before
+      File.write(@tmp_conf_file.path, "Version\n2016-05-24T00:27:55.0Z")
+      installed_date = Common.get_installed_date(@tmp_conf_file.path)
+      assert_equal('2016-05-24T00:27:55.0Z', installed_date, 'Did not extract the installed date correctly')
+    end
+
+    def test_get_installed_date_missing_line()
+      conf = "1.1.0-124 20160412 Release_Build"
+      File.write(@tmp_conf_file.path, conf)
+      installed_date = Common.get_installed_date(@tmp_conf_file.path)
+      assert_equal(nil, installed_date, "Should not find data when line is missing")
     end
 
     def test_format_time

@@ -17,7 +17,12 @@ module OMS
     require_relative 'oms_configuration'
     
     @@OSFullName = nil
+    @@OSName = nil
+    @@OSVersion = nil
     @@Hostname = nil
+    @@FQDN = nil
+    @@InstalledDate = nil
+    @@AgentVersion = nil
     @@CurrentTimeZone = nil
 
     @@tzMapping = {
@@ -529,12 +534,38 @@ module OMS
 
         if File.file?(conf_path)
           conf = File.read(conf_path)
-          os_full_name = conf[/OSFullName=(.*?)\\n/, 1]
+          os_full_name = conf[/OSFullName=(.*?)\n/, 1]
           if os_full_name and os_full_name.size
             @@OSFullName = os_full_name
           end
         end
         return @@OSFullName
+      end
+
+      def get_os_name(conf_path = "/etc/opt/microsoft/scx/conf/scx-release")
+        return @@OSName if !@@OSName.nil?
+
+        if File.file?(conf_path)
+          conf = File.read(conf_path)
+          os_name = conf[/OSName=(.*?)\n/, 1]
+          if os_name and os_name.size
+            @@OSName = os_name
+          end
+        end
+        return @@OSName
+      end
+
+      def get_os_version(conf_path = "/etc/opt/microsoft/scx/conf/scx-release")
+        return @@OSVersion if !@@OSVersion.nil?
+
+        if File.file?(conf_path)
+          conf = File.read(conf_path)
+          os_version = conf[/OSVersion=(.*?)\n/, 1]
+          if os_version and os_version.size
+            @@OSVersion = os_version
+          end
+        end
+        return @@OSVersion
       end
 
       def get_hostname
@@ -548,6 +579,51 @@ module OMS
           @@Hostname = hostname
         end
         return @@Hostname
+      end
+
+      def get_fully_qualified_domain_name
+        return @@FQDN unless @@FQDN.nil?
+
+        begin
+          fqdn = Socket.gethostbyname(Socket.gethostname)[0]
+        rescue => error
+          Log.error_once("Unable to get the FQDN: #{error}")
+        else
+          @@FQDN = fqdn
+        end
+        return @@FQDN
+      end
+
+      def get_installed_date(conf_path = "/etc/opt/microsoft/omsagent/sysconf/installinfo.txt")
+        return @@InstalledDate if !@@InstalledDate.nil?
+
+        if File.file?(conf_path)
+          conf = File.read(conf_path)
+          installed_date = conf[/(.*)\n(.*)/, 2]
+          if installed_date and installed_date.size
+            begin
+              Time.parse(installed_date)
+            rescue ArgumentError
+              Log.error_once("Invalid install date: #{installed_date}")
+            else
+              @@InstalledDate = installed_date
+            end
+          end
+        end
+        return @@InstalledDate
+      end
+
+      def get_agent_version(conf_path = "/etc/opt/microsoft/omsagent/sysconf/installinfo.txt")
+        return @@AgentVersion if !@@AgentVersion.nil?
+
+        if File.file?(conf_path)
+          conf = File.read(conf_path)
+          agent_version = conf[/([\d]+\.[\d]+\.[\d]+-[\d]+)\s.*\n/, 1]
+          if agent_version and agent_version.size
+            @@AgentVersion = agent_version
+          end
+        end
+        return @@AgentVersion
       end
 
       def format_time(time)
