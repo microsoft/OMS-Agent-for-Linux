@@ -14,6 +14,7 @@ module OMS
     TEST_DSC_ENDPOINT = 'https://www.fakedsc.com/Accounts/08d4b0c0-7fac-4159-987c-000271282eff'
     TEST_ODS_ENDPOINT = 'https://www.fakeods.com/OperationalData.svc/PostJsonDataItems'
     TEST_GET_BLOB_ODS_ENDPOINT = 'https://www.fakeods.com/ContainerService.svc/GetBlobUploadUri'
+    TEST_NOTIFY_BLOB_ODS_ENDPOINT = 'https://www.fakeods.com/ContainerService.svc/PostBlobUploadNotification'
 
     # Extend class to reset class variables
     class OMS::Configuration
@@ -119,6 +120,7 @@ module OMS
       assert_equal(TEST_AGENT_GUID, Configuration.agent_id, "Agent ID should be loaded")
       assert_equal(TEST_ODS_ENDPOINT, Configuration.ods_endpoint.to_s, "ODS Endpoint should be loaded")
       assert_equal(TEST_GET_BLOB_ODS_ENDPOINT, Configuration.get_blob_ods_endpoint.to_s, "GetBlob ODS Endpoint should be loaded")
+      assert_equal(TEST_NOTIFY_BLOB_ODS_ENDPOINT, Configuration.notify_blob_ods_endpoint.to_s, "NotifyBlobUpload ODS Endpoint should be loaded")
       assert_not_equal(nil, Configuration.cert, "Certificate should be loaded")
       assert_not_equal(nil, Configuration.key, "Key should be loaded")
       assert_equal([], $log.logs, "There was an error loading the configuration")

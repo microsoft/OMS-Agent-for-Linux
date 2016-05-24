@@ -65,12 +65,17 @@ module Fluent
     # parameters:
     #   uri: URI. blob URI
     #   msg: string. body of the request
+    #   file_path: string. file path
     # returns:
     #   HTTPRequest. blob PUT request
-    def create_blob_put_request(uri, msg)
+    def create_blob_put_request(uri, msg, file_path = nil)
       headers = {}
 
-      headers[OMS::CaseSensitiveString.new("x-ms-meta-timezoneid")] = OMS::Common.get_current_timezone
+      headers[OMS::CaseSensitiveString.new("x-ms-meta-TimeZoneid")] = OMS::Common.get_current_timezone
+      headers[OMS::CaseSensitiveString.new("x-ms-meta-ComputerName")] = OMS::Common.get_hostname
+      if !file_path.nil?
+        headers[OMS::CaseSensitiveString.new("x-ms-meta-FilePath")] = file_path
+      end
       headers["Content-Type"] = "application/octet-stream"
       headers["Content-Length"] = msg.bytesize.to_s
 
@@ -99,7 +104,8 @@ module Fluent
         "ContainerType" => container_type,
         "DataTypeId" => data_type_id,
         "ExpiryDuration" => blob_uri_expiry,
-        "Suffix" => url_suffix
+        "Suffix" => url_suffix,
+        "SkipScanningQueue" => true
       }
 
       req = OMS::Common.create_ods_request(OMS::Configuration.get_blob_ods_endpoint.path, data, compress=false)
@@ -117,7 +123,8 @@ module Fluent
     # parameters:
     #   uri: URI. blob URI
     #   msgs: string[]. messages
-    def append_blob(uri, msgs)
+    #   file_path: string. file path
+    def append_blob(uri, msgs, file_path)
       if msgs.size == 0
         return 0
       end
@@ -144,7 +151,7 @@ module Fluent
       end
 
       # commit blocks
-      commit_blocks(uri, blocks_committed, blocks_uncommitted)
+      commit_blocks(uri, blocks_committed, blocks_uncommitted, file_path)
       return dataSize
     end # append_blob
 
@@ -176,7 +183,7 @@ module Fluent
       base64_blockid = Base64.encode64(SecureRandom.uuid)
       append_uri = URI.parse("#{uri.to_s}&comp=block&blockid=#{base64_blockid}")
 
-      put_block_req = create_blob_put_request(append_uri, msg)
+      put_block_req = create_blob_put_request(append_uri, msg, nil)
       http = OMS::Common.create_secure_http(append_uri, @proxy_config)
       OMS::Common.start_request(put_block_req, http)
 
@@ -189,7 +196,8 @@ module Fluent
     #   uri: URI. blob URI
     #   blocks_committed: string[]. committed block id list, which already exist
     #   blocks_uncommitted: string[]. uncommitted block id list, which are just uploaded
-    def commit_blocks(uri, blocks_committed, blocks_uncommitted)
+    #   file_path: string. file path
+    def commit_blocks(uri, blocks_committed, blocks_uncommitted, file_path)
       doc = REXML::Document.new "<BlockList />"
       blocks_committed.each { |blockid| doc.root.add_element(REXML::Element.new("Committed").add_text(blockid)) }
       blocks_uncommitted.each { |blockid| doc.root.add_element(REXML::Element.new("Uncommitted").add_text(blockid)) }
@@ -197,16 +205,41 @@ module Fluent
       commit_msg = doc.to_s
 
       blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
-      put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg)
+      put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg, file_path)
       http = OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
       OMS::Common.start_request(put_blocklist_req, http)
     end # commit_blocks
+
+    def notify_blob_upload_complete(uri, data_type, custom_data_type)
+      data_type_id = data_type
+      if !custom_data_type.nil?
+        data_type_id = "#{data_type}.#{custom_data_type}"
+      end
+
+      data = {
+        "DataType" => "BLOB_UPLOAD_NOTIFICATION",
+        "IPName" => "",
+        "DataItems" => [
+          {
+            "BlobUrl" => uri.to_s,
+            "OriginalDataTypeId" => data_type_id
+          }
+        ]
+      }
+
+      req = OMS::Common.create_ods_request(OMS::Configuration.notify_blob_ods_endpoint.path, data, compress=false)
+
+      ods_http = OMS::Common.create_ods_http(OMS::Configuration.notify_blob_ods_endpoint, @proxy_config)
+      body = OMS::Common.start_request(req, ods_http)
+    end # notify_blob_upload_complete
 
     # parse the tag to get the settings and append the message to blob
     # parameters:
     #   tag: string. the tag of the item
     #   records: string[]. an arrary of data
     def handle_records(tag, records)
+      filePath = nil
+
       tags = tag.split('.')
       if tags.size >= 4
         # tag should have 6 parts at least:
@@ -223,7 +256,7 @@ module Fluent
           # tags[4]: custom data type
           custom_data_type = tags[4]
 
-          # tags[5..-1]: monitoring file name
+          # tags[5..-1]: monitoring file path
           # concat all the rest parts with /
           filePath = tags[5..-1].join('/')
 
@@ -234,7 +267,7 @@ module Fluent
           suffix = Time.now.utc.strftime("d=%Y%m%d/h=%H/#{SecureRandom.uuid}")
         end
       else
-        @log.error "The tag does not have at least 4 parts #{tag}"
+        raise "The tag does not have at least 4 parts #{tag}"
       end
 
       start = Time.now
@@ -243,10 +276,24 @@ module Fluent
       @log.debug "Success getting the BLOB uri in #{time.round(3)}s"
 
       start = Time.now
-      dataSize = append_blob(blob_uri, records)
+      dataSize = append_blob(blob_uri, records, filePath)
       time = Time.now - start
       @log.debug "Success sending #{dataSize} bytes of data to BLOB #{time.round(3)}s"
 
+      start = Time.now
+      notify_blob_upload_complete(blob_uri, data_type, custom_data_type)
+      time = Time.now - start
+      @log.trace "Success notify the data to BLOB #{time.round(3)}s"
+
+    rescue OMS::RetryRequestException => e
+      @log.info "Encountered retryable exception. Will retry sending data later."
+      @log.debug "Error:'#{e}'"
+      
+      # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
+      # it must be generic exception, otherwise, fluentd will stuck.
+      raise e.message
+    rescue => e
+      OMS::Log.error_once("Unexpecting exception, dropping data. Error:'#{e}'")
     end # handle_record
 
     # This method is called when an event reaches to Fluentd.

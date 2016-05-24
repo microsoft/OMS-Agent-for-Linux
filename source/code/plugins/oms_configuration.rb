@@ -14,6 +14,7 @@ module OMS
     @@AgentId = nil
     @@ODSEndpoint = nil
     @@GetBlobODSEndpoint = nil
+    @@NotifyBlobODSEndpoint = nil
 
     class << self
       
@@ -81,8 +82,10 @@ module OMS
         begin
           endpoint_url = endpoint_lines[0].split("=")[1].strip
           @@ODSEndpoint = URI.parse( endpoint_url )
-          @@GetBlobODSEndpoint = URI.parse( endpoint_url )
+          @@GetBlobODSEndpoint = @@ODSEndpoint.clone
           @@GetBlobODSEndpoint.path = '/ContainerService.svc/GetBlobUploadUri'
+          @@NotifyBlobODSEndpoint = @@ODSEndpoint.clone
+          @@NotifyBlobODSEndpoint.path = '/ContainerService.svc/PostBlobUploadNotification'
         rescue => e
           Log.error_once("Error parsing endpoint url. #{e}")
           return false
@@ -136,6 +139,11 @@ module OMS
       def get_blob_ods_endpoint
         @@GetBlobODSEndpoint
       end # getter get_blob_ods_endpoint
+
+      def notify_blob_ods_endpoint
+        @@NotifyBlobODSEndpoint
+      end # getter notify_blob_ods_endpoint
+
     end # Class methods
         
   end # class Common
