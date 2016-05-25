@@ -80,7 +80,7 @@ usage()
     echo "$basename [-u user] -p host[:port]"
     echo
     echo "Enable collectd:"
-    echo "$basename --collectd"
+    echo "$basename -c"
 
     clean_exit 1
 }
@@ -168,13 +168,6 @@ log_error()
 parse_args()
 {
     local OPTIND opt
-
-    for arg in "$@"; do
-        if [ "$arg" = "--collectd" ]; then
-          set -- "$@" "-c"
-        fi
-        shift;
-    done
 
     while getopts "h?s:w:brvp:u:c" opt; do
         case "$opt" in
