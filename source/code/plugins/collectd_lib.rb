@@ -1,6 +1,7 @@
 module CollectdModule
   class Collectd
   require_relative 'oms_common'
+  require_relative 'omslog'
 
     def transform(record, hostname)
       if record.to_s == ''
@@ -38,21 +39,27 @@ module CollectdModule
 
     #add additional meta such as ObjectName, InstanceName, etc.
     def transform_and_wrap(record, hostname)
-       data_items = transform(record, hostname)
-       if (data_items != nil and data_items.size > 0)
-         wrapper = {
-          "DataType"=>"LINUX_PERF_BLOB",
-          "IPName"=>"LogManagement",
-          "DataItems"=>data_items
-        }
-         return wrapper
-       else
-         # no data items, send a empty array that tells ODS
-         # output plugin to not the data
-         return {}
-       end
+      if record !=nil and record["error_class"]=="Fluent::BufferQueueLimitError"
+        OMS::Log.warn_once("Buffer Queue limit exceeded, collectD metrics not being sent to OMS")
+        return
+      end
+
+      data_items = transform(record, hostname)
+      if (data_items != nil and data_items.size > 0)
+        wrapper = {
+        "DataType"=>"LINUX_PERF_BLOB",
+        "IPName"=>"LogManagement",
+        "DataItems"=>data_items
+      }
+        return wrapper
+      else
+          # no data items, send a empty array that tells ODS
+          # output plugin to not the data
+        return {}
+      end
     end
   end
 
 end
+
 
