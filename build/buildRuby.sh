@@ -217,7 +217,7 @@ echo "========================= Performing Building FluentD"
 cd ${FLUENTD_DIR}
 bundle install --local
 bundle exec rake build
-elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.14.gem
+elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.24.gem
 
 echo "========================= Performing Stripping Binaries"
 sudo find ${RUBY_DESTDIR} -name \*.so -print -exec strip {} \;

@@ -23,6 +23,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
 /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf;            installer/conf/omsagent.d/monitor.conf;                644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
@@ -57,6 +58,10 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/changetracking_lib.rb;                   source/code/plugins/changetracking_lib.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/filter_collectd.rb;                      source/code/plugins/filter_collectd.rb;                744; root; root
 /opt/microsoft/omsagent/plugin/collectd_lib.rb;                         source/code/plugins/collectd_lib.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/filter_operation.rb;                     source/code/plugins/filter_operation.rb;               744; root; root
+/opt/microsoft/omsagent/plugin/operation_lib.rb;                        source/code/plugins/operation_lib.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/in_oms_heartbeat.rb;                     source/code/plugins/in_oms_heartbeat.rb;               744; root; root
+/opt/microsoft/omsagent/plugin/heartbeat_lib.rb;                        source/code/plugins/heartbeat_lib.rb;                  744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
@@ -114,6 +119,11 @@ fi
 
 # Folder for omsagent.conf includes
 mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
+
+# Copy monitor plugins conf file by default
+if [ ! -f ${{CONF_DIR}}/omsagent.d/monitor.conf ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf ${{CONF_DIR}}/omsagent.d/monitor.conf
+fi
 
 # Copy over standalone plugin configurations
 #cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/* ${{CONF_DIR}}/omsagent.d
