@@ -233,8 +233,11 @@ if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then
     echo "Given that OMI makes assumptions based on these directories, there is an" >& 2
     echo "extraordinarily good chance that your build will fail. You should do a" >& 2
     echo "ULINUX build (--enable-ulinux) on this system." >& 2
-    echo "If you wish to continue with a non ULINUX build remove " >& 2
-    echo "/usr/local_ssl_0.9.8 and /usr/local_ssl_1.0.0, then re-run configure." >& 2
+    echo "" >& 2
+    echo "If you really do not want a universal (ULINUX) build, then run:" >& 2
+    echo "    sudo rm -rf /usr/local_ssl_0.9.8 /usr/local_ssl_1.0.0" >& 2
+    echo "and then re-run configure. IMPORTANT: Only try this on a private system," >& 2
+    echo "Do NOT do this on a shared system without consulting your team!" >& 2
     exit 1
 fi
 
