@@ -39,8 +39,13 @@ module CollectdModule
 
     #add additional meta such as ObjectName, InstanceName, etc.
     def transform_and_wrap(record, hostname)
-      if record !=nil and record["error_class"]=="Fluent::BufferQueueLimitError"
+      if record.to_s != '' and record["error_class"]=="Fluent::BufferQueueLimitError"
         OMS::Log.warn_once("Buffer Queue limit exceeded, collectD metrics not being sent to OMS")
+        return
+      end
+
+      if record.to_s != '' and !record.has_key?("dsnames")
+        OMS::Log.warn_once("Invalid CollectD metric record found. Discarding data")
         return
       end
 
