@@ -23,6 +23,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
 /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking_inventory.mof;    installer/conf/omsagent.d/change_tracking_inventory.mof;    644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf;            installer/conf/omsagent.d/monitor.conf;                644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
