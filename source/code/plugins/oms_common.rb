@@ -661,17 +661,20 @@ module OMS
       #   path: string. path of the request
       #   record: Hash. body of the request
       #   compress: bool. Whether the body of the request should be compressed
+      #   extra_header: Hash. extra HTTP headers
+      #   serializer: method. serializer of the record
       # returns:
       #   HTTPRequest. request to ODS
-      def create_ods_request(path, record, compress)
-        headers = {}
+      def create_ods_request(path, record, compress, extra_headers=nil, serializer=method(:parse_json_record_encoding))
+        headers = extra_headers.nil? ? {} : extra_headers
+
         headers["Content-Type"] = "application/json"
         if compress == true
           headers["Content-Encoding"] = "deflate"
         end
 
         req = Net::HTTP::Post.new(path, headers)
-        json_msg = parse_json_record_encoding(record)
+        json_msg = serializer.call(record)
         if json_msg.nil?
           return nil
         else
@@ -712,6 +715,47 @@ module OMS
         end
         return msg
       end
+
+      # dump the records into json string
+      # assume the records is an array of single layer hash
+      # return nil if we cannot dump it
+      # parameters:
+      #   records: hash[]. an array of single layer hash
+      def safe_dump_simple_hash_array(records)
+        msg = nil
+
+        begin
+          msg = JSON.dump(records)
+        rescue JSON::GeneratorError => error
+          Log.warn_once("Unable to dump to JSON string. #{error}")
+          begin
+            # failed to dump, encode to utf-8, iso-8859-1 and try again
+            # records is an array of hash
+            records.each do | hash |
+              # the value is a hash
+              hash.each do | key, value |
+                # the value should be of simple type
+                # encode the string to utf-8
+                if value.instance_of? String
+                  hash[key] = value.encode('utf-8', 'iso-8859-1')
+                end
+              end
+            end
+
+            msg = JSON.dump(records)
+          rescue => error
+            # at this point we've given up, we don't recognize the encode,
+            # so return nil and log_warning for the record
+            Log.warn_once("Skipping due to failed encoding for #{records}: #{error}")
+          end
+        rescue => error
+          # unexpected error when dumpping the records into JSON string
+          # skip here and return nil
+          Log.warn_once("Skipping due to unexpected error for #{records}: #{error}")
+        end
+
+        return msg
+      end # safe_dump_simple_hash_array
 
       # start a request
       # parameters:
