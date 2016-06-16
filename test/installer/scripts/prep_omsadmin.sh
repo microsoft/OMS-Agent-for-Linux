@@ -40,4 +40,5 @@ OSVersion=14.04
 OSFullName=Ubuntu 14.04 (x86_64)
 OSAlias=UniversalD
 OSManufacturer=Canonical Group Limited
+OSShortName=Ubuntu_14.04
 EOF
