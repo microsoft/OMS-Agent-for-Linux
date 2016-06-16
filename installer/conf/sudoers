@@ -6,6 +6,10 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSRsyslog.post.sh
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSSysklog.post.sh
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSSyslog-ng.post.sh
 
+#Service status
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSServiceStat.sh
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSServiceStatAll.sh
+
 #restart omsagent daemon
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/bin/service_control
 
