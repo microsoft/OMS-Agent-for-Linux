@@ -25,6 +25,8 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking_inventory.mof;    installer/conf/omsagent.d/change_tracking_inventory.mof;    644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf;            installer/conf/omsagent.d/monitor.conf;                644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management.conf;      installer/conf/omsagent.d/patch_management.conf;          644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management_inventory.mof;  installer/conf/omsagent.d/patch_management_inventory.mof;        644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
@@ -64,6 +66,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/operation_lib.rb;                        source/code/plugins/operation_lib.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/in_oms_heartbeat.rb;                     source/code/plugins/in_oms_heartbeat.rb;               744; root; root
 /opt/microsoft/omsagent/plugin/heartbeat_lib.rb;                        source/code/plugins/heartbeat_lib.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/filter_patch_management.rb;              source/code/plugins/filter_patch_management.rb;        744; root; root
+/opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root

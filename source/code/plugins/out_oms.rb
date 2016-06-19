@@ -53,6 +53,7 @@ module Fluent
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
+        return true
       end
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."

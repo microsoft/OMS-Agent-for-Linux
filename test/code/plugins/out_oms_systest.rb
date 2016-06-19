@@ -39,6 +39,11 @@ class OutOMSTest < OutOMSSystemTestBase
     $log.clear
     record = {"DataType"=>"LINUX_NAGIOSALERTS_BLOB", "IPName"=>"AlertManagement", "DataItems"=>[{"Timestamp"=>"1970-01-01T00:00:00+00:00", "AlertName"=>"SERVICE ALERT", "HostName"=>"host100", "State"=>"alert state", "StateType"=>"state type", "AlertPriority"=>0, "AlertDescription"=>"Alert Description."}]}
     assert(output.handle_record("oms.nagios", record), "Failed to send nagios data : '#{$log.logs}'")
+    
+    # Mock Linux Updates data
+    $log.clear
+    record = {"DataType"=>"LINUX_UPDATES_SNAPSHOT_BLOB", "IPName"=>"Updates", "DataItems"=>{"DataItems"=> [{"Collections"=> [{"CollectionName"=>"dpkg_1.18.4ubuntu1.1_Ubuntu 16.04 (x86_64)", "Installed"=>false, "PackageName"=>"dpkg", "PackageVersion"=>"1.18.4ubuntu1.1", "Repository"=>"Ubuntu:16.04/xenial-updates", "Timestamp"=>"1970-01-01T00:00:00.000Z"}], "Computer"=>"HostName","OSFullName"=>"Ubuntu 16.04 (x86_64)", "OSName"=>"Ubuntu", "OSType"=>"Linux", "OSVersion"=>"16.04", "Timestamp"=>"2016-03-15T19:02:38.577Z"}]}}
+    assert(output.handle_record("oms.patch_management", record), "Failed to send linux updates data : '#{$log.logs}'")
   end
 
 end
