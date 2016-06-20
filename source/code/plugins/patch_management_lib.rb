@@ -87,6 +87,14 @@ class LinuxUpdates
         @@prev_hash = value
     end
 
+    def self.isInstalledPackageInstanceXML(instanceXML)
+        instanceXML.attributes["CLASSNAME"] == "MSFT_nxPackageResource"
+    end
+
+    def self.isAvailableUpdateInstanceXML(instanceXML)
+        instanceXML.attributes["CLASSNAME"] == "MSFT_nxAvailableUpdatesResource"
+    end
+
     def self.instanceXMLtoHash(instanceXML)
         ret = {}
         propertyXPath = "PROPERTY"
@@ -99,13 +107,12 @@ class LinuxUpdates
         ret
     end
 
-    def self.availableUpdatesXMLtoHash(availableUpdatesXML)
+    def self.availableUpdatesXMLtoHash(availableUpdatesXML, os_short_name = nil)
         availableUpdatesHash = instanceXMLtoHash(availableUpdatesXML)
         ret = {}
         
         ret["CollectionName"] = availableUpdatesHash["Name"] + @@delimiter + 
-                                availableUpdatesHash["Version"] + @@delimiter + 
-                                getOSShortName()
+                                availableUpdatesHash["Version"] + @@delimiter + os_short_name
         ret["PackageName"] = availableUpdatesHash["Name"]
         ret["PackageVersion"] = availableUpdatesHash["Version"]
         ret["Timestamp"] = OMS::Common.format_time(availableUpdatesHash["BuildDate"].to_i)
@@ -114,13 +121,13 @@ class LinuxUpdates
         ret
     end
 
-    def self.installedPackageXMLtoHash(packageXML)
+    def self.installedPackageXMLtoHash(packageXML, os_short_name = nil)
         packageHash = instanceXMLtoHash(packageXML)
         ret = {}
         
         ret["CollectionName"] = packageHash["Name"] + @@delimiter + 
                                 packageHash["Version"] + @@delimiter + 
-                                getOSShortName()
+                                os_short_name
         ret["PackageName"] = packageHash["Name"]
         ret["PackageVersion"] = packageHash["Version"]
         ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
@@ -150,15 +157,15 @@ class LinuxUpdates
         }
     end
 
-    def self.isInstalledPackageInstanceXML(instanceXML)
-        instanceXML.attributes["CLASSNAME"] == "MSFT_nxPackageResource"
-    end
-
-    def self.isAvailableUpdateInstanceXML(instanceXML)
-        instanceXML.attributes["CLASSNAME"] == "MSFT_nxAvailableUpdatesResource"
-    end
-
-    def self.transform_and_wrap(inventoryXMLstr, host, time, force_send_run_interval = 86400)
+    def self.transform_and_wrap(inventoryXMLstr, host, time, force_send_run_interval = 86400,
+                                agentIdParam = nil, osNameParam = nil, osFullNameParam = nil, 
+                                osVersionParam = nil, osShortNameParam = nil)
+        # Taking the parameters - Helps in mocking, in the case of tests.
+        agentId = (agentIdParam == nil) ? @@agentDetailsMap["AGENT_GUID"] : agentIdParam
+        osName =  (osNameParam == nil) ? @@hostOSDetailsMap["OSName"] : osNameParam
+        osVersion = (osVersionParam == nil) ? @@hostOSDetailsMap["OSVersion"] : osVersionParam
+        osFullName = (osFullNameParam == nil) ? @@hostOSDetailsMap["OSFullName"] : osFullNameParam
+        osShortNameParam = (osShortNameParam == nil) ? getOSShortName() : osShortNameParam
 
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
@@ -182,8 +189,8 @@ class LinuxUpdates
         availableUpdatesXML = instancesXML.select { |instanceXML| isAvailableUpdateInstanceXML(instanceXML) }
 
         # Convert to xml to hash/json representation
-        installedPackages = installedPackagesXML.map { |installedPackage|  installedPackageXMLtoHash(installedPackage)}
-        availableUpdates = availableUpdatesXML.map { |availableUpdate|  availableUpdatesXMLtoHash(availableUpdate)}
+        installedPackages = installedPackagesXML.map { |installedPackage|  installedPackageXMLtoHash(installedPackage, osShortNameParam)}
+        availableUpdates = availableUpdatesXML.map { |availableUpdate|  availableUpdatesXMLtoHash(availableUpdate, osShortNameParam)}
 
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
         installedPackages = removeDuplicateCollectionNames(installedPackages)
@@ -206,11 +213,11 @@ class LinuxUpdates
             "DataItems"=>[{
                     "Timestamp" => timestamp,
                     "Host" => host,
-                    "AgentId" => @@agentDetailsMap["AGENT_GUID"],
+                    "AgentId" => agentId,
                     "OSType" => "Linux",
-                    "OSName" => @@hostOSDetailsMap["OSName"],
-                    "OSVersion" => @@hostOSDetailsMap["OSVersion"],
-                    "OSFullName" => @@hostOSDetailsMap["OSFullName"],
+                    "OSName" => osName,
+                    "OSVersion" => osVersion,
+                    "OSFullName" => osFullName,
                     "Collections"=> collections
                 }]}
           @@log.debug "LinuxUpdates : installedPackages x #{installedPackages.size}, 
