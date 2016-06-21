@@ -191,8 +191,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
             }]
         }
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = LinuxUpdates::transform_and_wrap(@installed_packages_xml_str, "HostName", expectedTime,
-                  "AgentId-123", "Ubuntu", "Ubuntu 16.04", "16.04", "Ubuntu_16.04")
+    wrappedHash = LinuxUpdates::transform_and_wrap(@installed_packages_xml_str, "HostName", expectedTime, 
+                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 16.04",
+                                                   "16.04", "Ubuntu_16.04")
     assert_equal(expectedHash, wrappedHash)
   end
   
@@ -220,7 +221,8 @@ class LinuxUpdatesTest < Test::Unit::TestCase
         }
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
     wrappedHash = LinuxUpdates::transform_and_wrap(@available_updates_xml_str, "HostName", expectedTime,
-                  "AgentId-123", "Ubuntu", "Ubuntu 16.04", "16.04", "Ubuntu_16.04")
+                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 16.04",
+                                                   "16.04", "Ubuntu_16.04")
     assert_equal(expectedHash, wrappedHash)
   end
   
@@ -228,7 +230,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     inventoryXMLstr = File.read(@inventoryPath)
 
     start = Time.now
-    wrappedHash = LinuxUpdates::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, "AgentId-123", "Ubuntu", "Ubuntu 16.04", "16.04", "Ubuntu_16.04")
+    wrappedHash = LinuxUpdates::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 86400,
+                                                   "AgentId-123", "Ubuntu", "Ubuntu 16.04", "16.04", 
+                                                   "Ubuntu_16.04")
     finish = Time.now
     time_spent = finish - start
     # Test that duplicates are removed as well. The test data has 605 installedpackages and 20 available updates with some duplicates.
