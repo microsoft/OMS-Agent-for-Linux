@@ -345,5 +345,16 @@ module OMS
       # sanity check
       assert_equal('Pacific Standard Time', timezone, "timezone is not expected")
     end
+    
+    def test_get_current_timezone_relative_symlink
+      $log = MockLog.new
+      File.delete(@tmp_localtime_file.path)
+      File.symlink('/etc/../usr/share/zoneinfo/right/America/Los_Angeles', @tmp_localtime_file.path)
+      Common.tzLocalTimePath = @tmp_localtime_file.path
+      timezone = Common.get_current_timezone
+      assert_equal([], $log.logs, "There was an error parsing the timezone")
+      # sanity check
+      assert_equal('Pacific Standard Time', timezone, "timezone is not expected")
+    end
   end
 end # Module OMS

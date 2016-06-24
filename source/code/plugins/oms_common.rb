@@ -475,9 +475,13 @@ module OMS
     @@tzRightFolder = 'right/'
 
     class << self
+      # get the unified timezone id by absolute file path of the timezone file
+      # file path: the absolute path of the file
       def get_unified_timezoneid(filepath)
         # remove the baseFolder path
         tzID = filepath[@@tzBaseFolder.length..-1] if filepath.start_with?(@@tzBaseFolder)
+
+        return 'Unknown' if tzID.nil?
 
         # if the rest starts with 'right/', remove it to unify the format
         tzID = tzID[@@tzRightFolder.length..-1] if tzID.start_with?(@@tzRightFolder)
@@ -493,7 +497,7 @@ module OMS
         begin
           # if /etc/localtime is a symlink, check the link file's path
           if File.symlink?(@@tzLocalTimePath)
-            symlinkpath = File.readlink(@@tzLocalTimePath)
+            symlinkpath = File.absolute_path(File.readlink(@@tzLocalTimePath), File.dirname(@@tzLocalTimePath))
             tzID = get_unified_timezoneid(symlinkpath)
             
             # look for the entry in the timezone mapping
@@ -826,7 +830,8 @@ module OMS
     def get_ip_from_socket(hostname)
       begin
         addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)
-      rescue => e
+      rescue => error
+        Log.error_once("Unable to resolve the IP of '#{hostname}': #{error}")
         return nil
       end
 
