@@ -13,6 +13,7 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSServiceStatAll.
 # AvailableUpdates
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSYumUpdates.sh
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSZypperUpdates.sh
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSAptUpdates.sh
 
 #restart omsagent daemon
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/bin/service_control
