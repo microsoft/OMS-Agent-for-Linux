@@ -34,7 +34,7 @@ module Fluent
 
       # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
       # The time may be slightly in the future from the ingestion time.
-      record['Timestamp'] = OMS::Security.format_time(Time.now.to_f)
+      record['Timestamp'] = OMS::Common.format_time(Time.now.to_f)
 
       record['Message'] = record['message']
       record.delete 'message'
