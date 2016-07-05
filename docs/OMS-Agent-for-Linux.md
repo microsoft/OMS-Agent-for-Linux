@@ -419,6 +419,82 @@ The default configuration for a performance metric is:
   interval 30s
 </source>
 ```
+### CollectD Metrics
+
+#### Background
+[CollectD](https://collectd.org/) is an open source Linux daemon that periodically collects data from applications and system level information. Example applications CollectD can collect metrics from include the Java Virtual Machine (JVM), MySQL Server, Nginx, etc.
+
+A full list of available plugins can be found here: https://collectd.org/wiki/index.php/Table_of_Plugins.
+
+**OMS Agent for Linux v1.1.0-217+ is required for CollectD metric collection**
+
+#### Connection Details
+![](pictures/CollectDManagement.png?raw=true)
+
+The following CollectD configuration is included in the OMS Agent for Linux to route CollectD data to the OMS Agent for Linux
+```
+LoadPlugin write_http
+
+<Plugin write_http>
+         <Node "oms">
+         URL "127.0.0.1:26000/oms.collectd"
+         Format "JSON"
+         StoreRates true
+         </Node>
+</Plugin>
+```
+
+This CollectD configuration uses the default `write_http` plugin to send metric data over port 26000 to OMS Agent for Linux. **Note:** This port can be configured to another port if needed.
+
+The OMS Agent for Linux also listens on port 26000 for CollectD metrics and then converts them to OMS schema metrics. The following is the OMS Agent for Linux configuration `collectd.conf`.
+
+```
+<source>
+ type http
+  port 26000
+  bind 127.0.0.1
+</source>
+
+<filter oms.collectd>
+  type filter_collectd
+</filter>
+```
+
+#### Setup
+
+##### Installation Option
+During installation the option `--collectd` can be used to automatically place the CollectD configuration in `/etc/collectd/conf.d/`, and enable the OMS Agent for Linux filter.
+
+##### Post-Install Option
+If OMS Agent for Linux is already installed you can run the following command to automatically place the CollectD configuration in `/etc/collectd/conf.d/`, and enable the OMS Agent for Linux filter.
+
+**Note:** If CollectD is not installed in a default path then these options should not be used, and the files should be placed manually in CollectD configuration directory. **Additionally, CollectD must be restarted after installation**
+
+### Custom JSON Data sources
+Custom JSON Data sources can be routed through the OMS Agent for Linux allowing you to index based off JSON fields. These custom data sources can range from simple scripts returning JSON *e.g. `curl`* , or one of [FluentD's 300+ plugins](http://www.fluentd.org/plugins/all). Additionally, custom data sources are analyzed by OMS to determine if the field is a number, string, integer, or boolean allowing for aggregations and additional logic.
+
+
+**OMS Agent for Linux v1.1.0-217+ is required for CollectD metric collection**
+
+#### Setup
+To bring any JSON data into OMS, the setup required is adding the following before a FluentD tag: `oms.api.`. Once complete restart the OMS Agent for Linux service `sudo service omsagent restart` or `sudo systemctl restart omsagent` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
+
+**Example:**The following custom tag `tag oms.api.tomcat` shows up as `Type=tomcat_CL` in Log Analytics
+
+**Note:** Nested JSON data sources are supported, but are indexed based off of parent field. The following JSON data
+```
+{
+    "tag": [{
+    	"a":"1",
+    	"b":"2"
+    }]
+}
+```
+
+Shows up as the following in Log Analytics search
+
+`tag_s : "[{ "a":"1", "b":"2" }]`
+
 
 ### Nagios Alerts
 To collect alerts from a Nagios server, the following configuration changes must be made:
