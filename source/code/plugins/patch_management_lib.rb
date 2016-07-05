@@ -12,28 +12,65 @@ class LinuxUpdates
     @@delimiter = "_"
     @@force_send_last_upload = Time.now
     MAJOR_MINOR_VERSION_REGEX = /([^\.]+)\.([^\.]+).*/
+    OMS_ADMIN_FILE = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+    SCX_RELEASE_FILE = "/etc/opt/microsoft/scx/conf/scx-release"
 
-    @@agentDetailsMap = Hash[(`cat /etc/opt/microsoft/omsagent/conf/omsadmin.conf`.split(/\r?\n/).map {|s| 
-                                s.split("=")}).map {|key, value| 
-                                    [key, value]
-                                }
-                            ]
+    def self.getAgentDetails()
+        ret = {}
 
-    @@hostOSDetailsMap = Hash[(`cat /etc/opt/microsoft/scx/conf/scx-release`.split(/\r?\n/).map {|s|
-                               s.split("=")}).map {|key, value|
-                                    [key, value]
-                                }
-                            ]
-    
-    @os_major_version = @@hostOSDetailsMap["OSVersion"][MAJOR_MINOR_VERSION_REGEX, 1] unless @@hostOSDetailsMap["OSVersion"].nil?
-    @os_minor_version = @@hostOSDetailsMap["OSVersion"][MAJOR_MINOR_VERSION_REGEX, 2] unless @@hostOSDetailsMap["OSVersion"].nil?
+        if File.exist?(OMS_ADMIN_FILE) # If file exists
+            File.open(OMS_ADMIN_FILE, "r") do |f| # Open file
+                f.each_line do |line|       # Split each line and
+                    line.split(/\r?\n/).reject{ |l|  # reject all those line
+                        !l.include? "=" }.map {|s|    # which do not
+                            s.split("=")}.map {|key, value| # have "="; split
+                                ret[key] = value     # by "=" and add to ret.
+                        }
+                end
+            end
+        else
+            @@log.debug "Could not find the file #{OMS_ADMIN_FILE}"
+        end
+        return ret
+    end
+
+    def self.getHostOSDetails()
+        ret = {}
+
+        if File.exist?(SCX_RELEASE_FILE) # If file exists
+            File.open(SCX_RELEASE_FILE, "r") do |f| # Open file
+                f.each_line do |line|       # Split each line and
+                    line.split(/\r?\n/).reject{ |l|  # reject all those line
+                        !l.include? "=" }.map {|s|    # which do not
+                            s.split("=")}.map {|key, value| # have "="; split
+                                ret[key] = value     # by "=" and add to ret.
+                        }
+                end
+            end
+        else
+            @@log.debug "Could not find the file #{SCX_RELEASE_FILE}"
+        end
+        return ret
+    end
 
     # This temporary fix is for version management for cache lookup.                        
-    def self.getOSShortName()
-        # match string of the form (1 or more non . chars)- followed by a . - (1 or more non . chars) - followed by anything
+    def self.getOSShortName(os_short_name = nil, os_version=nil)
         version = ""
+        hostOSDetailsMap = getHostOSDetails()
 
-        case @@hostOSDetailsMap["OSShortName"].split("_")[0]
+        # match string of the form (1 or more non . chars)- followed by a . - (1 or more non . chars) - followed by anything
+        osName = (os_short_name == nil) ? hostOSDetailsMap["OSShortName"].split("_")[0] : os_short_name.split("_")[0]
+        if (os_version == nil)
+            @os_major_version = hostOSDetailsMap["OSVersion"][MAJOR_MINOR_VERSION_REGEX, 1] unless hostOSDetailsMap["OSVersion"].nil?
+            @os_minor_version = hostOSDetailsMap["OSVersion"][MAJOR_MINOR_VERSION_REGEX, 2] unless hostOSDetailsMap["OSVersion"].nil?
+            @default_version = hostOSDetailsMap["OSVersion"]
+        else
+            @os_major_version = os_version[MAJOR_MINOR_VERSION_REGEX, 1] unless os_version.nil?
+            @os_minor_version = os_version[MAJOR_MINOR_VERSION_REGEX, 2] unless os_version.nil?
+            @default_version = os_version
+        end 
+        
+        case osName
         when "Ubuntu"
             if @os_major_version == "12" || @os_major_version == "13"
                 version = "12.04"
@@ -42,7 +79,7 @@ class LinuxUpdates
             elsif  @os_major_version == "16" || @os_major_version == "17"
                 version = "16.04"
             else
-                version = @@hostOSDetailsMap["OSVersion"]
+                version = @default_version
             end
         when "CentOS"
             if @os_major_version == "5"
@@ -52,7 +89,7 @@ class LinuxUpdates
             elsif  @os_major_version == "7"
                 version = "7.0"
             else
-                version = @@hostOSDetailsMap["OSVersion"]
+                version = @default_version
             end
         when "RHEL"
             if @os_major_version == "5"
@@ -62,7 +99,7 @@ class LinuxUpdates
             elsif  @os_major_version == "7"
                 version = "7.0"
             else
-                version = @@hostOSDetailsMap["OSVersion"]
+                version = @default_version
             end
         when "SUSE"
             if @os_major_version == "11"
@@ -70,13 +107,13 @@ class LinuxUpdates
             elsif  @os_major_version == "12"
                 version = "12.0"
             else
-                version = @@hostOSDetailsMap["OSVersion"]
+                version = @default_version
             end
         else
-            version = @@hostOSDetailsMap["OSVersion"]
+            version = @default_version
         end
 
-        return @@hostOSDetailsMap["OSShortName"].split("_")[0] + @@delimiter + version
+        return osName + @@delimiter + version
     end
 
     def self.log= (value)
@@ -107,10 +144,9 @@ class LinuxUpdates
         ret
     end
 
-    def self.availableUpdatesXMLtoHash(availableUpdatesXML, os_short_name = nil)
+    def self.availableUpdatesXMLtoHash(availableUpdatesXML, os_short_name)
         availableUpdatesHash = instanceXMLtoHash(availableUpdatesXML)
         ret = {}
-        
         ret["CollectionName"] = availableUpdatesHash["Name"] + @@delimiter + 
                                 availableUpdatesHash["Version"] + @@delimiter + os_short_name
         ret["PackageName"] = availableUpdatesHash["Name"]
@@ -121,13 +157,12 @@ class LinuxUpdates
         ret
     end
 
-    def self.installedPackageXMLtoHash(packageXML, os_short_name = nil)
+    def self.installedPackageXMLtoHash(packageXML, os_short_name)
         packageHash = instanceXMLtoHash(packageXML)
         ret = {}
         
         ret["CollectionName"] = packageHash["Name"] + @@delimiter + 
-                                packageHash["Version"] + @@delimiter + 
-                                os_short_name
+                                packageHash["Version"] + @@delimiter + os_short_name
         ret["PackageName"] = packageHash["Name"]
         ret["PackageVersion"] = packageHash["Version"]
         ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
@@ -160,12 +195,14 @@ class LinuxUpdates
     def self.transform_and_wrap(inventoryXMLstr, host, time, force_send_run_interval = 86400,
                                 agentIdParam = nil, osNameParam = nil, osFullNameParam = nil, 
                                 osVersionParam = nil, osShortNameParam = nil)
+        agentDetailsMap = getAgentDetails()
+        hostOSDetailsMap = getHostOSDetails()
         # Taking the parameters - Helps in mocking, in the case of tests.
-        agentId = (agentIdParam == nil) ? @@agentDetailsMap["AGENT_GUID"] : agentIdParam
-        osName =  (osNameParam == nil) ? @@hostOSDetailsMap["OSName"] : osNameParam
-        osVersion = (osVersionParam == nil) ? @@hostOSDetailsMap["OSVersion"] : osVersionParam
-        osFullName = (osFullNameParam == nil) ? @@hostOSDetailsMap["OSFullName"] : osFullNameParam
-        osShortNameParam = (osShortNameParam == nil) ? getOSShortName() : osShortNameParam
+        agentId = (agentIdParam == nil) ? agentDetailsMap["AGENT_GUID"] : agentIdParam
+        osName =  (osNameParam == nil) ? hostOSDetailsMap["OSName"] : osNameParam
+        osVersion = (osVersionParam == nil) ? hostOSDetailsMap["OSVersion"] : osVersionParam
+        osFullName = (osFullNameParam == nil) ? hostOSDetailsMap["OSFullName"] : osFullNameParam
+        osShortName = getOSShortName(osShortNameParam, osVersion)
 
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
@@ -189,8 +226,8 @@ class LinuxUpdates
         availableUpdatesXML = instancesXML.select { |instanceXML| isAvailableUpdateInstanceXML(instanceXML) }
 
         # Convert to xml to hash/json representation
-        installedPackages = installedPackagesXML.map { |installedPackage|  installedPackageXMLtoHash(installedPackage, osShortNameParam)}
-        availableUpdates = availableUpdatesXML.map { |availableUpdate|  availableUpdatesXMLtoHash(availableUpdate, osShortNameParam)}
+        installedPackages = installedPackagesXML.map { |installedPackage|  installedPackageXMLtoHash(installedPackage, osShortName)}
+        availableUpdates = availableUpdatesXML.map { |availableUpdate|  availableUpdatesXMLtoHash(availableUpdate, osShortName)}
 
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
         installedPackages = removeDuplicateCollectionNames(installedPackages)
@@ -225,4 +262,3 @@ class LinuxUpdates
           return wrapper
     end
 end
-

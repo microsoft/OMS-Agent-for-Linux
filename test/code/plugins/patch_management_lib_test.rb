@@ -12,7 +12,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
   def setup
     @installed_packages_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxPackageResource&quot;&gt;&lt;PROPERTY NAME=&quot;Publisher&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu Developers &amp;lt;ubuntu-devel-discuss@lists.ubuntu.com&amp;gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ReturnCode&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;autotools-dev&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FilePath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageGroup&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Installed&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;InstalledOn&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Unknown&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;20150820.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Ensure&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;present&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;all&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Arguments&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageManager&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageDescription&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Update infrastructure for config.{guess,sub} files&amp;#10; This package installs an up-to-date version of config.guess and&amp;#10; config.sub, used by the automake and libtool packages.  It provides&amp;#10; the canonical copy of those files for other packages as well.&amp;#10; .&amp;#10; It also documents in /usr/share/doc/autotools-dev/README.Debian.gz&amp;#10; best practices and guidelines for using autoconf, automake and&amp;#10; friends on Debian packages.  This is a must-read for any developers&amp;#10; packaging software that uses the GNU autotools, or GNU gettext.&amp;#10; .&amp;#10; Additionally this package provides seamless integration into Debhelper&amp;#10; or CDBS, allowing maintainers to easily update config.{guess,sub} files&amp;#10; in their packages.&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Size&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;151&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
     
-    @available_updates_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxAvailableUpdatesResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;dpkg&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1.18.4ubuntu1.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;amd64&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Repository&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu:16.04/xenial-updates&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;BuildDate&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;BuildDate&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
+    @available_updates_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxAvailableUpdatesResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;dpkg&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1.18.4ubuntu1.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;amd64&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Repository&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu:15.04/xenial-updates&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;BuildDate&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;BuildDate&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
     @inventoryPath = File.join(File.dirname(__FILE__), 'InventoryWithUpdates.xml')
     LinuxUpdates.prev_hash = nil
     LinuxUpdates.log = OMS::MockLog.new
@@ -65,7 +65,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       </INSTANCE>'
     
     expectedHash = {
-      "CollectionName"=> "dpkg" + @@delimiter + "1.18.4ubuntu1.1" + @@delimiter + "Ubuntu",
+      "CollectionName"=> "dpkg" + @@delimiter + "1.18.4ubuntu1.1" + @@delimiter + "Ubuntu_14.04",
       "PackageName"=>"dpkg",
       "PackageVersion"=>"1.18.4ubuntu1.1",
       "Timestamp"=> "1970-01-01T00:00:00.000Z",
@@ -76,7 +76,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     instanceXML = LinuxUpdates::strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
     assert_equal("MSFT_nxAvailableUpdatesResource", instanceXML.attributes['CLASSNAME'])
-    instanceHash = LinuxUpdates::availableUpdatesXMLtoHash(instanceXML, "Ubuntu")
+    instanceHash = LinuxUpdates::availableUpdatesXMLtoHash(instanceXML, "Ubuntu_14.04")
     assert_equal(expectedHash, instanceHash)
   end
 
@@ -151,7 +151,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
               </INSTANCE>'    
 
     expectedHash = {
-      "CollectionName"=> "autotools-dev" + @@delimiter + "20150820.1" + @@delimiter + "Ubuntu",
+      "CollectionName"=> "autotools-dev" + @@delimiter + "20150820.1" + @@delimiter + "Ubuntu_14.04",
       "PackageName"=> "autotools-dev",
       "PackageVersion"=>"20150820.1",
       "Timestamp"=> "1970-01-01T00:00:00.000Z",
@@ -163,7 +163,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     instanceXML = LinuxUpdates::strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
     assert_equal("MSFT_nxPackageResource", instanceXML.attributes['CLASSNAME'])
-    instanceHash = LinuxUpdates::installedPackageXMLtoHash(instanceXML, "Ubuntu")
+    instanceHash = LinuxUpdates::installedPackageXMLtoHash(instanceXML, "Ubuntu_14.04")
     assert_equal(expectedHash, instanceHash)
   end
 
@@ -204,25 +204,25 @@ class LinuxUpdatesTest < Test::Unit::TestCase
             "DataItems" => [{
                 "Host" => "HostName",
                 "AgentId" => "AgentId-123",
-                "OSFullName" => "Ubuntu 16.04",
+                "OSFullName" => "Ubuntu 15.04",
                 "OSName" => "Ubuntu",
                 "OSType" => "Linux",
-                "OSVersion" => "16.04",
+                "OSVersion" => "15.04",
                 "Timestamp" => "2016-03-15T19:02:38.577Z",
                 "Collections" => [{
-                    "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_16.04",
+                    "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "PackageName" => "dpkg",
                     "PackageVersion" => "1.18.4ubuntu1.1",
-                    "Repository" => "Ubuntu:16.04/xenial-updates",
+                    "Repository" => "Ubuntu:15.04/xenial-updates",
                     "Timestamp" => "1970-01-01T00:00:00.000Z"
                 }]
             }]
         }
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
     wrappedHash = LinuxUpdates::transform_and_wrap(@available_updates_xml_str, "HostName", expectedTime,
-                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 16.04",
-                                                   "16.04", "Ubuntu_16.04")
+                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 15.04",
+                                                   "15.04", "Ubuntu_15.04")
     assert_equal(expectedHash, wrappedHash)
   end
   
