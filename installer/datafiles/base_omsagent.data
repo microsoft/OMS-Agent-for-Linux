@@ -37,6 +37,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/bin/omsadmin.sh;                                installer/scripts/omsadmin.sh;                         755; root; root
 /opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
 /opt/microsoft/omsagent/bin/uninstall;                                  installer/scripts/uninstall.sh;                        755; root; root
+/opt/microsoft/omsagent/bin/tailfilereader.rb;                          installer/scripts/tailfilereader.rb;                   744; root; root
 
 /opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root
@@ -57,6 +58,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/oms_configuration.rb;                    source/code/plugins/oms_configuration.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/out_oms_blob.rb;                         source/code/plugins/out_oms_blob.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/out_oms_api.rb;                          source/code/plugins/out_oms_api.rb;                    744; root; root
+/opt/microsoft/omsagent/plugin/in_sudo_tail.rb;                         source/code/plugins/in_sudo_tail.rb;                   744; root; root
 
 /opt/microsoft/omsagent/plugin/security_lib.rb;                         source/code/plugins/security_lib.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/filter_syslog_security.rb;               source/code/plugins/filter_syslog_security.rb;         744; root; root
@@ -189,3 +191,4 @@ ${{SHELL_HEADER}}
 ${{SHELL_HEADER}}
 %Postuninstall_0
 ${{SHELL_HEADER}}
+

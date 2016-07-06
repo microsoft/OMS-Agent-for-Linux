@@ -21,4 +21,6 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/bin/service_control
 #Inspect Docker containers (filter_docker_log.rb)
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/docker inspect *
 
+#run tailfilereader.rb
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/bin/tailfilereader.rb *
 # End sudo configuration for omsagent
