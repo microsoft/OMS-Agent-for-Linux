@@ -10,8 +10,8 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 ##Release History
 *	1.1.0-217:
 	* [FluentD v12.24](https://github.com/fluent/fluentd/commits/v0.12.24)
-	* Support for CollectD Metrics
-	* Ability to support custom JSON data sources from OMS Agent for Linux
+	* Support for [CollectD Metrics](docs/OMS-Agent-for-Linux.md#collectd-metrics)
+	* Ability to support [custom JSON data sources](docs/OMS-Agent-for-Linux.md#custom-json-data-sources) from OMS Agent for Linux
 	* New default set of Performance Counters supported
 	* Support Docker Engine Version 1.11.2 and Docker Rest API version 1.23
 	* The `omsagent` service now runs under `omiusers` group instead of `omsagent` group
@@ -71,7 +71,7 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 ### [Performance data collection](docs/OMS-Agent-for-Linux.md#viewing-performance-data)
 ### [Nagios Core alert collection](docs/OMS-Agent-for-Linux.md#viewing-nagios-alerts)
 ### [Zabbix alert collection](docs/OMS-Agent-for-Linux.md#viewing-zabbix-alerts)
-### [CollectD Metrics Collection]()
-### [Custom JSON Data]()
+### [CollectD Metrics Collection](docs/OMS-Agent-for-Linux.md#collectd-metrics)
+### [Custom JSON Data](docs/OMS-Agent-for-Linux.md#custom-json-data-sources)
 
 ## [Full documentation](docs/OMS-Agent-for-Linux.md)
