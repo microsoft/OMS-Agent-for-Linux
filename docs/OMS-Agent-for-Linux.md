@@ -15,6 +15,8 @@
 	- [Configuring Linux Performance Counter collection from the OMS portal](#configuring-linux-performance-counter-collection-from-the-oms-portal)
 	- [Enabling Application Performance Counters](#enabling-application-performance-counters)
 	- [Configuring Collected Data on the Linux Computer](#configuring-collected-data-on-the-linux-computer)
+	- [Configuring CollectD Metrics](#collectd-metrics)
+	- [Custom JSON Data](#custom-json-data-sources)
 - [Agent Logs](#agent-logs)
 - [Uninstalling the OMS Agent for Linux](#uninstalling-the-oms-agent-for-linux)
 - [Compatibility with System Center Operations Manager](#compatibility-with-system-center-operations-manager)
@@ -477,7 +479,24 @@ Custom JSON Data sources can be routed through the OMS Agent for Linux allowing 
 **OMS Agent for Linux v1.1.0-217+ is required for CollectD metric collection**
 
 #### Setup
-To bring any JSON data into OMS, the setup required is adding the following before a FluentD tag: `oms.api.`. Once complete restart the OMS Agent for Linux service `sudo service omsagent restart` or `sudo systemctl restart omsagent` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
+To bring any JSON data into OMS, the setup required is adding the following before a FluentD tag: `oms.api.`. Additionally, the following output plugin configuration should be added to the main configuration in  `/etc/opt/microsoft/omsagent/conf/omsagent.conf` or as a seperate configuration file placed in `/etc/opt/microsoft/omsagent/conf/omsagent.d/`
+
+```
+<match oms.api.**>
+  type out_oms_api
+  log_level info
+
+  buffer_chunk_limit 5m
+  buffer_type file
+  buffer_path /var/opt/microsoft/omsagent/state/out_oms_api*.buffer
+  buffer_queue_limit 10
+  flush_interval 20s
+  retry_limit 10
+  retry_wait 30s
+</match>
+```
+
+Once complete restart the OMS Agent for Linux service `sudo service omsagent restart` or `sudo systemctl restart omsagent` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
 
 **Example:**The following custom tag `tag oms.api.tomcat` shows up as `Type=tomcat_CL` in Log Analytics
 
