@@ -15,7 +15,7 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 	* New default set of Performance Counters supported
 	* Support Docker Engine Version 1.11.2 and Docker Rest API version 1.23
 	* The `omsagent` service now runs under `omiusers` group instead of `omsagent` group
-	* [Bug Fixes](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/edit/v1.1.0-217)
+	* [Bug Fixes](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/v1.1.0-217)
 *	1.1.0-124:
 	*	Custom Log Public Preview
 	*	Improved performance and message throughput
