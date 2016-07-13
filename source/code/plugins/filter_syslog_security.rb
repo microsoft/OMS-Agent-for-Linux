@@ -37,7 +37,7 @@ module Fluent
       record['Timestamp'] = OMS::Common.format_time(Time.now.to_f)
       record['EventTime'] = OMS::Common.format_time(time)
 
-      record['Message'] = record['message']
+      record['Message'] = record['ident'] + ': ' + record['message']
       record.delete 'message'
       record.delete 'time'
 
