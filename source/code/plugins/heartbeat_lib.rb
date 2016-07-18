@@ -28,9 +28,9 @@ module HeartbeatModule
 
       fqdn = OMS::Common.get_fully_qualified_domain_name
       if fqdn.nil?
-        record["Device"] = OMS::Common.get_hostname
+        record["Computer"] = OMS::Common.get_hostname
       else 
-        record["Device"] = fqdn
+        record["Computer"] = fqdn
       end
 
       record["OSType"] = "Linux"

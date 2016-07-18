@@ -61,7 +61,7 @@ class HeartbeatLib_Test < Test::Unit::TestCase
     File.write(@tmp_agent_install_conf_file.path, "1.1.0-124 20160412 Release_Build\n2016-05-24T00:27:55.0Z\n")
     heartbeat_data_item = call_get_heartbeat(@tmp_os_conf_file.path, @tmp_agent_install_conf_file.path)
     assert(heartbeat_data_item.has_key?("Timestamp"))
-    assert(heartbeat_data_item.has_key?("Device"))
+    assert(heartbeat_data_item.has_key?("Computer"))
     assert(heartbeat_data_item.has_key?("OSType"))
     assert(heartbeat_data_item.has_key?("Category"))
     assert(heartbeat_data_item.has_key?("SCAgentChannel"))
@@ -74,7 +74,7 @@ class HeartbeatLib_Test < Test::Unit::TestCase
 
   def verify_invalid_heartbeat_data(heartbeat_data_item)
     assert(heartbeat_data_item.has_key?("Timestamp"))
-    assert(heartbeat_data_item.has_key?("Device"))
+    assert(heartbeat_data_item.has_key?("Computer"))
     assert(heartbeat_data_item.has_key?("OSType"))
     assert(heartbeat_data_item.has_key?("Category"))
     assert(heartbeat_data_item.has_key?("SCAgentChannel"))
