@@ -15,6 +15,7 @@ Our goal for this preview is to get your feedback on onboarding the agent, confi
 	* New default set of Performance Counters supported
 	* Support Docker Engine Version 1.11.2 and Docker Rest API version 1.23
 	* The `omsagent` service now runs under `omiusers` group instead of `omsagent` group
+	* Ubuntu 16.04 LTS (x64/x86) support!
 	* [Bug Fixes](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/v1.1.0-217)
 *	1.1.0-124:
 	*	Custom Log Public Preview
@@ -62,7 +63,7 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * Oracle Linux 5,6, and 7 (x86/x64)
 * Red Hat Enterprise Linux Server 5,6 and 7 (x86/x64)
 * Debian GNU/Linux 6, 7, and 8 (x86/x64)
-* Ubuntu 12.04 LTS, 14.04 LTS, 15.04, 15.10 (x86/x64)
+* Ubuntu 12.04 LTS, 14.04 LTS, 15.04, 15.10, 16.04 LTS (x86/x64)
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
 ## Supported Scenarios
@@ -75,3 +76,5 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 ### [Custom JSON Data](docs/OMS-Agent-for-Linux.md#custom-json-data-sources)
 
 ## [Full documentation](docs/OMS-Agent-for-Linux.md)
+
+## [Troubleshooting Guide](docs/Troubleshooting.md)
