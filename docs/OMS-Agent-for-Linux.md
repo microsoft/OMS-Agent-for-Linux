@@ -504,11 +504,12 @@ To maintain a familiar model between infrastructure metrics already collected by
 Custom JSON Data sources can be routed through the OMS Agent for Linux allowing you to index based off JSON fields. These custom data sources can range from simple scripts returning JSON *e.g. `curl`* , or one of [FluentD's 300+ plugins](http://www.fluentd.org/plugins/all). Additionally, custom data sources are analyzed by OMS to determine if the field is a number, string, integer, or boolean allowing for aggregations and additional logic.
 
 
-**OMS Agent for Linux v1.1.0-217+ is required for CollectD metric collection**
+**OMS Agent for Linux v1.1.0-217+ is required for Custom JSON Data**
 
 #### Setup
-To bring any JSON data into OMS, the setup required is adding the following before a FluentD tag: `oms.api.`. Additionally, the following output plugin configuration should be added to the main configuration in  `/etc/opt/microsoft/omsagent/conf/omsagent.conf` or as a seperate configuration file placed in `/etc/opt/microsoft/omsagent/conf/omsagent.d/`
+To bring any JSON data into OMS, the setup required is adding `oms.api.` before a FluentD tag in an input plugin. Additionally, the following output plugin configuration should be added to the main configuration in  `/etc/opt/microsoft/omsagent/conf/omsagent.conf` or as a seperate configuration file placed in `/etc/opt/microsoft/omsagent/conf/omsagent.d/`
 
+output plugin for Custom JSON Data
 ```
 <match oms.api.**>
   type out_oms_api
@@ -517,6 +518,30 @@ To bring any JSON data into OMS, the setup required is adding the following befo
   buffer_chunk_limit 5m
   buffer_type file
   buffer_path /var/opt/microsoft/omsagent/state/out_oms_api*.buffer
+  buffer_queue_limit 10
+  flush_interval 20s
+  retry_limit 10
+  retry_wait 30s
+</match>
+```
+
+Example seperate configuration file `exec-json.conf` for /etc/opt/microsoft/omsagent/conf/omsagent.d/ with FluentD plugin `exec` and output through Custom JSON output plugin from above.
+```
+<source>
+  type exec
+  command 'curl localhost/json.output'
+  format json
+  tag oms.api.httpresponse
+  run_interval 30s
+</source>
+
+<match oms.api.httpresponse>
+  type out_oms_api
+  log_level info
+
+  buffer_chunk_limit 5m
+  buffer_type file
+  buffer_path /var/opt/microsoft/omsagent/state/out_oms_api_httpresponse*.buffer
   buffer_queue_limit 10
   flush_interval 20s
   retry_limit 10
