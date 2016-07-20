@@ -1,26 +1,23 @@
 # Configuration for Cisco ASA event collection (Preview)
 
-1. Install and configure the OMS Agent for Linux as described here:  
+1. Download the OMS Agent for Linux, version 1.1.0-239 or above:  
+	* [OMS Agent For Linux, Public Preview (2016-07)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/tag/v1.1.0-239)    
+
+2. Install and configure the agent as described here:  
   * [Documentation for OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux)  
   * [Syslog collection in Operations Management Suite](https://blogs.technet.microsoft.com/msoms/2016/05/12/syslog-collection-in-operations-management-suite/)  
 
-2. Configure Syslog forwarding of Cisco ASA events to the OMS Linux agent machine.
+3. Configure Syslog forwarding of Cisco ASA events to the OMS Linux agent machine.
 
-3. Place the following configuration files on the OMS Agent machine:  
+4. Place the following configuration file on the OMS Agent machine:  
 	* [security_events.conf](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/mgladi-security-configuration/installer/conf/omsagent.d/security_events.conf)  
 	_Fluentd configuration file to enable collection and parsing of Cisco events_  
-	Path on Agent machine: ```/etc/opt/microsoft/omsagent/conf/omsagent.d/```  
-    
+	Destination path on Agent machine: ```/etc/opt/microsoft/omsagent/conf/omsagent.d/```  
+
   
-  
-  * [filter_syslog_security.rb](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/mgladi-security-configuration/source/code/plugins/filter_syslog_security.rb)  
-  [security_lib.rb](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/mgladi-security-configuration/source/code/plugins/security_lib.rb)  
-  _Fluentd filter plugin that parses the Cisco events_  
-  Path on Agent machine: ```/opt/microsoft/omsagent/plugin/```  
-  
-  
-4. Configure Cisco ASA event forwarding to the OMS Agent
-  
+5. Configure Cisco ASA event forwarding to the OMS Agent  
+	*The required events need to be forwarded to port 25225 on the agent machine to be collected by the agent.*
+
 	*Below is an example configuration for forwarding all events from the local4 facility. You can modify the configuration to fit your local settings.* 
 	
 	  **If the agent machine has an rsyslog daemon:**  
@@ -40,13 +37,13 @@
 	log { source(src); filter(f_local4_oms); destination(cisco_oms); };
 	```
 
-4. Restart the syslog daemon:  
+6. Restart the syslog daemon:  
 ```sudo service rsyslog restart``` or ```systemctl restart omsagent```
 
 
-5. Restart the OMS agent:  
+7. Restart the OMS agent:  
 ```sudo service omsagent restart``` or ```/etc/init.d/syslog-ng restart```
 
 
-6. Confirm that there are no errors in the OMS Agent log:  
+8. Confirm that there are no errors in the OMS Agent log:  
 ```tail /var/opt/microsoft/omsagent/log/omsagent.log```
