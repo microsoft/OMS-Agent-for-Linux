@@ -198,7 +198,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
    * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration. 
 
 
-### I'm not seeing my Custom Log Data in the OMS Potal
+### I'm not seeing my Linux Custom Log Data in the OMS Potal
 #### Probable Causes
 * Onboarding to OMS Service failed
 * The setting "Apply the following configuration to my Linux Servers" has not been check marked
@@ -212,6 +212,12 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
 * In the OMS Portal under Settings ensure that the following checkbox is checked ![](pictures/CustomLogLinuxEnabled.png?raw=true)
+
+* Check that the `omsconfig` agent can communicate with the OMS Portal Service
+  * Run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/GetDscConfiguration.py'`
+   * This command returns the Configuration that agent sees from the portal including Syslog settings, Linux Performance Counters, and Custom Logs
+   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration. 
+
 
 **Background:** Instead of the OMS Agent for Linux user running as a privileged user, `root` - The OMS Agent for Linux runs as the `omsagent` user. In most cases explicit permission must be granted to this user in order for certain files to be read.
 * To grant permission to `omsagent` user run the following commands
