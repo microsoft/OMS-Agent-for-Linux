@@ -287,6 +287,31 @@ pkg_upd_list() {
     fi
 }
 
+get_arch()
+{
+    if [ $(uname -m) = 'x86_64' ]; then
+        echo "x64"
+    else
+        echo "x86"
+    fi
+}
+
+compare_arch()
+{
+    #check if the user is trying to install the correct bundle (x64 vs. x86) 
+    echo "Checking host architecture ..."
+    AR=$(get_arch)
+
+    case $1 in
+        *"$AR".sh) 
+            ;;
+        *)         
+            echo "Cannot install bundle $1 on ${AR} platform"
+            cleanup_and_exit 1
+            ;;
+    esac
+}
+
 python_ctypes_installed() {
     # Check for Python ctypes library (required for omsconfig)
 
@@ -668,6 +693,7 @@ fi
 # Pre-flight if omsconfig installation will fail ...
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
+    compare_arch $0
     python_ctypes_installed
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
