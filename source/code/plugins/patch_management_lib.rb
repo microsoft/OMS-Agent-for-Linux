@@ -150,9 +150,13 @@ class LinuxUpdates
         ret["CollectionName"] = availableUpdatesHash["Name"] + @@delimiter + 
                                 availableUpdatesHash["Version"] + @@delimiter + os_short_name
         ret["PackageName"] = availableUpdatesHash["Name"]
+        ret["Architecture"] = availableUpdatesHash.key?("Architecture") ? availableUpdatesHash["Architecture"] : nil
         ret["PackageVersion"] = availableUpdatesHash["Version"]
-        ret["Timestamp"] = OMS::Common.format_time(availableUpdatesHash["BuildDate"].to_i)
-        ret["Repository"] = availableUpdatesHash.key?("Repository") ? availableUpdatesHash["Repository"] : ""
+        ret["Timestamp"] = (availableUpdatesHash["BuildDate"].nil? or 
+                            availableUpdatesHash["BuildDate"].strip == "" or
+                            availableUpdatesHash["BuildDate"].strip == "BuildDate") ? nil :
+                                OMS::Common.format_time(availableUpdatesHash["BuildDate"].to_i)
+        ret["Repository"] = availableUpdatesHash.key?("Repository") ? availableUpdatesHash["Repository"] : nil
         ret["Installed"] = false
         ret
     end
@@ -164,10 +168,14 @@ class LinuxUpdates
         ret["CollectionName"] = packageHash["Name"] + @@delimiter + 
                                 packageHash["Version"] + @@delimiter + os_short_name
         ret["PackageName"] = packageHash["Name"]
-        ret["PackageVersion"] = packageHash["Version"]
-        ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
+        ret["Architecture"] = packageHash.key?("Architecture") ? packageHash["Architecture"] : nil
+        ret["PackageVersion"] = packageHash["Version"]  
+        ret["Timestamp"] = (packageHash["InstalledOn"].nil? or 
+                            packageHash["InstalledOn"].strip == "" or
+                            packageHash["InstalledOn"].strip == "Unknown") ? nil : 
+                                OMS::Common.format_time(packageHash["InstalledOn"].to_i)
         ret["Size"] = packageHash["Size"]
-        ret["Repository"] = packageHash.key?("Repository") ? packageHash["Repository"] : "" 
+        ret["Repository"] = packageHash.key?("Repository") ? packageHash["Repository"] : nil
         ret["Installed"] = true
         ret
     end
@@ -206,16 +214,7 @@ class LinuxUpdates
 
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
-
-        # 24 hour period.
-        if force_send_run_interval > 0 and Time.now - @@force_send_last_upload > force_send_run_interval
-            @@log.debug "LinuxUpdates : Force sending inventory data"
-            @@force_send_last_upload = Time.now
-        elsif hash == @@prev_hash
-            @@log.debug "LinuxUpdates : Discarding duplicate inventory data. Hash=#{hash[0..5]}"
-            return {}
-        end
-        @@prev_hash = hash
+        @@log.debug "LinuxUpdates : Sending available updates information data. Hash=#{hash[0..5]}"
 
         # Extract the instances in xml format
         inventoryXML = strToXML(inventoryXMLstr)
