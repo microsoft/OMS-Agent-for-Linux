@@ -158,6 +158,7 @@ class LinuxUpdates
                                 OMS::Common.format_time(availableUpdatesHash["BuildDate"].to_i)
         ret["Repository"] = availableUpdatesHash.key?("Repository") ? availableUpdatesHash["Repository"] : nil
         ret["Installed"] = false
+        ret["UpdateState"] = "Needed"
         ret
     end
 
@@ -177,6 +178,7 @@ class LinuxUpdates
         ret["Size"] = packageHash["Size"]
         ret["Repository"] = packageHash.key?("Repository") ? packageHash["Repository"] : nil
         ret["Installed"] = true
+        ret["UpdateState"] = "NotNeeded"
         ret
     end
 

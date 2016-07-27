@@ -81,6 +81,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Timestamp"=> nil,
       "Repository"=>"Ubuntu:16.04/xenial-updates",
       "Installed"=>false,
+      "UpdateState"=>"Needed"
     }
     
     instanceXML = LinuxUpdates::strToXML(instanceXMLstr).root
@@ -168,7 +169,8 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Timestamp"=> nil,
       "Repository"=> nil,
       "Size"=>"151",
-      "Installed"=>true
+      "Installed"=>true,
+      "UpdateState"=>"NotNeeded"
     }
     
     instanceXML = LinuxUpdates::strToXML(instanceXMLstr).root
@@ -193,6 +195,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "Collections" => [{
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
+                    "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
                     "PackageVersion" => "20150820.1",
@@ -224,6 +227,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "Collections" => [{
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
+                    "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
                     "PackageVersion" => "20150820.1",
@@ -255,6 +259,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "Collections" => [{
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
+                    "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
                     "PackageVersion" => "20150820.1",
@@ -286,6 +291,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "Collections" => [{
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
                     "PackageVersion" => "1.18.4ubuntu1.1",
@@ -316,6 +322,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "Collections" => [{
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
                     "PackageVersion" => "1.18.4ubuntu1.1",
@@ -346,6 +353,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "Collections" => [{
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
                     "PackageVersion" => "1.18.4ubuntu1.1",
