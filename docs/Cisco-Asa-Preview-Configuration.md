@@ -10,7 +10,7 @@
 3. Configure Syslog forwarding of Cisco ASA events to the OMS Linux agent machine.
 
 4. Place the following configuration file on the OMS Agent machine:  
-	* [security_events.conf](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/mgladi-security-configuration/installer/conf/omsagent.d/security_events.conf)  
+	* [security_events.conf](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/installer/conf/omsagent.d/security_events.conf)  
 	_Fluentd configuration file to enable collection and parsing of Cisco events_  
 	Destination path on Agent machine: ```/etc/opt/microsoft/omsagent/conf/omsagent.d/```  
 
