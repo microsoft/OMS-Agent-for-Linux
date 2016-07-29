@@ -13,6 +13,7 @@ module OmiModule
   class Omi
     require 'json'
     require_relative 'oms_common'
+    require_relative 'omslog'
     
     def initialize(error_handler, mapping_file_location)
       # Instance variables
@@ -88,7 +89,11 @@ module OmiModule
             counter_pair = {}
             counter_pair["CounterName"] = property["CounterName"]
             counter_pair["Value"] = record[property["CimPropertyName"]]
-            transformed_record_collections.push(counter_pair)
+            if counter_pair["Value"].nil?
+              OMS::Log.warn_once("Dropping null value for counter #{counter_pair['CounterName']}.")
+            else
+              transformed_record_collections.push(counter_pair) 
+            end
           end
         }
         transformed_record["Collections"] = transformed_record_collections
