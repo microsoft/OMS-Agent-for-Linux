@@ -1,6 +1,7 @@
 class OmiOms
   require 'json'
   require_relative 'oms_common'
+  require_relative 'omslog'
   
   attr_reader :specific_mapping
 
@@ -95,10 +96,14 @@ class OmiOms
       oms_property_name = @cim_to_oms[property]
       begin
         if /#{@counter_name_regex}/.match(oms_property_name)
-          counter_pair = {}
-          counter_pair["CounterName"] = oms_property_name
-          counter_pair["Value"] = value
-          oms_instance_collections.push(counter_pair)
+          if value.nil?
+            OMS::Log.warn_once("Dropping null value for counter #{oms_property_name}.")
+          else
+            counter_pair = {}
+            counter_pair["CounterName"] = oms_property_name
+            counter_pair["Value"] = value
+            oms_instance_collections.push(counter_pair) 
+          end
         end
       rescue RegexpError => e
         @conf_error = true
