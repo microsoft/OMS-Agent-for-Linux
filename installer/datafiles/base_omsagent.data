@@ -31,6 +31,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/statsd.conf;             installer/conf/omsagent.d/statsd.conf;                 644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/auditlog.conf;           installer/conf/omsagent.d/auditlog.conf;               644; root; root
 
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
@@ -77,6 +78,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/flattenjson_lib.rb;                      source/code/plugins/flattenjson_lib.rb;                744; root; root
 /opt/microsoft/omsagent/plugin/statsd_lib.rb;                           source/code/plugins/statsd_lib.rb;                     744; root; root
 /opt/microsoft/omsagent/plugin/out_oms_statsd_aggregator.rb;            source/code/plugins/out_oms_statsd_aggregator.rb;      744; root; root
+/opt/microsoft/omsagent/plugin/auditlog_lib.rb;                         source/code/plugins/auditlog_lib.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/parser_auditlog.rb;                      source/code/plugins/parser_auditlog.rb;                744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
