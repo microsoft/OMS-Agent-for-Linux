@@ -38,11 +38,11 @@
 	```
 
 6. Restart the syslog daemon:  
-```sudo service rsyslog restart``` or ```systemctl restart omsagent```
+```sudo service rsyslog restart``` or ```/etc/init.d/syslog-ng restart```
 
 
 7. Restart the OMS agent:  
-```sudo service omsagent restart``` or ```/etc/init.d/syslog-ng restart```
+```sudo service omsagent restart``` or ```systemctl restart omsagent```
 
 
 8. Confirm that there are no errors in the OMS Agent log:  
