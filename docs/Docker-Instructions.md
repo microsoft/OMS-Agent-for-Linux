@@ -10,27 +10,58 @@ With this feature, you'll be able to:
 
 Because this is a private preview, we'll need your OMS workspace ID to enable it. If you aren't included in the private preview and are interested in joining, drop us a line at OMSContainers@microsoft.com.
 
-## Setting up
-Your container hosts must be running:
-* Docker 1.8 or later
+### Supported Linux Operating Systems and Docker:
+* Docker 1.8 thru 1.11.2
 
-And one of: 
-* Ubuntu 14.04, 15.04
-* Amazon Linux 2015.09
+And one of follow OS (x64): 
+* Ubuntu 14.04, 15.10
+* Amazon Linux 2016.03
 * openSUSE 13.2
 * CentOS 7
+* RHEL 7
 * SUSE Linux Enterprise Server 12
 
-You'll need to [install the OMS Agent for Linux] (docs/OMS-Agent-for-Linux.md#steps-to-install-the-oms-agent-for-linux) on each host and then do the following to configure your containers to use the FluentD logging driver:
+## Setting up
+As a pre-requisite, docker must be running prior to this OMS Linux Agent installation. If you have installed before running docker, please re-install OMS Agent. For more information about docker, please go to https://www.docker.com/.
 
- * Edit `/etc/default/docker` and add this line:
+The following settings for container host must be done to monitor the containers. 
+
+#### Settings on container host - systemd (SUSE, openSUSE, CentOS 7.x, RHEL 7.x, Ubuntu 15.x and above)
+- Edit docker.service to add the following:
+```
+[Service]
+...
+Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
+...
+```
+Make sure you add $DOCKER_OPTS in "ExecStart=/usr/bin/docker daemon" within your docker.service file.
+example)
+```
+[Service]
+Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
+ExecStart=/usr/bin/docker daemon -H fd:// $DOCKER_OPTS
+```
+- Restart docker service.
+```
+sudo systemctl restart docker.service
+```
+#### Settings on container host - Upstart (Ubuntu 14.x)
+- Edit /etc/default/docker and add this line:
 ```
 DOCKER_OPTS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
 ```
- * Save the file and then restart the docker service and oms service:
+- Save the file and then restart the docker service and oms service:
 ```
 sudo service docker restart
-sudo service omsagent restart
+```
+#### Settings on container host - Amazon Linux
+- Edit /etc/sysconfig/docker to add the following:
+```
+OPTIONS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
+```
+-Save the file and then restart docker service. 
+```
+sudo service docker restart
 ```
 
 ## What now?
@@ -130,7 +161,7 @@ Finally, sometimes it can help to build queries by beginning with an example or 
 ## Saving queries
 Saving queries is a standard feature in OMS and can help you keep queries you’ve found useful.  
 
-**Try it:** After you construct a query you find useful, save it by clicking the star at the bottom. This will let you easily access it later from the My Dashboard page.
+**Try it:** After you construct a query you find useful, save it by clicking the star at the top. This will let you easily access it later from the My Dashboard page.
 
 ![DockerDashboardView](pictures/DockerPics/DockerDashboardView.png?raw=true)
 
