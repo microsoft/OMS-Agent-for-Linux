@@ -53,7 +53,7 @@ AGENT_USER=omsagent
 AGENT_GROUP=omsagent
 
 # Default settings
-URL_TLD=opinsights.azure
+URL_TLD=opinsights.azure.com
 WORKSPACE_ID=""
 AGENT_GUID=""
 LOG_FACILITY=local0
@@ -68,7 +68,7 @@ usage()
     echo
     echo "Maintenance tool for OMS:"
     echo "Onboarding:"
-    echo "$basename -w <workspace id> -s <shared key>"
+    echo "$basename -w <workspace id> -s <shared key> [-d <top level domain>]"
     echo
     echo "Heartbeat:"
     echo "$basename -b"
@@ -115,7 +115,7 @@ save_config()
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
     echo DSC_ENDPOINT=$DSC_ENDPOINT >> $CONF_OMSADMIN
-    echo OMS_ENDPOINT=https://$WORKSPACE_ID.ods.$URL_TLD.com/OperationalData.svc/PostJsonDataItems >> $CONF_OMSADMIN
+    echo OMS_ENDPOINT=https://$WORKSPACE_ID.ods.$URL_TLD/OperationalData.svc/PostJsonDataItems >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
 }
 
@@ -131,6 +131,12 @@ load_config()
     if [ -z "$WORKSPACE_ID" -o -z "$AGENT_GUID" ]; then
         log_error "Missing required field from configuration file: $CONF_OMSADMIN"
         clean_exit 1
+    fi
+
+    # In the upgrade scenario, the URL_TLD doesn't have the .com part
+    # Append it to make it backward-compatible
+    if [ "$URL_TLD" = "opinsights.azure" -o "$URL_TLD" = "int2.microsoftatlanta-int" ]; then
+        URL_TLD="${URL_TLD}.com"
     fi
 }
 
@@ -169,7 +175,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:brvp:u:c" opt; do
+    while getopts "h?s:w:d:brvp:u:c" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -181,6 +187,10 @@ parse_args()
         w)
             ONBOARDING=1
             WORKSPACE_ID=$OPTARG
+            ;;
+        d)
+            ONBOARDING=1
+            URL_TLD=$OPTARG
             ;;
         b)
             HEARTBEAT=1
@@ -339,8 +349,9 @@ set_proxy_setting()
 onboard()
 {
     if [ $VERBOSE -eq 1 ]; then
-        echo "Workspace ID:  $WORKSPACE_ID"
-        echo "Shared key:    $SHARED_KEY"
+        echo "Workspace ID:      $WORKSPACE_ID"
+        echo "Shared key:        $SHARED_KEY"
+        echo "Top Level Domain:  $URL_TLD"
     fi
 
     local error=0
@@ -412,7 +423,7 @@ onboard()
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
         --write-out "%{http_code}\n" $PROXY_SETTING \
-        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
+        https://${WORKSPACE_ID}.oms.${URL_TLD}/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
     
     if [ $error -ne 0 ]; then
         log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
@@ -519,7 +530,7 @@ heartbeat()
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_HEARTBEAT" $CURL_VERBOSE \
         --write-out "%{http_code}\n" $PROXY_SETTING \
-        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
+        https://${WORKSPACE_ID}.oms.${URL_TLD}/AgentService.svc/LinuxAgentTopologyRequest`
 
     if [ "$RET_CODE" = "200" ]; then
         apply_certificate_update_endpoint $RESP_HEARTBEAT

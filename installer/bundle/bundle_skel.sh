@@ -60,6 +60,9 @@ usage()
     echo
     echo "  -w id, --id id         Use workspace ID <id> for automatic onboarding."
     echo "  -s key, --shared key   Use <key> as the shared key for automatic onboarding."
+    echo "  -d dmn, --domain dmn   Use <dmn> as the OMS domain for onboarding. Optional."
+    echo "                         default: opinsights.azure.com"
+    echo "                         ex: opinsights.azure.us (for FairFax)"
     echo "  -p conf, --proxy conf  Use <conf> as the proxy configuration."
     echo "                         ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo
@@ -396,11 +399,14 @@ shouldInstall_omsconfig()
 ulinux_detect_installer
 set -e
 
-onboardINT=0
-
 while [ $# -ne 0 ]
 do
     case "$1" in
+        -d|--domain)
+            topLevelDomain=$2
+            shift 2
+            ;;
+
         --extract-script)
             # hidden option, not part of usage
             # echo "  --extract-script FILE  extract the script to FILE."
@@ -507,11 +513,6 @@ do
             exit 0
             ;;
 
-        --int)
-            onboardINT=1
-            shift 1
-            ;;
-
         --upgrade)
             verifyNoInstallationOption
             verifyPrivileges "upgrade"
@@ -565,19 +566,13 @@ if [ -z "${installMode}" ]; then
 fi
 
 ONBOARD_ERROR=0
+[ -n "$topLevelDomain" ] && [ -z "$onboardID" -o -z "$onboardKey" ] && ONBOARD_ERROR=1
 [ -z "$onboardID" -a -n "$onboardKey" ] && ONBOARD_ERROR=1
 [ -n "$onboardID" -a -z "$onboardKey" ] && ONBOARD_ERROR=1
 
 if [ "$ONBOARD_ERROR" -ne 0 ]; then
     echo "Must specify both workspace ID (--id) and key (--shared) to onboard" 1>& 2
     exit 1
-fi
-
-if [ "$onboardINT" -ne 0 ]; then
-    if [ -z "$onboardID" -o -z "$onboardKey" ]; then
-        echo "Must specify both workspace ID (--id) and key (--shared) to internally onboard" 1>& 2
-        exit 1
-    fi
 fi
 
 if [ -n "$onboardID" -a -n "$onboardKey" ]; then
@@ -592,8 +587,8 @@ if [ -n "$onboardID" -a -n "$onboardKey" ]; then
         echo "PROXY=$proxy" >> $ONBOARD_FILE
     fi
 
-    if [ "$onboardINT" -ne 0 ]; then
-        echo "URL_TLD=int2.microsoftatlanta-int" >> $ONBOARD_FILE
+    if [ -n "$topLevelDomain" ]; then
+        echo "URL_TLD=$topLevelDomain" >> $ONBOARD_FILE
     fi
 fi
 
