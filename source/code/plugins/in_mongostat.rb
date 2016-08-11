@@ -12,6 +12,7 @@ module Fluent
     def initialize
       super
       require_relative 'mongostat_lib'
+      require_relative 'omslog'
     end  
        
     def configure(conf)
@@ -58,8 +59,10 @@ module Fluent
         end
         wait_thread.value
       }
+      rescue Errno::ENOENT
+        OMS::Log.error_once("Mongostat is not installed on this machine.")
       rescue
-        $log.error "in_mongostat failed to run or shutdown child prcess", error => $!.to_s      
+        OMS::Log.error_once("in_mongostat failed to run or shutdown child prcess #{$!.to_s}")     
       end
     end
    

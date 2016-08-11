@@ -82,6 +82,7 @@ class MongostatTest < Test::Unit::TestCase
       rec.tap{ |x| 
         x.delete("Timestamp")
         x.delete("Host")
+        x.delete("InstanceName")
       }
     end
     return record

@@ -47,7 +47,7 @@ module MongoStatModule
           transformed_rec["Get More Operations/sec"] = rec["getmore"]
           transformed_rec["Page Faults/sec"] = rec["faults"]
           transformed_rec["Total Open Connections"] = rec["conn"]
-          transformed_rec["Replication Status"] = rec["repl"]
+          transformed_rec["Replication Status"] = rec["repl"] if rec.has_key?("repl")
           transformed_rec["Network In (Bytes)"] = to_bytes(rec["netIn"])
           transformed_rec["Network Out (Bytes)"] = to_bytes(rec["netOut"])
 
@@ -100,6 +100,7 @@ module MongoStatModule
         dataitems["Timestamp"] = OMS::Common.format_time(Time.now.to_f)
         dataitems["Host"] = OMS::Common.get_hostname
         dataitems["ObjectName"] = "MongoDB"
+        dataitems["InstanceName"] = OMS::Common.get_hostname
         collections = []
 
         transformed_rec.each { |k,v|

@@ -32,7 +32,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/statsd.conf;             installer/conf/omsagent.d/statsd.conf;                 644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/auditlog.conf;           installer/conf/omsagent.d/auditlog.conf;               644; root; root
-/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mongostat.conf;          installer/conf/omsagent.d/mongostat.conf;              644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mongo.conf;              installer/conf/omsagent.d/mongo.conf;                  644; root; root
 
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
