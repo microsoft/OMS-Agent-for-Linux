@@ -83,7 +83,7 @@ module OMS
         end
 
         metric = {
-          'ObjectName' => 'statsd.timer',
+          'ObjectName' => 'StatsD Timer',
           'InstanceName' => name,
           'Collections' => counters
         }.merge(base)
@@ -95,7 +95,7 @@ module OMS
 
       data['counters'].each do | name, value |
         metric = {
-          'ObjectName' => 'statsd.counter',
+          'ObjectName' => 'StatsD Counter',
           'InstanceName' => name,
           'Collections' => [{ 'CounterName' => 'rate', 'Value' => value }]
         }.merge(base)
@@ -107,7 +107,7 @@ module OMS
 
       data['sets'].each do | name, value |
         metric = {
-          'ObjectName' => 'statsd.set',
+          'ObjectName' => 'StatsD Set',
           'InstanceName' => name,
           'Collections' => [{ 'CounterName' => 'count', 'Value' => value }]
         }.merge(base)
@@ -119,7 +119,7 @@ module OMS
 
       data["gauges"].each do | name, value |
         metric = {
-          'ObjectName' => 'statsd.gauge',
+          'ObjectName' => 'StatsD Gauge',
           'InstanceName' => name,
           'Collections' => [{ 'CounterName' => 'gauge', 'Value' => value }]
         }.merge(base)
