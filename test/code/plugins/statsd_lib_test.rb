@@ -257,28 +257,28 @@ class StatsdTest < Test::Unit::TestCase
       ],
       "Host"=>"testhost123",
       "InstanceName"=>"sample.timer",
-      "ObjectName"=>"statsd.timer",
+      "ObjectName"=>"StatsD Timer",
       "Timestamp"=>"2016-08-05T03:58:15.181Z"
     },
     {
       "Collections"=>[{"CounterName"=>"rate", "Value"=>1.05}],
       "Host"=>"testhost123",
       "InstanceName"=>"sample.counter",
-      "ObjectName"=>"statsd.counter",
+      "ObjectName"=>"StatsD Counter",
       "Timestamp"=>"2016-08-05T03:58:15.181Z"
     },
     {
       "Collections"=>[{"CounterName"=>"count", "Value"=>2}],
       "Host"=>"testhost123",
       "InstanceName"=>"sample.set",
-      "ObjectName"=>"statsd.set",
+      "ObjectName"=>"StatsD Set",
       "Timestamp"=>"2016-08-05T03:58:15.181Z"
     },
     {
       "Collections"=>[{"CounterName"=>"gauge", "Value"=>159.0}],
       "Host"=>"testhost123",
       "InstanceName"=>"sample.gauge",
-      "ObjectName"=>"statsd.gauge",
+      "ObjectName"=>"StatsD Gauge",
       "Timestamp"=>"2016-08-05T03:58:15.181Z"
     }]
 
