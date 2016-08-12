@@ -360,6 +360,11 @@ onboard()
         clean_exit 1
     fi
 
+    if [[ ! $WORKSPACE_ID =~ ^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$ ]]; then
+        log_error "The Workspace ID is not valid"
+        clean_exit 1
+    fi
+
     PREV_WID=`grep WORKSPACE_ID $CONF_OMSADMIN 2> /dev/null | cut -d= -f2`
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN -a "$PREV_WID" = $WORKSPACE_ID ]; then
         # Keep the same agent GUID by loading it from the previous conf
@@ -427,6 +432,7 @@ onboard()
     
     if [ $error -ne 0 ]; then
         log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
+        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
         return 1
     fi
 
@@ -440,9 +446,11 @@ onboard()
         else
             log_error "Error onboarding. HTTP code $RET_CODE"
         fi
+        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
         return 1
     else
         log_error "Error onboarding. HTTP code $RET_CODE"
+        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
         return 1
     fi
 
