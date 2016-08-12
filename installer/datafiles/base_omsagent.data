@@ -32,6 +32,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/statsd.conf;             installer/conf/omsagent.d/statsd.conf;                 644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/auditlog.conf;           installer/conf/omsagent.d/auditlog.conf;               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_workload.conf;           installer/conf/omsagent.d/mysql_workload.conf;               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mongo.conf;              installer/conf/omsagent.d/mongo.conf;                  644; root; root
 
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
@@ -83,6 +84,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/parser_auditlog.rb;                      source/code/plugins/parser_auditlog.rb;                744; root; root
 /opt/microsoft/omsagent/plugin/mongostat_lib.rb;                        source/code/plugins/mongostat_lib.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/in_mongostat.rb;                         source/code/plugins/in_mongostat.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/mysql_workload_lib.rb;                   source/code/plugins/mysql_workload_lib.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/in_mysql_workload.rb;                    source/code/plugins/in_mysql_workload.rb;              744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
