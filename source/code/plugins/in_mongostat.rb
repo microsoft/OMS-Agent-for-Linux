@@ -6,6 +6,9 @@ module Fluent
 
     config_param :host, :string, :default => 'localhost'
     config_param :port, :integer, :default => 27017
+    config_param :user, :string, :default => nil
+    config_param :password, :string, :default => nil
+    config_param :auth_database, :string, :default => nil
     config_param :tag, :string, :default => nil
     config_param :run_interval, :string, :default => nil   
   
@@ -19,6 +22,14 @@ module Fluent
       super
       if !@tag 
         raise ConfigError, "'tag' option is required on mongostat input"
+      end
+    
+      if !@user or !@password
+        raise ConfigError, "username and password is required"
+      end
+
+      if !@auth_database
+        raise ConfigError, "Authentication database is required"
       end
     end
 
@@ -44,7 +55,7 @@ module Fluent
 
     def run
       begin
-      run_mongostat = "mongostat --host #{@host} --port #{@port} --all"
+      run_mongostat = "mongostat --host #{@host} --port #{@port} -u #{@user} -p #{@password} --authenticationDatabase #{auth_database} --all"
       if @run_interval
         run_mongostat += " #{@run_interval}"
       end
@@ -62,7 +73,7 @@ module Fluent
       rescue Errno::ENOENT
         OMS::Log.error_once("Mongostat is not installed on this machine.")
       rescue
-        OMS::Log.error_once("in_mongostat failed to run or shutdown child prcess #{$!.to_s}")     
+        OMS::Log.error_once("in_mongostat failed to run or shutdown child prcess #{$!.to_s}")
       end
     end
    
