@@ -360,7 +360,7 @@ onboard()
         clean_exit 1
     fi
 
-    if [[ ! $WORKSPACE_ID =~ ^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$ ]]; then
+    if [[ ! $WORKSPACE_ID =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
         log_error "The Workspace ID is not valid"
         clean_exit 1
     fi
