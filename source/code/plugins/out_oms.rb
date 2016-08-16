@@ -92,7 +92,7 @@ module Fluent
       unmergable_records = []
       chunk.msgpack_each {|(tag, record)|
         if record.has_key?('DataType') and record.has_key?('IPName')
-          key = "#{record['DataType']}.#{record['IPName']}".upcase!
+          key = "#{record['DataType']}.#{record['IPName']}".upcase
 
           if datatypes.has_key?(key)
             # Merge instances of the same datatype and ipname together
