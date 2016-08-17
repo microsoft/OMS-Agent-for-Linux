@@ -18,7 +18,7 @@ And one of follow OS (x64):
 * Amazon Linux 2016.03
 * openSUSE 13.2
 * CentOS 7
-* RHEL 7
+* RHEL 7.2
 * SUSE Linux Enterprise Server 12
 
 ## Setting up
