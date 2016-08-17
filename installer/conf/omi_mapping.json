@@ -387,10 +387,6 @@
                 "CounterName": "Full Table Scan Pct"
             },
             {
-                "CimPropertyName": "IDB_BP_UsePct",
-                "CounterName": "InnoDB Buffer Pool Use Pct"
-            },
-            {
                 "CimPropertyName": "ServerDiskUseInBytes",
                 "CounterName": "Disk Space Use in Bytes"
             },
