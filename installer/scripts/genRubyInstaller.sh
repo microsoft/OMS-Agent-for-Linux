@@ -28,16 +28,16 @@ substitute_arch()
     echo -n "$RESULT"
 }
 
-# This script will generate a "starting point" for an InstallBuilder data file.
-# For example, this generated ruby.data in the omsagent project. This is useful
-# for a package that has an install process (i.e. make install), but we need to
-# generate an install data file for it.
+# This script will generate a file that will contain the new
+# ruby  changes for ruby.data file based on SOURCE_DIR content to be included in ruby install builder 
+# since building ruby has an install process
+# and requires generating an install ruby data file for it.
 
-OUTPUT_RESULTS="/tmp/installBuilder-$USER"
+OUTPUT_RESULTS="/tmp/installBuilder-ruby-data-$USER"
 rm -f $OUTPUT_RESULTS
 
 # Evaluate any wildcards in the filename ...
-SOURCE_DIR=`stat -c "%n" ~/dev/work/oms/intermediate/*/ruby`
+SOURCE_DIR=`stat -c "%n" ../intermediate/*/100/ruby`
 
 OUTPUT_DIR=/tmp/outdir.txt.$$
 OUTPUT_FILE=/tmp/outfile.txt.$$
@@ -59,7 +59,7 @@ for i in `find $SOURCE_DIR -name \* -print`; do
     if [ -d $i ]; then
         DIR_NAME=`echo $i | sed "s~$SOURCE_DIR~~"`
 	[ -n "$DIR_NAME" ] && DIR_NAME=`substitute_arch $DIR_NAME`
-        STAT_INFO=`stat -c "%a; %U; %G" $i`
+        STAT_INFO=`stat -c "%a; root; root" $i`
         printf "%-55s %s\n" "\${{RUBY_DEST}}${DIR_NAME};" "$STAT_INFO" >> $OUTPUT_DIR
     else
         OLD_BASE_DIR=`dirname $i`
@@ -68,7 +68,7 @@ for i in `find $SOURCE_DIR -name \* -print`; do
 
         FILE_NAME=`echo $i | sed "s~$SOURCE_DIR~~"`
 	FILE_NAME=`substitute_arch $FILE_NAME`
-        STAT_INFO=`stat -c "%a; %U; %G" $i`
+        STAT_INFO=`stat -c "%a; root; root" $i`
         printf "%-72s %-64s %s\n" "\${{RUBY_DEST}}${FILE_NAME};" "\${{RUBY_INT}}${FILE_NAME};" "$STAT_INFO" >> $OUTPUT_FILE
     fi
 done
