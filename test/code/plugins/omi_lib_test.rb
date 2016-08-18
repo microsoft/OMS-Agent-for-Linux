@@ -141,7 +141,6 @@ class OmiLib_Test < Test::Unit::TestCase
 			"MySQL Server InnoDB Buffer Pool Hit Pct",
 			"MySQL Server InnoDB Buffer Pool Use Pct",
 			"MySQL Server Full Table Scan Pct",
-			"MySQL Server InnoDB Buffer Pool Use Pct",
 			"MySQL Server Disk Space Use in Bytes",
 			"MySQL Server Connection Use Pct",
 			"MySQL Server Aborted Connection Pct"
@@ -207,7 +206,7 @@ class OmiLib_Test < Test::Unit::TestCase
 
    		#Test MySQL_ServerStatistics
 		mysql_perf_record = [{"ClassName"=>"MySQL_ServerStatistics","InstanceID"=>"kab-cen-oms1:127.0.0.1:3306","CurrentNumConnections"=>"1","MaxConnections"=>"151","Uptime"=>"4052","ServerDiskUseInBytes"=>"803894","ConnectionsUsePct"=>"1","AbortedConnectionPct"=>"0","SlowQueryPct"=>"0","KeyCacheHitPct"=>"0","KeyCacheWritePct"=>"0","KeyCacheUsePct"=>"18","QCacheHitPct"=>"0","QCachePrunesPct"=>"0","QCacheUsePct"=>"0","TCacheHitPct"=>"17","TableLockContentionPct"=>"0","TableCacheUsePct"=>"10","IDB_BP_HitPct"=>"100","IDB_BP_UsePct"=>"4","FullTableScanPct"=>"93"}]
-		expected_mysql_record = [{"Host":"testhost","ObjectName":"MySQL Server","InstanceName":"kab-cen-oms1:127.0.0.1:3306","Collections":[{"CounterName":"Key Cache Hit Pct","Value":"0"},{"CounterName":"Key Cache Write Pct","Value":"0"},{"CounterName":"Key Cache Use Pct","Value":"18"},{"CounterName":"Query Cache Hit Pct","Value":"0"},{"CounterName":"Query Cache Use Pct","Value":"0"},{"CounterName":"Table Cache Hit Pct","Value":"17"},{"CounterName":"Table Lock Contention Pct","Value":"0"},{"CounterName":"Table Cache Use Pct","Value":"10"},{"CounterName":"InnoDB Buffer Pool Hit Pct","Value":"100"},{"CounterName":"InnoDB Buffer Pool Use Pct","Value":"4"},{"CounterName":"Full Table Scan Pct","Value":"93"},{"CounterName":"InnoDB Buffer Pool Use Pct","Value":"4"},{"CounterName":"Disk Space Use in Bytes","Value":"803894"},{"CounterName":"Connection Use Pct","Value":"1"},{"CounterName":"Aborted Connection Pct","Value":"0"}]}]
+		expected_mysql_record = [{"Host":"testhost","ObjectName":"MySQL Server","InstanceName":"kab-cen-oms1:127.0.0.1:3306","Collections":[{"CounterName":"Key Cache Hit Pct","Value":"0"},{"CounterName":"Key Cache Write Pct","Value":"0"},{"CounterName":"Key Cache Use Pct","Value":"18"},{"CounterName":"Query Cache Hit Pct","Value":"0"},{"CounterName":"Query Cache Use Pct","Value":"0"},{"CounterName":"Table Cache Hit Pct","Value":"17"},{"CounterName":"Table Lock Contention Pct","Value":"0"},{"CounterName":"Table Cache Use Pct","Value":"10"},{"CounterName":"InnoDB Buffer Pool Hit Pct","Value":"100"},{"CounterName":"InnoDB Buffer Pool Use Pct","Value":"4"},{"CounterName":"Full Table Scan Pct","Value":"93"},{"CounterName":"Disk Space Use in Bytes","Value":"803894"},{"CounterName":"Connection Use Pct","Value":"1"},{"CounterName":"Aborted Connection Pct","Value":"0"}]}]
 		transform_validate_records_helper(expected_mysql_record, mysql_perf_record , all_performance_counters, "MySQL Server Input Class Failed!")
 	end
 	
