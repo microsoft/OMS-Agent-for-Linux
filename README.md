@@ -1,42 +1,14 @@
-# Operations Management Suite Agent for Linux Public Preview (2016-07)
+# Operations Management Suite Agent for Linux (2016-08)
 
 ## Overview
 Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
 
-Our goal for this preview is to get your feedback on onboarding the agent, configuring data to be collected, and your general experience using OMS with Linux data. We rely on your feedback to improve both design and implementation of these features. As this is a preview, the feature set is subject to change.
-
-*Note: the features and supported Linux versions in this Technical Preview are a limited subset of planned capabilities*
-
-##Release History
-*	1.1.0-217:
-	* [FluentD v12.24](https://github.com/fluent/fluentd/commits/v0.12.24)
-	* Support for [CollectD Metrics](docs/OMS-Agent-for-Linux.md#collectd-metrics)
-	* Ability to support [custom JSON data sources](docs/OMS-Agent-for-Linux.md#custom-json-data-sources) from OMS Agent for Linux
-	* New default set of Performance Counters supported
-	* Support Docker Engine Version 1.11.2 and Docker Rest API version 1.23
-	* The `omsagent` service now runs under `omiusers` group instead of `omsagent` group
-	* Ubuntu 16.04 LTS (x64/x86) support!
-	* [Bug Fixes](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/v1.1.0-217)
-*	1.1.0-124:
-	*	Custom Log Public Preview
-	*	Improved performance and message throughput
-	*	Bug fixes
-*	1.1.0-28:
-	*	Nagios/Zabbix empty record fix
-*	1.1.0-2: 
-	*	Agent HTTP(s) proxy support
-	*	Improved performance and message throughput. 
-	*	Disk-buffered output
-	*	Ubuntu 15.10 support	
-*	1.0.0-47: Initial Public Preview release
-
-
 ## Quick Install guide
 Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **connected sources** tab.
 ```
-$> wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/v1.1.0-217/omsagent-1.1.0-217.universal.x64.sh
-$> sha256sum ./omsagent-1.1.0-217.universal.x64.sh
-$> sudo sh ./omsagent-1.1.0-217.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
+$> wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_GA_v1.2.0-25/omsagent-1.2.0-25.universal.x64.sh
+$> sha256sum ./omsagent-1.2.0-25.universal.x64.sh
+$> sudo sh ./omsagent-1.2.0-25.universal.x64.sh --upgrade -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
 ## Azure Install guide
 If you are an Azure customer, we have an Azure VM Extension that allows you to onboard with a couple of clicks.
