@@ -8,7 +8,7 @@ With this feature, you'll be able to:
 * Find containers that may be “noisy neighbors” and consuming excess resources on a host 
 * View centralized CPU, memory, storage, and network usage and performance information for containers 
 
-Because this is a private preview, we'll need your OMS workspace ID to enable it. If you aren't included in the private preview and are interested in joining, drop us a line at OMSContainers@microsoft.com.
+This is a Public Preview Product. 
 
 ### Supported Linux Operating Systems and Docker:
 * Docker 1.8 thru 1.11.2
