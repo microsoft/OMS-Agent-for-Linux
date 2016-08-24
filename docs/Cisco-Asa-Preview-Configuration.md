@@ -47,3 +47,6 @@
 
 8. Confirm that there are no errors in the OMS Agent log:  
 ```tail /var/opt/microsoft/omsagent/log/omsagent.log```
+
+9. The events will appear in OMS under the **CommonSecurityLog** type.  
+Log search query: ```Type=CommonSecurityLog```
