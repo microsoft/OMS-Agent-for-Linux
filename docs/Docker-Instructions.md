@@ -1,5 +1,5 @@
-# Trying the container solution pack for Operations Management Suite
-## What can you do with the container solution pack
+# Trying the container solution for Operations Management Suite
+## What can you do with the container solution 
 With this feature, you'll be able to:
 * See information about all container hosts in a single location 
 * Know which containers are running, what image they’re running, and where they’re running 
@@ -75,12 +75,12 @@ Look at the Container top tile – it’s intended to show you a quick overview 
 The top tile shows hosts that are overwhelmed with CPU or Memory usage (>90%), as well as an overview of how many containers you have in the environment and whether they’re failed, running, or stopped. 
 
 ### Dashboard view 
-Click the solution pack tile. From there you’ll see views organized by: 
+Click the Container solution tile. From there you’ll see views organized by: 
 * Containers by image
 * 	Host
 *	Errors
 *	Audit Trail
-The container solutions pack works by collecting various performance metrics and log data and sending it to the Operations Management Suite service. Each pane you see on the UI is a visual representation of a search that is run on this data.
+The container solutions works by collecting various performance metrics and log data and sending it to the Operations Management Suite service. Each pane you see on the UI is a visual representation of a search that is run on this data.
 
 **Try it:** Click on the top tile of this pane.
  ![DockerHostsPicture](pictures/DockerPics/DockerContainerHosts.png?raw=true)
