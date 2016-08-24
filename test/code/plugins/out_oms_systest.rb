@@ -44,6 +44,43 @@ class OutOMSTest < OutOMSSystemTestBase
     $log.clear
     record = {"DataType"=>"LINUX_UPDATES_SNAPSHOT_BLOB", "IPName"=>"Updates", "DataItems"=>{"DataItems"=> [{"Collections"=> [{"CollectionName"=>"dpkg_1.18.4ubuntu1.1_Ubuntu 16.04 (x86_64)", "Installed"=>false, "PackageName"=>"dpkg", "PackageVersion"=>"1.18.4ubuntu1.1", "Repository"=>"Ubuntu:16.04/xenial-updates", "Timestamp"=>"1970-01-01T00:00:00.000Z"}], "Computer"=>"HostName","OSFullName"=>"Ubuntu 16.04 (x86_64)", "OSName"=>"Ubuntu", "OSType"=>"Linux", "OSVersion"=>"16.04", "Timestamp"=>"2016-03-15T19:02:38.577Z"}]}}
     assert(output.handle_record("oms.patch_management", record), "Failed to send linux updates data : '#{$log.logs}'")
+
+   $log.clear
+   record = {
+              "DataType"=>"CONFIG_CHANGE_BLOB",
+              "IPName"=>"changetracking",
+              "DataItems"=>[
+                {
+                    "Timestamp" => timestamp,
+                    "Computer" => host,
+                    "ConfigChangeType"=> "Software.Packages",
+                    "Collections"=> []
+                },
+                {
+                    "Timestamp" => timestamp,
+                    "Computer" => host,
+                    "ConfigChangeType"=> "Daemons",
+                    "Collections"=> [] 
+                },
+                {
+                    "Timestamp" => timestamp,
+                    "Computer" => host,
+                    "ConfigChangeType"=> "Files",
+                    "Collections"=> 
+		             [{"CollectionName"=>"/etc/yum.conf",
+		               "Contents"=>"",
+		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
+		               "DateModified"=>"2016-08-20T18:12:22.000Z",
+		               "FileSystemPath"=>"/etc/yum.conf",
+		               "Group"=>"root",
+		               "Mode"=>"644",
+		               "Owner"=>"root",
+		               "Size"=>"835"}]
+                }
+              ]
+            }
+
+    assert(output.handle_record("oms.changetracking", record), "Failed to send change tracking updates data : '#{$log.logs}'")
   end
 
 end

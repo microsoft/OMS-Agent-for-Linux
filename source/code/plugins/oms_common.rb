@@ -12,6 +12,7 @@ module OMS
     require 'time'
     require 'zlib'
     require 'digest'
+    require 'date'
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
@@ -632,6 +633,10 @@ module OMS
 
       def format_time(time)
         Time.at(time).utc.iso8601(3) # UTC with milliseconds
+      end
+
+      def format_time_str(time)
+        DateTime.parse(time).strftime("%FT%H:%M:%S.%3NZ")
       end
 
       def create_error_tag(tag)
