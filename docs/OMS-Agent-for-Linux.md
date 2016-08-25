@@ -482,7 +482,8 @@ The OMS Agent for Linux also listens on port 26000 for CollectD metrics and then
 During installation the option `--collectd` can be used to automatically place the CollectD configuration for versions 5.5+ in `/etc/collectd/conf.d/`, and enable the OMS Agent for Linux filter.
 
 ##### Post-Install Option
-If OMS Agent for Linux is already installed you can run the following command to automatically place the CollectD configuration in `/etc/collectd/conf.d/`, and enable the OMS Agent for Linux filter.
+If OMS Agent for Linux is already installed you can run the following command: `/opt/microsoft/omsagent/bin/omsadmin.sh -c` to automatically place the CollectD configuration in `/etc/collectd/conf.d/`, and enable the OMS Agent for Linux filter.
+
 
 **Note:** If CollectD is not installed in a default path or is version < 5.5 then these options should not be used, and the files should be placed manually in CollectD configuration directory. **Additionally, CollectD must be restarted after installation**
 
