@@ -199,12 +199,13 @@ fi
 # Ensure omsagent is in the omiusers group, but leave omsagent as a group
 /usr/sbin/usermod -g omiusers omsagent 1> /dev/null 2> /dev/null
 
-%Postinstall_200
+%Postinstall_500
 #include Syslog_Services
 #include Sudoer_Functions
 
 ${{OMI_SERVICE}} reload
 ${{OMS_SERVICE}} enable
+
 ConfigureSyslog
 
 # Unconfigure sudo if it's already configured
