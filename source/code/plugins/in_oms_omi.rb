@@ -15,7 +15,7 @@ module Fluent
     config_param :counter_name_regex, :string, :default => ".*"
     config_param :interval, :time, :default => nil
     config_param :tag, :string, :default => "oms.omi"  
-    config_param :omi_mapping_path, :string, :default => "/etc/opt/microsoft/omsagent/sysconf/omi_mapping.json"
+    config_param :omi_mapping_path, :string, :default => "/etc/opt/microsoft/omsagent/conf/omi_mapping.json"
 
     def configure (conf)
       super
