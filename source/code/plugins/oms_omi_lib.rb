@@ -73,7 +73,13 @@ class OmiOms
     cimproperties.each { |maps|
       cim_name = maps["CimPropertyName"]
       oms_name = maps["CounterName"]
-      cim_to_oms[cim_name] = oms_name
+      # Map cim_name to both CounterName and DisplayName
+      if maps.has_key?("DisplayName")
+        display_counter_name = maps["DisplayName"]
+        cim_to_oms[cim_name] = [oms_name, display_counter_name]
+      else
+        cim_to_oms[cim_name] = oms_name
+      end
     }
     return cim_to_oms
   end
@@ -93,14 +99,25 @@ class OmiOms
     
     # Filter properties. Watch out! We get them as CIM but the regex is with OMS property names
     omi_instance.each do |property, value|
-      oms_property_name = @cim_to_oms[property]
+      # CimProperty may have a DisplayName attribute; if so, use that as the CounterName
+      if @cim_to_oms[property].is_a?(Array)
+        oms_property_name = @cim_to_oms[property][0]
+        oms_property_display_name = @cim_to_oms[property][1]
+      else
+        oms_property_name = @cim_to_oms[property]
+        oms_property_display_name == nil
+      end
       begin
         if /#{@counter_name_regex}/.match(oms_property_name)
           if value.nil?
             OMS::Log.warn_once("Dropping null value for counter #{oms_property_name}.")
           else
             counter_pair = {}
-            counter_pair["CounterName"] = oms_property_name
+            if oms_property_display_name == nil
+              counter_pair["CounterName"] = oms_property_name
+            else
+              counter_pair["CounterName"] = oms_property_display_name
+            end
             counter_pair["Value"] = value
             oms_instance_collections.push(counter_pair) 
           end
