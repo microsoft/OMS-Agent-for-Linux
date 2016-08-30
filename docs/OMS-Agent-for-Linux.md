@@ -74,7 +74,7 @@ The OMS agent for Linux is provided in a self-extracting and installable shell s
 
 **To install and onboard directly:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade –w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --install –w <workspaceid> -s <shared key>
 ```
 
 **To install and onboard directly using an HTTP proxy:**
