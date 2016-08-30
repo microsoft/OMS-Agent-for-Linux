@@ -19,16 +19,16 @@ add_rsyslog_configuration_for_json(){
 
     echo 'module(load="imtcp")' > $file
     echo 'input(type="imtcp" port="1514")' >> $file
-    echo '$template myFormat, "%timestamp:::date-year%-%timestamp:::date-month%-%timestamp:::date-day% %timestamp:::date-hour%:%timestamp:::date-minute%:%timestamp:::date-second% : %timereported:::date-year%-%timereported:::date-month%-%timereported:::date-day% %timereported:::date-hour%:%timereported:::date-minute%:%timereported:::date-second% : %hostname% : %fromhost-ip% : %syslogfacility% : %syslogseverity-text% : %programname% : %msg%\\n"' >> $file
+    echo '$template myFormat, "%timestamp:::date-year%-%timestamp:::date-month%-%timestamp:::date-day% %timestamp:::date-hour%:%timestamp:::date-minute%:%timestamp:::date-second% : %timereported:::date-year%-%timereported:::date-month%-%timereported:::date-day% %timereported:::date-hour%:%timereported:::date-minute%:%timereported:::date-second% : %hostname% : %fromhost-ip% : %syslogfacility% : %syslogseverity-text% : %programname% : %msg%\n"' >> $file
     echo '$template PerHostLog,"/var/log/vmware/esxi-syslog.log"' >> $file
-    echo 'if $fromhost-ip != '127.0.0.1' then -?PerHostLog;myFormat' >> $file
+    echo 'if $fromhost-ip != "127.0.0.1"'' then -?PerHostLog;myFormat' >> $file
     echo '& ~' >> $file
 
     if [ -f $file ];
     then
-       echo 'RSyslog configuration updated.'
+        echo 'RSyslog configuration updated.'
     else
-       echo 'RSyslog configuration could not be updated. Try again later with valid permissions'
+        echo 'RSyslog configuration could not be updated. Try again later with valid permissions'
     fi   
 }
 
