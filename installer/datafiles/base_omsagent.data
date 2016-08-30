@@ -22,7 +22,6 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
 /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
-/etc/opt/microsoft/omsagent/conf/omi_mapping.json;                      installer/conf/omi_mapping.json;                       644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking_inventory.mof;    installer/conf/omsagent.d/change_tracking_inventory.mof;    644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf;            installer/conf/omsagent.d/monitor.conf;                644; root; root
@@ -148,6 +147,11 @@ mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
 # Copy monitor plugins conf file by default
 if [ ! -f ${{CONF_DIR}}/omsagent.d/monitor.conf ]; then
    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf ${{CONF_DIR}}/omsagent.d/monitor.conf
+fi
+
+# Copy over omi_mapping.json
+if [ ! -f ${{CONF_DIR}}/omsagent.d/omi_mapping.json ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json ${{CONF_DIR}}/omsagent.d/omi_mapping.json
 fi
 
 # Copy over standalone plugin configurations
