@@ -37,9 +37,9 @@ OMI_PKG=<OMI_PKG>
 OMS_PKG=<OMS_PKG>
 DSC_PKG=<DSC_PKG>
 SCX_PKG=<SCX_PKG>
+INSTALL_TYPE=<INSTALL_TYPE>
 SCRIPT_LEN=<SCRIPT_LEN>
 SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>
-
 
 usage()
 {
@@ -313,6 +313,18 @@ compare_arch()
             cleanup_and_exit 1
             ;;
     esac
+}
+
+compare_install_type()
+{   
+    # If the bundle has an INSTALL_TYPE, check if the bundle being installed 
+    # matches the installer on the machine (rpm vs.dpkg)
+    if [ ! -z "$INSTALL_TYPE" ]; then
+        if [ $INSTALLER != $INSTALL_TYPE ]; then
+           echo "This kit is intended for ${INSTALL_TYPE} systems and cannot install on ${INSTALLER} systems"
+           cleanup_and_exit 1
+        fi
+    fi
 }
 
 python_ctypes_installed() {
@@ -688,6 +700,7 @@ fi
 # Pre-flight if omsconfig installation will fail ...
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
+    compare_install_type
     compare_arch 
     python_ctypes_installed
     if [ $? -ne 0 ]; then
