@@ -28,7 +28,6 @@ ONBOARD_FILE=/etc/omsagent-onboard.conf
 DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
-COLLECTD_DIR="/etc/collectd/collectd.conf.d/"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -550,10 +549,10 @@ do
             ;;
 
         --collectd)
-            if [ -d "${COLLECTD_DIR}" ]; then
+            if [ -f /etc/collectd.conf -o -f /etc/collectd/collectd.conf ]; then
                 touch /etc/collectd_marker.conf
             else
-                echo "${COLLECTD_DIR} - directory does not exist. Please make sure collectd is installed properly"
+                echo "collectd.conf does not exist. Please make sure collectd is installed properly"
                 cleanup_and_exit 1
             fi
             shift 1
@@ -681,9 +680,8 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
         fi
     fi
-    if [ -f ${COLLECTD_DIR}/oms.conf ]; then
-        rm ${COLLECTD_DIR}/oms.conf > /dev/null 2> /dev/null
-    fi
+    rm -f /etc/collectd.d/oms.conf > /dev/null 2> /dev/null
+    rm -f /etc/collectd/collectd.conf.d/oms.conf > /dev/null 2> /dev/null
 fi
 
 if [ -n "${shouldexit}" ]
