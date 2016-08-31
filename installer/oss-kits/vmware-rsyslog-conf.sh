@@ -15,7 +15,7 @@ check_if_rsyslog_is_installed() {
 }
 
 add_rsyslog_configuration_for_json(){
-    file="/etc/rsyslog.d/00-vmware-oms.conf"
+    file="/etc/rsyslog.d/96-vmware-oms.conf"
 
     echo 'module(load="imtcp")' > $file
     echo 'input(type="imtcp" port="1514")' >> $file
