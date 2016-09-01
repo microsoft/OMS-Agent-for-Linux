@@ -51,20 +51,20 @@ class OutOMSTest < OutOMSSystemTestBase
               "IPName"=>"changetracking",
               "DataItems"=>[
                 {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
+                    "Timestamp" => "2016-08-20T18:12:22.000Z",
+                    "Computer" => "host",
                     "ConfigChangeType"=> "Software.Packages",
                     "Collections"=> []
                 },
                 {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
+                    "Timestamp" => "2016-08-20T18:12:22.000Z",
+                    "Computer" => "host",
                     "ConfigChangeType"=> "Daemons",
                     "Collections"=> [] 
                 },
                 {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
+                    "Timestamp" => "2016-08-20T18:12:22.000Z",
+                    "Computer" => "host",
                     "ConfigChangeType"=> "Files",
                     "Collections"=> 
 		             [{"CollectionName"=>"/etc/yum.conf",
