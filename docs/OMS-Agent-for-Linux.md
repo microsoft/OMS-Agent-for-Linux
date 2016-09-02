@@ -171,6 +171,7 @@ Run the omsadmin.sh command supplying the workspace id and key for your workspac
 ```
 cd /opt/microsoft/omsagent/bin
 sudo ./omsadmin.sh -w <WorkspaceID> -s <Shared Key>
+sudo ./service_control enable
 ```
 
 ## Onboarding using a file
@@ -181,8 +182,8 @@ sudo ./omsadmin.sh -w <WorkspaceID> -s <Shared Key>
 WORKSPACE_ID=<WorkspaceID>
 SHARED_KEY=<Shared Key>
 ```
-3.	Restart the omsagent:
-`sudo service omsagent restart`
+3.	Register the omsagent service and restart:
+`sudo ./service_control enable`
 4.	The file will be deleted on successful onboarding
 
 # Viewing Linux Data
