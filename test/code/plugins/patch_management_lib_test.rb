@@ -78,7 +78,6 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Architecture"=>"amd64",
       "PackageName"=>"dpkg",
       "PackageVersion"=>"1.18.4ubuntu1.1",
-      "Timestamp"=> nil,
       "Repository"=>"Ubuntu:16.04/xenial-updates",
       "Installed"=>false,
       "UpdateState"=>"Needed"
@@ -166,7 +165,6 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Architecture"=>"all",
       "PackageName"=> "autotools-dev",
       "PackageVersion"=>"20150820.1",
-      "Timestamp"=> nil,
       "Repository"=> nil,
       "Size"=>"151",
       "Installed"=>true,
@@ -200,8 +198,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "PackageName" => "autotools-dev",
                     "PackageVersion" => "20150820.1",
                     "Repository" => nil,
-                    "Size" => "151",
-                    "Timestamp" => nil
+                    "Size" => "151"
                 }]
             }]
         }
@@ -264,8 +261,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "PackageName" => "autotools-dev",
                     "PackageVersion" => "20150820.1",
                     "Repository" => nil,
-                    "Size" => "151",
-                    "Timestamp" => nil
+                    "Size" => "151"
                 }]
             }]
         }
@@ -295,8 +291,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
                     "PackageVersion" => "1.18.4ubuntu1.1",
-                    "Repository" => "Ubuntu:15.04/xenial-updates",
-                    "Timestamp" => nil
+                    "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
             }]
         }
@@ -357,8 +352,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
                     "PackageVersion" => "1.18.4ubuntu1.1",
-                    "Repository" => "Ubuntu:15.04/xenial-updates",
-                    "Timestamp" => nil
+                    "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
             }]
         }

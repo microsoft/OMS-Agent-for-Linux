@@ -152,13 +152,12 @@ class LinuxUpdates
         ret["PackageName"] = availableUpdatesHash["Name"]
         ret["Architecture"] = availableUpdatesHash.key?("Architecture") ? availableUpdatesHash["Architecture"] : nil
         ret["PackageVersion"] = availableUpdatesHash["Version"]
-        ret["Timestamp"] = (availableUpdatesHash["BuildDate"].nil? or 
-                            availableUpdatesHash["BuildDate"].strip == "" or
-                            availableUpdatesHash["BuildDate"].strip == "BuildDate") ? nil :
-                                OMS::Common.format_time(availableUpdatesHash["BuildDate"].to_i)
         ret["Repository"] = availableUpdatesHash.key?("Repository") ? availableUpdatesHash["Repository"] : nil
         ret["Installed"] = false
         ret["UpdateState"] = "Needed"
+        if (Integer(availableUpdatesHash["BuildDate"]) rescue false)
+            ret["Timestamp"] = OMS::Common.format_time(availableUpdatesHash["BuildDate"].to_i)
+        end
         ret
     end
 
@@ -171,14 +170,13 @@ class LinuxUpdates
         ret["PackageName"] = packageHash["Name"]
         ret["Architecture"] = packageHash.key?("Architecture") ? packageHash["Architecture"] : nil
         ret["PackageVersion"] = packageHash["Version"]  
-        ret["Timestamp"] = (packageHash["InstalledOn"].nil? or 
-                            packageHash["InstalledOn"].strip == "" or
-                            packageHash["InstalledOn"].strip == "Unknown") ? nil : 
-                                OMS::Common.format_time(packageHash["InstalledOn"].to_i)
         ret["Size"] = packageHash["Size"]
         ret["Repository"] = packageHash.key?("Repository") ? packageHash["Repository"] : nil
         ret["Installed"] = true
         ret["UpdateState"] = "NotNeeded"
+        if (Integer(packageHash["InstalledOn"]) rescue false)
+            ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
+        end
         ret
     end
 
