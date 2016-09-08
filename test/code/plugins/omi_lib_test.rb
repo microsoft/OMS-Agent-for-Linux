@@ -116,7 +116,7 @@ class OmiLib_Test < Test::Unit::TestCase
 			"System Uptime",
 			"Process Pct Privileged Time",
 			"Process Pct User Time",
-			"Process Used Memory",
+			"Process Used Memory kBytes",
 			"Process Virtual Shared Memory",
 			"Apache HTTP Server Total Pct CPU",
 			"Apache HTTP Server Idle Workers",
@@ -186,7 +186,7 @@ class OmiLib_Test < Test::Unit::TestCase
 
 		#Test SCX_UnixProcessStatisticalInformation
 		process_perf_record = [{"ClassName"=>"SCX_UnixProcessStatisticalInformation","Caption"=>"Unix process information","Description"=>"A snapshot of a current process","Name"=>"omsagent","CSCreationClassName"=>"SCX_ComputerSystem","CSName"=>"kab-cen-oms1.scx.com","OSCreationClassName"=>"SCX_OperatingSystem","OSName"=>"Linux Distribution","Handle"=>"28402","ProcessCreationClassName"=>"SCX_UnixProcessStatisticalInformation","CPUTime"=>"0","VirtualText"=>"2666496","VirtualData"=>"953671680","VirtualSharedMemory"=>"5216","CpuTimeDeadChildren"=>"180","SystemTimeDeadChildren"=>"123","PercentUserTime"=>"0","PercentPrivilegedTime"=>"0","UsedMemory"=>"40208","PercentUsedMemory"=>"3","PagesReadPerSec"=>"0"}]
-		expected_process_record = [{"Host":"testhost", "ObjectName":"Process","InstanceName":"omsagent","Collections":[{"CounterName":"Pct User Time","Value":"0"},{"CounterName":"Pct Privileged Time","Value":"0"},{"CounterName":"Used Memory","Value":"40208"},{"CounterName":"Virtual Shared Memory","Value":"5216"}]}]
+		expected_process_record = [{"Host":"testhost", "ObjectName":"Process","InstanceName":"omsagent","Collections":[{"CounterName":"Pct User Time","Value":"0"},{"CounterName":"Pct Privileged Time","Value":"0"},{"CounterName":"Virtual Shared Memory","Value":"5216"}]}]
 		transform_validate_records_helper(expected_process_record, process_perf_record , all_performance_counters, "Process Input Class Failed!")
 
 		#Test Apache_HTTPDServerStatistics

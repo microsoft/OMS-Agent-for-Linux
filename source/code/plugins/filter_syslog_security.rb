@@ -59,7 +59,7 @@ module Fluent
 
       wrapper = {
         'DataType' => data_type,
-        'IPName' => 'logmanagement',
+        'IPName' => 'Security',
         'DataItems' => [record]
       }
 

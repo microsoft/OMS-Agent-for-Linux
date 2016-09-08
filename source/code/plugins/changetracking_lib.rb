@@ -50,6 +50,21 @@ class ChangeTracking
         ret
     end
 
+    def self.fileInventoryXMLtoHash(fileInventoryXML)
+        fileInventoryHash = instanceXMLtoHash(fileInventoryXML)
+        ret = {}
+        ret["FileSystemPath"] = fileInventoryHash["DestinationPath"]
+        ret["CollectionName"] = fileInventoryHash["DestinationPath"]
+        ret["Size"] = fileInventoryHash["FileSize"]
+        ret["Owner"] = fileInventoryHash["Owner"]
+        ret["Group"] = fileInventoryHash["Group"]
+        ret["Mode"] = fileInventoryHash["Mode"]
+        ret["Contents"] = fileInventoryHash["Contents"]
+        ret["DateModified"] = OMS::Common.format_time_str(fileInventoryHash["ModifiedDate"])
+        ret["DateCreated"] = OMS::Common.format_time_str(fileInventoryHash["CreatedDate"])
+        ret
+    end
+
     def self.strToXML(xml_string)
         xml_unescaped_string = CGI::unescapeHTML(xml_string)
         REXML::Document.new xml_unescaped_string
@@ -78,6 +93,10 @@ class ChangeTracking
         instanceXML.attributes['CLASSNAME'] == 'MSFT_nxServiceResource'
     end
 
+    def self.isFileInventoryInstanceXML(instanceXML)
+        instanceXML.attributes['CLASSNAME'] == 'MSFT_nxFileInventoryResource'
+    end
+
     def self.transform_and_wrap(inventoryXMLstr, host, time, force_send_run_interval = 0)
 
         # Do not send duplicate data if we are not forced to
@@ -99,16 +118,19 @@ class ChangeTracking
         # Split packages from services 
         packagesXML = instancesXML.select { |instanceXML| isPackageInstanceXML(instanceXML) }
         servicesXML = instancesXML.select { |instanceXML| isServiceInstanceXML(instanceXML) }
+	fileInventoriesXML = instancesXML.select { |instanceXML| isFileInventoryInstanceXML(instanceXML) }
 
         # Convert to xml to hash/json representation
         packages = packagesXML.map { |package|  packageXMLtoHash(package)}
         services = servicesXML.map { |service|  serviceXMLtoHash(service)}
+        fileInventories = fileInventoriesXML.map { |fileInventory|  fileInventoryXMLtoHash(fileInventory)}
 
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
         packages = removeDuplicateCollectionNames(packages)
         services = removeDuplicateCollectionNames(services)
+        fileInventories = removeDuplicateCollectionNames(fileInventories)
 
-        if (packages.size > 0 or services.size > 0)
+        if (packages.size > 0 or services.size > 0 or fileInventories.size > 0)
             timestamp = OMS::Common.format_time(time)
             wrapper = {
               "DataType"=>"CONFIG_CHANGE_BLOB",
@@ -125,10 +147,16 @@ class ChangeTracking
                     "Computer" => host,
                     "ConfigChangeType"=> "Daemons",
                     "Collections"=> services
+                },
+                {
+                    "Timestamp" => timestamp,
+                    "Computer" => host,
+                    "ConfigChangeType"=> "Files",
+                    "Collections"=> fileInventories
                 }
               ]
             }
-            @@log.debug "ChangeTracking : Packages x #{packages.size}, Services x #{services.size}"
+            @@log.debug "ChangeTracking : Packages x #{packages.size}, Services x #{services.size}, Files x #{fileInventories.size}"
             return wrapper
         else
             # no data items, send a empty array that tells ODS

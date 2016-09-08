@@ -28,7 +28,6 @@ ONBOARD_FILE=/etc/omsagent-onboard.conf
 DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
-COLLECTD_DIR="/etc/collectd/collectd.conf.d/"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -37,9 +36,9 @@ OMI_PKG=<OMI_PKG>
 OMS_PKG=<OMS_PKG>
 DSC_PKG=<DSC_PKG>
 SCX_PKG=<SCX_PKG>
+INSTALL_TYPE=<INSTALL_TYPE>
 SCRIPT_LEN=<SCRIPT_LEN>
 SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>
-
 
 usage()
 {
@@ -304,15 +303,27 @@ compare_arch()
     #check if the user is trying to install the correct bundle (x64 vs. x86) 
     echo "Checking host architecture ..."
     AR=$(get_arch)
-
-    case $1 in
-        *"$AR".sh) 
+    
+    case $OMS_PKG in
+        *"$AR") 
             ;;
         *)         
-            echo "Cannot install bundle $1 on ${AR} platform"
+            echo "Cannot install $OMS_PKG on ${AR} platform"
             cleanup_and_exit 1
             ;;
     esac
+}
+
+compare_install_type()
+{   
+    # If the bundle has an INSTALL_TYPE, check if the bundle being installed 
+    # matches the installer on the machine (rpm vs.dpkg)
+    if [ ! -z "$INSTALL_TYPE" ]; then
+        if [ $INSTALLER != $INSTALL_TYPE ]; then
+           echo "This kit is intended for ${INSTALL_TYPE} systems and cannot install on ${INSTALLER} systems"
+           cleanup_and_exit 1
+        fi
+    fi
 }
 
 python_ctypes_installed() {
@@ -538,10 +549,10 @@ do
             ;;
 
         --collectd)
-            if [ -d "${COLLECTD_DIR}" ]; then
+            if [ -f /etc/collectd.conf -o -f /etc/collectd/collectd.conf ]; then
                 touch /etc/collectd_marker.conf
             else
-                echo "${COLLECTD_DIR} - directory does not exist. Please make sure collectd is installed properly"
+                echo "collectd.conf does not exist. Please make sure collectd is installed properly"
                 cleanup_and_exit 1
             fi
             shift 1
@@ -669,9 +680,8 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
         fi
     fi
-    if [ -f ${COLLECTD_DIR}/oms.conf ]; then
-        rm ${COLLECTD_DIR}/oms.conf > /dev/null 2> /dev/null
-    fi
+    rm -f /etc/collectd.d/oms.conf > /dev/null 2> /dev/null
+    rm -f /etc/collectd/collectd.conf.d/oms.conf > /dev/null 2> /dev/null
 fi
 
 if [ -n "${shouldexit}" ]
@@ -688,7 +698,8 @@ fi
 # Pre-flight if omsconfig installation will fail ...
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
-    compare_arch $0
+    compare_install_type
+    compare_arch 
     python_ctypes_installed
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then

@@ -219,7 +219,8 @@
             },
             {
                 "CimPropertyName": "UsedMemory",
-                "CounterName": "Used Memory"
+                "CounterName": "Used Memory",
+                "DisplayName": "Used Memory kBytes"
             },
             {
                 "CimPropertyName": "VirtualSharedMemory",

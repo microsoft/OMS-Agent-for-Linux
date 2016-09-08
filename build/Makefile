@@ -97,6 +97,8 @@ RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DES
 
 ifeq ($(ULINUX),1)
   OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).universal.$(PF_ARCH)
+  OUTPUT_PACKAGE_PREFIX_RPM=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).universal.rpm.$(PF_ARCH)
+  OUTPUT_PACKAGE_PREFIX_DEB=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).universal.deb.$(PF_ARCH)
 else
   PF_DISTRO_LC := $(shell echo $(PF_DISTRO) | tr A-Z a-z)
   OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).$(PF_DISTRO_LC).$(PF_MAJOR).$(PF_ARCH)
@@ -255,15 +257,28 @@ $(IN_PLUGINS_LIB) : $(STATIC_PLUGINS_OBJFILES)
 
 ifeq ($(ULINUX),1)
 
-kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh $(TARGET_DIR)/dsc
+kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh $(TARGET_DIR)/dsc \
+      $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh 
+
+$(TARGET_DIR)/dsc : $(DSC_TARGET_DIR)
+	@echo "========================= Performing Copying DSC resources"
+	$(MKPATH) $(TARGET_DIR)/dsc; $(COPY) $(DSC_TARGET_DIR)/*.zip $(TARGET_DIR)/dsc/
+
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 	@echo "========================= Performing Building shell bundle"
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
 
-$(TARGET_DIR)/dsc : $(DSC_TARGET_DIR)
-	@echo "========================= Performing Copying DSC resources"
-	$(MKPATH) $(TARGET_DIR)/dsc; $(COPY) $(DSC_TARGET_DIR)/*.zip $(TARGET_DIR)/dsc/
+
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar
+	@echo "========================= Performing Building RPM shell bundle"
+	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX_RPM).tar "RPM"
+
+
+$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar
+	@echo "========================= Performing Building DEB shell bundle"
+	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX_DEB).tar "DPKG"
+
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
@@ -310,6 +325,22 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	# Build the tar file containing both .rpm and .deb packages
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/*
+
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
+	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm 
+
+	@echo "========================= Performing Building RPM .tar file"
+
+	# Build the tar file containing .rpm packages
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 098/*.rpm 100/*.rpm oss-kits/*
+
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
+	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
+
+	@echo "========================= Performing Building DEB .tar file"
+
+	# Build the tar file containing .deb packages
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 098/*.deb 100/*.deb oss-kits/*
 
 
 $(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm:
