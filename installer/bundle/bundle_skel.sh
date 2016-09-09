@@ -44,28 +44,29 @@ usage()
 {
     echo "usage: $1 [OPTIONS]"
     echo "Options:"
-    echo "  --extract              Extract contents and exit."
-    echo "  --force                Force upgrade (override version checks)."
-    echo "  --install              Install the package from the system."
-    echo "  --purge                Uninstall the package and remove all related data."
-    echo "  --remove               Uninstall the package from the system."
-    echo "  --restart-deps         Reconfigure and restart dependent service(s)."
-    echo "  --source-references    Show source code reference hashes."
-    echo "  --upgrade              Upgrade the package in the system."
-    echo "  --version              Version of this shell bundle."
-    echo "  --version-check        Check versions already installed to see if upgradable."
-    echo "  --debug                use shell debug mode."
-    echo "  --collectd             Enable collectd."
+    echo "  --extract                  Extract contents and exit."
+    echo "  --force                    Force upgrade (override version checks)."
+    echo "  --install                  Install the package from the system."
+    echo "  --purge                    Uninstall the package and remove all related data."
+    echo "  --remove                   Uninstall the package from the system."
+    echo "  --restart-deps             Reconfigure and restart dependent service(s)."
+    echo "  --source-references        Show source code reference hashes."
+    echo "  --upgrade                  Upgrade the package in the system."
+    echo "  --version                  Version of this shell bundle."
+    echo "  --version-check            Check versions already installed to see if upgradable."
+    echo "  --debug                    use shell debug mode."
+    echo "  --collectd                 Enable collectd."
     echo
-    echo "  -w id, --id id         Use workspace ID <id> for automatic onboarding."
-    echo "  -s key, --shared key   Use <key> as the shared key for automatic onboarding."
-    echo "  -d dmn, --domain dmn   Use <dmn> as the OMS domain for onboarding. Optional."
-    echo "                         default: opinsights.azure.com"
-    echo "                         ex: opinsights.azure.us (for FairFax)"
-    echo "  -p conf, --proxy conf  Use <conf> as the proxy configuration."
-    echo "                         ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  -w id, --id id             Use workspace ID <id> for automatic onboarding."
+    echo "  -s key, --shared key       Use <key> as the shared key for automatic onboarding."
+    echo "  -d dmn, --domain dmn       Use <dmn> as the OMS domain for onboarding. Optional."
+    echo "                             default: opinsights.azure.com"
+    echo "                             ex: opinsights.azure.us (for FairFax)"
+    echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
+    echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  -a id, --azure-resource id Use Azure Resource ID <id>."
     echo
-    echo "  -? | -h | --help       shows this usage text."
+    echo "  -? | -h | --help           shows this usage text."
 }
 
 source_references()
@@ -558,6 +559,11 @@ do
             shift 1
             ;;
 
+        -a|--azure-resource)
+            azureResourceID=$2
+            shift 2
+            ;;
+
         -\? | -h | --help)
             usage `basename $0` >&2
             cleanup_and_exit 0
@@ -600,6 +606,10 @@ if [ -n "$onboardID" -a -n "$onboardKey" ]; then
 
     if [ -n "$topLevelDomain" ]; then
         echo "URL_TLD=$topLevelDomain" >> $ONBOARD_FILE
+    fi
+
+    if [ -n "$azureResourceID" ]; then
+        echo "AZURE_RESOURCE_ID=$azureResourceID" >> $ONBOARD_FILE
     fi
 fi
 

@@ -59,7 +59,9 @@ AGENT_GUID=""
 LOG_FACILITY=local0
 CERTIFICATE_UPDATE_ENDPOINT=""
 VERBOSE=0
-
+AZURE_RESOURCE_ID=""
+OMSCLOUD_ID=""
+UUID=""
 USER_ID=`id -u`
 
 usage()
@@ -81,7 +83,9 @@ usage()
     echo
     echo "Enable collectd:"
     echo "$basename -c"
-
+    echo
+    echo "Azure resource ID:"
+    echo "$basename -a <Azure resource ID>"
     clean_exit 1
 }
 
@@ -116,6 +120,9 @@ save_config()
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
     echo DSC_ENDPOINT=$DSC_ENDPOINT >> $CONF_OMSADMIN
     echo OMS_ENDPOINT=https://$WORKSPACE_ID.ods.$URL_TLD/OperationalData.svc/PostJsonDataItems >> $CONF_OMSADMIN
+    echo AZURE_RESOURCE_ID=$AZURE_RESOURCE_ID >> $CONF_OMSADMIN
+    echo OMSCLOUD_ID=$OMSCLOUD_ID | tr -d ' ' >> $CONF_OMSADMIN
+    echo UUID=$UUID | tr -d ' ' >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
 }
 
@@ -175,7 +182,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:brvp:u:c" opt; do
+    while getopts "h?s:w:d:brvp:u:a:c" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -207,6 +214,9 @@ parse_args()
             ;;
         u)
             PROXY_USER=$OPTARG
+            ;;
+        a)
+            AZURE_RESOURCE_ID=$OPTARG
             ;;
         c) 
             COLLECTD=1
@@ -416,7 +426,16 @@ onboard()
 
     set_proxy_setting
 
-    # Send the request to the registration server
+    if [ `which dmidecode > /dev/null 2>&1; echo $?` = 0 ]; then
+        UUID=`dmidecode | grep UUID | sed -e 's/UUID: //'`
+        OMSCLOUD_ID=`dmidecode | grep "Tag: 77" | sed -e 's/Asset Tag: //'`
+    elif [ -f /sys/devices/virtual/dmi/id/chassis_asset_tag ]; then
+        ASSET_TAG=$(cat /sys/devices/virtual/dmi/id/chassis_asset_tag)
+        case "$ASSET_TAG" in
+            77*) OMSCLOUD_ID=$ASSET_TAG ;;       # If the asset tag begins with a 77 this is the azure guid
+        esac
+    fi     
+ 
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
@@ -429,7 +448,7 @@ onboard()
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
         --write-out "%{http_code}\n" $PROXY_SETTING \
         https://${WORKSPACE_ID}.oms.${URL_TLD}/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
-    
+                 
     if [ $error -ne 0 ]; then
         log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
         rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
