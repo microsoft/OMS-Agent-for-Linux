@@ -128,7 +128,7 @@ check_version_installable() {
     # MAJOR matched, so check bounds on MINOR
     if [ $INS_MINOR -lt $AVA_MINOR ]; then
         return 0
-    elif [ $INS_MINOR -gt $INS_MINOR ]; then
+    elif [ $INS_MINOR -gt $AVA_MINOR ]; then
         return 1
     fi
 
