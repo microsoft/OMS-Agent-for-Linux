@@ -76,6 +76,17 @@ module Fluent
       if !file_path.nil?
         headers[OMS::CaseSensitiveString.new("x-ms-meta-FilePath")] = file_path
       end
+
+      azure_resource_id = OMS::Configuration.azure_resource_id
+      if !azure_resource_id.to_s.empty?
+        headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = OMS::Configuration.azure_resource_id
+      end
+      
+      omscloud_id = OMS::Configuration.omscloud_id
+      if !omscloud_id.to_s.empty?
+        headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = OMS::Configuration.omscloud_id
+      end
+
       headers["Content-Type"] = "application/octet-stream"
       headers["Content-Length"] = msg.bytesize.to_s
 

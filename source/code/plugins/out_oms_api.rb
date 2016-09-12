@@ -57,6 +57,17 @@ module Fluent
       headers = {}
       headers[OMS::CaseSensitiveString.new("Log-Type")] = log_type
       headers[OMS::CaseSensitiveString.new("x-ms-date")] = Time.now.utc.httpdate()
+
+      azure_resource_id = OMS::Configuration.azure_resource_id
+      if !azure_resource_id.to_s.empty?
+        headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = OMS::Configuration.azure_resource_id
+      end
+
+      omscloud_id = OMS::Configuration.omscloud_id
+      if !omscloud_id.to_s.empty?
+        headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = OMS::Configuration.omscloud_id
+      end
+
       if time_generated_field_name != ''
         headers[OMS::CaseSensitiveString.new("time-generated-field")] = time_generated_field_name
       end

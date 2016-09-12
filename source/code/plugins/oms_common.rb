@@ -677,6 +677,16 @@ module OMS
       def create_ods_request(path, record, compress, extra_headers=nil, serializer=method(:parse_json_record_encoding))
         headers = extra_headers.nil? ? {} : extra_headers
 
+        azure_resource_id = OMS::Configuration.azure_resource_id
+        if !azure_resource_id.to_s.empty?
+          headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = OMS::Configuration.azure_resource_id
+        end
+
+        omscloud_id = OMS::Configuration.omscloud_id
+        if !omscloud_id.to_s.empty?
+          headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = OMS::Configuration.omscloud_id
+        end
+
         headers["Content-Type"] = "application/json"
         if compress == true
           headers["Content-Encoding"] = "deflate"
