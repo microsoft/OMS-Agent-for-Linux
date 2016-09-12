@@ -15,7 +15,9 @@ module OMS
     @@ODSEndpoint = nil
     @@GetBlobODSEndpoint = nil
     @@NotifyBlobODSEndpoint = nil
-
+    @@OmsCloudId = nil
+    @@AzureResourceId = nil
+ 
     class << self
       
       # test the onboard file existence
@@ -106,6 +108,15 @@ module OMS
           return false
         end
 
+        File.open(conf_path).each_line do |line|
+          if line =~ /AZURE_RESOURCE_ID/
+            @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","")
+          end
+          if line =~ /OMSCLOUD_ID/
+            @@OmsCloudId = line.sub("OMSCLOUD_ID=","")
+          end
+        end
+
         begin
           raw = File.read cert_path
           @@Cert = OpenSSL::X509::Certificate.new raw
@@ -144,6 +155,13 @@ module OMS
         @@NotifyBlobODSEndpoint
       end # getter notify_blob_ods_endpoint
 
+      def azure_resource_id
+        @@AzureResourceId
+      end
+
+      def omscloud_id
+        @@OmsCloudId
+      end
     end # Class methods
         
   end # class Common
