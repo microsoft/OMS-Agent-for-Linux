@@ -50,6 +50,32 @@ elevate()
     return $exit_status
 }
 
+install_libmysqlclient() {
+    MYSQL_PKG_DPKG="libmysqlclient-dev"
+	MYSQL_PKG_RPM="mysql-devel"
+	set +e
+	# If DPKG lives here, assume we use that. Otherwise we use RPM.
+    which dpkg > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        dpkg -s $MYSQL_PKG_DPKG 2> /dev/null | grep Status | grep " installed" 1> /dev/null
+		if [ $? -ne 0 ]; then
+		  echo "Installing package $MYSQL_PKG_DPKG..."
+		  apt-get -y install $MYSQL_PKG_DPKG
+		else
+		  echo "Package $MYSQL_PKG_DPKG already installed. Skipping  installation..."
+		fi
+    else
+        rpm -q $MYSQL_PKG_RPM 2> /dev/null 1> /dev/null
+		if [ $? -ne 0 ]; then
+		  echo "Installing package $MYSQL_PKG_RPM ..."
+		  yum -y install $MYSQL_PKG_RPM
+		else
+		  echo "Package $MYSQL_PKG_RPM already installed. Skipping  installation..."
+		fi
+    fi
+    set -e
+    return $?
+}
 # Helper script to build Ruby properly for OMS agent
 # Also builds fluentd since it lives under the Ruby directory
 
@@ -203,6 +229,7 @@ echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
 echo "Installig Mysql2 gem into Ruby ..."
+install_libmysqlclient
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mysql2-0.4.4.gem
 
 # Now do what we need for FluentD
