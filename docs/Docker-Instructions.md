@@ -72,7 +72,7 @@ Look at the Container top tile – it’s intended to show you a quick overview 
 
 ![DockerOverviewTile](pictures/DockerPics/DockerOverviewTile.png?raw=true)
 
-The top tile shows hosts that are overwhelmed with CPU or Memory usage (>90%), as well as an overview of how many containers you have in the environment and whether they’re failed, running, or stopped. 
+The top tile shows an overview of how many containers you have in the environment and whether they’re failed, running, or stopped. 
 
 ### Dashboard view 
 Click the Container solution tile. From there you’ll see views organized by: 
