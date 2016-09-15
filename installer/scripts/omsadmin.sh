@@ -295,8 +295,10 @@ append_telemetry()
         InContainer=False
     fi
 
-    # Get OMSagent process statistics
-    /opt/omi/bin/omicli wql root/scx "SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'" | grep = > "$PROCESS_STATS"
+    # If a test is not in progress, then get OMSagent process statistics 
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
+        /opt/omi/bin/omicli wql root/scx "SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'" | grep = > "$PROCESS_STATS"
+    fi
 
     PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
     PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
@@ -426,7 +428,7 @@ onboard()
 
     set_proxy_setting
 
-    if [ `which dmidecode > /dev/null 2>&1; echo $?` = 0 ]; then
+    if [ "`which dmidecode > /dev/null 2>&1; echo $?`" = 0 ]; then
         UUID=`dmidecode | grep UUID | sed -e 's/UUID: //'`
         OMSCLOUD_ID=`dmidecode | grep "Tag: 77" | sed -e 's/Asset Tag: //'`
     elif [ -f /sys/devices/virtual/dmi/id/chassis_asset_tag ]; then
@@ -474,6 +476,11 @@ onboard()
     fi
 
     save_config
+
+    # If a test is not in progress then register omsagent as a service and start the agent 
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
+        /opt/microsoft/omsagent/bin/service_control start 
+    fi
 
     if [ -e $METACONFIG_PY ]; then
         if [ "$USER_ID" -eq "0" ]; then
@@ -682,9 +689,9 @@ main()
     fi
 	
     # If we reach this point, onboarding was successful, we can remove the
-    # onboard conf to prevent accidentally re-onboarding
+    # onboard conf to prevent accidentally re-onboarding 
     [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
-
+  
     clean_exit 0
 }
 
