@@ -59,8 +59,13 @@ class LinuxUpdates
         hostOSDetailsMap = getHostOSDetails()
 
         # match string of the form (1 or more non . chars)- followed by a . - (1 or more non . chars) - followed by anything
-        osName = (os_short_name == nil) ? hostOSDetailsMap["OSShortName"].split("_")[0] : os_short_name.split("_")[0]
-        if (os_version == nil)
+        if hostOSDetailsMap.key?("OSShortName")
+            osName = (os_short_name.nil?) ? hostOSDetailsMap["OSShortName"].split("_")[0] : os_short_name.split("_")[0]
+        else
+            osName =  (os_short_name.nil?) ? hostOSDetailsMap["OSFullName"] : os_short_name.split("_")[0]
+        end
+
+        if (os_version.nil?)
             @os_major_version = hostOSDetailsMap["OSVersion"][MAJOR_MINOR_VERSION_REGEX, 1] unless hostOSDetailsMap["OSVersion"].nil?
             @os_minor_version = hostOSDetailsMap["OSVersion"][MAJOR_MINOR_VERSION_REGEX, 2] unless hostOSDetailsMap["OSVersion"].nil?
             @default_version = hostOSDetailsMap["OSVersion"]
