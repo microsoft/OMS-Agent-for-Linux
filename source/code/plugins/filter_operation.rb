@@ -12,7 +12,7 @@ module Fluent
     end
 			
     def filter(tag, time, record)
-      records = @operation_lib.filter_and_wrap(record, time)
+      records = @operation_lib.filter_and_wrap(tag, record, time)
       # only return non empty records
       if !records.empty?
         return records

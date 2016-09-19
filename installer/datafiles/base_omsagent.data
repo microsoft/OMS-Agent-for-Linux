@@ -32,9 +32,10 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/statsd.conf;             installer/conf/omsagent.d/statsd.conf;                 644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/auditlog.conf;           installer/conf/omsagent.d/auditlog.conf;               644; root; root
-/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_workload.conf;           installer/conf/omsagent.d/mysql_workload.conf;               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_workload.conf;     installer/conf/omsagent.d/mysql_workload.conf;         644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mongo.conf;              installer/conf/omsagent.d/mongo.conf;                  644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf;        installer/conf/omsagent.d/vmware_esxi.conf;            644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf;          installer/conf/omsagent.d/operation.conf;              644; root; root
 
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
@@ -88,6 +89,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/mysql_workload_lib.rb;                   source/code/plugins/mysql_workload_lib.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/in_mysql_workload.rb;                    source/code/plugins/in_mysql_workload.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/parser_vmware_logs.rb;                   source/code/plugins/parser_vmware_logs.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/in_dsc_monitor.rb;                       source/code/plugins/in_dsc_monitor.rb;                 744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
@@ -149,6 +151,11 @@ mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
 # Copy monitor plugins conf file by default
 if [ ! -f ${{CONF_DIR}}/omsagent.d/monitor.conf ]; then
    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf ${{CONF_DIR}}/omsagent.d/monitor.conf
+fi
+
+# Copy operation.conf file by default
+if [ ! -f ${{CONF_DIR}}/omsagent.d/operation.conf ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf ${{CONF_DIR}}/omsagent.d/operation.conf
 fi
 
 # Copy over omi_mapping.json
