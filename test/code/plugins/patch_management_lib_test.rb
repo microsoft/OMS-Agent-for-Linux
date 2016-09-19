@@ -31,6 +31,38 @@ class LinuxUpdatesTest < Test::Unit::TestCase
 
   end
 
+  def test_os_short_name()
+    # Ubuntu
+    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_12.04", "12.04"), "Ubuntu_12.04")
+    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_12.10", "12.10"), "Ubuntu_12.04")
+    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_14.04", "14.04"), "Ubuntu_14.04")
+    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_15.10", "15.10"), "Ubuntu_14.04")
+    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_16.04", "16.04"), "Ubuntu_16.04")
+    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_16.10", "16.10"), "Ubuntu_16.04")
+    
+    # CentOS 
+    assert_equal(LinuxUpdates.getOSShortName("CentOS_5.0", "5.0"), "CentOS_5.0") 
+    assert_equal(LinuxUpdates.getOSShortName("CentOS_5.7", "5.7"), "CentOS_5.0") 
+    assert_equal(LinuxUpdates.getOSShortName("CentOS_6.0", "6.0"), "CentOS_6.0") 
+    assert_equal(LinuxUpdates.getOSShortName("CentOS_6.7", "6.7"), "CentOS_6.0")
+    assert_equal(LinuxUpdates.getOSShortName("CentOS_7.0", "7.0"), "CentOS_7.0") 
+    assert_equal(LinuxUpdates.getOSShortName("CentOS_7.1", "7.1"), "CentOS_7.0")
+
+    # RHEL
+    assert_equal(LinuxUpdates.getOSShortName("RHEL_5.0", "5.0"), "RHEL_5.0")
+    assert_equal(LinuxUpdates.getOSShortName("RHEL_5.5", "5.5"), "RHEL_5.0")
+    assert_equal(LinuxUpdates.getOSShortName("RHEL_6.0", "6.0"), "RHEL_6.0")
+    assert_equal(LinuxUpdates.getOSShortName("RHEL_6.6", "6.6"), "RHEL_6.0")
+    assert_equal(LinuxUpdates.getOSShortName("RHEL_7.0", "7.0"), "RHEL_7.0")
+    assert_equal(LinuxUpdates.getOSShortName("RHEL_7.7", "7.7"), "RHEL_7.0")
+    
+    # SLES
+    assert_equal(LinuxUpdates.getOSShortName("SUSE_11.0", "11.0"), "SUSE_11.0")
+    assert_equal(LinuxUpdates.getOSShortName("SUSE_11.10", "11.10"), "SUSE_11.0")
+    assert_equal(LinuxUpdates.getOSShortName("SUSE_12.6", "12.6"), "SUSE_12.0")
+    assert_equal(LinuxUpdates.getOSShortName("SUSE_12.0", "12.0"), "SUSE_12.0")
+  end
+
   def test_strToXML
     xml = LinuxUpdates.strToXML(@installed_packages_xml_str)
     assert(xml.is_a?(REXML::Document), "Expected return type is REXML::Document")
