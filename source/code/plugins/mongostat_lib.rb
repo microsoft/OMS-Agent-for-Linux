@@ -4,36 +4,39 @@ module MongoStatModule
     require_relative 'oms_common'
 
     # sample mongostat record
-    #$ mongostat --all
-    # insert query update delete getmore command flushes mapped  vsize   res non-mapped faults qr|qw ar|aw netIn netOut conn     time
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:07
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:08
-    # *0    *0     *0     *0       0     3|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  212b    20k    2 16:24:09
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:10
-    # *0    *0     *0     *0       0     3|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  212b    20k    2 16:24:11
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:12
-    # *0    *0     *0     *0       0     3|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  216b    20k    2 16:24:13
-    # *0    *0     *0     *0       0     3|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  212b    20k    2 16:24:14
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:15
-    # *0    *0     *0     *0       0     3|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  212b    20k    2 16:24:16
-    # insert query update delete getmore command flushes mapped  vsize   res non-mapped faults qr|qw ar|aw netIn netOut conn     time
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:17
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:18
-    # *0    *0     *0     *0       0     3|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  212b    20k    2 16:24:19
-    # *0    *0     *0     *0       0     2|0       0  80.0M 358.0M 25.0M     278.0M      0   0|0   0|0  158b    20k    2 16:24:20
+    # $ mongostat --all
+    # connected to: 127.0.0.1
+    # insert  query update delete getmore command flushes mapped  vsize    res non-mapped faults  locked db idx miss %     qr|qw   ar|aw  netIn netOut  conn       time
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:34
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:35
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:36
+    #     *0     *0     *0     *0       0     2|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0   124b     5k     2   18:19:37
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:38
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:39
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:40
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:41
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:42
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:43
+    # insert  query update delete getmore command flushes mapped  vsize    res non-mapped faults  locked db idx miss %     qr|qw   ar|aw  netIn netOut  conn       time
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:44
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:45
+    #     *0     *0     *0     *0       0     1|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0    62b     2k     2   18:19:46
+    #     *0     *0     *0     *0       0     2|0       0   160m   605m    33m       445m      0 local:0.0%          0       0|0     0|0   124b     5k     2   18:19:47
 
     def transform_data(record)
-      arr = record.split
       if record.start_with?('insert')
-        #@counters saves the state of the counters as the counternames get printed at fixed intervals
-        #reset values to [] when counter names are reset
-        @counters = arr
+        record.sub!("locked db", "locked-db") if record.include? "locked db"
+        record.sub!("idx miss %", "idx-miss-%") if record.include? "idx miss %"
+
+        # @counters saves the state of the counters as the counternames get printed at fixed intervals
+        # reset values to [] when counter names are reset
+        @counters = record.split
         @values = []
       else
-        @values = arr
+        @values = record.split
       end
 
-      if @values and @values.length > 0
+      if @counters && @values && @values.length > 0
         rec = Hash[@counters.zip @values]
         transformed_rec = {}
         begin
@@ -46,6 +49,8 @@ module MongoStatModule
           transformed_rec["Resident Memory Process Usage (MB)"] = rec["res"].delete("M") 
           transformed_rec["Get More Operations/sec"] = rec["getmore"]
           transformed_rec["Page Faults/sec"] = rec["faults"]
+          transformed_rec["Global Write Lock %"] = rec["locked-db"] if rec.has_key?("locked-db")
+          transformed_rec["% Index Access Miss"] = rec["idx-miss-%"] if rec.has_key?("idx-miss-%")
           transformed_rec["Total Open Connections"] = rec["conn"]
           transformed_rec["Replication Status"] = rec["repl"] if rec.has_key?("repl")
           transformed_rec["Network In (Bytes)"] = to_bytes(rec["netIn"])
