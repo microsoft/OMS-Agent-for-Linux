@@ -16,7 +16,7 @@
 
   
 5. Configure Cisco ASA event forwarding to the OMS Agent  
-	*The required events need to be forwarded to port 25225 on the agent machine to be collected by the agent.*
+	*The required events need to be forwarded to port 25226 on the agent machine to be collected by the agent.*
 
 	*Below is an example configuration for forwarding all events from the local4 facility. You can modify the configuration to fit your local settings.* 
 	
@@ -24,7 +24,7 @@
 	  In directory ```/etc/rsyslog.d/```, create new file ```cisco-config-omsagent.conf``` with the following content:
 	```
 	#OMS_facility = local4
-	local4.debug       @127.0.0.1:25225
+	local4.debug       @127.0.0.1:25226
 	```  
 	
 	
@@ -33,7 +33,7 @@
 	```
 	#OMS_facility = local4
 	filter f_local4_oms { facility(local4); };
-	destination cisco_oms { tcp("127.0.0.1" port(25225)); };
+	destination cisco_oms { tcp("127.0.0.1" port(25226)); };
 	log { source(src); filter(f_local4_oms); destination(cisco_oms); };
 	```
 
