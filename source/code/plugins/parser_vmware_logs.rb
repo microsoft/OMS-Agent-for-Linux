@@ -40,12 +40,14 @@ module Fluent
               # Regex for VMName, DataCenter, UserName when a VM is created/removed
               details = nil
               if record['SyslogMessage'].match(/.*Removed\s.*\son\s.*\sfrom\s.*/)
+                record['Operation'] = 'Delete VM'
                 details = record['SyslogMessage'].match(/^.*user=(?<UserName>\S*)\]\s.*Removed\s(?<VMName>.*)\son\s.*\sfrom\s(?<DataCenter>.*).*$/)
               elsif record['SyslogMessage'].match(/.*Created\s.*\son\s.*\sin\s.*/)
+                record['Operation'] = 'Create VM'
                 details = record['SyslogMessage'].match(/^.*user=(?<UserName>\S*)\]\s.*Created\svirtual\smachine\s(?<VMName>.*)\son\s.*\in\s(?<DataCenter>.*).*$/)
               end
 
-              if details
+              if !details.nil?
                 record['UserName'] = details['UserName']
                 record['VMName'] = details['VMName']
                 record['DataCenter'] = details['DataCenter']

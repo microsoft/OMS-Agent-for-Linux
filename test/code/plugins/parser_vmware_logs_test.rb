@@ -5,10 +5,6 @@ require_relative 'omstestlib'
 
 class VmwareSyslogParserTest < Test::Unit::TestCase
 
-  def setup
-    # Fluent::Test.setup
-  end
-
   CONFIG = %[
     format vmware_parser
     time_format %Y-%m-%dT%H:%M:%S.%L%Z
@@ -58,6 +54,26 @@ class VmwareSyslogParserTest < Test::Unit::TestCase
       assert_equal record['ESXIFailure'], 'scsi.device.io.latency.high'
       assert_equal record['Device'], 'naa.60a9800041764b6c463f437868556b7a'
       assert_equal record['StorageLatency'], '28022'
+    end
+
+    # Parse fields when VM is Created
+    vmcreation = create_driver()
+    text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 hostd: info hostd[70840B70] [Originator@6876 sub=Vimsvc.ha-eventmgr opID=58B46869-0000005E-46-3d-df-5944 user=vpxuser:VSPHERE.LOCAL\Administrator] Event 616 : Created virtual machine TestVM2 on ESXik.corp.microsoft.com in ha-datacenter'
+    vmcreation.instance.parse(text) do |_time, record|
+      assert_equal record['UserName'], 'vpxuser:VSPHERE.LOCAL\Administrator'
+      assert_equal record['VMName'], 'TestVM2'
+      assert_equal record['DataCenter'], 'ha-datacenter'
+      assert_equal record['Operation'], 'Create VM'
+    end
+
+    # Parse fields when VM is Removed
+    vmdeletion = create_driver()
+    text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 hostd: info hostd[FFF35AE0] [Originator@6876 sub=Vimsvc.ha-eventmgr opID=A0242BED-000000C8-d6-d8-2b13 user=vpxuser:VSPHERE.LOCAL\Administrator] Event 340 : Removed testvm4 on ESXik.corp.microsoft.com from ha-datacenter'
+    vmdeletion.instance.parse(text) do |_time, record|
+      assert_equal record['UserName'], 'vpxuser:VSPHERE.LOCAL\Administrator'
+      assert_equal record['VMName'], 'testvm4'
+      assert_equal record['DataCenter'], 'ha-datacenter'
+      assert_equal record['Operation'], 'Delete VM'
     end
   end
 
