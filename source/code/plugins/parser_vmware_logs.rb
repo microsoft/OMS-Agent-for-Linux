@@ -37,6 +37,25 @@ module Fluent
                 end
               end
 
+              # Regex for VMName, DataCenter, UserName when a VM is created/removed
+              if record['SyslogMessage'].match(/.*Removed\s.*\son\s.*\sfrom\s.*/)
+                details = record['SyslogMessage'].match(/^.*user=(?<UserName>\S*)\]\s.*Removed\s(?<VMName>.*)\son\s.*\sfrom\s(?<DataCenter>.*).*$/)
+
+                if details
+                  record['UserName'] = details['UserName']
+                  record['VMName'] = details['VMName']
+                  record['DataCenter'] = details['DataCenter']
+                end
+              elsif record['SyslogMessage'].match(/.*Created\s.*\son\s.*\sin\s.*/)
+                details = record['SyslogMessage'].match(/^.*user=(?<UserName>\S*)\]\s.*Created\svirtual\smachine\s(?<VMName>.*)\son\s.*\in\s(?<DataCenter>.*).*$/)
+
+                if details
+                  record['UserName'] = details['UserName']
+                  record['VMName'] = details['VMName']
+                  record['DataCenter'] = details['DataCenter']
+                end
+              end
+
               # Regex for Storage Latency. Example string: I/O latency increased from average value of 1343 microseconds to 28022 microseconds.
               if ['latency', 'average value', 'microseconds'].all? { |s| record['SyslogMessage'].include? s }
                 record['StorageLatency'] = record['SyslogMessage'].match(/to\s[0-9]+\smicroseconds/).to_s.split(' ')[1]

@@ -5,10 +5,6 @@ require_relative 'omstestlib'
 
 class VmwareSyslogParserTest < Test::Unit::TestCase
 
-  def setup
-    # Fluent::Test.setup
-  end
-
   CONFIG = %[
     format vmware_parser
     time_format %Y-%m-%dT%H:%M:%S.%L%Z
