@@ -39,8 +39,8 @@ module Fluent
       super
     end
 
-    def handle_record(tag, record)
-      @log.trace "Handling record : #{tag}"
+    def handle_record(key, record)
+      @log.trace "Handling record : #{key}"
       req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record, @compress)
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
@@ -52,7 +52,7 @@ module Fluent
         ends = Time.now
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
-        @log.debug "Success sending #{tag} x #{count} in #{time.round(2)}s"
+        @log.debug "Success sending #{key} x #{count} in #{time.round(2)}s"
         return true
       end
     rescue OMS::RetryRequestException => e
@@ -91,25 +91,31 @@ module Fluent
       datatypes = {}
       unmergable_records = []
       chunk.msgpack_each {|(tag, record)|
-        if datatypes.has_key?(tag)
-          # Merge instances of the same datatype together
-          datatypes[tag]['DataItems'].concat(record['DataItems'])
-        else
-          if record.has_key?('DataItems')
-            datatypes[tag] = record
+        if record.has_key?('DataType') and record.has_key?('IPName')
+          key = "#{record['DataType']}.#{record['IPName']}".upcase
+
+          if datatypes.has_key?(key)
+            # Merge instances of the same datatype and ipname together
+            datatypes[key]['DataItems'].concat(record['DataItems'])
           else
-            unmergable_records << [tag, record]
+            if record.has_key?('DataItems')
+              datatypes[key] = record
+            else
+              unmergable_records << [key, record]
+            end
           end
+        else
+          @log.warn "Missing DataType or IPName field in record from tag '#{tag}'"
         end
       }
 
-      datatypes.each do |tag, record|
-        handle_record(tag, record)
+      datatypes.each do |key, record|
+        handle_record(key, record)
       end
 
       @log.trace "Handling #{unmergable_records.size} unmergeable records"
-      unmergable_records.each { |tag, record|
-        handle_record(tag, record)
+      unmergable_records.each { |key, record|
+        handle_record(key, record)
       }
     end
 

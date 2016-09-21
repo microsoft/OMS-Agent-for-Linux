@@ -53,13 +53,15 @@ AGENT_USER=omsagent
 AGENT_GROUP=omsagent
 
 # Default settings
-URL_TLD=opinsights.azure
+URL_TLD=opinsights.azure.com
 WORKSPACE_ID=""
 AGENT_GUID=""
 LOG_FACILITY=local0
 CERTIFICATE_UPDATE_ENDPOINT=""
 VERBOSE=0
-
+AZURE_RESOURCE_ID=""
+OMSCLOUD_ID=""
+UUID=""
 USER_ID=`id -u`
 
 usage()
@@ -68,7 +70,7 @@ usage()
     echo
     echo "Maintenance tool for OMS:"
     echo "Onboarding:"
-    echo "$basename -w <workspace id> -s <shared key>"
+    echo "$basename -w <workspace id> -s <shared key> [-d <top level domain>]"
     echo
     echo "Heartbeat:"
     echo "$basename -b"
@@ -81,7 +83,9 @@ usage()
     echo
     echo "Enable collectd:"
     echo "$basename -c"
-
+    echo
+    echo "Azure resource ID:"
+    echo "$basename -a <Azure resource ID>"
     clean_exit 1
 }
 
@@ -115,7 +119,10 @@ save_config()
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
     echo DSC_ENDPOINT=$DSC_ENDPOINT >> $CONF_OMSADMIN
-    echo OMS_ENDPOINT=https://$WORKSPACE_ID.ods.$URL_TLD.com/OperationalData.svc/PostJsonDataItems >> $CONF_OMSADMIN
+    echo OMS_ENDPOINT=https://$WORKSPACE_ID.ods.$URL_TLD/OperationalData.svc/PostJsonDataItems >> $CONF_OMSADMIN
+    echo AZURE_RESOURCE_ID=$AZURE_RESOURCE_ID >> $CONF_OMSADMIN
+    echo OMSCLOUD_ID=$OMSCLOUD_ID | tr -d ' ' >> $CONF_OMSADMIN
+    echo UUID=$UUID | tr -d ' ' >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
 }
 
@@ -131,6 +138,12 @@ load_config()
     if [ -z "$WORKSPACE_ID" -o -z "$AGENT_GUID" ]; then
         log_error "Missing required field from configuration file: $CONF_OMSADMIN"
         clean_exit 1
+    fi
+
+    # In the upgrade scenario, the URL_TLD doesn't have the .com part
+    # Append it to make it backward-compatible
+    if [ "$URL_TLD" = "opinsights.azure" -o "$URL_TLD" = "int2.microsoftatlanta-int" ]; then
+        URL_TLD="${URL_TLD}.com"
     fi
 }
 
@@ -169,7 +182,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:brvp:u:c" opt; do
+    while getopts "h?s:w:d:brvp:u:a:c" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -181,6 +194,10 @@ parse_args()
         w)
             ONBOARDING=1
             WORKSPACE_ID=$OPTARG
+            ;;
+        d)
+            ONBOARDING=1
+            URL_TLD=$OPTARG
             ;;
         b)
             HEARTBEAT=1
@@ -197,6 +214,9 @@ parse_args()
             ;;
         u)
             PROXY_USER=$OPTARG
+            ;;
+        a)
+            AZURE_RESOURCE_ID=$OPTARG
             ;;
         c) 
             COLLECTD=1
@@ -275,13 +295,15 @@ append_telemetry()
         InContainer=False
     fi
 
-    # Get OMSagent process statistics
-    /opt/omi/bin/omicli wql root/scx "SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'" | grep = > "$PROCESS_STATS"
+    # If a test is not in progress, and agent is already onboarded, then get OMSagent process statistics
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" -a -f "$CONF_OMSADMIN" ]; then
+        /opt/omi/bin/omicli wql root/scx "SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'" | grep = > "$PROCESS_STATS"
 
-    PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
-    PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
-    UsedMemory=`grep " UsedMemory" $PROCESS_STATS | cut -d= -f2`
-    PercentUsedMemory=`grep PercentUsedMemory $PROCESS_STATS | cut -d= -f2`
+        PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
+        PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
+        UsedMemory=`grep " UsedMemory" $PROCESS_STATS | cut -d= -f2`
+        PercentUsedMemory=`grep PercentUsedMemory $PROCESS_STATS | cut -d= -f2`
+    fi
 
     # We grep instead of sourcing because parentheses in the file cause syntax errors
     OSName=`grep OSName $OS_INFO | cut -d= -f2`
@@ -294,8 +316,10 @@ append_telemetry()
     echo "      <ProcessorArchitecture>x64</ProcessorArchitecture>" >> $1
     echo "      <Version>$OSVersion</Version>" >> $1
     echo "      <InContainer>$InContainer</InContainer>" >> $1
-    echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\"" >> $1
-    echo "       UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" -a -f "$CONF_OMSADMIN" ]; then
+        echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\"" >> $1
+        echo "       UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
+    fi
     echo "   </OperatingSystem>" >> $1
 }
 
@@ -339,13 +363,19 @@ set_proxy_setting()
 onboard()
 {
     if [ $VERBOSE -eq 1 ]; then
-        echo "Workspace ID:  $WORKSPACE_ID"
-        echo "Shared key:    $SHARED_KEY"
+        echo "Workspace ID:      $WORKSPACE_ID"
+        echo "Shared key:        $SHARED_KEY"
+        echo "Top Level Domain:  $URL_TLD"
     fi
 
     local error=0
     if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
         log_error "Missing Wokspace ID or Shared Key information for onboarding"
+        clean_exit 1
+    fi
+
+    if echo "$WORKSPACE_ID" | grep -Eqv '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'; then
+        log_error "The Workspace ID is not valid"
         clean_exit 1
     fi
 
@@ -400,7 +430,16 @@ onboard()
 
     set_proxy_setting
 
-    # Send the request to the registration server
+    if [ "`which dmidecode > /dev/null 2>&1; echo $?`" = 0 ]; then
+        UUID=`dmidecode | grep UUID | sed -e 's/UUID: //'`
+        OMSCLOUD_ID=`dmidecode | grep "Tag: 77" | sed -e 's/Asset Tag: //'`
+    elif [ -f /sys/devices/virtual/dmi/id/chassis_asset_tag ]; then
+        ASSET_TAG=$(cat /sys/devices/virtual/dmi/id/chassis_asset_tag)
+        case "$ASSET_TAG" in
+            77*) OMSCLOUD_ID=$ASSET_TAG ;;       # If the asset tag begins with a 77 this is the azure guid
+        esac
+    fi     
+ 
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
@@ -412,10 +451,11 @@ onboard()
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
         --write-out "%{http_code}\n" $PROXY_SETTING \
-        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
-    
+        https://${WORKSPACE_ID}.oms.${URL_TLD}/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
+                 
     if [ $error -ne 0 ]; then
         log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
+        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
         return 1
     fi
 
@@ -429,13 +469,20 @@ onboard()
         else
             log_error "Error onboarding. HTTP code $RET_CODE"
         fi
+        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
         return 1
     else
         log_error "Error onboarding. HTTP code $RET_CODE"
+        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
         return 1
     fi
 
     save_config
+
+    # If a test is not in progress then register omsagent as a service and start the agent 
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
+        /opt/microsoft/omsagent/bin/service_control start 
+    fi
 
     if [ -e $METACONFIG_PY ]; then
         if [ "$USER_ID" -eq "0" ]; then
@@ -519,7 +566,7 @@ heartbeat()
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_HEARTBEAT" $CURL_VERBOSE \
         --write-out "%{http_code}\n" $PROXY_SETTING \
-        https://${WORKSPACE_ID}.oms.${URL_TLD}.com/AgentService.svc/LinuxAgentTopologyRequest`
+        https://${WORKSPACE_ID}.oms.${URL_TLD}/AgentService.svc/LinuxAgentTopologyRequest`
 
     if [ "$RET_CODE" = "200" ]; then
         apply_certificate_update_endpoint $RESP_HEARTBEAT
@@ -644,9 +691,9 @@ main()
     fi
 	
     # If we reach this point, onboarding was successful, we can remove the
-    # onboard conf to prevent accidentally re-onboarding
+    # onboard conf to prevent accidentally re-onboarding 
     [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
-
+  
     clean_exit 0
 }
 

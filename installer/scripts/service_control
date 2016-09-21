@@ -18,6 +18,7 @@
 
 LOGFILE=/var/opt/microsoft/omsagent/log/omsagent.log
 PIDFILE=/var/opt/microsoft/omsagent/run/omsagent.pid
+OMSADMIN_CONF=/etc/opt/microsoft/omsagent/conf/omsadmin.conf
 
 verify_privileges()
 {
@@ -42,6 +43,14 @@ is_omsagent_running()
         return 0
     else
         return 1
+    fi
+}
+
+exit_if_agent_not_onboarded()
+{
+    if [ ! -f $OMSADMIN_CONF ]; then
+        echo "Warning: Agent is not onboarded. omsagent cannot be registered as a service."
+        exit 0 
     fi
 }
 
@@ -93,6 +102,8 @@ start_omsagent_process()
 
 start_omsagent()
 {
+    exit_if_agent_not_onboarded
+    enable_omsagent_service
     is_omsagent_running
     [ $? -ne 0 ] && return
 
@@ -137,10 +148,14 @@ stop_omsagent()
 
 restart_omsagent()
 {
+    exit_if_agent_not_onboarded
+    
     is_omsagent_running
     if [ $? -eq 0 ]; then
         start_omsagent
         return
+    else
+        enable_omsagent_service
     fi
 
     # If systemd lives here, then we have a systemd unit file
@@ -191,30 +206,33 @@ find_systemd_dir()
 
 enable_omsagent_service()
 {
-    echo "Configuring OMS agent service ..."
-    if pidof systemd 1> /dev/null 2> /dev/null; then
-        # systemd
-        local systemd_dir=$(find_systemd_dir)
-        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd ${systemd_dir}/omsagent.service
-        /bin/systemctl daemon-reload
-        /bin/systemctl -q enable omsagent
-    else
-        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
-
-        if [ -x /usr/sbin/update-rc.d ]; then
-            update-rc.d omsagent defaults > /dev/null
-        elif [ -x /usr/lib/lsb/install_initd ]; then
-            /usr/lib/lsb/install_initd /etc/init.d/omsagent
-        elif [ -x /sbin/chkconfig ]; then
-            chkconfig --add omsagent > /dev/null
+    exit_if_agent_not_onboarded
+    if [ ! -f /etc/opt/microsoft/omsagent/conf/.service_registered ] && [ -f $OMSADMIN_CONF ]; then
+        echo "Configuring OMS agent service ..."
+        if pidof systemd 1> /dev/null 2> /dev/null; then
+            # systemd
+            local systemd_dir=$(find_systemd_dir)
+            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd ${systemd_dir}/omsagent.service
+            /bin/systemctl daemon-reload
+            /bin/systemctl -q enable omsagent
         else
-            echo "Could not find a service controller to configure the OMS Agent Service."
-            exit 1
-        fi
-    fi
+            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
 
-    start_omsagent
+            if [ -x /usr/sbin/update-rc.d ]; then
+                update-rc.d omsagent defaults > /dev/null
+            elif [ -x /usr/lib/lsb/install_initd ]; then
+                /usr/lib/lsb/install_initd /etc/init.d/omsagent
+            elif [ -x /sbin/chkconfig ]; then
+                chkconfig --add omsagent > /dev/null
+            else
+                echo "Could not find a service controller to configure the OMS Agent Service."
+                exit 1
+            fi
+        fi
+        touch  /etc/opt/microsoft/omsagent/conf/.service_registered
+    fi 
 }
+
 
 disable_omsagent_service()
 {
@@ -243,6 +261,7 @@ disable_omsagent_service()
 
         rm /etc/init.d/omsagent
     fi
+    rm -f /etc/opt/microsoft/omsagent/conf/.service_registered
 }
 
 case "$1" in

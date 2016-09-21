@@ -1,5 +1,6 @@
 require 'test/unit'
 require_relative '../../../source/code/plugins/collectd_lib'
+require_relative 'omstestlib'
 
 class CollectdTest < Test::Unit::TestCase 
 
@@ -52,6 +53,27 @@ class CollectdTest < Test::Unit::TestCase
    expected_record = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Host"=>"testhost", "ObjectName"=>"ps_state", "InstanceName"=>"_Total", "Collections"=>[{"CounterName"=>"running.value", "Value"=>0}]}]}
    validate_record_helper(expected_record, input_record, "Record filter failed!")
   
+  end
+
+
+  def test_validate_record_with_null_metric
+    #case when type_instance=""
+    $log = OMS::MockLog.new
+    input_record = {
+                "values"=>[nil,4447],
+                "dstypes"=>["derive","derive"],
+                "dsnames"=>["rx","tx"],
+                "interval"=>10.0,
+                "host"=>"testhost",
+                "plugin"=>"interface",
+                "plugin_instance"=>"lo",
+                "type"=>"if_packets",
+                "type_instance"=>""
+         }
+    expected_record = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Host"=>"testhost", "ObjectName"=>"if_packets", "InstanceName"=>"lo", "Collections"=>[{"CounterName"=>"tx", "Value"=>4447}]}]}
+    validate_record_helper(expected_record, input_record, "Record filter failed!")
+    assert_equal($log.logs[0], "Dropping null value for counter rx.")
+    $log.clear
   end
 
   def validate_record_helper(expected, input, error_msg)

@@ -202,6 +202,9 @@ export PATH=${RUBY_DESTDIR}/bin:$PATH
 echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
+echo "Installig Mysql2 gem into Ruby ..."
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mysql2-0.4.4.gem
+
 # Now do what we need for FluentD
 
 cd ${FLUENTD_DIR}

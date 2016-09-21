@@ -219,7 +219,8 @@
             },
             {
                 "CimPropertyName": "UsedMemory",
-                "CounterName": "Used Memory"
+                "CounterName": "Used Memory",
+                "DisplayName": "Used Memory kBytes"
             },
             {
                 "CimPropertyName": "VirtualSharedMemory",
@@ -385,10 +386,6 @@
             {
                 "CimPropertyName": "FullTableScanPct",
                 "CounterName": "Full Table Scan Pct"
-            },
-            {
-                "CimPropertyName": "IDB_BP_UsePct",
-                "CounterName": "InnoDB Buffer Pool Use Pct"
             },
             {
                 "CimPropertyName": "ServerDiskUseInBytes",

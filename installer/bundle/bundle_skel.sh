@@ -28,7 +28,6 @@ ONBOARD_FILE=/etc/omsagent-onboard.conf
 DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
-COLLECTD_DIR="/etc/collectd/collectd.conf.d/"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -37,33 +36,37 @@ OMI_PKG=<OMI_PKG>
 OMS_PKG=<OMS_PKG>
 DSC_PKG=<DSC_PKG>
 SCX_PKG=<SCX_PKG>
+INSTALL_TYPE=<INSTALL_TYPE>
 SCRIPT_LEN=<SCRIPT_LEN>
 SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>
-
 
 usage()
 {
     echo "usage: $1 [OPTIONS]"
     echo "Options:"
-    echo "  --extract              Extract contents and exit."
-    echo "  --force                Force upgrade (override version checks)."
-    echo "  --install              Install the package from the system."
-    echo "  --purge                Uninstall the package and remove all related data."
-    echo "  --remove               Uninstall the package from the system."
-    echo "  --restart-deps         Reconfigure and restart dependent service(s)."
-    echo "  --source-references    Show source code reference hashes."
-    echo "  --upgrade              Upgrade the package in the system."
-    echo "  --version              Version of this shell bundle."
-    echo "  --version-check        Check versions already installed to see if upgradable."
-    echo "  --debug                use shell debug mode."
-    echo "  --collectd             Enable collectd."
+    echo "  --extract                  Extract contents and exit."
+    echo "  --force                    Force upgrade (override version checks)."
+    echo "  --install                  Install the package from the system."
+    echo "  --purge                    Uninstall the package and remove all related data."
+    echo "  --remove                   Uninstall the package from the system."
+    echo "  --restart-deps             Reconfigure and restart dependent service(s)."
+    echo "  --source-references        Show source code reference hashes."
+    echo "  --upgrade                  Upgrade the package in the system."
+    echo "  --version                  Version of this shell bundle."
+    echo "  --version-check            Check versions already installed to see if upgradable."
+    echo "  --debug                    use shell debug mode."
+    echo "  --collectd                 Enable collectd."
     echo
-    echo "  -w id, --id id         Use workspace ID <id> for automatic onboarding."
-    echo "  -s key, --shared key   Use <key> as the shared key for automatic onboarding."
-    echo "  -p conf, --proxy conf  Use <conf> as the proxy configuration."
-    echo "                         ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  -w id, --id id             Use workspace ID <id> for automatic onboarding."
+    echo "  -s key, --shared key       Use <key> as the shared key for automatic onboarding."
+    echo "  -d dmn, --domain dmn       Use <dmn> as the OMS domain for onboarding. Optional."
+    echo "                             default: opinsights.azure.com"
+    echo "                             ex: opinsights.azure.us (for FairFax)"
+    echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
+    echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  -a id, --azure-resource id Use Azure Resource ID <id>."
     echo
-    echo "  -? | -h | --help       shows this usage text."
+    echo "  -? | -h | --help           shows this usage text."
 }
 
 source_references()
@@ -126,7 +129,7 @@ check_version_installable() {
     # MAJOR matched, so check bounds on MINOR
     if [ $INS_MINOR -lt $AVA_MINOR ]; then
         return 0
-    elif [ $INS_MINOR -gt $INS_MINOR ]; then
+    elif [ $INS_MINOR -gt $AVA_MINOR ]; then
         return 1
     fi
 
@@ -287,6 +290,43 @@ pkg_upd_list() {
     fi
 }
 
+get_arch()
+{
+    if [ $(uname -m) = 'x86_64' ]; then
+        echo "x64"
+    else
+        echo "x86"
+    fi
+}
+
+compare_arch()
+{
+    #check if the user is trying to install the correct bundle (x64 vs. x86) 
+    echo "Checking host architecture ..."
+    AR=$(get_arch)
+    
+    case $OMS_PKG in
+        *"$AR") 
+            ;;
+        *)         
+            echo "Cannot install $OMS_PKG on ${AR} platform"
+            cleanup_and_exit 1
+            ;;
+    esac
+}
+
+compare_install_type()
+{   
+    # If the bundle has an INSTALL_TYPE, check if the bundle being installed 
+    # matches the installer on the machine (rpm vs.dpkg)
+    if [ ! -z "$INSTALL_TYPE" ]; then
+        if [ $INSTALLER != $INSTALL_TYPE ]; then
+           echo "This kit is intended for ${INSTALL_TYPE} systems and cannot install on ${INSTALLER} systems"
+           cleanup_and_exit 1
+        fi
+    fi
+}
+
 python_ctypes_installed() {
     # Check for Python ctypes library (required for omsconfig)
 
@@ -371,11 +411,14 @@ shouldInstall_omsconfig()
 ulinux_detect_installer
 set -e
 
-onboardINT=0
-
 while [ $# -ne 0 ]
 do
     case "$1" in
+        -d|--domain)
+            topLevelDomain=$2
+            shift 2
+            ;;
+
         --extract-script)
             # hidden option, not part of usage
             # echo "  --extract-script FILE  extract the script to FILE."
@@ -482,11 +525,6 @@ do
             exit 0
             ;;
 
-        --int)
-            onboardINT=1
-            shift 1
-            ;;
-
         --upgrade)
             verifyNoInstallationOption
             verifyPrivileges "upgrade"
@@ -512,13 +550,18 @@ do
             ;;
 
         --collectd)
-            if [ -d "${COLLECTD_DIR}" ]; then
+            if [ -f /etc/collectd.conf -o -f /etc/collectd/collectd.conf ]; then
                 touch /etc/collectd_marker.conf
             else
-                echo "${COLLECTD_DIR} - directory does not exist. Please make sure collectd is installed properly"
+                echo "collectd.conf does not exist. Please make sure collectd is installed properly"
                 cleanup_and_exit 1
             fi
             shift 1
+            ;;
+
+        -a|--azure-resource)
+            azureResourceID=$2
+            shift 2
             ;;
 
         -\? | -h | --help)
@@ -540,19 +583,13 @@ if [ -z "${installMode}" ]; then
 fi
 
 ONBOARD_ERROR=0
+[ -n "$topLevelDomain" ] && [ -z "$onboardID" -o -z "$onboardKey" ] && ONBOARD_ERROR=1
 [ -z "$onboardID" -a -n "$onboardKey" ] && ONBOARD_ERROR=1
 [ -n "$onboardID" -a -z "$onboardKey" ] && ONBOARD_ERROR=1
 
 if [ "$ONBOARD_ERROR" -ne 0 ]; then
     echo "Must specify both workspace ID (--id) and key (--shared) to onboard" 1>& 2
     exit 1
-fi
-
-if [ "$onboardINT" -ne 0 ]; then
-    if [ -z "$onboardID" -o -z "$onboardKey" ]; then
-        echo "Must specify both workspace ID (--id) and key (--shared) to internally onboard" 1>& 2
-        exit 1
-    fi
 fi
 
 if [ -n "$onboardID" -a -n "$onboardKey" ]; then
@@ -567,8 +604,12 @@ if [ -n "$onboardID" -a -n "$onboardKey" ]; then
         echo "PROXY=$proxy" >> $ONBOARD_FILE
     fi
 
-    if [ "$onboardINT" -ne 0 ]; then
-        echo "URL_TLD=int2.microsoftatlanta-int" >> $ONBOARD_FILE
+    if [ -n "$topLevelDomain" ]; then
+        echo "URL_TLD=$topLevelDomain" >> $ONBOARD_FILE
+    fi
+
+    if [ -n "$azureResourceID" ]; then
+        echo "AZURE_RESOURCE_ID=$azureResourceID" >> $ONBOARD_FILE
     fi
 fi
 
@@ -649,9 +690,8 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
         fi
     fi
-    if [ -f ${COLLECTD_DIR}/oms.conf ]; then
-        rm ${COLLECTD_DIR}/oms.conf > /dev/null 2> /dev/null
-    fi
+    rm -f /etc/collectd.d/oms.conf > /dev/null 2> /dev/null
+    rm -f /etc/collectd/collectd.conf.d/oms.conf > /dev/null 2> /dev/null
 fi
 
 if [ -n "${shouldexit}" ]
@@ -668,6 +708,8 @@ fi
 # Pre-flight if omsconfig installation will fail ...
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
+    compare_install_type
+    compare_arch 
     python_ctypes_installed
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then

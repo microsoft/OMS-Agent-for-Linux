@@ -19,12 +19,14 @@ set +x
 
 usage()
 {
-    echo "usage: $0 target-dir intermediate-dir tar-file"
+    echo "usage: $0 target-dir intermediate-dir tar-file install-type"
     echo "  where"
     echo "    target-dir is directory path to create shell bundle file (target directory)"
     echo "    intermediate-dir is dir path to intermediate dir (where installer_tmp lives)"
     echo "    tar-file is the name of the tar file that contains the .deb/.rpm files"
-    echo
+    echo "    install-type has the value \"RPM\" for rpm bundle, \"DPKG\" for deb bundle,"  
+    echo "      empty for the all-inclusive bundle"
+    echo 
     echo "This script, and the associated bundle skeleton, are intended to work only"
     echo "only on Linux, and only for universal installations. As such, package names"
     echo "are determined via directory lookups."
@@ -40,6 +42,7 @@ usage()
 DIRECTORY=$1
 INTERMEDIATE=$2
 TAR_FILE=$3
+INSTALL_TYPE=$4
 
 if [ -z "$DIRECTORY" ]; then
     echo "Missing parameter: Target Directory" >&2
@@ -139,6 +142,7 @@ sed -i "s/OMI_PKG=<OMI_PKG>/OMI_PKG=$OMI_PACKAGE/" $BUNDLE_FILE
 sed -i "s/OMS_PKG=<OMS_PKG>/OMS_PKG=$OMS_PACKAGE/" $BUNDLE_FILE
 sed -i "s/DSC_PKG=<DSC_PKG>/DSC_PKG=$DSC_PACKAGE/" $BUNDLE_FILE
 sed -i "s/SCX_PKG=<SCX_PKG>/SCX_PKG=$SCX_PACKAGE/" $BUNDLE_FILE
+sed -i "s/INSTALL_TYPE=<INSTALL_TYPE>/INSTALL_TYPE=$INSTALL_TYPE/" $BUNDLE_FILE
 
 SCRIPT_LEN=`wc -l < $BUNDLE_FILE | sed 's/ //g'`
 SCRIPT_LEN_PLUS_ONE="$((SCRIPT_LEN + 1))"

@@ -30,6 +30,12 @@ MAINTAINER:              'Microsoft Corporation'
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/statsd.conf;             installer/conf/omsagent.d/statsd.conf;                 644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/auditlog.conf;           installer/conf/omsagent.d/auditlog.conf;               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf;              installer/conf/omsagent.d/mysql.conf;                  644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mongo.conf;              installer/conf/omsagent.d/mongo.conf;                  644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf;        installer/conf/omsagent.d/vmware_esxi.conf;            644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf;          installer/conf/omsagent.d/operation.conf;              644; root; root
 
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
@@ -74,6 +80,16 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
 /opt/microsoft/omsagent/plugin/filter_flatten.rb;                       source/code/plugins/filter_flatten.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/flattenjson_lib.rb;                      source/code/plugins/flattenjson_lib.rb;                744; root; root
+/opt/microsoft/omsagent/plugin/statsd_lib.rb;                           source/code/plugins/statsd_lib.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/out_oms_statsd_aggregator.rb;            source/code/plugins/out_oms_statsd_aggregator.rb;      744; root; root
+/opt/microsoft/omsagent/plugin/auditlog_lib.rb;                         source/code/plugins/auditlog_lib.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/parser_auditlog.rb;                      source/code/plugins/parser_auditlog.rb;                744; root; root
+/opt/microsoft/omsagent/plugin/mongostat_lib.rb;                        source/code/plugins/mongostat_lib.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/in_mongostat.rb;                         source/code/plugins/in_mongostat.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/mysql_workload_lib.rb;                   source/code/plugins/mysql_workload_lib.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/in_mysql_workload.rb;                    source/code/plugins/in_mysql_workload.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/parser_vmware_logs.rb;                   source/code/plugins/parser_vmware_logs.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/in_dsc_monitor.rb;                       source/code/plugins/in_dsc_monitor.rb;                 744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
@@ -137,12 +153,26 @@ if [ ! -f ${{CONF_DIR}}/omsagent.d/monitor.conf ]; then
    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf ${{CONF_DIR}}/omsagent.d/monitor.conf
 fi
 
+# Copy operation.conf file by default
+if [ ! -f ${{CONF_DIR}}/omsagent.d/operation.conf ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf ${{CONF_DIR}}/omsagent.d/operation.conf
+fi
+
+# Copy over omi_mapping.json
+if [ ! -f ${{CONF_DIR}}/omsagent.d/omi_mapping.json ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json ${{CONF_DIR}}/omsagent.d/omi_mapping.json
+fi
+
 # Copy over standalone plugin configurations
 #cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/* ${{CONF_DIR}}/omsagent.d
 
 # Copy collectd conf files only if collectd_marker.conf exists 
 if [ -f /etc/collectd_marker.conf ]; then
-    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd/collectd.conf.d/oms.conf
+    if [ -f /etc/collectd.conf ]; then
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd.d/oms.conf
+    else
+        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd/collectd.conf.d/oms.conf
+    fi
     cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf ${{CONF_DIR}}/omsagent.d/collectd.conf
     rm /etc/collectd_marker.conf
 fi

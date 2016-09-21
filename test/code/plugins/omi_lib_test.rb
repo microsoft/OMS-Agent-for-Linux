@@ -1,5 +1,6 @@
 require 'test/unit'
 require_relative '../../../source/code/plugins/omi_lib'
+require_relative 'omstestlib'
 
 class TestRuntimeError2 < OmiModule::LoggingBase
 	def log_error(text)
@@ -115,7 +116,7 @@ class OmiLib_Test < Test::Unit::TestCase
 			"System Uptime",
 			"Process Pct Privileged Time",
 			"Process Pct User Time",
-			"Process Used Memory",
+			"Process Used Memory kBytes",
 			"Process Virtual Shared Memory",
 			"Apache HTTP Server Total Pct CPU",
 			"Apache HTTP Server Idle Workers",
@@ -140,7 +141,6 @@ class OmiLib_Test < Test::Unit::TestCase
 			"MySQL Server InnoDB Buffer Pool Hit Pct",
 			"MySQL Server InnoDB Buffer Pool Use Pct",
 			"MySQL Server Full Table Scan Pct",
-			"MySQL Server InnoDB Buffer Pool Use Pct",
 			"MySQL Server Disk Space Use in Bytes",
 			"MySQL Server Connection Use Pct",
 			"MySQL Server Aborted Connection Pct"
@@ -151,7 +151,15 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_processor_record = [{"Host":"testhost","ObjectName":"Processor","InstanceName":"0","Collections":[{"CounterName":"% Processor Time","Value":"0"},{"CounterName":"% Idle Time","Value":"0"},{"CounterName":"% User Time","Value":"0"},{"CounterName":"% Nice Time","Value":"0"},{"CounterName":"% Privileged Time","Value":"0"},{"CounterName":"% IO Wait Time","Value":"0"},{"CounterName":"% Interrupt Time","Value":"0"},{"CounterName":"% DPC Time","Value":"0"}]},{"Host":"testhost","ObjectName":"Processor","InstanceName":"_Total","Collections":[{"CounterName":"% Processor Time","Value":"0"},{"CounterName":"% Idle Time","Value":"0"},{"CounterName":"% User Time","Value":"0"},{"CounterName":"% Nice Time","Value":"0"},{"CounterName":"% Privileged Time","Value":"0"},{"CounterName":"% IO Wait Time","Value":"0"},{"CounterName":"% Interrupt Time","Value":"0"},{"CounterName":"% DPC Time","Value":"0"}]}]
 		transform_validate_records_helper(expected_processor_record, processor_input_record, all_performance_counters, "Processor Input Class Failed!")
 		
-		# Test SCX_MemoryStatiscalInformation
+	        # Test SCX_RTProcessorStatisticalInformation with null counter values
+                $log = OMS::MockLog.new
+                processor_input_record_with_null_metric = [{"ClassName"=>"SCX_RTProcessorStatisticalInformation","Caption"=>"Processor information","Description"=>"CPU usage statistics","Name"=>"0","IsAggregate"=>"false","PercentIdleTime"=>"0","PercentUserTime"=>"0","PercentNiceTime"=>"0","PercentPrivilegedTime"=>"0","PercentInterruptTime"=>nil,"PercentDPCTime"=>"0","PercentProcessorTime"=>"0","PercentIOWaitTime"=>"0"},{"ClassName"=>"SCX_RTProcessorStatisticalInformation","Caption"=>"Processor information","Description"=>"CPU usage statistics","Name"=>"_Total","IsAggregate"=>"true","PercentIdleTime"=>"0","PercentUserTime"=>"0","PercentNiceTime"=>"0","PercentPrivilegedTime"=>"0","PercentInterruptTime"=>"0","PercentDPCTime"=>nil,"PercentProcessorTime"=>"0","PercentIOWaitTime"=>"0"}]
+                expected_processor_record_with_null_metric = [{"Host":"testhost","ObjectName":"Processor","InstanceName":"0","Collections":[{"CounterName":"% Processor Time","Value":"0"},{"CounterName":"% Idle Time","Value":"0"},{"CounterName":"% User Time","Value":"0"},{"CounterName":"% Nice Time","Value":"0"},{"CounterName":"% Privileged Time","Value":"0"},{"CounterName":"% IO Wait Time","Value":"0"},{"CounterName":"% DPC Time","Value":"0"}]},{"Host":"testhost","ObjectName":"Processor","InstanceName":"_Total","Collections":[{"CounterName":"% Processor Time","Value":"0"},{"CounterName":"% Idle Time","Value":"0"},{"CounterName":"% User Time","Value":"0"},{"CounterName":"% Nice Time","Value":"0"},{"CounterName":"% Privileged Time","Value":"0"},{"CounterName":"% IO Wait Time","Value":"0"},{"CounterName":"% Interrupt Time","Value":"0"}]}]
+                transform_validate_records_helper(expected_processor_record_with_null_metric, processor_input_record_with_null_metric, all_performance_counters, "Processor Input Class with null metrics Failed!")
+                assert_equal($log.logs, ["Dropping null value for counter % Interrupt Time.", "Dropping null value for counter % DPC Time."])
+                $log.clear
+               
+        	# Test SCX_MemoryStatiscalInformation
 		memory_input_record = [{"ClassName"=>"SCX_MemoryStatisticalInformation","Caption"=>"Memory information","Description"=>"Memory usage and performance statistics","Name"=>"Memory","IsAggregate"=>"true","AvailableMemory"=>"269","PercentAvailableMemory"=>"23","UsedMemory"=>"904","PercentUsedMemory"=>"77","PercentUsedByCache"=>"0","PagesPerSec"=>"0","PagesReadPerSec"=>"0","PagesWrittenPerSec"=>"0","AvailableSwap"=>"1987","PercentAvailableSwap"=>"97","UsedSwap"=>"56","PercentUsedSwap"=>"3"}]
 		expected_memory_record = [{"Host":"testhost","ObjectName":"Memory","InstanceName":"Memory","Collections":[{"CounterName":"Available MBytes Memory","Value":"269"},{"CounterName":"% Available Memory","Value":"23"},{"CounterName":"Used Memory MBytes","Value":"904"},{"CounterName":"% Used Memory","Value":"77"},{"CounterName":"Pages/sec","Value":"0"},{"CounterName":"Page Reads/sec","Value":"0"},{"CounterName":"Page Writes/sec","Value":"0"},{"CounterName":"Available MBytes Swap","Value":"1987"},{"CounterName":"% Available Swap Space","Value":"97"},{"CounterName":"Used MBytes Swap Space","Value":"56"},{"CounterName":"% Used Swap Space","Value":"3"}]}]
 		transform_validate_records_helper(expected_memory_record, memory_input_record, all_performance_counters, "Memory Input Class Failed!")
@@ -178,7 +186,7 @@ class OmiLib_Test < Test::Unit::TestCase
 
 		#Test SCX_UnixProcessStatisticalInformation
 		process_perf_record = [{"ClassName"=>"SCX_UnixProcessStatisticalInformation","Caption"=>"Unix process information","Description"=>"A snapshot of a current process","Name"=>"omsagent","CSCreationClassName"=>"SCX_ComputerSystem","CSName"=>"kab-cen-oms1.scx.com","OSCreationClassName"=>"SCX_OperatingSystem","OSName"=>"Linux Distribution","Handle"=>"28402","ProcessCreationClassName"=>"SCX_UnixProcessStatisticalInformation","CPUTime"=>"0","VirtualText"=>"2666496","VirtualData"=>"953671680","VirtualSharedMemory"=>"5216","CpuTimeDeadChildren"=>"180","SystemTimeDeadChildren"=>"123","PercentUserTime"=>"0","PercentPrivilegedTime"=>"0","UsedMemory"=>"40208","PercentUsedMemory"=>"3","PagesReadPerSec"=>"0"}]
-		expected_process_record = [{"Host":"testhost", "ObjectName":"Process","InstanceName":"omsagent","Collections":[{"CounterName":"Pct User Time","Value":"0"},{"CounterName":"Pct Privileged Time","Value":"0"},{"CounterName":"Used Memory","Value":"40208"},{"CounterName":"Virtual Shared Memory","Value":"5216"}]}]
+		expected_process_record = [{"Host":"testhost", "ObjectName":"Process","InstanceName":"omsagent","Collections":[{"CounterName":"Pct User Time","Value":"0"},{"CounterName":"Pct Privileged Time","Value":"0"},{"CounterName":"Virtual Shared Memory","Value":"5216"}]}]
 		transform_validate_records_helper(expected_process_record, process_perf_record , all_performance_counters, "Process Input Class Failed!")
 
 		#Test Apache_HTTPDServerStatistics
@@ -198,7 +206,7 @@ class OmiLib_Test < Test::Unit::TestCase
 
    		#Test MySQL_ServerStatistics
 		mysql_perf_record = [{"ClassName"=>"MySQL_ServerStatistics","InstanceID"=>"kab-cen-oms1:127.0.0.1:3306","CurrentNumConnections"=>"1","MaxConnections"=>"151","Uptime"=>"4052","ServerDiskUseInBytes"=>"803894","ConnectionsUsePct"=>"1","AbortedConnectionPct"=>"0","SlowQueryPct"=>"0","KeyCacheHitPct"=>"0","KeyCacheWritePct"=>"0","KeyCacheUsePct"=>"18","QCacheHitPct"=>"0","QCachePrunesPct"=>"0","QCacheUsePct"=>"0","TCacheHitPct"=>"17","TableLockContentionPct"=>"0","TableCacheUsePct"=>"10","IDB_BP_HitPct"=>"100","IDB_BP_UsePct"=>"4","FullTableScanPct"=>"93"}]
-		expected_mysql_record = [{"Host":"testhost","ObjectName":"MySQL Server","InstanceName":"kab-cen-oms1:127.0.0.1:3306","Collections":[{"CounterName":"Key Cache Hit Pct","Value":"0"},{"CounterName":"Key Cache Write Pct","Value":"0"},{"CounterName":"Key Cache Use Pct","Value":"18"},{"CounterName":"Query Cache Hit Pct","Value":"0"},{"CounterName":"Query Cache Use Pct","Value":"0"},{"CounterName":"Table Cache Hit Pct","Value":"17"},{"CounterName":"Table Lock Contention Pct","Value":"0"},{"CounterName":"Table Cache Use Pct","Value":"10"},{"CounterName":"InnoDB Buffer Pool Hit Pct","Value":"100"},{"CounterName":"InnoDB Buffer Pool Use Pct","Value":"4"},{"CounterName":"Full Table Scan Pct","Value":"93"},{"CounterName":"InnoDB Buffer Pool Use Pct","Value":"4"},{"CounterName":"Disk Space Use in Bytes","Value":"803894"},{"CounterName":"Connection Use Pct","Value":"1"},{"CounterName":"Aborted Connection Pct","Value":"0"}]}]
+		expected_mysql_record = [{"Host":"testhost","ObjectName":"MySQL Server","InstanceName":"kab-cen-oms1:127.0.0.1:3306","Collections":[{"CounterName":"Key Cache Hit Pct","Value":"0"},{"CounterName":"Key Cache Write Pct","Value":"0"},{"CounterName":"Key Cache Use Pct","Value":"18"},{"CounterName":"Query Cache Hit Pct","Value":"0"},{"CounterName":"Query Cache Use Pct","Value":"0"},{"CounterName":"Table Cache Hit Pct","Value":"17"},{"CounterName":"Table Lock Contention Pct","Value":"0"},{"CounterName":"Table Cache Use Pct","Value":"10"},{"CounterName":"InnoDB Buffer Pool Hit Pct","Value":"100"},{"CounterName":"InnoDB Buffer Pool Use Pct","Value":"4"},{"CounterName":"Full Table Scan Pct","Value":"93"},{"CounterName":"Disk Space Use in Bytes","Value":"803894"},{"CounterName":"Connection Use Pct","Value":"1"},{"CounterName":"Aborted Connection Pct","Value":"0"}]}]
 		transform_validate_records_helper(expected_mysql_record, mysql_perf_record , all_performance_counters, "MySQL Server Input Class Failed!")
 	end
 	

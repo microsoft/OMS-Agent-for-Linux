@@ -23,6 +23,21 @@ instance of MSFT_nxServiceResource
 
 };
 
+instance of MSFT_nxFileInventoryResource
+{
+                DestinationPath = "/etc/*.conf";
+                Recurse=true;
+                UseSudo=true;
+                Links = "follow";
+                Checksum = "md5";
+                Type = "file";
+                MaxContentsReturnable=0;
+                MaxOutputSize = 5000000;
+                ResourceId = "[MSFT_nxFileInventoryResource]Inventory";
+                ModuleName = "PSDesiredStateConfiguration";
+                ModuleVersion = "1.0";
+};
+
 
 instance of OMI_ConfigurationDocument
 {

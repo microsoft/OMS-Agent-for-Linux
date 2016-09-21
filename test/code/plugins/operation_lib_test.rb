@@ -44,9 +44,25 @@ class OperationLib_Test < Test::Unit::TestCase
     assert(data_item.has_key?("Timestamp") && data_item.has_key?("OperationStatus") && data_item.has_key?("Computer") && data_item.has_key?("Detail") && data_item.has_key?("Category") && data_item.has_key?("Solution") && data_item.has_key?("HelpLink"))
   end
 
+  def test_generic_filter
+    assert_equal({}, call_generic_filter(nil), "null record fails")
+    assert_equal({}, call_generic_filter(""), "empty string record fails")
+    assert_equal({}, call_generic_filter(10), "int record fails")
+    assert_equal({}, call_generic_filter({}), "empty hash record fails")
+
+    data_item = call_generic_filter({"message"=>"This is a test message"})
+    assert(data_item.has_key?("Computer") && data_item.has_key?("Timestamp") && data_item.has_key?("Detail") && data_item.has_key?("OperationStatus") && data_item.has_key?("Category") && data_item.has_key?("Solution"))
+    assert_equal("This is a test message", data_item["Detail"])
+  end
   # wrapper to call filter
   def call_filter(record)
     @@operation_lib.filter(record, Time.now)
   end
+
+  # wrapper to call generic filter
+  def call_generic_filter(record)
+    @@operation_lib.filter_generic(record, Time.now)
+  end
+
 end
 

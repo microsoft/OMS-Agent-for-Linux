@@ -25,13 +25,7 @@ module HeartbeatModule
     def get_heartbeat_data_item(time, os_conf_file_path, agent_install_conf_file_path)
       record = {}
       record["Timestamp"] = OMS::Common.format_time(time)
-
-      fqdn = OMS::Common.get_fully_qualified_domain_name
-      if fqdn.nil?
-        record["Computer"] = OMS::Common.get_hostname
-      else 
-        record["Computer"] = fqdn
-      end
+      record["Computer"] = OMS::Common.get_hostname
 
       record["OSType"] = "Linux"
       os_name = OMS::Common.get_os_name(os_conf_file_path)
