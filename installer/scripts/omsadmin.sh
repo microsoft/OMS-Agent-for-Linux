@@ -295,15 +295,15 @@ append_telemetry()
         InContainer=False
     fi
 
-    # If a test is not in progress, then get OMSagent process statistics 
-    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
+    # If a test is not in progress, and agent is already onboarded, then get OMSagent process statistics
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" -a -f "$CONF_OMSADMIN" ]; then
         /opt/omi/bin/omicli wql root/scx "SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'" | grep = > "$PROCESS_STATS"
-    fi
 
-    PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
-    PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
-    UsedMemory=`grep " UsedMemory" $PROCESS_STATS | cut -d= -f2`
-    PercentUsedMemory=`grep PercentUsedMemory $PROCESS_STATS | cut -d= -f2`
+        PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
+        PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
+        UsedMemory=`grep " UsedMemory" $PROCESS_STATS | cut -d= -f2`
+        PercentUsedMemory=`grep PercentUsedMemory $PROCESS_STATS | cut -d= -f2`
+    fi
 
     # We grep instead of sourcing because parentheses in the file cause syntax errors
     OSName=`grep OSName $OS_INFO | cut -d= -f2`
@@ -316,8 +316,10 @@ append_telemetry()
     echo "      <ProcessorArchitecture>x64</ProcessorArchitecture>" >> $1
     echo "      <Version>$OSVersion</Version>" >> $1
     echo "      <InContainer>$InContainer</InContainer>" >> $1
-    echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\"" >> $1
-    echo "       UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" -a -f "$CONF_OMSADMIN" ]; then
+        echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\"" >> $1
+        echo "       UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
+    fi
     echo "   </OperatingSystem>" >> $1
 }
 
