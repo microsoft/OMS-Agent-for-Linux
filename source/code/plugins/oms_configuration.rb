@@ -17,6 +17,7 @@ module OMS
     @@NotifyBlobODSEndpoint = nil
     @@OmsCloudId = nil
     @@AzureResourceId = nil
+    @@UUID = nil
  
     class << self
       
@@ -115,6 +116,9 @@ module OMS
           if line =~ /OMSCLOUD_ID/
             @@OmsCloudId = line.sub("OMSCLOUD_ID=","")
           end
+          if line =~ /UUID/
+            @@UUID = line.sub("UUID=","")
+          end
         end
 
         begin
@@ -161,6 +165,10 @@ module OMS
 
       def omscloud_id
         @@OmsCloudId
+      end
+
+      def get_vm_uuid
+        @@UUID
       end
     end # Class methods
         

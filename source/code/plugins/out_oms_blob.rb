@@ -68,7 +68,7 @@ module Fluent
     #   file_path: string. file path
     # returns:
     #   HTTPRequest. blob PUT request
-    def create_blob_put_request(uri, msg, file_path = nil)
+    def create_blob_put_request(uri, msg, request_id, file_path = nil)
       headers = {}
 
       headers[OMS::CaseSensitiveString.new("x-ms-meta-TimeZoneid")] = OMS::Common.get_current_timezone
@@ -79,13 +79,20 @@ module Fluent
 
       azure_resource_id = OMS::Configuration.azure_resource_id
       if !azure_resource_id.to_s.empty?
-        headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = OMS::Configuration.azure_resource_id
+        headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
       end
       
       omscloud_id = OMS::Configuration.omscloud_id
       if !omscloud_id.to_s.empty?
-        headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = OMS::Configuration.omscloud_id
+        headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
       end
+
+      uuid = OMS::Configuration.get_vm_uuid
+      if !uuid.to_s.empty?
+        headers[OMS::CaseSensitiveString.new("x-ms-UUID")] = uuid
+      end
+
+      headers[OMS::CaseSensitiveString.new("X-Request-ID")] = request_id
 
       headers["Content-Type"] = "application/octet-stream"
       headers["Content-Length"] = msg.bytesize.to_s
@@ -93,10 +100,13 @@ module Fluent
       req = Net::HTTP::Put.new(uri.request_uri, headers)
       req.body = msg
       return req
+    rescue OMS::RetryRequestException => e
+        Log.error_once("HTTP error for Request-ID: #{request_id} Error: #{e}")
+        raise e.message, "Request-ID: #{request_id}"
     end # create_blob_put_request
 
     # get the blob SAS URI from ODS
-    # parameters:
+    # parameters
     #   container_type: string. ContainerType of the data
     #   data_type: string. DataTypeId of the data
     #   custom_data_type: string. CustomDataType of the CustomLog
@@ -192,9 +202,10 @@ module Fluent
     #   string. block id
     def upload_block(uri, msg)
       base64_blockid = Base64.encode64(SecureRandom.uuid)
+      request_id = SecureRandom.uuid
       append_uri = URI.parse("#{uri.to_s}&comp=block&blockid=#{base64_blockid}")
 
-      put_block_req = create_blob_put_request(append_uri, msg, nil)
+      put_block_req = create_blob_put_request(append_uri, msg, request_id, nil)
       http = OMS::Common.create_secure_http(append_uri, @proxy_config)
       OMS::Common.start_request(put_block_req, http)
 
@@ -216,7 +227,8 @@ module Fluent
       commit_msg = doc.to_s
 
       blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
-      put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg, file_path)
+      request_id = SecureRandom.uuid
+      put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg, request_id, file_path)
       http = OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
       OMS::Common.start_request(put_blocklist_req, http)
     end # commit_blocks
