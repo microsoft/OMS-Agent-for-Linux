@@ -64,8 +64,9 @@ Go to OMS Log Analytics and see whether you can find any search results
 If you encounter the following error in `omsagent.log`:  
 `[error]: Permission denied @ rb_sysopen - <MySQL-file-path-for-logs>`
 
-1. Ensure that the user `omsagent` has read permissions on the parent directory and contained log files:  
-`chmod +r <MySQL-file-path-for-logs>`
+1. Ensure that the user `omsagent` has read and execute permissions on the parent directory and read permissions contained log files:  
+`chmod +r <MySQL-file-path-for-logs>`  
+`chmod +rx <folder-containing-MySQL-logs>`
   
 2. If your machine has logrotate enabled, the new log files that get rotated in may cause this error to resurface. Check the logrotate configuration file (e.g. `/etc/logrotate.d/mysql-server`) for the permissions it assigns new log files. To ensure that the user `omsagent` has read permissions on newly-created log files, here are two options:
 
