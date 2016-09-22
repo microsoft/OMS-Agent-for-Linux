@@ -28,7 +28,8 @@ In the *Syslog.global.logHost* field, add your linux server and the port number 
 
 ```example) tcp://hostname:1514 		or 	tcp://123.456.789.101:1514```
 
-2.	Make sure to open the ESXi Host firewall for syslog. 
+
+2. Make sure to open the ESXi Host firewall for syslog. 
   Go to **ESXi Host Configuration -> Software/Security Profile-> Firewall** and open properties. 
 
 ![vspherefw](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/pictures/VMwarePics/vsphere2.png?raw=true)
@@ -37,20 +38,32 @@ In the *Syslog.global.logHost* field, add your linux server and the port number 
 
 Check the vSphere Console to see whether the syslog is properly set up. Confirm from the ESXI Host that it shows that port **1514** is configured. 
 
-3.	Test the connectivity between the linux server and ESXi Host using the “nc” command on the ESXi Host. 
+
+
+3. Test the connectivity between the linux server and ESXi Host using the “nc” command on the ESXi Host. 
 
 ```
 example) 
 [root@ESXiHost:~] nc -z 123.456.789.101 1514
 Connection to 123.456.789.101 1514 port [tcp/*] succeeded!
-```
+``` 
 
 
 4.	Download and Install OMS Agent for Linux on the linux server. 
 [Documentation for OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux)
 
+5. 	After the OMS Agent for Linux is installed, go to /etc/opt/microsoft/omsagent/sysconf/omsagent.d directory and copy the vmware_esxi.conf file to /etc/opt/microsoft/omsagent/conf/omsagent.d directory and the change the owner/group and permissions of the file. 
 
-5.	Go to OMS Log Analysis and see whether you can find any search results.  Once OMS collects the syslog data, it retains the syslog format. On OMS, you will see that specific fields are already captured such as Hostname and ProcessName. 
+``` 
+sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf /etc/opt/microsoft/omsagent/conf/omsagent.d
+sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/conf/omsagent.d/vmware_esxi.conf
+``` 
+
+6. Restart the OMS Agent for Linux by running 
+```sudo /opt/microsoft/omsagent/bin/service_control restart```
+
+
+7.	Go to OMS Log Analysis and see whether you can find any search results.  Once OMS collects the syslog data, it retains the syslog format. On OMS, you will see that specific fields are already captured such as Hostname and ProcessName. 
  
 `Type=VMware_CL`
 
