@@ -4599,114 +4599,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/ove
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/connection_for-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/connection_for-i.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/verify_mode-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/verify_mode-i.ri; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ActiveRecord/cdesc-ActiveRecord.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ActiveRecord/cdesc-ActiveRecord.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ActiveRecord/VERSION/cdesc-VERSION.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ActiveRecord/VERSION/cdesc-VERSION.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ext/mysql2/page-Makefile.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ext/mysql2/page-Makefile.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/cache.ri;         ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/cache.ri;  644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Rake/cdesc-Rake.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Rake/cdesc-Rake.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Util/key_hash_as_symbols-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Util/key_hash_as_symbols-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Util/cdesc-Util.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Util/cdesc-Util.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/fields-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/fields-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/last_id-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/last_id-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/_execute-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/_execute-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/execute-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/execute-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/field_count-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/field_count-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/cdesc-Statement.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/cdesc-Statement.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/affected_rows-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/affected_rows-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/close-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/close-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/param_count-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement/param_count-i.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/cdesc-Mysql2.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/cdesc-Mysql2.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/cdesc-EM.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/cdesc-EM.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/cdesc-Client.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/cdesc-Client.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/cdesc-Watcher.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/cdesc-Watcher.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/watching%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/watching%3f-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/unbind-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/unbind-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/new-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/notify_readable-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher/notify_readable-i.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/query-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/query-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/close-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/close-i.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/encoding-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/encoding-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/init_command%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/init_command%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/last_id-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/last_id-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/automatic_close%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/automatic_close%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/escape-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/escape-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/ssl_set-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/ssl_set-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/store_result-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/store_result-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/cdesc-Client.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/cdesc-Client.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/warning_count-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/warning_count-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/prepare-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/prepare-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/parse_flags_array-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/parse_flags_array-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query_info_string-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query_info_string-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/thread_id-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/thread_id-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/local_offset-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/local_offset-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/select_db-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/select_db-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/ssl_cipher-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/ssl_cipher-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/_query-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/_query-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/charset_name%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/charset_name%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/default_file%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/default_file%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/info-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/info-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/escape-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/escape-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/read_timeout-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/read_timeout-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/connect_timeout%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/connect_timeout%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/ping-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/ping-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/default_group%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/default_group%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/abandon_results%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/abandon_results%21-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/socket-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/socket-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/info-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/info-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/connect-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/connect-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/new-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/default_query_options-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/default_query_options-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/write_timeout%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/write_timeout%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/initialize_ext-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/initialize_ext-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/read_timeout%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/read_timeout%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/more_results%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/more_results%3f-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/affected_rows-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/affected_rows-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/server_info-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/server_info-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/next_result-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/next_result-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/reconnect%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/reconnect%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/local_infile%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/local_infile%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query_options-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query_options-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/automatic_close%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/automatic_close%3f-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/close-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/close-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/async_result-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/async_result-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/secure_auth%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/secure_auth%3d-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query_info-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client/query_info-i.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/fields-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/fields-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/free-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/free-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/size-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/size-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/count-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/count-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/each-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/each-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/cdesc-Result.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result/cdesc-Result.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/errno-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/errno-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/cdesc-Error.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/cdesc-Error.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/sql_state-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/sql_state-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/clean_message-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/clean_message-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/new-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/new_with_args-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/new_with_args-c.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/error_number-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error/error_number-i.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/File/cdesc-File.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/File/cdesc-File.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/RbConfig/cdesc-RbConfig.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/RbConfig/cdesc-RbConfig.ri; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Object/asplode-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Object/asplode-i.ri; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Object/cdesc-Object.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Object/cdesc-Object.ri; 644; root; root
-
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/simplecov-html-0.5.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/simplecov-html-0.5.3.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/msgpack-0.5.12.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/msgpack-0.5.12.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/test-unit-3.1.9.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/test-unit-3.1.9.gemspec; 644; root; root
@@ -4736,7 +4628,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/test-unit-rr-1.0.5.gemspec; ${
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/parallel-1.8.0.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/parallel-1.8.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/power_assert-0.3.0.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/power_assert-0.3.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/timecop-0.8.1.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/timecop-0.8.1.gemspec; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/mysql2-0.4.4.gemspec;  ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/mysql2-0.4.4.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/parallel_tests-2.5.0.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/parallel_tests-2.5.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/simplecov-0.6.4.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/simplecov-0.6.4.gemspec; 644; root; root
 
@@ -4751,7 +4642,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/thread_safe-0.3.5.gem;          ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/rr-1.1.2.gem;                   ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/rr-1.1.2.gem;            444; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/sigdump-0.2.4.gem;              ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/sigdump-0.2.4.gem;       444; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/flexmock-1.3.3.gem;             ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/flexmock-1.3.3.gem;      444; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/mysql2-0.4.4.gem;               ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/mysql2-0.4.4.gem;        644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/bundler-1.10.6.gem;             ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/bundler-1.10.6.gem;      644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/http_parser.rb-0.6.0.gem;       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/http_parser.rb-0.6.0.gem; 444; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/json-1.8.3.gem;                 ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/json-1.8.3.gem;          444; root; root
@@ -4770,12 +4660,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpac
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/mkmf.log; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/mkmf.log; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/msgpack/msgpack.so; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/msgpack/msgpack.so; 755; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/mysql2/mysql2.so; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/mysql2/mysql2.so; 755; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/gem_make.out; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/gem_make.out; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/gem.build_complete; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/gem.build_complete; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/mkmf.log; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/mkmf.log; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/json-1.8.3/gem_make.out; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/json-1.8.3/gem_make.out; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/json-1.8.3/gem.build_complete; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/json-1.8.3/gem.build_complete; 644; root; root
@@ -5803,82 +5687,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles/ruby_18_rspec_1_rails_
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles/ruby_19_rspec_2.gemfile; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles/ruby_19_rspec_2.gemfile; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles/ruby_19_rspec_2_rails_4.gemfile; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles/ruby_19_rspec_2_rails_4.gemfile; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles/ruby_18_rspec_1.gemfile.lock; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles/ruby_18_rspec_1.gemfile.lock; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/my.cnf.example; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/my.cnf.example; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/client-key.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/client-key.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/server-cert.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/server-cert.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/ca-cert.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/ca-cert.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/server-key.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/server-key.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/cert.cnf;  ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/cert.cnf; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/pkcs8-client-key.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/pkcs8-client-key.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/ca-key.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/ca-key.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/client-cert.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/client-cert.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/gen_certs.sh; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/gen_certs.sh; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/pkcs8-server-key.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/pkcs8-server-key.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/ca.cnf;    ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/ca.cnf; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/client-req.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/client-req.pem; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/server-req.pem; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl/server-req.pem; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/client_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/client_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/result_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/result_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/error_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/error_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/statement_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2/statement_spec.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/test_data;     ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/test_data; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/spec_helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/spec_helper.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/rcov.opts;     ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/rcov.opts; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/configuration.yml.example; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/configuration.yml.example; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/em/em_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/em/em_spec.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/result.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/result.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql_enc_name_to_ruby.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql_enc_name_to_ruby.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/client.c; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/client.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/infile.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/infile.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql_enc_to_ruby.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql_enc_to_ruby.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/wait_for_single_fd.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/wait_for_single_fd.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/infile.o; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/infile.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2_ext.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2_ext.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/result.c; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/result.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/client.o; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/client.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/result.o; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/result.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2.so; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/statement.o; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/statement.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/infile.c; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/infile.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2_ext.c; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2_ext.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/Makefile; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/Makefile; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/statement.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/statement.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/client.h; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/client.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2_ext.o; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/mysql2_ext.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/.RUBYARCHDIR.-.mysql2.time; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/.RUBYARCHDIR.-.mysql2.time; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/extconf.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/extconf.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/statement.c; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2/statement.c; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/CHANGELOG.md;       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/CHANGELOG.md; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/support/libmysql.def; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/support/libmysql.def; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/support/mysql_enc_to_ruby.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/support/mysql_enc_to_ruby.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/support/ruby_enc_to_mysql.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/support/ruby_enc_to_mysql.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/README.md;          ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/README.md;   644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/examples/threaded.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/examples/threaded.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/examples/eventmachine.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/examples/eventmachine.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/LICENSE;            ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/LICENSE;     644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2.rb;      ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/error.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/error.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/em.rb;   ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/em.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/result.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/result.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/version.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/statement.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/statement.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/console.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/console.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/client.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/client.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/mysql2.so; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/mysql2.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/field.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2/field.rb; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-html-0.5.3/test/helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/simplecov-html-0.5.3/test/helper.rb; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-html-0.5.3/test/test_simple_cov-html.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/simplecov-html-0.5.3/test/test_simple_cov-html.rb; 644; root; root
@@ -8510,25 +8318,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP; 755; root; ro
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/SSLReuse; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/Error; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4;    755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ActiveRecord; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ActiveRecord/VERSION; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ext; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/ext/mysql2; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Rake; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Util; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Statement; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/EM/Client/Watcher; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Client; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Result; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Mysql2/Error; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/File; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/RbConfig; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/mysql2-0.4.4/ri/Object; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications;      755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/default; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache;               755; root; root
@@ -8537,8 +8326,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/msgpack; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/mysql2-0.4.4/mysql2; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/json-1.8.3; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/json-1.8.3/json; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/json-1.8.3/json/ext; 755; root; root
@@ -8711,17 +8498,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/lib/rr/adapters; 755; root; roo
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/lib/rr/expectations; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/lib/rr/injections; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/rr-1.1.2/gemfiles; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4;   755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/ssl; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/mysql2; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/spec/em; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/ext/mysql2; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/support; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/examples; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/mysql2-0.4.4/lib/mysql2; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-html-0.5.3; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-html-0.5.3/test; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-html-0.5.3/views; 755; root; root

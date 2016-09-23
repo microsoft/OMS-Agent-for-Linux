@@ -11,16 +11,7 @@ If `mysql.conf` is not present in the above location, move it:
 `cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/`
 
   ```config
-  # MySQL Workload
-  
-  <source>
-    ...
-    username <MySQL-username>
-    password <MySQL-password-for-username>
-    ...
-  </source>
-  
-  # MySQL General Log
+   # MySQL General Log
   
   <source>
     ...

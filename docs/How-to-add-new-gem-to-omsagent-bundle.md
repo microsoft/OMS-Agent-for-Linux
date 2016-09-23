@@ -39,5 +39,6 @@ It will create the new ruby.data content in /tmp/installBuilder-ruby-data-$USER.
   
 Then install the new bundle and validate the ruby folder under /opt/microsoft/omsagent/ruby has all the new changes.
   
-Note that if your new .gem file adds dependencies on native packages that must be installed, update the [README.md](https://github.com/Microsoft/Build-OMS-Agent-for-Linux#Dependencies-to-build-a-native-package)
 Note that if your new .gem is depending on other gems, the dependent gems need to be added to buildRuby.sh in non-dependent order. Always make sure you do not accidentally make the build download gems to satisfy dependencies.
+
+Also note that this how-to document meant to be used with the gems that either do not have native dependencies or if they have, their versions are compatable across different distributions.
