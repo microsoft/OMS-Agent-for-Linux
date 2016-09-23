@@ -9,7 +9,7 @@ OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 SCX_DIR := $(shell cd ../../opsmgr; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
-
+PYTHON_DSC_VER_DIR := $(shell  echo -e "import sys\nif float(sys.version[:3]) < 2.6: print '2.4x-2.5x'\nelif int(sys.version[0]) < 3: print '2.6x-2.7x'\nelse: print '3.x'\n" | python)
 PF_POSIX := 1
 include $(BASE_DIR)/build/config.mak
 include $(BASE_DIR)/build/Makefile.version
@@ -526,7 +526,12 @@ else
 	@echo "Warning: shell system tests will not run without $(SYSTEST_CONFIG)" >&2
 endif
 
-omstest : unittest systemtest
+nxomstest :
+
+	@echo "========================= Performing Test nxOMSProviders."
+	python $(DSC_DIR)/Providers/Scripts/$(PYTHON_DSC_VER_DIR)/Scripts/Tests/run_test_OMS_nxProviders.py $(TARGET_DIR) $(PYTHON_DSC_VER_DIR)
+
+omstest : unittest systemtest nxomstest
 
 test : omstest
 	$(MAKE) -C $(SCX_DIR)/build test
