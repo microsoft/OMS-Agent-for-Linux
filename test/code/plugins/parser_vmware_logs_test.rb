@@ -53,7 +53,7 @@ class VmwareSyslogParserTest < Test::Unit::TestCase
     latency.instance.parse(text) do |_time, record|
       assert_equal record['ESXIFailure'], 'scsi.device.io.latency.high'
       assert_equal record['Device'], 'naa.60a9800041764b6c463f437868556b7a'
-      assert_equal record['StorageLatency'], '28022'
+      assert_equal record['StorageLatency'], 28022
     end
 
     # Parse fields when VM is Created
