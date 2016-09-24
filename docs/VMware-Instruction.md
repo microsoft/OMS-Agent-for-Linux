@@ -56,7 +56,7 @@ Connection to 123.456.789.101 1514 port [tcp/*] succeeded!
 
 ``` 
 sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf /etc/opt/microsoft/omsagent/conf/omsagent.d
-sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/conf/omsagent.d/vmware_esxi.conf
+sudo chown omsagent:omsagent /etc/opt/microsoft/omsagent/conf/omsagent.d/vmware_esxi.conf
 ``` 
 
 6. Restart the OMS Agent for Linux by running 
