@@ -8,7 +8,8 @@
 
 4. Verify and update the MySQL log file path in the configuration file `/etc/opt/microsoft/omsagent/conf/omsagent.d/mysql.conf`  
 If `mysql.conf` is not present in the above location, move it:  
-`cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/`
+`sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/`  
+`sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/conf/omsagent.d/mysql.conf`
 
   ```config
   # MySQL Workload
