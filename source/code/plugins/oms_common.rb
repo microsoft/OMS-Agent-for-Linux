@@ -688,7 +688,7 @@ module OMS
           headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
         end
         
-        uuid = OMS::Configuration.get_vm_uuid
+        uuid = OMS::Configuration.uuid
         if !uuid.to_s.empty?
           headers[OMS::CaseSensitiveString.new("x-ms-UUID")] = uuid
         end
