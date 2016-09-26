@@ -17,6 +17,7 @@ module Fluent
       require 'time'
       require 'uri'
       require 'zlib'
+      require 'securerandom'
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
@@ -53,20 +54,27 @@ module Fluent
     #   log_type: string. log type
     #   time_generated_field_name: string. name of the time generated field
     #   records: hash[]. an array of data
-    def post_data(log_type, time_generated_field_name, records)
+    def post_data(log_type, time_generated_field_name, records, request_id)
       headers = {}
       headers[OMS::CaseSensitiveString.new("Log-Type")] = log_type
       headers[OMS::CaseSensitiveString.new("x-ms-date")] = Time.now.utc.httpdate()
 
-      azure_resource_id = OMS::Configuration.azure_resource_id
+      azure_resource_id = OMS::Configuration.azure_resource_id if defined?(OMS::Configuration.azure_resource_id)
       if !azure_resource_id.to_s.empty?
-        headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = OMS::Configuration.azure_resource_id
+        headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
       end
 
-      omscloud_id = OMS::Configuration.omscloud_id
+      omscloud_id = OMS::Configuration.omscloud_id if defined?(OMS::Configuration.omscloud_id)
       if !omscloud_id.to_s.empty?
-        headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = OMS::Configuration.omscloud_id
+        headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
       end
+
+      uuid = OMS::Configuration.uuid if defined?(OMS::Configuration.uuid)
+      if !uuid.to_s.empty?
+        headers[OMS::CaseSensitiveString.new("x-ms-UUID")] = uuid
+      end
+
+      headers[OMS::CaseSensitiveString.new("X-Request-ID")] = request_id
 
       if time_generated_field_name != ''
         headers[OMS::CaseSensitiveString.new("time-generated-field")] = time_generated_field_name
@@ -74,7 +82,7 @@ module Fluent
 
       api_endpoint = OMS::Configuration.ods_endpoint.clone
       api_endpoint.query = "api-version=#{@api_version}"
-
+      
       req = OMS::Common.create_ods_request(api_endpoint.request_uri, records, @compress, headers, lambda { |data| OMS::Common.safe_dump_simple_hash_array(data) })
 
       unless req.nil?
@@ -114,7 +122,8 @@ module Fluent
 
         if @logtype_regex =~ log_type
           start = Time.now
-          dataSize = post_data(log_type, time_generated_field_name, records)
+          request_id = SecureRandom.uuid
+          dataSize = post_data(log_type, time_generated_field_name, records, request_id)
           time = Time.now - start
           @log.trace "Success sending #{dataSize} bytes of data through API #{time.round(3)}s"
         else
@@ -125,9 +134,10 @@ module Fluent
       end
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."
+      Log.error_once("Error for Request-ID: #{request_id} Error: #{e}")
       @log.debug "Error:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
-      raise e.message
+      raise e.message, "Request-ID: #{request_id}"
     rescue => e
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously

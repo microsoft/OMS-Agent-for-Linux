@@ -55,7 +55,7 @@ module Fluent
 
               # Regex for Storage Latency. Example string: I/O latency increased from average value of 1343 microseconds to 28022 microseconds.
               if ['latency', 'average value', 'microseconds'].all? { |s| record['SyslogMessage'].include? s }
-                record['StorageLatency'] = record['SyslogMessage'].match(/to\s[0-9]+\smicroseconds/).to_s.split(' ')[1]
+                record['StorageLatency'] = record['SyslogMessage'].match(/to\s[0-9]+\smicroseconds/).to_s.split(' ')[1].to_i
               end
             rescue Exception => e
               OMS::Log.error_once("Unable to parse VMware ESXI log fields: #{e.message}")

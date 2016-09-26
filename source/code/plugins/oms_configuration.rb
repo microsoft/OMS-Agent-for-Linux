@@ -17,6 +17,7 @@ module OMS
     @@NotifyBlobODSEndpoint = nil
     @@OmsCloudId = nil
     @@AzureResourceId = nil
+    @@UUID = nil
  
     class << self
       
@@ -110,10 +111,13 @@ module OMS
 
         File.open(conf_path).each_line do |line|
           if line =~ /AZURE_RESOURCE_ID/
-            @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","")
+            @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
           end
           if line =~ /OMSCLOUD_ID/
-            @@OmsCloudId = line.sub("OMSCLOUD_ID=","")
+            @@OmsCloudId = line.sub("OMSCLOUD_ID=","").strip
+          end
+          if line =~ /UUID/
+            @@UUID = line.sub("UUID=","").strip
           end
         end
 
@@ -162,6 +166,11 @@ module OMS
       def omscloud_id
         @@OmsCloudId
       end
+
+      def uuid
+        @@UUID
+      end # getter for VM uuid
+
     end # Class methods
         
   end # class Common

@@ -13,6 +13,7 @@ module OMS
     require 'zlib'
     require 'digest'
     require 'date'
+    require 'securerandom'
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
@@ -679,13 +680,20 @@ module OMS
 
         azure_resource_id = OMS::Configuration.azure_resource_id
         if !azure_resource_id.to_s.empty?
-          headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = OMS::Configuration.azure_resource_id
+          headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
         end
 
         omscloud_id = OMS::Configuration.omscloud_id
         if !omscloud_id.to_s.empty?
-          headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = OMS::Configuration.omscloud_id
+          headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
         end
+        
+        uuid = OMS::Configuration.uuid
+        if !uuid.to_s.empty?
+          headers[OMS::CaseSensitiveString.new("x-ms-UUID")] = uuid
+        end
+ 
+        headers[OMS::CaseSensitiveString.new("X-Request-ID")] = SecureRandom.uuid
 
         headers["Content-Type"] = "application/json"
         if compress == true
@@ -808,7 +816,8 @@ module OMS
 
           if res.code != "200"
             # Retry all failure error codes...
-            res_summary = "(class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
+            res_summary = "(request-id=#{req["X-Request-ID"]}; class=#{res.class.name}; code=#{res.code}; message=#{res.message}; body=#{res.body};)"
+            Log.error_once("HTTP Error: #{res_summary}")
             raise RetryRequestException, "HTTP error: #{res_summary}"
           end
 
