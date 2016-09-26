@@ -11,10 +11,10 @@ With this feature, you'll be able to:
 This is a Public Preview Product. 
 
 ### Supported Linux Operating Systems and Docker:
-* Docker 1.8 thru 1.11.2
+* Docker 1.8 thru 1.12.1
 
 And one of follow OS (x64): 
-* Ubuntu 14.04, 15.10
+* Ubuntu 14.04 LTS, 15.10, 16.04 LTS
 * Amazon Linux 2016.03
 * openSUSE 13.2
 * CentOS 7
@@ -45,6 +45,32 @@ ExecStart=/usr/bin/docker daemon -H fd:// $DOCKER_OPTS
 ```
 sudo systemctl restart docker.service
 ```
+
+#### Settings on container host - systemd drop-in units
+- If you want to use the drop-in units, please modify your conf file in `/etc/systemd/system/docker.service.d`.
+
+Add the following in `[Service]`. 
+```
+Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
+```
+Make sure you add $DOCKER_OPTS in "ExecStart=/usr/bin/docker daemon" within your docker.service file.
+
+example)
+```
+[Service]
+Restart=always
+StartLimitInterval=0
+Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
+RestartSec=15
+ExecStart=
+ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay $DOCKER_OPTS
+```
+- Restart docker service.
+```
+systemctl restart docker.service
+```
+For more information, please go to [Control and configure Docker with systemd](https://docs.docker.com/engine/admin/systemd/) on Docker website.
+
 #### Settings on container host - Upstart (Ubuntu 14.x)
 - Edit /etc/default/docker and add this line:
 ```
