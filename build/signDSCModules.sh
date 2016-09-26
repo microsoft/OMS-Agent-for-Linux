@@ -18,10 +18,15 @@ fi
 
 BUILD_VERS=$OMS_BUILDVERSION_MAJOR.$OMS_BUILDVERSION_MINOR.$OMS_BUILDVERSION_PATCH-$OMS_BUILDVERSION_BUILDNR
 
-# We assume that our build share is mounted at: /mnt/ostcdata. Verify that
+# We assume that by default our build share is mounted at: /mnt/ostcdata. Verify that
 # our build directory is under that as expected ...
-
-BUILD_BASEDIR=/mnt/ostcdata/OSTCData/Builds/omsagent/develop
+if [ $# -lt 1 ]; then
+    echo "No build share path is specified. Default build share is mounted at: /mnt/ostcdata"
+    BUILD_BASEDIR=/mnt/ostcdata/OSTCData/Builds/omsagent/develop
+else
+    echo "Build share is mounted at: $1"
+    BUILD_BASEDIR=$1
+fi
 
 if [ ! -d $BUILD_BASEDIR ]; then
     echo "Not finding Build share mounted at $BUILD_BASEDIR ..."
