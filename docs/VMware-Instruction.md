@@ -28,7 +28,6 @@ In the *Syslog.global.logHost* field, add your linux server and the port number 
 
 ```example) tcp://hostname:1514 		or 	tcp://123.456.789.101:1514```
 
-
 2. Make sure to open the ESXi Host firewall for syslog. 
   Go to **ESXi Host Configuration -> Software/Security Profile-> Firewall** and open properties. 
 
@@ -37,8 +36,6 @@ In the *Syslog.global.logHost* field, add your linux server and the port number 
 ![vspherefwproperties](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/pictures/VMwarePics/vsphere3.png?raw=true)
 
 Check the vSphere Console to see whether the syslog is properly set up. Confirm from the ESXI Host that it shows that port **1514** is configured. 
-
-
 
 3. Test the connectivity between the linux server and ESXi Host using the “nc” command on the ESXi Host. 
 
