@@ -2,7 +2,6 @@
  
  VMware logs can be massive in scale and difficult to capture and manage. In order to do troubleshooting and alerting using deep log analysis and trends, a centralized approach for logging and monitoring is required.  
 
-
 ### What can you do with the VMware Monitoring Solution?  
  - See information about all VMware ESXi Hosts in a single location 
  - Know what the top event counts, status, and trends of VM and ESXi Hosts provided thru the ESXi Host logs 
