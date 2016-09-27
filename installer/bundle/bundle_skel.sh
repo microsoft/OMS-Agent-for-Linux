@@ -28,6 +28,7 @@ ONBOARD_FILE=/etc/omsagent-onboard.conf
 DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
+OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -839,7 +840,21 @@ case "$installMode" in
         else
             echo "----- No base kits to update -----"
         fi
-
+		
+		# These steps are required to fix mysql2 gem compatibility issue on latest Ubuntu distros and can be removed after any release >2016_v1.2.0-75
+        if ${OMS_RUBY_DIR}/gem list | grep -q "mysql2" ; then
+            # Cleans up static mysql2 ruby gem if it exists in omsagent ruby path
+            echo "Removing MySQL2 ruby gem."			
+            ${OMS_RUBY_DIR}/gem uninstall mysql2 2>/dev/null
+		fi
+        echo "----- Installing MySQL2 ruby gem -----"
+        if ! ${OMS_RUBY_DIR}/gem install mysql2 2>/dev/null; then
+            echo "MySQL ruby gem was not installed. MySQL ruby plugin would be disabled."
+            echo "Please check whether libmysqlclient dependency package is installed."
+            echo "You may need to 'apt-get install libmysqlclient-dev' or 'yum install mysql-devel',"
+            echo "then run '${OMS_RUBY_DIR}/ruby/bin/gem install mysql2' after omsagent installation to enable MySQL ruby plugin."
+        fi
+		
         if [ $KIT_STATUS -eq 0 ]; then
             # These conditionals exist due to some upgrade bugs in the postuninstall scripts of previous kits. These can be removed after GA.
             if [ -d /opt/microsoft/omsconfig ]; then

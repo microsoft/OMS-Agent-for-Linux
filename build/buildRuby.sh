@@ -202,9 +202,6 @@ export PATH=${RUBY_DESTDIR}/bin:$PATH
 echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
-echo "Installig Mysql2 gem into Ruby ..."
-elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mysql2-0.4.4.gem
-
 # Now do what we need for FluentD
 
 cd ${FLUENTD_DIR}
@@ -238,6 +235,9 @@ if [ $RUNNING_FOR_TEST -eq 0 ]; then
 
     # Pacify Make (Make doesn't know that the generated Ruby directory can vary)
     mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}/ruby
+else 
+    echo "Installing MySQL gem into Test Ruby..." 
+    elevate ${RUBY_DESTDIR}/bin/gem install mysql2
 fi
 
 exit 0

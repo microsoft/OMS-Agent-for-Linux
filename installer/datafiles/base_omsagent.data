@@ -180,6 +180,20 @@ fi
 # The real conf directory has to be owned by omsagent to be readable by the omsagent daemon
 chown -R omsagent:omsagent ${{CONF_DIR}}
 
+# Should run before onboarding script(Postinstall_300) and enabling OMS service(%Postinstall_500)
+%Postinstall_290
+if ${{OMSHOME}}/ruby/bin/gem list | grep -q "mysql2" ; then
+  echo "Skipping MySQL ruby gem installation since it is already installed."			
+else
+  echo "----- Installing MySQL ruby gem -----"
+  if ! ${{OMSHOME}}/ruby/bin/gem install mysql2 2>/dev/null; then
+    echo "MySQL ruby gem was not installed. MySQL ruby plugin would be disabled."
+    echo "Please check whether libmysqlclient dependency package is installed."
+    echo "You may need to 'apt-get install libmysqlclient-dev' or 'yum install mysql-devel',"
+    echo "then run '${{OMSHOME}}/ruby/bin/gem install mysql2' after omsagent installation to enable MySQL ruby plugin."
+  fi
+fi
+
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
    /opt/microsoft/omsagent/bin/omsadmin.sh
