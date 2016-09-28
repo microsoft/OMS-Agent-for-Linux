@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# This shell script takes two parameters (BUILD_BASEDIR and TestSigningDir).
+# The first parameter (BUILD_BASEDIR) points to the build share where signed package is dropped, 
+# the second parameter (TestSigningDir) points to the path where signing certs are located.
+# These are parameter combinations currently supported by this script:
+#                    Blank (No parameter)
+#                    /mnt/ostcdata/OSTCData/Builds/omsagent/develop (only BUILD_BASEDIR is specified)
+#                    /mnt/ostcdata/OSTCData/Builds/omsagent/develop ../test/config/testsigning (BUILD_BASEDIR and TestSigningDir)
+
 # Assume we're running from superproject (with version file)
 
 if [ ! -f omsagent.version ]; then
@@ -20,12 +28,12 @@ BUILD_VERS=$OMS_BUILDVERSION_MAJOR.$OMS_BUILDVERSION_MINOR.$OMS_BUILDVERSION_PAT
 
 # We assume that by default our build share is mounted at: /mnt/ostcdata. Verify that
 # our build directory is under that as expected ...
-if [ $# -lt 1 ]; then
+BUILD_BASEDIR=$1
+if [ "$BUILD_BASEDIR" = "" ]; then
     echo "No build share path is specified. Default build share is mounted at: /mnt/ostcdata"
     BUILD_BASEDIR=/mnt/ostcdata/OSTCData/Builds/omsagent/develop
 else
     echo "Build share is mounted at: $1"
-    BUILD_BASEDIR=$1
 fi
 
 if [ ! -d $BUILD_BASEDIR ]; then
@@ -64,7 +72,7 @@ DscModuleIntermediateDir="$IntermediateDir/merging_dsc_modules"
 DscModuleTargetDir="$TargetDir/dsc_signed"
 X64Dir="$BUILD_BASEDIR/Linux_ULINUX_1.0_x64_64_Release/dsc"
 X86Dir="$BUILD_BASEDIR/Linux_ULINUX_1.0_x86_32_Release/dsc"
-TestSigningDir=$1
+TestSigningDir=$2
 
 if [ "$TestSigningDir" = "" ]; then
     TestSigningDir="../test/config/testsigning"
