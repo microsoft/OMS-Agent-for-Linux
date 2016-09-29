@@ -740,7 +740,7 @@ Physical Disk | Avg. Disk sec/Write
 Physical Disk | Physical Disk Bytes/sec
 Process | Pct Privileged Time
 Process | Pct User Time
-Process | Used Memory
+Process | Used Memory kBytes
 Process | Virtual Shared Memory
 Processor | % DPC Time
 Processor | % Idle Time
