@@ -33,6 +33,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/statsd.conf;             installer/conf/omsagent.d/statsd.conf;                 644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/auditlog.conf;           installer/conf/omsagent.d/auditlog.conf;               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf;              installer/conf/omsagent.d/mysql.conf;                  644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf;        installer/conf/omsagent.d/apache_logs.conf;            644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mongo.conf;              installer/conf/omsagent.d/mongo.conf;                  644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf;        installer/conf/omsagent.d/vmware_esxi.conf;            644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf;          installer/conf/omsagent.d/operation.conf;              644; root; root
