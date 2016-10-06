@@ -464,11 +464,7 @@ onboard()
         log_info "Onboarding success"
     elif [ "$RET_CODE" = "403" ]; then
         REASON=`cat $RESP_ONBOARD | sed -n 's:.*<Reason>\(.*\)</Reason>.*:\1:p'`
-        if [ "$REASON" = "ClockSkew" ]; then
-            log_error "Onboarding Failed -- Time on server needs to be corrected"
-        else
-            log_error "Error onboarding. HTTP code $RET_CODE"
-        fi
+        log_error "Error onboarding. HTTP code 403, Reason: $REASON. Check the Workspace ID, Workspace Key and that the time of the system is correct."
         rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
         return 1
     else
