@@ -148,22 +148,22 @@ class MysqlWorkload_Lib
       env_var_stats.push(new_row)
     end
 
-    # Add NumConnections
+    # Add Number of Connections
     num_connections = Hash.new
     num_connections_value = get_value(global_stats, "Threads_connected")
-    num_connections.store("NumConnections", num_connections_value)
+    num_connections.store("Number of Connections", num_connections_value)
     final_records.push(num_connections)
 
-    # Add MaxConnections
+    # Add Maximum Allowed Connections
     max_connections = Hash.new
     max_connections_value = get_value(env_var_stats, "max_connections")
-    max_connections.store("MaxConnections", max_connections_value)
+    max_connections.store("Maximum Allowed Connections", max_connections_value)
     final_records.push(max_connections)
 
-    # Add FailedConnections
+    # Add Aborted Connections
     failed_connections = Hash.new
     failedconnections_value = get_value(global_stats, "Aborted_connects")
-    failed_connections.store("FailedConnections", failedconnections_value)
+    failed_connections.store("Aborted Connections", failedconnections_value)
     final_records.push(failed_connections)
 
     # Add Uptime
@@ -180,10 +180,10 @@ class MysqlWorkload_Lib
     if key_read_requests.to_f != 0
       value = (key_reads.to_f / key_read_requests.to_f) * 100
     end
-    key_cache_hit_pct.store("KeyCacheHitPct", value.round(2))
+    key_cache_hit_pct.store("Key Cache Hit Pct", value.round(2))
     final_records.push(key_cache_hit_pct)
 
-    # add ServerMaxRAM
+    # add MySQL Worst Case RAM Usage
     server_max_ram= Hash.new
     value = 0 #reset
     key_buffer_size = get_value(env_var_stats, 'key_buffer_size')
@@ -191,14 +191,14 @@ class MysqlWorkload_Lib
     sort_buffer_size = get_value(env_var_stats, 'sort_buffer_size')
     max_connections = get_value(env_var_stats, 'max_connections')
     value = key_buffer_size.to_f + (read_buffer_size.to_f + sort_buffer_size.to_f)*max_connections.to_f
-    server_max_ram.store("ServerMaxRAM", value.round(2))
+    server_max_ram.store("MySQL Worst Case RAM Usage", value.round(2))
     final_records.push(server_max_ram)
 
-    #Add ServerDiskUseInBytes
+    #Add MySQL Server Disk Usage In Bytes
     q_size_all_db = query(@query_sizeof_all_databases) # Total size
     q_size_all_db.each do |row|
       s_database = Hash.new()
-      s_database.store("ServerDiskUseInBytes",row["Size (Bytes)"])
+      s_database.store("MySQL Server Disk Usage In Bytes",row["Size (Bytes)"])
       final_records.push(s_database)
     end
 
@@ -214,10 +214,10 @@ class MysqlWorkload_Lib
       com_stmt_prepare = get_value(global_stats, "Com_stmt_prepare")
       queries = questions.to_i + com_stmt_close.to_i + com_stmt_reset.to_i + com_stmt_prepare.to_i
     end
-    slow_query_pct.store("SlowQueryPct", queries )
+    slow_query_pct.store("Slow Query Pct", queries )
     final_records.push(slow_query_pct)
 
-    #add KeyCacheWritePct
+    #add Key Cache Write Pct
     key_cache_write_pct = Hash.new()
     key_writes = get_value(global_stats,"Key_writes")
     key_writes_requests = get_value(global_stats,"Key_writes_requests")
@@ -225,10 +225,10 @@ class MysqlWorkload_Lib
     if(key_writes_requests.to_f != 0)
       value = (key_writes.to_f)/(key_writes_requests.to_f) * 100
     end
-    key_cache_write_pct.store("KeyCacheWritePct", value.round(2))
+    key_cache_write_pct.store("Key Cache Write Pct", value.round(2))
     final_records.push(key_cache_write_pct)
 
-    #add QCacheHitPct
+    #add Query CacheHitPct
     query_cache_hit_pct = Hash.new()
     qcache_hits = get_value(global_stats,"Qcache_hits")
     com_select = get_value(global_stats,"Com_select")
@@ -236,20 +236,20 @@ class MysqlWorkload_Lib
     if (qcache_hits.to_f + com_select.to_f) != 0
       value = qcache_hits.to_f/(qcache_hits.to_f + com_select.to_f)*100
     end
-    query_cache_hit_pct.store("QCacheHitPct", value.round(2))
+    query_cache_hit_pct.store("Query Cache Hit Pct", value.round(2))
     final_records.push(query_cache_hit_pct)
 
-    #add QCachePrunesPct
+    #add Query Cache Low memory Prunes
     query_cache_prunes_pct = Hash.new()
     qcache_prunes = get_value(global_stats,"Qcache_lowmem_prunes")
     value = 0
     if queries.to_f != 0
       value = (qcache_prunes.to_f/queries.to_f) * 100
     end
-    query_cache_prunes_pct.store("QCachePrunesPct", value.round(2))
+    query_cache_prunes_pct.store("Query Cache Low memory Prunes", value.round(2))
     final_records.push(query_cache_prunes_pct)
 
-    #add TCacheHitPct
+    #add TableCacheHitPct
     table_hit_pct = Hash.new()
     open_tables = get_value(global_stats,"Open_tables")
     opened_tables = get_value(global_stats,"Opened_tables")
@@ -257,7 +257,7 @@ class MysqlWorkload_Lib
     if opened_tables.to_f != 0
       value = open_tables.to_f/opened_tables.to_f * 100
     end
-    table_hit_pct.store("TCacheHitPct", value.round(2))
+    table_hit_pct.store("Table Cache Hit Pct", value.round(2))
     final_records.push(table_hit_pct)
 
     #add TableLockContentionPct
@@ -268,10 +268,10 @@ class MysqlWorkload_Lib
     if (table_lock_waited.to_f + table_lock_immediate.to_f) != 0
       value = table_lock_waited.to_f/(table_lock_waited.to_f + table_lock_immediate.to_f) * 100
     end
-    table_lock_pct.store("TableLockContentionPct", value.round(2))
+    table_lock_pct.store("Table Lock Contention Pct", value.round(2))
     final_records.push(table_lock_pct)
 
-    #add IDB_BP_HitPct
+    #add InnoDB Buffer Pool Hit Percent
     idb_hit_pct = Hash.new()
     innodb_buffer_pool_reads = get_value(global_stats,"Innodb_buffer_pool_reads")
     innodb_buffer_pool_read_requests = get_value(global_stats,"Innodb_buffer_pool_read_requests")
@@ -279,10 +279,10 @@ class MysqlWorkload_Lib
     if (innodb_buffer_pool_reads.to_f + innodb_buffer_pool_read_requests.to_f) != 0
       value = innodb_buffer_pool_reads.to_f/(innodb_buffer_pool_reads.to_f + innodb_buffer_pool_read_requests.to_f) * 100
     end
-    idb_hit_pct.store("IDB_BP_HitPct", value.round(2))
+    idb_hit_pct.store("InnoDB Buffer Pool Hit Percent", value.round(2))
     final_records.push(idb_hit_pct)
 
-    #add IDB_BP_UsePct
+    #add InnoDB Buffer Pool Percent Use
     idb_use_pct = Hash.new()
     innodb_buffer_pool_pages_data = get_value(global_stats,"Innodb_buffer_pool_pages_data")
     innodb_buffer_pool_pages_total = get_value(global_stats,"Innodb_buffer_pool_pages_total")
@@ -290,7 +290,7 @@ class MysqlWorkload_Lib
     if( innodb_buffer_pool_pages_total.to_f != 0)
       value = innodb_buffer_pool_pages_data.to_f/innodb_buffer_pool_pages_total.to_f * 100
     end
-    idb_use_pct.store("IDB_BP_UsePct", value.round(2) )
+    idb_use_pct.store("InnoDB Buffer Pool Percent Use", value.round(2) )
     final_records.push(idb_use_pct)
 
     #add FullTableScanPct
@@ -307,7 +307,7 @@ class MysqlWorkload_Lib
     if all_row_access != 0
       value = full_scan_reads/all_row_access * 100
     end
-    full_table_pct.store("FullTableScanPct", value.round(2) )
+    full_table_pct.store("Full Table Scan Pct", value.round(2) )
     final_records.push(full_table_pct)
 
     # add SlaveStatus
@@ -414,7 +414,7 @@ class MysqlWorkload_Lib
       db_instance = Hash.new
       db_instance["Timestamp"] = timestamp
       db_instance["Host"] = host_name
-      db_instance["ObjectName"]="MySQL Server Database"
+      db_instance["ObjectName"]="MySQL Database"
       db_instance["InstanceName"] = row["DatabaseName"]
       row.delete("DatabaseName") # leave only table name and size columns and remove database name
       row.each {
