@@ -25,13 +25,15 @@ module Fluent
 
           if record['SyslogMessage']
             begin
+              # Keep only the process name and remove rest of the string
+              record['ProcessName'].gsub!(/\[.*\]/, "")
               # Regex for Device. Example string: naa.60a9800041764b6c463f43786855a3t2
               record['Device'] = record['SyslogMessage'].to_s.match(/naa\.[a-z0-9]{32}/).to_s
               # Regex for SCSI Status. Example string: H:0x8 D:0x0 P:0x0
               record['SCSIStatus'] = record['SyslogMessage'].to_s.match(/\sH\:[a-z0-9]{1,2}x[a-z0-9]{1,2}\sD\:[a-z0-9]{1,2}x[a-z0-9]{1,2}\sP\:[a-z0-9]{1,2}x[a-z0-9]{1,2}\s/).to_s.strip
               if record['ProcessName'] == 'vobd'
                 # Regex for ESXI Failure. Example string: [esx.problem.scsi.device.io.latency.high]
-                esxifailure = record['SyslogMessage'].to_s.match /\[esx\.problem\.(?<Failure>.*)\]/
+                esxifailure = record['SyslogMessage'].to_s.match /\[esx\.problem\.(?<Failure>[a-zA-z0-9\.]*)\]/
                 if esxifailure
                   record['ESXIFailure'] = esxifailure['Failure']
                 end
@@ -62,7 +64,11 @@ module Fluent
             end
           end
 
-          yield time, record
+          # Yield only for non-black listed processes
+          process_blacklist = ['crond', 'syslog', 'root', 'slpd', 'omsagent', 'systemd']
+          unless process_blacklist.include? record['ProcessName']
+            yield time, record
+          end
         end
       end
     end
