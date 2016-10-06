@@ -236,7 +236,7 @@ if [ $RUNNING_FOR_TEST -eq 0 ]; then
     # Pacify Make (Make doesn't know that the generated Ruby directory can vary)
     mkdir -p ${BASE_DIR}/intermediate/${BUILD_CONFIGURATION}/ruby
 else 
-    echo "Installing MySQL gem into Test Ruby..." 
+    echo "Installing MySQL gem into Test Ruby under: ${RUBY_DESTDIR} ..." 
     elevate ${RUBY_DESTDIR}/bin/gem install mysql2
 fi
 

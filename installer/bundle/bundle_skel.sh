@@ -848,11 +848,9 @@ case "$installMode" in
             ${OMS_RUBY_DIR}/gem uninstall mysql2 2>/dev/null
 		fi
         echo "----- Installing MySQL2 ruby gem -----"
-        if ! ${OMS_RUBY_DIR}/gem install mysql2 2>/dev/null; then
-            echo "MySQL ruby gem was not installed. MySQL ruby plugin would be disabled."
-            echo "Please check whether libmysqlclient dependency package is installed."
-            echo "You may need to 'apt-get install libmysqlclient-dev' or 'yum install mysql-devel',"
-            echo "then run '${OMS_RUBY_DIR}/ruby/bin/gem install mysql2' after omsagent installation to enable MySQL ruby plugin."
+        if ! ${OMS_RUBY_DIR}/gem install mysql2; then
+            echo "MySQL2 ruby gem was not installed. MySQL ruby fluentd plugin would be disabled."
+            echo "Fix the dependencies and run '${OMS_RUBY_DIR}/ruby/bin/gem install mysql2' after omsagent installation to enable MySQL plugin."
         fi
 		
         if [ $KIT_STATUS -eq 0 ]; then
