@@ -25,13 +25,13 @@ class CollectdTest < Test::Unit::TestCase
                 "dstypes"=>["derive","derive"],
                 "dsnames"=>["rx","tx"],
                 "interval"=>10.0,
-                "host"=>"testhost",
+                "host"=>nil,
                 "plugin"=>"interface",
                 "plugin_instance"=>"lo",
                 "type"=>"if_packets",
                 "type_instance"=>""
    	 }	
-    expected_record = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Host"=>"testhost", "ObjectName"=>"if_packets", "InstanceName"=>"lo", "Collections"=>[{"CounterName"=>"rx", "Value"=>4447}, {"CounterName"=>"tx", "Value"=>4447}]}]}
+    expected_record = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Host"=>"oms_common_hostname", "ObjectName"=>"if_packets", "InstanceName"=>"lo", "Collections"=>[{"CounterName"=>"rx", "Value"=>4447}, {"CounterName"=>"tx", "Value"=>4447}]}]}
     validate_record_helper(expected_record, input_record, "Record filter failed!")
   
   end
@@ -77,7 +77,7 @@ class CollectdTest < Test::Unit::TestCase
   end
 
   def validate_record_helper(expected, input, error_msg)
-    returned_record = @@collectd_lib.transform_and_wrap(input, "testhost")
+    returned_record = @@collectd_lib.transform_and_wrap(input, "oms_common_hostname")
     #strip Timestamp key from dataitems for returned_record
     returned_record["DataItems"].each do |rec|
     	rec.tap{|x| x.delete("Timestamp")}

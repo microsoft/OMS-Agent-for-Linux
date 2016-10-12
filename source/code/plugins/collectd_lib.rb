@@ -27,13 +27,15 @@ module CollectdModule
       data_items = []
       data_info = {}
       data_info["Timestamp"] = record["Timestamp"]
-      data_info["Host"] = hostname
+
+      if (record["host"].nil? || record["host"] == "localhost" || record["host"] == "127.0.0.1")
+        data_info["Host"] = hostname
+      else
+        data_info["Host"] = record["host"]
+      end
+
       data_info["ObjectName"] = record["type"]
-
-      plugin = record["plugin_instance"]
-      record["InstanceName"] = (plugin ||="").empty? ? "_Total" : plugin
-      data_info["InstanceName"] = record["InstanceName"]
-
+      data_info["InstanceName"] = record["plugin_instance"].to_s.empty? ? "_Total" : record["plugin_instance"]
       data_info["Collections"] = collections
       data_items.push(data_info)
 
