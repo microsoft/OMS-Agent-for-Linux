@@ -202,6 +202,12 @@ export PATH=${RUBY_DESTDIR}/bin:$PATH
 echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
+echo "Installing Builder into Ruby ..."
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.2.gem
+
+echo "Installing Gyoku into Ruby ..."
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/gyoku-1.3.1.gem
+
 # Now do what we need for FluentD
 
 cd ${FLUENTD_DIR}

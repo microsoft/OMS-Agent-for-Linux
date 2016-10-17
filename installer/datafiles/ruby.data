@@ -2686,6 +2686,119 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/fluentd-0.12.24/ri/Gem/cdesc-Gem.ri; ${{R
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/fluentd-0.12.24/ri/Object/cdesc-Object.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/fluentd-0.12.24/ri/Object/cdesc-Object.ri; 644; root; root
 
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Symbol/cdesc-Symbol.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Symbol/cdesc-Symbol.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Symbol/_blankslate_as_name-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Symbol/_blankslate_as_name-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Module/blankslate_original_append_features-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Module/blankslate_original_append_features-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Module/append_features-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Module/append_features-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Module/cdesc-Module.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Module/cdesc-Module.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/find_hidden_method-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/find_hidden_method-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/reveal-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/reveal-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/cdesc-BlankSlate.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/cdesc-BlankSlate.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/hide-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate/hide-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/String/cdesc-String.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/String/cdesc-String.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/String/to_xs-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/String/to_xs-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/String/_blankslate_as_name-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/String/_blankslate_as_name-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-Rakefile.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-Rakefile.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/cache.ri;        ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/cache.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-README_md.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-README_md.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/find_hidden_method-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/find_hidden_method-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/blank_slate_method_added-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/blank_slate_method_added-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/method_added-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/method_added-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/cdesc-Object.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object/cdesc-Object.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Kernel/blank_slate_method_added-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Kernel/blank_slate_method_added-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Kernel/cdesc-Kernel.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Kernel/cdesc-Kernel.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Kernel/method_added-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Kernel/method_added-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_ensure_no_block-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_ensure_no_block-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/instruct%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/instruct%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_insert_attributes-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_insert_attributes-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/comment%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/comment%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/target%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/target%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/cdesc-XmlMarkup.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/cdesc-XmlMarkup.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/declare%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/declare%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/cdata%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/cdata%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_text-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_text-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_end_tag-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_end_tag-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_start_tag-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_start_tag-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_special-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_special-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_attr_value-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/_attr_value-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup/new-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XChar/cdesc-XChar.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XChar/cdesc-XChar.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/text%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/text%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/cdesc-XmlEvents.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/cdesc-XmlEvents.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/_end_tag-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/_end_tag-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/_start_tag-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents/_start_tag-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/cdesc-Builder.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/cdesc-Builder.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/text%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/text%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/cache_method_call-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/cache_method_call-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_nested_structures-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_nested_structures-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/%3c%3c-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/%3c%3c-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_escape_attribute-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_escape_attribute-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_newline-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_newline-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/explicit_nil_handling%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/explicit_nil_handling%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_escape-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_escape-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/cache_method_calls-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/cache_method_calls-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/nil%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/nil%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/method_missing-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/method_missing-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/tag%21-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/tag%21-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_indent-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/_indent-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/cdesc-XmlBase.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/cdesc-XmlBase.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase/new-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/check_for_name_collision-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/check_for_name_collision-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/IllegalBlockError/cdesc-IllegalBlockError.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/IllegalBlockError/cdesc-IllegalBlockError.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-CHANGES.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-CHANGES.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Fixnum/xchr-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Fixnum/xchr-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Fixnum/cdesc-Fixnum.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Fixnum/cdesc-Fixnum.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-MIT-LICENSE.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/page-MIT-LICENSE.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc/releases/page-builder-1_2_4_rdoc.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc/releases/page-builder-1_2_4_rdoc.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc/releases/page-builder-2_1_1_rdoc.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc/releases/page-builder-2_1_1_rdoc.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc/releases/page-builder-2_0_0_rdoc.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc/releases/page-builder-2_0_0_rdoc.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLValue/create-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLValue/create-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLValue/cdesc-XMLValue.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLValue/cdesc-XMLValue.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/cdesc-Hash.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/cdesc-Hash.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/to_xml-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/to_xml-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/order-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/order-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/iterate_with_xml-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash/iterate_with_xml-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/xml_tag-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/xml_tag-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/tag_attributes-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/tag_attributes-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/to_xml-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/to_xml-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/cdesc-Array.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/cdesc-Array.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/iterate_array-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/iterate_array-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/iterate_with_xml-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array/iterate_with_xml-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/xml-c.ri;    ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/xml-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/key_converter-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/key_converter-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/create-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/create-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/chop_special_characters-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/chop_special_characters-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/cdesc-XMLKey.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/cdesc-XMLKey.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/unqualify%3f-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/unqualify%3f-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/qualify%3f-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey/qualify%3f-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/cdesc-Gyoku.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/cdesc-Gyoku.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/cache.ri;          ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/cache.ri;   644; root; root
+
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Capistrano/cdesc-Capistrano.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Capistrano/cdesc-Capistrano.ri; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/ParallelInstaller/cdesc-ParallelInstaller.ri; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/ParallelInstaller/cdesc-ParallelInstaller.ri; 644; root; root
@@ -4606,6 +4719,8 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/flexmock-1.3.3.gemspec; ${{RUB
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/oj-2.15.0.gemspec;     ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/oj-2.15.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/thread_safe-0.3.5.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/thread_safe-0.3.5.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/fluentd-0.12.24.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/fluentd-0.12.24.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/builder-3.2.2.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/builder-3.2.2.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/gyoku-1.3.1.gemspec;   ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/gyoku-1.3.1.gemspec; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/default/psych-2.0.8.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/default/psych-2.0.8.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/default/rake-10.4.2.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/specifications/default/rake-10.4.2.gemspec; 644; root; root
@@ -4654,6 +4769,8 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/test-unit-rr-1.0.5.gem;         ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/tzinfo-data-1.2016.4.gem;       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/tzinfo-data-1.2016.4.gem; 444; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/cool.io-1.4.4.gem;              ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/cool.io-1.4.4.gem;       444; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/parallel_tests-2.5.0.gem;       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/parallel_tests-2.5.0.gem; 444; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/builder-3.2.2.gem;              ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/builder-3.2.2.gem;       644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache/gyoku-1.3.1.gem;                ${{RUBY_INT}}/lib/ruby/gems/2.2.0/cache/gyoku-1.3.1.gem;         644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/gem_make.out; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/gem_make.out; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/gem.build_complete; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/extensions/${{RUBY_ARCH}}/2.2.0-static/msgpack-0.5.12/gem.build_complete; 644; root; root
@@ -7706,6 +7823,69 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-0.6.4/gemfiles/multi_json-lega
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-0.6.4/gemfiles/multi_json-new.gemfile.lock; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/simplecov-0.6.4/gemfiles/multi_json-new.gemfile.lock; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/simplecov-0.6.4/gemfiles/multi_json-new.gemfile; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/simplecov-0.6.4/gemfiles/multi_json-new.gemfile; 644; root; root
 
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/Rakefile;          ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/Rakefile;   644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/rakelib/tags.rake; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/rakelib/tags.rake; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/rakelib/publish.rake; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/rakelib/publish.rake; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/MIT-LICENSE;       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/MIT-LICENSE; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_eventbuilder.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_eventbuilder.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_markupbuilder.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_markupbuilder.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_xchar.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_xchar.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_method_caching.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_method_caching.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/preload.rb;   ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/preload.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/performance.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/performance.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_blankslate.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_blankslate.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_namecollision.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test/test_namecollision.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/README.md;         ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/README.md;  644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/CHANGES;           ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/CHANGES;    644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/version.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xchar.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xchar.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xmlevents.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xmlevents.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/blankslate.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/blankslate.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xmlbase.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xmlbase.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xmlmarkup.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder/xmlmarkup.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/blankslate.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/blankslate.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder.rb;    ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/jamis.rb;      ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/jamis.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/releases/builder-2.1.1.rdoc; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/releases/builder-2.1.1.rdoc; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/releases/builder-1.2.4.rdoc; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/releases/builder-1.2.4.rdoc; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/releases/builder-2.0.0.rdoc; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/releases/builder-2.0.0.rdoc; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/Gemfile;             ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/Gemfile;      644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/Rakefile;            ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/Rakefile;     644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/gyoku.gemspec;       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/gyoku.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/CHANGELOG.md;        ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/CHANGELOG.md; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/.gitignore;          ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/.gitignore;   644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/array_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/array_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/xml_key_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/xml_key_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/hash_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/hash_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/xml_value_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku/xml_value_spec.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku_spec.rb;  ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/spec_helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/spec_helper.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/MIT-LICENSE;         ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/MIT-LICENSE;  644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/.travis.yml;         ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/.travis.yml;  644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/README.md;           ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/README.md;    644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/version.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/hash.rb;   ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/hash.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/xml_key.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/xml_key.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/array.rb;  ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/array.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/xml_value.rb; ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku/xml_value.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku.rb;        ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/.rspec;              ${{RUBY_INT}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/.rspec;       644; root; root
+
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/bin/fluent-cat;                       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/bin/fluent-cat;                755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/bin/fluent-gem;                       ${{RUBY_INT}}/lib/ruby/gems/2.2.0/bin/fluent-gem;                755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/bin/fluent-debug;                     ${{RUBY_INT}}/lib/ruby/gems/2.2.0/bin/fluent-debug;              755; root; root
@@ -8318,6 +8498,30 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP; 755; root; ro
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/SSLReuse; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/bundler-1.10.6/ri/Net/HTTP/Persistent/Error; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2;   755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Symbol; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Module; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/BlankSlate; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/String; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Object; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Kernel; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlMarkup; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XChar; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlEvents; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/XmlBase; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Builder/IllegalBlockError; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/Fixnum; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/builder-3.2.2/ri/doc/releases; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1;     755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri;  755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLValue; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Hash; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/Array; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications;      755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/specifications/default; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/cache;               755; root; root
@@ -8399,6 +8603,18 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/bundler-1.10.6/lib/bundler/source/git; 7
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/bundler-1.10.6/lib/bundler/source/rubygems; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/bundler-1.10.6/lib/bundler/source/path; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/bundler-1.10.6/bin; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2;  755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/rakelib; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/test; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/lib/builder; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/builder-3.2.2/doc/releases; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1;    755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/spec/gyoku; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/gyoku-1.3.1/lib/gyoku; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/sigdump-0.2.4;  755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/sigdump-0.2.4/lib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.2.0/gems/sigdump-0.2.4/lib/sigdump; 755; root; root

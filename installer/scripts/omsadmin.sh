@@ -29,6 +29,7 @@ INSTALL_INFO=/etc/opt/microsoft/omsagent/sysconf/installinfo.txt
 # Ruby helpers
 RUBY=/opt/microsoft/omsagent/ruby/bin/ruby
 AUTH_KEY_SCRIPT=/opt/microsoft/omsagent/bin/auth_key.rb
+TOPOLOGY_REQ_SCRIPT=/opt/microsoft/omsagent/plugin/agent_topology_request_script.rb
 
 METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
 
@@ -46,8 +47,6 @@ RESP_HEARTBEAT=$TMP_DIR/resp_heartbeat.xml
 
 BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
 RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
-
-PROCESS_STATS=$TMP_DIR/process_stats_$$
 
 AGENT_USER=omsagent
 AGENT_GROUP=omsagent
@@ -276,53 +275,6 @@ generate_certs()
     rm "$tmp_key"
 }
 
-append_telemetry()
-{
-    if [ ! -w "$1" ]; then
-        log_warning "Invalid parameter $1 to append_telemetry()"
-        return 1
-    fi
-
-    if [ ! -r $OS_INFO ]; then
-        # This is not fatal, we simply proceed without the info
-        log_warning "Unable to read file $OS_INFO; telemetry information will not be sent to server"
-        return 1
-    fi
-
-    if [ -f /root/.dockerenv -o -f /root/.dockerinit ]; then
-        InContainer=True
-    else
-        InContainer=False
-    fi
-
-    # If a test is not in progress, and agent is already onboarded, then get OMSagent process statistics
-    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" -a -f "$CONF_OMSADMIN" ]; then
-        /opt/omi/bin/omicli wql root/scx "SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'" | grep = > "$PROCESS_STATS"
-
-        PercentUserTime=`grep PercentUserTime $PROCESS_STATS | cut -d= -f2`
-        PercentPrivilegedTime=`grep PercentPrivilegedTime $PROCESS_STATS | cut -d= -f2`
-        UsedMemory=`grep " UsedMemory" $PROCESS_STATS | cut -d= -f2`
-        PercentUsedMemory=`grep PercentUsedMemory $PROCESS_STATS | cut -d= -f2`
-    fi
-
-    # We grep instead of sourcing because parentheses in the file cause syntax errors
-    OSName=`grep OSName $OS_INFO | cut -d= -f2`
-    OSManufacturer=`grep OSManufacturer $OS_INFO | cut -d= -f2`
-    OSVersion=`grep OSVersion $OS_INFO | cut -d= -f2`
-
-    echo "   <OperatingSystem>" >> $1
-    echo "      <Name>$OSName</Name>" >> $1
-    echo "      <Manufacturer>$OSManufacturer</Manufacturer>" >> $1
-    echo "      <ProcessorArchitecture>x64</ProcessorArchitecture>" >> $1
-    echo "      <Version>$OSVersion</Version>" >> $1
-    echo "      <InContainer>$InContainer</InContainer>" >> $1
-    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" -a -f "$CONF_OMSADMIN" ]; then
-        echo "      <Telemetry PercentUserTime=\"$PercentUserTime\" PercentPrivilegedTime=\"$PercentPrivilegedTime\"" >> $1
-        echo "       UsedMemory=\"$UsedMemory\" PercentUsedMemory=\"$PercentUsedMemory\"></Telemetry>" >> $1
-    fi
-    echo "   </OperatingSystem>" >> $1
-}
-
 set_FQDN()
 {
     local hostname=`hostname`
@@ -405,13 +357,10 @@ onboard()
     REQ_DATE=`date +%Y-%m-%dT%T.%N%:z`
     CERT_SERVER=`cat $FILE_CRT | awk 'NR>2 { print line } { line = $0 }'`
     set_FQDN
-    echo '<?xml version="1.0"?>' > $BODY_ONBOARD
-    echo '<AgentTopologyRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/">' >> $BODY_ONBOARD
-    echo "   <FullyQualfiedDomainName>${FQDN}</FullyQualfiedDomainName>" >> $BODY_ONBOARD
-    echo "   <EntityTypeId>$AGENT_GUID</EntityTypeId>" >> $BODY_ONBOARD
-    echo "   <AuthenticationCertificate>${CERT_SERVER}</AuthenticationCertificate>" >> $BODY_ONBOARD
-    append_telemetry $BODY_ONBOARD
-    echo "</AgentTopologyRequest>" >> $BODY_ONBOARD
+ 
+    # append telemetry to $BODY_ONBOARD
+    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$FQDN" "$AGENT_GUID" "$CERT_SERVER"` 
+    [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding. "
 
     cat /dev/null > "$SHARED_KEY_FILE"
     chmod 600 "$SHARED_KEY_FILE"
@@ -543,13 +492,9 @@ heartbeat()
     # Generate the request body
     CERT_SERVER=`cat "$FILE_CRT" | awk 'NR>2 { print line } { line = $0 }'`
     set_FQDN
-    echo '<?xml version="1.0"?>' > $BODY_HEARTBEAT
-    echo '<AgentTopologyRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/">' >> $BODY_HEARTBEAT
-    echo "   <FullyQualfiedDomainName>${FQDN}</FullyQualfiedDomainName>" >> $BODY_HEARTBEAT
-    echo "   <EntityTypeId>$AGENT_GUID</EntityTypeId>" >> $BODY_HEARTBEAT
-    echo "   <AuthenticationCertificate>${CERT_SERVER}</AuthenticationCertificate>" >> $BODY_HEARTBEAT
-    append_telemetry $BODY_HEARTBEAT
-    echo "</AgentTopologyRequest>" >> $BODY_HEARTBEAT
+
+    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_HEARTBEAT" "$OS_INFO" "$CONF_OMSADMIN" "$FQDN" "$AGENT_GUID" "$CERT_SERVER"`
+    [ $? -ne 0 ] && log_error "Error when appending Telemetry to Heartbeat" 
 
     set_proxy_setting
 
