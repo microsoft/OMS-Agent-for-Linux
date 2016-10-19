@@ -5,6 +5,7 @@
 # Once the checksume file is signed as *.asc file, it downloads and 
 # serializes the signed file into the zip package for given module.
 # Script assumes that source and destination containers are created in azure storage account with proper write and read permissions
+# Script is expected to run from Build-OMS-Agent-for-Linux path
 # 
 # Supported parameters
 # $1 - SAS URI of source container which contains the file to be signed
@@ -154,11 +155,13 @@ if ! unzip -Z 1>/dev/null; then
     exit 1
 fi
 
+cd omsagent/build
+
 # Working directory used for merging both x64 and x86 versions of a DSC module.
-DscModuleIntermediateDir="/tmp/merging_dsc_modules"
+DscModuleIntermediateDir="../intermediate/relsign/merging_dsc_modules"
 
 # Working directory where the signed package is dropped.
-DscModuleTargetDir="/tmp/dsc_signed"
+DscModuleTargetDir="../intermediate/relsign/dsc_signed"
 
 # Locations of dsc modules that need to be signed
 X64Dir="$BUILD_BASEDIR/Linux_ULINUX_1.0_x64_64_Release/dsc"
@@ -236,7 +239,7 @@ do
     while [ $NUM_OF_RETRIES -lt $MaxSignWaitAttempts ]
     do
       echo "Retry attempt number $NUM_OF_RETRIES"
-	  if read_blob $SAS_DEST_URI "signing.log" "../$DscModuleIntermediateDir/signing.log" ; then
+	  if read_blob $SAS_DEST_URI "signing.log" "$DscModuleIntermediateDir/$ModuleName.log" ; then
         echo "found marker file signing.log"
         break
       fi
