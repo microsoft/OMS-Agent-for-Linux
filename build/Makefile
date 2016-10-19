@@ -193,7 +193,7 @@ $(RUBY_TESTING_DIR) :
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
 	@$(ECHO) "========================= Performing Building Ruby for testing"
-	sudo $(RMDIR) /usr/local/ruby-2.2.0*
+	$(MKPATH) $(INTERMEDIATE_DIR)
 	$(BASE_DIR)/build/buildRuby.sh test
 
 # Build the version of Ruby that we distribute

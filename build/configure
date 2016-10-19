@@ -389,7 +389,7 @@ ruby_configure_quals=(
      )
 
 ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
-ruby_config_quals_testins="--prefix=/usr/local/ruby-2.2.0e"
+ruby_config_quals_testins="--prefix=${base_dir}/intermediate/${BUILD_CONFIGURATION}/local_ruby-2.2.0e"
 
 if [ "$ULINUX" = "1" ]; then
     ssl_098_dirpath=/usr/local_ssl_0.9.8
