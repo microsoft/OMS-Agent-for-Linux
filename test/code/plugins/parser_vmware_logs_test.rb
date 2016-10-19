@@ -21,6 +21,17 @@ class VmwareSyslogParserTest < Test::Unit::TestCase
       assert_equal record['HostName'], 'contosa.vm.esxi1'
       assert_equal record['ProcessName'], 'vmkernel'
       assert_equal record['SyslogMessage'], "cpu0:33011)WARNING: IOMMUIntel: 2777: IOMMU context entry dump for 0000:06:00.0 Ctx-Hi = 0xf000a835f000e2c3 Ctx-Lo = 0xf000a835f000a835"
+      assert_equal record['ESXIFailure'], ''
+      assert_equal record['Operation'], ''
+    end
+
+    text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 vmkernel[34242432]: cpu0:33011)WARNING: IOMMUIntel: 2777: IOMMU context entry dump for 0000:06:00.0 Ctx-Hi = 0xf000a835f000e2c3 Ctx-Lo = 0xf000a835f000a835'
+    d.instance.parse(text) do |_time, record|
+      assert_equal record['HostName'], 'contosa.vm.esxi1'
+      assert_equal record['ProcessName'], 'vmkernel'
+      assert_equal record['SyslogMessage'], "cpu0:33011)WARNING: IOMMUIntel: 2777: IOMMU context entry dump for 0000:06:00.0 Ctx-Hi = 0xf000a835f000e2c3 Ctx-Lo = 0xf000a835f000a835"
+      assert_equal record['ESXIFailure'], ''
+      assert_equal record['Operation'], ''
     end
   end
 
@@ -30,6 +41,8 @@ class VmwareSyslogParserTest < Test::Unit::TestCase
     text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 vmkernel: reservation state on device naa.6006016084b02800b4a07969cd74e011 is unknown'
     device.instance.parse(text) do |_time, record|
       assert_equal record['Device'], 'naa.6006016084b02800b4a07969cd74e011'
+      assert_equal record['ESXIFailure'], ''
+      assert_equal record['Operation'], ''
     end
 
     # Parse SCSIStatus from message field
@@ -41,7 +54,7 @@ class VmwareSyslogParserTest < Test::Unit::TestCase
 
     # Parse ESXIFailure from message field
     status = create_driver()
-    text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 vobd: [scsiCorrelator] 14807183227307us: [esx.problem.scsi.device.io.latency.high] Device naa.60a9800041764b6c463f437868556b7a performance has deteriorated'
+    text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 vobd: [scsiCorrelator] 14807183227307us: [esx.problem.scsi.device.io.latency.high] Device or filesystem with identifier [mpx.vmhba32:C0:T0:L0] Device naa.60a9800041764b6c463f437868556b7a performance has deteriorated'
     status.instance.parse(text) do |_time, record|
       assert_equal record['ESXIFailure'], 'scsi.device.io.latency.high'
       assert_equal record['Device'], 'naa.60a9800041764b6c463f437868556b7a'
@@ -54,6 +67,7 @@ class VmwareSyslogParserTest < Test::Unit::TestCase
       assert_equal record['ESXIFailure'], 'scsi.device.io.latency.high'
       assert_equal record['Device'], 'naa.60a9800041764b6c463f437868556b7a'
       assert_equal record['StorageLatency'], 28022
+      assert_equal record['Operation'], ''
     end
 
     # Parse fields when VM is Created
@@ -75,6 +89,15 @@ class VmwareSyslogParserTest < Test::Unit::TestCase
       assert_equal record['DataCenter'], 'ha-datacenter'
       assert_equal record['Operation'], 'Delete VM'
     end
+
+    # Should not emit for blacklisted process names
+    blacklist1 = create_driver()
+    text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 crond[23424]: info hostd[FFF35AE0] [Originator@6876 sub=Vimsvc.ha-eventmgr'
+    assert_equal blacklist1.instance.parse(text), nil
+
+    blacklist2 = create_driver()
+    text = '2016-09-14T14:14:25.234Z contosa.vm.esxi1 omsagent: info hostd[FFF35AE0] [Originator@6876 sub=Vimsvc.ha-eventmgr'
+    assert_equal blacklist2.instance.parse(text), nil
   end
 
   def test_outgoing_logs_format
