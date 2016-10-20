@@ -1,5 +1,6 @@
 #!/bin/bash
 
+home_dir=`(cd ~/; pwd -P)`
 base_dir=`(cd ..; pwd -P)`
 scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
 scxpal_dir=`(cd ../../pal; pwd -P)`
@@ -386,10 +387,21 @@ ruby_configure_quals=(
     --disable-install-rdoc
     --without-gmp
     --with-out-ext=${RUBY_EXTENSIONS}
-     )
+  )
 
 ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
-ruby_config_quals_testins="--prefix=${base_dir}/intermediate/${BUILD_CONFIGURATION}/local_ruby-2.2.0e"
+
+ruby_test_directory="${home_dir}/bin/omsagent_test_ruby"
+ruby_config_quals_testins="--prefix=${ruby_test_directory}"
+
+# Delete the OMS test version of Ruby if it exists
+# (Note that it's normally owned by root; so sudo elevate)
+sudo rm -rf ${ruby_test_directory}
+
+# Create a ~/bin directory (if it doesn't exist) as user
+# This is done so that, if user doesn't have a ~/bin directory,
+# they'll have one owned by the user (and not by root)
+[ ! -d ~/bin ] && mkdir ~/bin
 
 if [ "$ULINUX" = "1" ]; then
     ssl_098_dirpath=/usr/local_ssl_0.9.8
@@ -439,6 +451,8 @@ PACKAGE_SUFFIX=$PKG_SUFFIX
 RUBY_CONFIGURE_QUALS=( ${ruby_configure_quals[@]} )
 RUBY_CONFIGURE_QUALS_SYSINS="$ruby_config_quals_sysins"
 RUBY_CONFIGURE_QUALS_TESTINS="$ruby_config_quals_testins"
+RUBY_TEST_DIRECTORY="$ruby_test_directory"
+
 EOF
 
 if [ "$ULINUX" = "1" ]; then

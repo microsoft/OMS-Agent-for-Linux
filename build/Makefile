@@ -120,6 +120,9 @@ clean : clean-status
 	# On Debian, installer staging directory has root permissions, so sudo elevate
 	sudo $(RMDIR) $(STAGING_DIR) $(INSTALLER_TMPDIR) $(BASE_DIR)/target 
 
+	# Until we can build Ruby under installation dir, clean it here
+	sudo $(RMDIR) $(RUBY_TEST_DIRECTORY)
+
 	$(RM) $(IN_PLUGINS_LIB)
 	-find $(BASE_DIR) -name \*~ -exec rm {} \;
 
@@ -193,7 +196,7 @@ $(RUBY_TESTING_DIR) :
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
 	@$(ECHO) "========================= Performing Building Ruby for testing"
-	$(MKPATH) $(INTERMEDIATE_DIR)
+	# $(MKPATH) $(INTERMEDIATE_DIR)
 	$(BASE_DIR)/build/buildRuby.sh test
 
 # Build the version of Ruby that we distribute
