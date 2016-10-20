@@ -11,7 +11,7 @@ With this feature, you'll be able to:
 This is a Public Preview Product. 
 
 ### Supported Linux Operating Systems and Docker:
-* Docker 1.8 thru 1.12.1
+* Docker 1.10 thru 1.12.1
 
 And one of follow OS (x64): 
 * Ubuntu 14.04 LTS, 15.10, 16.04 LTS
@@ -21,74 +21,15 @@ And one of follow OS (x64):
 * RHEL 7.2
 * SUSE Linux Enterprise Server 12
 
+## Release Note
+Update Information is [here.](https://github.com/Microsoft/OMS-docker/blob/keikoacs/ReleaseNote.md)
+
 ## Setting up
 As a pre-requisite, docker must be running prior to this OMS Linux Agent installation. If you have installed before running docker, please re-install OMS Agent. For more information about docker, please go to https://www.docker.com/.
 
-The following settings for container host must be done to monitor the containers. 
-
-#### Settings on container host - systemd (SUSE, openSUSE, CentOS 7.x, RHEL 7.x, Ubuntu 15.x and above)
-- Edit docker.service to add the following:
-```
-[Service]
-...
-Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
-...
-```
-Make sure you add $DOCKER_OPTS in "ExecStart=/usr/bin/docker daemon" within your docker.service file.
-example)
-```
-[Service]
-Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
-ExecStart=/usr/bin/docker daemon -H fd:// $DOCKER_OPTS
-```
-- Restart docker service.
-```
-sudo systemctl restart docker.service
-```
-
-#### Settings on container host - systemd drop-in units
-- If you want to use the drop-in units, please modify your conf file in `/etc/systemd/system/docker.service.d`.
-
-Add the following in `[Service]`. 
-```
-Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
-```
-Make sure you add $DOCKER_OPTS in "ExecStart=/usr/bin/docker daemon" within your docker.service file.
-
-example)
-```
-[Service]
-Restart=always
-StartLimitInterval=0
-Environment="DOCKER_OPTS=--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
-RestartSec=15
-ExecStart=
-ExecStart=/usr/bin/docker daemon -H fd:// --storage-driver=overlay $DOCKER_OPTS
-```
-- Restart docker service.
-```
-systemctl restart docker.service
-```
-For more information, please go to [Control and configure Docker with systemd](https://docs.docker.com/engine/admin/systemd/) on Docker website.
-
-#### Settings on container host - Upstart (Ubuntu 14.x)
-- Edit /etc/default/docker and add this line:
-```
-DOCKER_OPTS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
-```
-- Save the file and then restart the docker service and oms service:
-```
-sudo service docker restart
-```
-#### Settings on container host - Amazon Linux
-- Edit /etc/sysconfig/docker to add the following:
-```
-OPTIONS="--log-driver=fluentd --log-opt fluentd-address=localhost:25225"
-```
--Save the file and then restart docker service. 
-```
-sudo service docker restart
-```
+## Upgrade 
+- If you are using the OMS Agent for Linux, please follow the instruction for the [OMS Agent for Linux.](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/README.md) 
+    - Before upgrading OMS Agent, remove the universal docker settings mentioned [here.](https://github.com/Microsoft/OMS-docker/blob/master/OlderVersionREADME.md#setting-up) You may need to restart your docker service for this. 
 
 ## What now?
 Once you’re set up, we’d like you to try the following scenarios and play around with the system. What works? What is missing? What else do you need for this to be useful for you? Let us know at OMSContainers@microsoft.com.
@@ -158,6 +99,13 @@ Type=ContainerInventory drupal Failed
 
 Note the name of the container under “Name”, and do a search for those logs. In our case, it would be `Type=ContainerLog prickly_varahamihira.`
 
+### Container Lifecycle
+Since Container can come and go, you would like to have information about container lifecycle. 
+
+**Try it** Run the query specificed and the lifecycle information of your running containers. 
+
+![ContainerLifecycle](pictures/DockerPics/ContainerLifeCycle.PNG)
+
 ### View performance information
 When you’re beginning to construct queries, it can help to see what’s possible first. For example, to see all performance data, try a broad query by typing the following into the search box: 
 ```
@@ -170,7 +118,7 @@ You can see this in a more graphical form if you click the word “Metrics” on
 
 ![DockerPerfMetricsView](pictures/DockerPics/DockerPerfMetricsView.png?raw=true)
 
-**Try it:** Scope the performance data you’re seeing to a specific container by adding typing the name of it to the right of your query:
+** Try it: ** Scope the performance data you’re seeing to a specific container by adding typing the name of it to the right of your query:
 ```
 Type=Perf <containerName> 
 ```
