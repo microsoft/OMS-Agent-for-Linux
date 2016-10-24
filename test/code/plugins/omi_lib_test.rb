@@ -114,6 +114,14 @@ class OmiLib_Test < Test::Unit::TestCase
 			"System Size Stored In Paging Files",
 			"System Free Space in Paging Files",
 			"System Uptime",
+			"Network Total Bytes Transmitted",
+			"Network Total Bytes Received",
+			"Network Total Bytes",
+			"Network Total Packets Transmitted",
+			"Network Total Packets Received",
+			"Network Total Rx Errors",
+			"Network Total Tx Errors",
+			"Network Total Collisions",
 			"Process Pct Privileged Time",
 			"Process Pct User Time",
 			"Process Used Memory kBytes",
@@ -189,6 +197,11 @@ class OmiLib_Test < Test::Unit::TestCase
 		expected_process_record = [{"Host":"testhost", "ObjectName":"Process","InstanceName":"omsagent","Collections":[{"CounterName":"Pct User Time","Value":"0"},{"CounterName":"Pct Privileged Time","Value":"0"},{"CounterName":"Virtual Shared Memory","Value":"5216"}]}]
 		transform_validate_records_helper(expected_process_record, process_perf_record , all_performance_counters, "Process Input Class Failed!")
 
+		#Test SCX_EthernetPortStatistics
+		network_perf_record = [{"ClassName"=>"SCX_EthernetPortStatistics", "Caption"=>"Ethernet port information", "Description"=>"Statistics on transfer performance for a port", "InstanceID"=>"eth0", "BytesTransmitted"=>"3401031988", "BytesReceived"=>"2524808807", "PacketsTransmitted"=>"14880048", "PacketsReceived"=>"41066922", "BytesTotal"=>"5925840795", "TotalRxErrors"=>"0", "TotalTxErrors"=>"0", "TotalCollisions"=>"0"}]
+		expected_network_record = [{"Host":"testhost","ObjectName":"Network","InstanceName":"eth0","Collections":[{"CounterName":"Total Bytes Transmitted","Value":"3401031988"},{"CounterName":"Total Bytes Received","Value":"2524808807"},{"CounterName":"Total Bytes","Value":"5925840795"},{"CounterName":"Total Packets Transmitted","Value":"14880048"},{"CounterName":"Total Packets Received","Value":"41066922"},{"CounterName":"Total Rx Errors","Value":"0"},{"CounterName":"Total Tx Errors","Value":"0"},{"CounterName":"Total Collisions","Value":"0"}]}]
+		transform_validate_records_helper(expected_network_record, network_perf_record , all_performance_counters, "Network Input Class Failed!")
+
 		#Test Apache_HTTPDServerStatistics
 		apacheserver_perf_record = [{"ClassName"=>"Apache_HTTPDServerStatistics","InstanceID"=>"/etc/httpd/conf/httpd.conf","TotalPctCPU"=>"0","IdleWorkers"=>"0","BusyWorkers"=>"0","PctBusyWorkers"=>"0","ConfigurationFile"=>"/etc/httpd/conf/httpd.conf"}]
 		expected_apacheserver_record = [{"Host":"testhost", "ObjectName":"Apache HTTP Server","InstanceName":"/etc/httpd/conf/httpd.conf","Collections":[{"CounterName":"Total Pct CPU","Value":"0"},{"CounterName":"Idle Workers","Value":"0"},{"CounterName":"Busy Workers","Value":"0"},{"CounterName":"Pct Busy Workers","Value":"0"}]}]
@@ -219,6 +232,7 @@ class OmiLib_Test < Test::Unit::TestCase
 			"Container Processor Usage sec",
 			"System Uptime",
 			"Process Pct User Time",
+			"Network Total Packets Received",
 			"Apache HTTP Server Total Pct CPU",
 			"Apache Virtual Host Requests per Second",
 			"MySQL Database Tables",
@@ -260,6 +274,12 @@ class OmiLib_Test < Test::Unit::TestCase
 		process_perf_record = [{"ClassName"=>"SCX_UnixProcessStatisticalInformation","Caption"=>"Unix process information","Description"=>"A snapshot of a current process","Name"=>"omsagent","CSCreationClassName"=>"SCX_ComputerSystem","CSName"=>"kab-cen-oms1.scx.com","OSCreationClassName"=>"SCX_OperatingSystem","OSName"=>"Linux Distribution","Handle"=>"28402","ProcessCreationClassName"=>"SCX_UnixProcessStatisticalInformation","CPUTime"=>"0","VirtualText"=>"2666496","VirtualData"=>"953671680","VirtualSharedMemory"=>"5216","CpuTimeDeadChildren"=>"180","SystemTimeDeadChildren"=>"123","PercentUserTime"=>"0","PercentPrivilegedTime"=>"0","UsedMemory"=>"40208","PercentUsedMemory"=>"3","PagesReadPerSec"=>"0"}]
 		expected_process_record = [{"Host":"testhost", "ObjectName":"Process","InstanceName":"omsagent","Collections":[{"CounterName":"Pct User Time","Value":"0"}]}]
 		transform_validate_records_helper(expected_process_record, process_perf_record , filtered_performance_counters, "Filtered Process Input Class Failed!")
+
+		#Test SCX_EthernetPortStatistics
+		network_perf_record = [{"ClassName"=>"SCX_EthernetPortStatistics", "Caption"=>"Ethernet port information", "Description"=>"Statistics on transfer performance for a port", "InstanceID"=>"eth0", "BytesTransmitted"=>"3401031988", "BytesReceived"=>"2524808807", "PacketsTransmitted"=>"14880048", "PacketsReceived"=>"41066922", "BytesTotal"=>"5925840795", "TotalRxErrors"=>"0", "TotalTxErrors"=>"0", "TotalCollisions"=>"0"}] 
+
+		expected_network_record = [{"Host":"testhost", "ObjectName":"Network","InstanceName":"eth0","Collections":[{"CounterName":"Total Packets Received","Value":"41066922"}]}]
+		transform_validate_records_helper(expected_network_record, network_perf_record , filtered_performance_counters, "Filtered Process Input Class Failed!")                                 
 
 		#Test Apache_HTTPDServerStatistics
 		apacheserver_perf_record = [{"ClassName"=>"Apache_HTTPDServerStatistics","InstanceID"=>"/etc/httpd/conf/httpd.conf","TotalPctCPU"=>"0","IdleWorkers"=>"0","BusyWorkers"=>"0","PctBusyWorkers"=>"0","ConfigurationFile"=>"/etc/httpd/conf/httpd.conf"}]
@@ -317,6 +337,11 @@ class OmiLib_Test < Test::Unit::TestCase
 		process_perf_record = [{"ClassName"=>"SCX_UnixProcessStatisticalInformation","Caption"=>"Unix process information","Description"=>"A snapshot of a current process","Name"=>"omsagent","CSCreationClassName"=>"SCX_ComputerSystem","CSName"=>"kab-cen-oms1.scx.com","OSCreationClassName"=>"SCX_OperatingSystem","OSName"=>"Linux Distribution","Handle"=>"28402","ProcessCreationClassName"=>"SCX_UnixProcessStatisticalInformation","CPUTime"=>"0","VirtualText"=>"2666496","VirtualData"=>"953671680","VirtualSharedMemory"=>"5216","CpuTimeDeadChildren"=>"180","SystemTimeDeadChildren"=>"123","PercentUserTime"=>"0","PercentPrivilegedTime"=>"0","UsedMemory"=>"40208","PercentUsedMemory"=>"3","PagesReadPerSec"=>"0"}]
 		expected_process_record = [{"Host":"testhost", "ObjectName":"Process","InstanceName":"omsagent","Collections":[]}]
 		transform_validate_records_helper(expected_process_record, process_perf_record , [], "Process Input with no counters Failed!")
+
+		#Test SCX_EthernetPortStatistics
+		network_perf_record = [{"ClassName"=>"SCX_EthernetPortStatistics", "Caption"=>"Ethernet port information", "Description"=>"Statistics on transfer performance for a port", "InstanceID"=>"eth0", "BytesTransmitted"=>"3401031988", "BytesReceived"=>"2524808807", "PacketsTransmitted"=>"14880048", "PacketsReceived"=>"41066922", "BytesTotal"=>"5925840795", "TotalRxErrors"=>"0", "TotalTxErrors"=>"0", "TotalCollisions"=>"0"}]
+		expected_network_record = [{"Host":"testhost","ObjectName":"Network","InstanceName":"eth0","Collections":[]}]
+		transform_validate_records_helper(expected_network_record, network_perf_record , [], "Network Input with no counters Failed!")
 
 		#Test Apache_HTTPDServerStatistics
 		apacheserver_perf_record = [{"ClassName"=>"Apache_HTTPDServerStatistics","InstanceID"=>"/etc/httpd/conf/httpd.conf","TotalPctCPU"=>"0","IdleWorkers"=>"0","BusyWorkers"=>"0","PctBusyWorkers"=>"0","ConfigurationFile"=>"/etc/httpd/conf/httpd.conf"}]

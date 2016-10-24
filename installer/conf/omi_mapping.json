@@ -40,6 +40,46 @@
         ]
     },
     {
+        "CimClassName": "SCX_EthernetPortStatistics",
+        "ObjectName": "Network",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "BytesTransmitted",
+                "CounterName": "Total Bytes Transmitted"
+            },
+            {
+                "CimPropertyName": "BytesReceived",
+                "CounterName": "Total Bytes Received"
+            },
+            {
+                "CimPropertyName": "BytesTotal",
+                "CounterName": "Total Bytes"
+            },
+            {
+                "CimPropertyName": "PacketsTransmitted",
+                "CounterName": "Total Packets Transmitted"
+            },
+            {
+                "CimPropertyName": "PacketsReceived",
+                "CounterName": "Total Packets Received"
+            },
+            {
+                "CimPropertyName": "TotalRxErrors",
+                "CounterName": "Total Rx Errors"
+            },
+            {
+                "CimPropertyName": "TotalTxErrors",
+                "CounterName": "Total Tx Errors"
+            },
+            {
+                "CimPropertyName": "TotalCollisions",
+                "CounterName": "Total Collisions"
+            }
+        ]
+    },
+    {
         "CimClassName": "SCX_FileSystemStatisticalInformation",
         "ObjectName": "Logical Disk",
         "InstanceProperty": "Name",
