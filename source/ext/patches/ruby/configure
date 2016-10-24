@@ -400,6 +400,21 @@ else
 fi # as_fn_arith
 
 
+# colorize_result MSG
+# -------------------
+# Colorize result
+colorize_result ()
+{
+case "$1" in #(
+  yes) :
+    $as_echo "${msg_result_yes}$1${msg_reset}" ;; #(
+  no) :
+    $as_echo "${msg_result_no}$1${msg_reset}" ;; #(
+  *) :
+    $as_echo "${msg_result_other}$1${msg_reset}" ;;
+esac
+} # colorize_result
+
 # as_fn_error STATUS ERROR [LINENO LOG_FD]
 # ----------------------------------------
 # Output "`basename $0`: error: ERROR" to stderr. If LINENO and LOG_FD are
@@ -640,6 +655,7 @@ RUBY_SEARCH_PATH
 UNIVERSAL_INTS
 UNIVERSAL_ARCHNAMES
 configure_args
+CONFIGURE
 vendorarchdir
 vendorlibdir
 vendordir
@@ -697,22 +713,20 @@ strict_warnflags
 warnflags
 debugflags
 optflags
-cxxflags
-cflags
-cppflags
 NULLCMD
 DLNOBJ
 INSTALLDOC
 CAPITARGET
 RDOCTARGET
 LIBRUBY_A_OBJS
-DTRACE_GLOMMED_OBJ
+DTRACE_REBUILD
 DTRACE_OBJ
 DTRACE_EXT
 EXECUTABLE_EXTS
 ARCHFILE
 LIBRUBY_RELATIVE
 EXTOUT
+BOOTSTRAPRUBY
 XRUBY
 RUNRUBY
 RUNRUBY_COMMAND
@@ -732,6 +746,7 @@ ENCSTATIC
 EXTSTATIC
 STRIP
 TRY_LINK
+PRELOADENV
 LIBPATHENV
 RPATHFLAG
 LIBPATHFLAG
@@ -826,6 +841,9 @@ MINOR
 MAJOR
 HAVE_BASERUBY
 BASERUBY
+cxxflags
+cppflags
+cflags
 target_alias
 host_alias
 build_alias
@@ -923,6 +941,9 @@ with_destdir
       ac_precious_vars='build_alias
 host_alias
 target_alias
+cflags
+cppflags
+cxxflags
 CC
 CFLAGS
 LDFLAGS
@@ -1564,7 +1585,7 @@ Optional Features:
   --disable-pie           disable PIE feature
   --enable-dtrace         enable DTrace for tracing inside ruby. enabled by
                           default on systems having dtrace
-  --disable-install-doc   do not install neither rdoc indexes nor C API
+  --disable-install-doc   do not install either rdoc indexes or C API
                           documents during install
   --disable-install-rdoc  do not install rdoc indexes during install
   --disable-install-capi  do not install C API documents during install
@@ -1638,10 +1659,13 @@ Optional Packages:
                           architecture dependent core vendor headers in DIR
                           [[RUBYHDRDIR/vendor_ruby]]
   --with-mantype=TYPE     specify man page type; TYPE is one of man and doc
-  pc file basename
+  --with-ruby-pc=FILENAME pc file basename
   --with-destdir=DESTDIR  specify default directory to install
 
 Some influential environment variables:
+  cflags      additional CFLAGS
+  cppflags    additional CPPFLAGS
+  cxxflags    additional CXXFLAGS
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -1908,7 +1932,7 @@ if eval \${$3+:} false; then :
 fi
 eval ac_res=\$$3
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
 else
   # Is the header compilable?
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 usability" >&5
@@ -1925,7 +1949,7 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_compiler" >&5
-$as_echo "$ac_header_compiler" >&6; }
+    colorize_result "$ac_header_compiler" ; }
 
 # Is the header present?
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 presence" >&5
@@ -1941,7 +1965,7 @@ else
 fi
 rm -f conftest.err conftest.i conftest.$ac_ext
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_preproc" >&5
-$as_echo "$ac_header_preproc" >&6; }
+    colorize_result "$ac_header_preproc" ; }
 
 # So?  What about this header?
 case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in #((
@@ -1973,7 +1997,7 @@ else
 fi
 eval ac_res=\$$3
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
 fi
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
@@ -2047,7 +2071,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 eval ac_res=\$$3
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_header_compile
@@ -2114,7 +2138,7 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 eval ac_res=\$$3
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_func
@@ -2168,7 +2192,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 eval ac_res=\$$3
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_type
@@ -2397,7 +2421,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 eval ac_res=\$$3
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_decl
@@ -2454,7 +2478,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 eval ac_res=\$$4
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_member
@@ -2850,7 +2874,40 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
+
+
+
+
 { # environment section
+
+
+    msg_checking= msg_result_yes= msg_result_no= msg_result_other= msg_reset=
+    if test "x${CONFIGURE_TTY}" = xyes -o -t 1; then :
+
+	msg_begin="`tput smso 2>/dev/null`"
+    	case "$msg_begin" in #(
+  '['*m) :
+    msg_begin="`echo "$msg_begin" | sed 's/[0-9]*m$//'`"
+	    msg_checking="${msg_begin}33m"
+	    if test ${TEST_COLORS:+set}; then :
+
+		msg_result_yes=`expr ":$TEST_COLORS:" : ".*:pass=\([^:]*\):"`
+		msg_result_no=`expr ":$TEST_COLORS:" : ".*:fail=\([^:]*\):"`
+		msg_result_other=`expr ":$TEST_COLORS:" : ".*:skip=\([^:]*\):"`
+
+fi
+	    msg_result_yes="${msg_begin}${msg_result_yes:-32;1}m"
+	    msg_result_no="${msg_begin}${msg_result_no:-31;1}m"
+	    msg_result_other="${msg_begin}${msg_result_other:-33;1}m"
+	    msg_reset="${msg_begin}m"
+	     ;; #(
+  *) :
+     ;;
+esac
+	{ msg_begin=; unset msg_begin;}
+
+fi
+
 
 
 # Check whether --with-baseruby was given.
@@ -2865,12 +2922,52 @@ esac
 
 else
 
-		BASERUBY="ruby"
+		# Extract the first word of "ruby", so it can be a program name with args.
+set dummy ruby; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_BASERUBY+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $BASERUBY in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_BASERUBY="$BASERUBY" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_BASERUBY="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_BASERUBY" && ac_cv_path_BASERUBY="false"
+  ;;
+esac
+fi
+BASERUBY=$ac_cv_path_BASERUBY
+if test -n "$BASERUBY"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $BASERUBY" >&5
+    colorize_result "$BASERUBY" ; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
+fi
+
+
 
 fi
 
-if test "`RUBYOPT=- $BASERUBY -e 'p 42' 2>/dev/null`" = 42; then
-    if test "`RUBYOPT=- $BASERUBY --disable=gems -e 'p 42' 2>/dev/null`" = 42; then
+if test "`RUBYOPT=- $BASERUBY -e 'print 42' 2>/dev/null`" = 42; then
+    if test "`RUBYOPT=- $BASERUBY --disable=gems -e 'print 42' 2>/dev/null`" = 42; then
 	BASERUBY="$BASERUBY --disable=gems"
     fi
     $BASERUBY -C "$srcdir/tool" downloader.rb -e gnu config.guess config.sub
@@ -2925,7 +3022,7 @@ ac_cv_build=`$SHELL "$ac_aux_dir/config.sub" $ac_build_alias` ||
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_build" >&5
-$as_echo "$ac_cv_build" >&6; }
+    colorize_result "$ac_cv_build" ; }
 case $ac_cv_build in
 *-*-*) ;;
 *) as_fn_error $? "invalid value of canonical build" "$LINENO" 5;;
@@ -3002,6 +3099,8 @@ case "$build_os" in #(
     : ${CXX=g++} ;; #(
   xcc|x/usr/bin/cc) :
     : ${CXX=c++} ;; #(
+  xicc) :
+    : ${CXX=icpc} ;; #(
   xclang|x/usr/bin/clang) :
     : ${CXX=clang++} ;; #(
   *) :
@@ -3041,7 +3140,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
-$as_echo "$ac_cv_host" >&6; }
+    colorize_result "$ac_cv_host" ; }
 case $ac_cv_host in
 *-*-*) ;;
 *) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
@@ -3074,7 +3173,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_target" >&5
-$as_echo "$ac_cv_target" >&6; }
+    colorize_result "$ac_cv_target" ; }
 case $ac_cv_target in
 *-*-*) ;;
 *) as_fn_error $? "invalid value of canonical target" "$LINENO" 5;;
@@ -3220,11 +3319,11 @@ fi
 $as_echo_n "checking wheather \$NACL_SDK_ROOT is set... " >&6; }
   if test x"${NACL_SDK_ROOT}" = x; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
     as_fn_error $? "You need to set \$NACL_SDK_ROOT environment variable to build for NativeClient" "$LINENO" 5
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 
   nacl_cv_build_variant=glibc
 
@@ -3306,7 +3405,7 @@ esac
     as_fn_error $? "Unrecognized --host and --build combination or NaCl SDK is not installed" "$LINENO" 5
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${NACL_TOOLCHAIN}" >&5
-$as_echo "${NACL_TOOLCHAIN}" >&6; }
+    colorize_result "${NACL_TOOLCHAIN}" ; }
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking path to SDK" >&5
 $as_echo_n "checking path to SDK... " >&6; }
@@ -3314,7 +3413,7 @@ $as_echo_n "checking path to SDK... " >&6; }
     PATH="${PATH}:${NACL_SDK_ROOT}/toolchain/${NACL_TOOLCHAIN}/bin"
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${NACL_SDK_ROOT}/toolchain/${NACL_TOOLCHAIN}/bin" >&5
-$as_echo "${NACL_SDK_ROOT}/toolchain/${NACL_TOOLCHAIN}/bin" >&6; }
+    colorize_result "${NACL_SDK_ROOT}/toolchain/${NACL_TOOLCHAIN}/bin" ; }
 
   # RUBY_APPEND_OPTIONS(XCFLAGS)
 	for rb_opt in '-I$(NACL_SDK_ROOT)/include'; do
@@ -3363,7 +3462,7 @@ $as_echo_n "checking nacl library path... " >&6; }
     as_fn_error $? "not found" "$LINENO" 5
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${nacl_cv_libpath}" >&5
-$as_echo "${nacl_cv_libpath}" >&6; }
+    colorize_result "${nacl_cv_libpath}" ; }
   # RUBY_APPEND_OPTIONS(XLDFLAGS)
 	for rb_opt in '-L$(NACL_SDK_ROOT)/'"lib/${nacl_cv_libpath}/Release"; do
 	case " ${XLDFLAGS-} " in #(
@@ -3415,10 +3514,10 @@ fi
 CC=$ac_cv_prog_CC
 if test -n "$CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-$as_echo "$CC" >&6; }
+    colorize_result "$CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3459,10 +3558,10 @@ fi
 ac_ct_CC=$ac_cv_prog_ac_ct_CC
 if test -n "$ac_ct_CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CC" >&5
-$as_echo "$ac_ct_CC" >&6; }
+    colorize_result "$ac_ct_CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3515,10 +3614,10 @@ fi
 CXX=$ac_cv_prog_CXX
 if test -n "$CXX"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CXX" >&5
-$as_echo "$CXX" >&6; }
+    colorize_result "$CXX" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3559,10 +3658,10 @@ fi
 ac_ct_CXX=$ac_cv_prog_ac_ct_CXX
 if test -n "$ac_ct_CXX"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CXX" >&5
-$as_echo "$ac_ct_CXX" >&6; }
+    colorize_result "$ac_ct_CXX" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3622,10 +3721,10 @@ fi
 CC=$ac_cv_prog_CC
 if test -n "$CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-$as_echo "$CC" >&6; }
+    colorize_result "$CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3666,10 +3765,10 @@ fi
 ac_ct_CC=$ac_cv_prog_ac_ct_CC
 if test -n "$ac_ct_CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CC" >&5
-$as_echo "$ac_ct_CC" >&6; }
+    colorize_result "$ac_ct_CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3736,10 +3835,10 @@ fi
 CC=$ac_cv_prog_CC
 if test -n "$CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-$as_echo "$CC" >&6; }
+    colorize_result "$CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3776,10 +3875,10 @@ fi
 ac_ct_CC=$ac_cv_prog_ac_ct_CC
 if test -n "$ac_ct_CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CC" >&5
-$as_echo "$ac_ct_CC" >&6; }
+    colorize_result "$ac_ct_CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_CC" = x; then
@@ -3835,10 +3934,10 @@ fi
 CC=$ac_cv_prog_CC
 if test -n "$CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-$as_echo "$CC" >&6; }
+    colorize_result "$CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3875,10 +3974,10 @@ fi
 ac_ct_CC=$ac_cv_prog_ac_ct_CC
 if test -n "$ac_ct_CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CC" >&5
-$as_echo "$ac_ct_CC" >&6; }
+    colorize_result "$ac_ct_CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_CC" = x; then
@@ -3928,10 +4027,10 @@ fi
 CC=$ac_cv_prog_CC
 if test -n "$CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-$as_echo "$CC" >&6; }
+    colorize_result "$CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -3985,10 +4084,10 @@ fi
 CC=$ac_cv_prog_CC
 if test -n "$CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-$as_echo "$CC" >&6; }
+    colorize_result "$CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -4027,10 +4126,10 @@ fi
 CC=$ac_cv_prog_CC
 if test -n "$CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CC" >&5
-$as_echo "$CC" >&6; }
+    colorize_result "$CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -4071,10 +4170,10 @@ fi
 ac_ct_CC=$ac_cv_prog_ac_ct_CC
 if test -n "$ac_ct_CC"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CC" >&5
-$as_echo "$ac_ct_CC" >&6; }
+    colorize_result "$ac_ct_CC" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -4208,7 +4307,7 @@ else
 fi
 if test -z "$ac_file"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
@@ -4218,12 +4317,12 @@ as_fn_error 77 "C compiler cannot create executables
 See \`config.log' for more details" "$LINENO" 5; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C compiler default output file name" >&5
 $as_echo_n "checking for C compiler default output file name... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_file" >&5
-$as_echo "$ac_file" >&6; }
+    colorize_result "$ac_file" ; }
 ac_exeext=$ac_cv_exeext
 
 rm -f -r a.out a.out.dSYM a.exe conftest$ac_cv_exeext b.out
@@ -4262,7 +4361,7 @@ See \`config.log' for more details" "$LINENO" 5; }
 fi
 rm -f conftest conftest$ac_cv_exeext
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_exeext" >&5
-$as_echo "$ac_cv_exeext" >&6; }
+    colorize_result "$ac_cv_exeext" ; }
 
 rm -f conftest.$ac_ext
 EXEEXT=$ac_cv_exeext
@@ -4322,7 +4421,7 @@ See \`config.log' for more details" "$LINENO" 5; }
   fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $cross_compiling" >&5
-$as_echo "$cross_compiling" >&6; }
+    colorize_result "$cross_compiling" ; }
 
 rm -f conftest.$ac_ext conftest$ac_cv_exeext conftest.out
 ac_clean_files=$ac_clean_files_save
@@ -4374,7 +4473,7 @@ fi
 rm -f conftest.$ac_cv_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_objext" >&5
-$as_echo "$ac_cv_objext" >&6; }
+    colorize_result "$ac_cv_objext" ; }
 OBJEXT=$ac_cv_objext
 ac_objext=$OBJEXT
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we are using the GNU C compiler" >&5
@@ -4406,7 +4505,7 @@ ac_cv_c_compiler_gnu=$ac_compiler_gnu
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_compiler_gnu" >&5
-$as_echo "$ac_cv_c_compiler_gnu" >&6; }
+    colorize_result "$ac_cv_c_compiler_gnu" ; }
 if test $ac_compiler_gnu = yes; then
   GCC=yes
 else
@@ -4476,7 +4575,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    ac_c_werror_flag=$ac_save_c_werror_flag
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_cc_g" >&5
-$as_echo "$ac_cv_prog_cc_g" >&6; }
+    colorize_result "$ac_cv_prog_cc_g" ; }
 if test "$ac_test_CFLAGS" = set; then
   CFLAGS=$ac_save_CFLAGS
 elif test $ac_cv_prog_cc_g = yes; then
@@ -4569,14 +4668,14 @@ fi
 case "x$ac_cv_prog_cc_c89" in
   x)
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: none needed" >&5
-$as_echo "none needed" >&6; } ;;
+    $as_echo "${msg_result_other}none needed${msg_reset}" ; } ;;
   xno)
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: unsupported" >&5
-$as_echo "unsupported" >&6; } ;;
+    $as_echo "${msg_result_other}unsupported${msg_reset}" ; } ;;
   *)
     CC="$CC $ac_cv_prog_cc_c89"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_cc_c89" >&5
-$as_echo "$ac_cv_prog_cc_c89" >&6; } ;;
+    colorize_result "$ac_cv_prog_cc_c89" ; } ;;
 esac
 if test "x$ac_cv_prog_cc_c89" != xno; then :
 
@@ -4630,10 +4729,10 @@ fi
 CXX=$ac_cv_prog_CXX
 if test -n "$CXX"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CXX" >&5
-$as_echo "$CXX" >&6; }
+    colorize_result "$CXX" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -4674,10 +4773,10 @@ fi
 ac_ct_CXX=$ac_cv_prog_ac_ct_CXX
 if test -n "$ac_ct_CXX"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CXX" >&5
-$as_echo "$ac_ct_CXX" >&6; }
+    colorize_result "$ac_ct_CXX" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -4753,7 +4852,7 @@ ac_cv_cxx_compiler_gnu=$ac_compiler_gnu
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cxx_compiler_gnu" >&5
-$as_echo "$ac_cv_cxx_compiler_gnu" >&6; }
+    colorize_result "$ac_cv_cxx_compiler_gnu" ; }
 if test $ac_compiler_gnu = yes; then
   GXX=yes
 else
@@ -4823,7 +4922,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
    ac_cxx_werror_flag=$ac_save_cxx_werror_flag
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_cxx_g" >&5
-$as_echo "$ac_cv_prog_cxx_g" >&6; }
+    colorize_result "$ac_cv_prog_cxx_g" ; }
 if test "$ac_test_CXXFLAGS" = set; then
   CXXFLAGS=$ac_save_CXXFLAGS
 elif test $ac_cv_prog_cxx_g = yes; then
@@ -4922,7 +5021,7 @@ else
   ac_cv_prog_CPP=$CPP
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CPP" >&5
-$as_echo "$CPP" >&6; }
+    colorize_result "$CPP" ; }
 ac_preproc_ok=false
 for ac_c_preproc_warn_flag in '' yes
 do
@@ -5009,7 +5108,7 @@ rm -f conftest.err conftest.i conftest.$ac_ext
 rm -f conftest*
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_mingw32" >&5
-$as_echo "$rb_cv_mingw32" >&6; }
+    colorize_result "$rb_cv_mingw32" ; }
 if test "$rb_cv_mingw32" = yes; then
     target_os="mingw32"
     : ${ac_tool_prefix:="`expr "$CC" : '\(.*-\)g\?cc[^/]*$'`"}
@@ -5094,7 +5193,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_GREP" >&5
-$as_echo "$ac_cv_path_GREP" >&6; }
+    colorize_result "$ac_cv_path_GREP" ; }
  GREP="$ac_cv_path_GREP"
 
 
@@ -5161,7 +5260,7 @@ fi
    fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_EGREP" >&5
-$as_echo "$ac_cv_path_EGREP" >&6; }
+    colorize_result "$ac_cv_path_EGREP" ; }
  EGREP="$ac_cv_path_EGREP"
 
 
@@ -5201,7 +5300,7 @@ rm -f conftest*
   fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_gcc_traditional" >&5
-$as_echo "$ac_cv_prog_gcc_traditional" >&6; }
+    colorize_result "$ac_cv_prog_gcc_traditional" ; }
   if test $ac_cv_prog_gcc_traditional = yes; then
     CC="$CC -traditional"
   fi
@@ -5245,10 +5344,10 @@ fi
 LD=$ac_cv_path_LD
 if test -n "$LD"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LD" >&5
-$as_echo "$LD" >&6; }
+    colorize_result "$LD" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -5289,10 +5388,10 @@ fi
 ac_pt_LD=$ac_cv_path_ac_pt_LD
 if test -n "$ac_pt_LD"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_LD" >&5
-$as_echo "$ac_pt_LD" >&6; }
+    colorize_result "$ac_pt_LD" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_pt_LD" = x; then
@@ -5342,10 +5441,10 @@ fi
 LD=$ac_cv_prog_LD
 if test -n "$LD"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LD" >&5
-$as_echo "$LD" >&6; }
+    colorize_result "$LD" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -5382,10 +5481,10 @@ fi
 ac_ct_LD=$ac_cv_prog_ac_ct_LD
 if test -n "$ac_ct_LD"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_LD" >&5
-$as_echo "$ac_ct_LD" >&6; }
+    colorize_result "$ac_ct_LD" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_LD" = x; then
@@ -5430,7 +5529,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_prog_gnu_ld" >&5
-$as_echo "$rb_cv_prog_gnu_ld" >&6; }
+    colorize_result "$rb_cv_prog_gnu_ld" ; }
 GNU_LD=$rb_cv_prog_gnu_ld
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CPP} accepts -o" >&5
@@ -5453,7 +5552,7 @@ CPPFLAGS="$save_CPPFLAGS"
 rm -f conftest*
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_cppoutfile" >&5
-$as_echo "$rb_cv_cppoutfile" >&6; }
+    colorize_result "$rb_cv_cppoutfile" ; }
 if test "$rb_cv_cppoutfile" = yes; then
   CPPOUTFILE='-o conftest.i'
 elif test "$rb_cv_cppoutfile" = no; then
@@ -5511,7 +5610,7 @@ $as_echo_n "checking target architectures... " >&6; }
 
 	    cpu=`$SHELL "$ac_aux_dir/config.sub" "${archs}-${target_os}" 2>&1` || {
 	        { $as_echo "$as_me:${as_lineno-$LINENO}: result: failed" >&5
-$as_echo "failed" >&6; }
+    $as_echo "${msg_result_other}failed${msg_reset}" ; }
 		as_fn_error $? "$cpu" "$LINENO" 5
 	    }
 	    cpu=`echo $cpu | sed 's/-.*-.*//'`
@@ -5530,7 +5629,7 @@ esac
     unset universal_archnames ;;
 esac
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_archs" >&5
-$as_echo "$target_archs" >&6; }
+    colorize_result "$target_archs" ; }
 
     target=`echo $target | sed "s/^$target_cpu-/-/"`
     target_alias=`echo $target_alias | sed "s/^$target_cpu-/-/"`
@@ -5558,7 +5657,7 @@ case "$target_archs" in #(
 	 ;;
 esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ARCH_FLAG" >&5
-$as_echo "$ARCH_FLAG" >&6; }
+    colorize_result "$ARCH_FLAG" ; }
 
 	    fi
 	fi
@@ -5601,7 +5700,7 @@ EOF
 	    sed -n 's/^"processor-name=\(.*\)"/\1/p'`
 	    target="$target_cpu${target}"
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_cpu" >&5
-$as_echo "$target_cpu" >&6; }
+    colorize_result "$target_cpu" ; }
 	     ;; #(
   *) :
      ;;
@@ -5615,8 +5714,8 @@ else
     rb_cv_target_archs=${target_archs}
 fi
 if test "x${ARCH_FLAG}" != x; then
-    CFLAGS="$CFLAGS ${ARCH_FLAG}"
-    LDFLAGS="${LDFLAGS+$LDFLAGS }${ARCH_FLAG}"
+    CFLAGS="${CFLAGS:+$CFLAGS }${ARCH_FLAG}"
+    LDFLAGS="${LDFLAGS:+$LDFLAGS }${ARCH_FLAG}"
 fi
 # RUBY_UNIVERSAL_ARCH end
 
@@ -5634,7 +5733,7 @@ case "$target_cpu" in #(
 	 ;;
 esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ARCH_FLAG" >&5
-$as_echo "$ARCH_FLAG" >&6; }
+    colorize_result "$ARCH_FLAG" ; }
 
 fi
 
@@ -5669,7 +5768,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_gcc_compiler_cas" >&5
-$as_echo "$rb_cv_gcc_compiler_cas" >&6; }
+    colorize_result "$rb_cv_gcc_compiler_cas" ; }
 	 if test "$rb_cv_gcc_compiler_cas" = no; then
 		 unset rb_cv_gcc_compiler_cas
 		 save_CFLAGS="$CFLAGS"
@@ -5703,7 +5802,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_gcc_compiler_cas" >&5
-$as_echo "$rb_cv_gcc_compiler_cas" >&6; }
+    colorize_result "$rb_cv_gcc_compiler_cas" ; }
 		 CFLAGS="$save_CFLAGS"
 	 fi ;; #(
   *) :
@@ -5741,10 +5840,10 @@ fi
 RANLIB=$ac_cv_prog_RANLIB
 if test -n "$RANLIB"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $RANLIB" >&5
-$as_echo "$RANLIB" >&6; }
+    colorize_result "$RANLIB" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -5781,10 +5880,10 @@ fi
 ac_ct_RANLIB=$ac_cv_prog_ac_ct_RANLIB
 if test -n "$ac_ct_RANLIB"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_RANLIB" >&5
-$as_echo "$ac_ct_RANLIB" >&6; }
+    colorize_result "$ac_ct_RANLIB" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_RANLIB" = x; then
@@ -5833,10 +5932,10 @@ fi
 AR=$ac_cv_prog_AR
 if test -n "$AR"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AR" >&5
-$as_echo "$AR" >&6; }
+    colorize_result "$AR" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -5873,10 +5972,10 @@ fi
 ac_ct_AR=$ac_cv_prog_ac_ct_AR
 if test -n "$ac_ct_AR"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_AR" >&5
-$as_echo "$ac_ct_AR" >&6; }
+    colorize_result "$ac_ct_AR" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_AR" = x; then
@@ -5927,10 +6026,10 @@ fi
 AR=$ac_cv_prog_AR
 if test -n "$AR"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AR" >&5
-$as_echo "$AR" >&6; }
+    colorize_result "$AR" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -5971,10 +6070,10 @@ fi
 AS=$ac_cv_prog_AS
 if test -n "$AS"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AS" >&5
-$as_echo "$AS" >&6; }
+    colorize_result "$AS" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6011,10 +6110,10 @@ fi
 ac_ct_AS=$ac_cv_prog_ac_ct_AS
 if test -n "$ac_ct_AS"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_AS" >&5
-$as_echo "$ac_ct_AS" >&6; }
+    colorize_result "$ac_ct_AS" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_AS" = x; then
@@ -6076,10 +6175,10 @@ fi
 OBJDUMP=$ac_cv_prog_OBJDUMP
 if test -n "$OBJDUMP"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJDUMP" >&5
-$as_echo "$OBJDUMP" >&6; }
+    colorize_result "$OBJDUMP" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6120,10 +6219,10 @@ fi
 ac_ct_OBJDUMP=$ac_cv_prog_ac_ct_OBJDUMP
 if test -n "$ac_ct_OBJDUMP"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_OBJDUMP" >&5
-$as_echo "$ac_ct_OBJDUMP" >&6; }
+    colorize_result "$ac_ct_OBJDUMP" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6176,10 +6275,10 @@ fi
 OBJCOPY=$ac_cv_prog_OBJCOPY
 if test -n "$OBJCOPY"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJCOPY" >&5
-$as_echo "$OBJCOPY" >&6; }
+    colorize_result "$OBJCOPY" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6220,10 +6319,10 @@ fi
 ac_ct_OBJCOPY=$ac_cv_prog_ac_ct_OBJCOPY
 if test -n "$ac_ct_OBJCOPY"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_OBJCOPY" >&5
-$as_echo "$ac_ct_OBJCOPY" >&6; }
+    colorize_result "$ac_ct_OBJCOPY" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6278,10 +6377,10 @@ fi
 WINDRES=$ac_cv_prog_WINDRES
 if test -n "$WINDRES"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WINDRES" >&5
-$as_echo "$WINDRES" >&6; }
+    colorize_result "$WINDRES" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6318,10 +6417,10 @@ fi
 ac_ct_WINDRES=$ac_cv_prog_ac_ct_WINDRES
 if test -n "$ac_ct_WINDRES"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_WINDRES" >&5
-$as_echo "$ac_ct_WINDRES" >&6; }
+    colorize_result "$ac_ct_WINDRES" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_WINDRES" = x; then
@@ -6370,10 +6469,10 @@ fi
 DLLWRAP=$ac_cv_prog_DLLWRAP
 if test -n "$DLLWRAP"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DLLWRAP" >&5
-$as_echo "$DLLWRAP" >&6; }
+    colorize_result "$DLLWRAP" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6410,10 +6509,10 @@ fi
 ac_ct_DLLWRAP=$ac_cv_prog_ac_ct_DLLWRAP
 if test -n "$ac_ct_DLLWRAP"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_DLLWRAP" >&5
-$as_echo "$ac_ct_DLLWRAP" >&6; }
+    colorize_result "$ac_ct_DLLWRAP" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_DLLWRAP" = x; then
@@ -6479,7 +6578,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	test "$rb_cv_msvcrt" = "" && rb_cv_msvcrt=msvcrt
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_msvcrt" >&5
-$as_echo "$rb_cv_msvcrt" >&6; }
+    colorize_result "$rb_cv_msvcrt" ; }
 	RT_VER=`echo "$rb_cv_msvcrt" | tr -cd 0-9`
 	test "$RT_VER" = "" && RT_VER=60
 	cat >>confdefs.h <<_ACEOF
@@ -6525,10 +6624,10 @@ fi
 NM=$ac_cv_prog_NM
 if test -n "$NM"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NM" >&5
-$as_echo "$NM" >&6; }
+    colorize_result "$NM" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6566,10 +6665,10 @@ fi
 ac_ct_NM=$ac_cv_prog_ac_ct_NM
 if test -n "$ac_ct_NM"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_NM" >&5
-$as_echo "$ac_ct_NM" >&6; }
+    colorize_result "$ac_ct_NM" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_NM" = x; then
@@ -6624,10 +6723,10 @@ fi
 NM=$ac_cv_prog_NM
 if test -n "$NM"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NM" >&5
-$as_echo "$NM" >&6; }
+    colorize_result "$NM" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6664,10 +6763,10 @@ fi
 ac_ct_NM=$ac_cv_prog_ac_ct_NM
 if test -n "$ac_ct_NM"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_NM" >&5
-$as_echo "$ac_ct_NM" >&6; }
+    colorize_result "$ac_ct_NM" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_NM" = x; then
@@ -6691,10 +6790,10 @@ $as_echo_n "checking whether ln -s works... " >&6; }
 LN_S=$as_ln_s
 if test "$LN_S" = "ln -s"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no, using $LN_S" >&5
-$as_echo "no, using $LN_S" >&6; }
+    colorize_result "no, using $LN_S" ; }
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} sets \$(MAKE)" >&5
@@ -6720,11 +6819,11 @@ rm -f conftest.make
 fi
 if eval test \$ac_cv_prog_make_${ac_make}_set = yes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
   SET_MAKE=
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
   SET_MAKE="MAKE=${MAKE-make}"
 fi
 
@@ -6811,7 +6910,7 @@ fi
   fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $INSTALL" >&5
-$as_echo "$INSTALL" >&6; }
+    colorize_result "$INSTALL" ; }
 
 # Use test -z because SunOS4 sh mishandles braces in ${var-val}.
 # It thinks the first close brace ends the variable substitution.
@@ -6861,7 +6960,7 @@ fi
   fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $MKDIR_P" >&5
-$as_echo "$MKDIR_P" >&6; }
+    colorize_result "$MKDIR_P" ; }
 
 if test "x$MKDIR_P" = "x -d"; then
   if test x"$as_mkdir_p" != xfalse; then
@@ -6908,10 +7007,10 @@ fi
 DTRACE=$ac_cv_prog_DTRACE
 if test -n "$DTRACE"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DTRACE" >&5
-$as_echo "$DTRACE" >&6; }
+    colorize_result "$DTRACE" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6946,10 +7045,10 @@ fi
 DTRACE=$ac_cv_prog_DTRACE
 if test -n "$DTRACE"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DTRACE" >&5
-$as_echo "$DTRACE" >&6; }
+    colorize_result "$DTRACE" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -6987,10 +7086,10 @@ fi
 DOT=$ac_cv_prog_DOT
 if test -n "$DOT"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOT" >&5
-$as_echo "$DOT" >&6; }
+    colorize_result "$DOT" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -7029,10 +7128,10 @@ fi
 DOXYGEN=$ac_cv_prog_DOXYGEN
 if test -n "$DOXYGEN"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOXYGEN" >&5
-$as_echo "$DOXYGEN" >&6; }
+    colorize_result "$DOXYGEN" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -7074,10 +7173,10 @@ fi
 PYTHON=$ac_cv_path_PYTHON
 if test -n "$PYTHON"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
-$as_echo "$PYTHON" >&6; }
+    colorize_result "$PYTHON" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
  ;; #(
@@ -7132,10 +7231,10 @@ fi
 PKG_CONFIG=$ac_cv_prog_PKG_CONFIG
 if test -n "$PKG_CONFIG"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
+    colorize_result "$PKG_CONFIG" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -7246,7 +7345,7 @@ fi
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_stdc" >&5
-$as_echo "$ac_cv_header_stdc" >&6; }
+    colorize_result "$ac_cv_header_stdc" ; }
 if test $ac_cv_header_stdc = yes; then
 
 $as_echo "#define STDC_HEADERS 1" >>confdefs.h
@@ -7318,7 +7417,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_safe_to_define___extensions__" >&5
-$as_echo "$ac_cv_safe_to_define___extensions__" >&6; }
+    colorize_result "$ac_cv_safe_to_define___extensions__" ; }
   test $ac_cv_safe_to_define___extensions__ = yes &&
     $as_echo "#define __EXTENSIONS__ 1" >>confdefs.h
 
@@ -7365,7 +7464,7 @@ else
 fi
 rm -fr conf$$.dir
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CHDIR" >&5
-$as_echo "$CHDIR" >&6; }
+    colorize_result "$CHDIR" ; }
 
 
 }
@@ -7397,11 +7496,11 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 	as_fn_error $? "something wrong with CFLAGS=\"$CFLAGS\"" "$LINENO" 5
 
 
@@ -7415,7 +7514,7 @@ $as_echo_n "checking whether LDFLAGS is valid... " >&6; }
 	cp ../confdefs.h . &&
 	echo '<?xml?><plist><dict><key>CFBundleIdentifier</key><string></string></dict></plist>' > Info.plist &&
 	:
-    } || as_fn_error $? "faild to make temporary directory" "$LINENO" 5
+    } || as_fn_error $? "failed to make temporary directory" "$LINENO" 5
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7429,12 +7528,12 @@ main ()
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	cd .. && rm -fr tmp.$$.try_link
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 	as_fn_error $? "something wrong with LDFLAGS=\"$LDFLAGS\"" "$LINENO" 5
 
 
@@ -7474,7 +7573,11 @@ if test "$GCC:${warnflags+set}:no" = yes::no; then
     else
 	extra_warning=
     fi
+    if test $gcc_major -eq 5; then
+	extra_warning="$extra_warning -Wno-maybe-uninitialized"
+    fi
     for wflag in -Wno-unused-parameter -Wno-parentheses -Wno-long-long \
+                 -diag-disable=2259 \
 		 -Wno-missing-field-initializers \
 		 -Wunused-variable \
 		 -Werror=pointer-arith \
@@ -7531,11 +7634,11 @@ esac
 	    ok=yes
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -7591,11 +7694,11 @@ esac
 		particular_werror_flags=no
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -7645,11 +7748,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   warnflags="$wflag${warnflags+ $warnflags}"
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -7702,11 +7805,11 @@ if ac_fn_c_try_compile "$LINENO"; then :
 esac
 	done
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -7718,6 +7821,50 @@ else
   unset ac_c_werror_flag
 fi
 
+
+for n in infinity nan; do
+    m=`$as_echo "$n" | $as_tr_cpp`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $m is available without C99 option" >&5
+$as_echo_n "checking whether $m is available without C99 option... " >&6; }
+if eval \${rb_cv_$n+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+#ifndef $m
+#error no $m
+#endif
+
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(1)];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval rb_cv_$n=yes
+else
+  eval rb_cv_$n=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$rb_cv_$n
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+    colorize_result "$ac_res" ; }
+    if eval test '"$rb_cv_'$n'"' = yes; then
+	cat >>confdefs.h <<_ACEOF
+#define HAVE_$m 1
+_ACEOF
+
+    fi
+done
 
 if test "$GCC" = yes; then
     # NaCl's glibc build generates undefined references to __memset_chk.
@@ -7767,11 +7914,11 @@ if ac_fn_c_try_compile "$LINENO"; then :
      XCFLAGS="$XCFLAGS -D_FORTIFY_SOURCE=2" ;;
 esac
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -7788,7 +7935,7 @@ esac
 
     # -fstack-protector
     case "$target_os" in #(
-  mingw*|nacl|haiku) :
+  mingw*|nacl) :
 
 	stack_protector=no
      ;; #(
@@ -7823,11 +7970,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   stack_protector=yes
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   stack_protector=no
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -7868,11 +8015,11 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   stack_protector=broken
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -7932,12 +8079,6 @@ esac
 
       # need lgamma_r(), finite()
      ;; #(
-  haiku) :
-
-      # Haiku R1/alpha3 uses gcc-4.4.4 which can not handle anonymous union
-      # with ANSI standard flags. Anonumous union is required to compile
-      # socket extension where <net/if.h> uses anonymous union.
-     ;; #(
   *) :
 
       # ANSI (no XCFLAGS because this is C only)
@@ -7992,11 +8133,11 @@ esac
 	done
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   ansi_options=
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8049,11 +8190,11 @@ if ac_fn_c_try_compile "$LINENO"; then :
      XCFLAGS="$XCFLAGS -fno-strict-overflow" ;;
 esac
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8093,11 +8234,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   debugflags=-ggdb3
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8136,11 +8277,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   debugflags=-ggdb
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8179,11 +8320,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   debugflags=-g3
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8235,11 +8376,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   visibility_option=yes
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   visibility_option=no
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8297,11 +8438,11 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   visibility_option=ld
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   visibility_option=no
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -8353,11 +8494,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   optflags="${optflags+$optflags }-fno-omit-frame-pointer"
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8369,13 +8510,67 @@ else
   unset ac_c_werror_flag
 fi
 
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -static-libgcc is accepted as CFLAGS" >&5
+$as_echo_n "checking whether -static-libgcc is accepted as CFLAGS... " >&6; }
+    save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+    CFLAGS="$CFLAGS -static-libgcc"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  static_libgcc=yes
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
+else
+  static_libgcc=no
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+
+	if test "$static_libgcc" = yes; then
+	    # RUBY_APPEND_OPTION(EXTLDFLAGS)
+	case " ${EXTLDFLAGS-} " in #(
+  *' -static-libgcc '*) :
+     ;; #(
+  '  ') :
+     EXTLDFLAGS="-static-libgcc" ;; #(
+  *) :
+     EXTLDFLAGS="$EXTLDFLAGS -static-libgcc" ;;
+esac
+	fi
      ;; #(
   *) :
      ;;
 esac
 
     # disable fast-math
-    for oflag in -fno-fast-math; do
+    for oflag in -fno-fast-math -fp-model\ precise; do
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $oflag is accepted as CFLAGS" >&5
 $as_echo_n "checking whether $oflag is accepted as CFLAGS... " >&6; }
@@ -8411,11 +8606,11 @@ if ac_fn_c_try_compile "$LINENO"; then :
      optflags="$optflags $oflag" ;;
 esac
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -8511,7 +8706,7 @@ fi
 rm -f conftest.err conftest.i conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_enable_pthread_default" >&5
-$as_echo "$rb_cv_enable_pthread_default" >&6; }
+    colorize_result "$rb_cv_enable_pthread_default" ; }
   enable_pthread=$rb_cv_enable_pthread_default
    ;; #(
   mingw*) :
@@ -8585,7 +8780,7 @@ else
 fi
 rm -f conftest.err conftest.i conftest.$ac_ext
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $macosx_10_5" >&5
-$as_echo "$macosx_10_5" >&6; }
+    colorize_result "$macosx_10_5" ; }
 		if test $macosx_10_5 = yes; then
 		    ac_cv_func_getcontext=no
 		    ac_cv_func_setcontext=no
@@ -8595,6 +8790,23 @@ $as_echo "$macosx_10_5" >&6; }
 		    $as_echo "#define BROKEN_SETREGID 1" >>confdefs.h
 
 		fi
+		incs=`$CC -v -E -xc - < /dev/null 2>&1 | sed '1,/^#include </d;s/^ *//;s|[^./][^/]*/\.\./||g;/\/include$/!d;s||/lib|;/\/usr\/lib/d'`
+		for d in `$CC -print-search-dirs | sed -e '/^libraries: */!d;s///' | tr : '\012' | fgrep -v /../ | sed -n 's|^\(/.*/lib\)/$|\1|p'`; do
+		    incs=`echo "$incs" | fgrep -v "$d"`
+		done
+		for d in $incs; do
+		    test -d "$d" && # RUBY_APPEND_OPTIONS(LDFLAGS)
+	for rb_opt in "-L$d"; do
+	case " ${LDFLAGS-} " in #(
+  *" ${rb_opt} "*) :
+     ;; #(
+  '  ') :
+     LDFLAGS="${rb_opt}" ;; #(
+  *) :
+     LDFLAGS="$LDFLAGS ${rb_opt}" ;;
+esac
+	done
+		done
 		ac_cv_type_getgroups=gid_t # getgroups() on Rosetta fills garbage
 		ac_cv_lib_crypt_crypt=no
 		ac_cv_func_fdatasync=no # Mac OS X wrongly reports it has fdatasync()
@@ -8649,7 +8861,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_broken_crypt" >&5
-$as_echo "$rb_cv_broken_crypt" >&6; }
+    colorize_result "$rb_cv_broken_crypt" ; }
                 if test "$rb_cv_broken_crypt" = yes; then
                   $as_echo "#define BROKEN_CRYPT 1" >>confdefs.h
 
@@ -8686,10 +8898,10 @@ fi
 codesign=$ac_cv_prog_codesign
 if test -n "$codesign"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $codesign" >&5
-$as_echo "$codesign" >&6; }
+    colorize_result "$codesign" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -8720,20 +8932,125 @@ done
   hpux*) :
     	LIBS="-lm $LIBS"
 		ac_cv_c_inline=no ;; #(
-  beos*|haiku*) :
+  solaris*) :
+    	LIBS="-lm $LIBS"
+		ac_cv_func_vfork=no
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether _XOPEN_SOURCE is already given" >&5
+$as_echo_n "checking whether _XOPEN_SOURCE is already given... " >&6; }
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+		    #ifndef _XOPEN_SOURCE
+		    #error _XOPEN_SOURCE is not defined
+		    #endif
 
-		ac_cv_func_link=no
-		ac_cv_func_sched_yield=no
-		ac_cv_func_pthread_attr_setinheritsched=no
-		case "$target_os" in #(
-  beos*) :
-     ac_cv_header_net_socket_h=yes ;; #(
-  haiku*) :
-     ac_cv_func_shutdown=no ;; #(
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  given_xopen_source=yes
+else
+  given_xopen_source=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $given_xopen_source" >&5
+    colorize_result "$given_xopen_source" ; }
+		if test $given_xopen_source = no; then
+		  # On Solaris, with gcc, -std=iso9899:1999 in $ansi_options
+		  # is often also needed in CPPFLAGS, because some feature
+		  # definitions vary depending on such standards options.
+		  case "${ansi_options}" in #(
+  *-std=iso9899:1999*) :
+
+		    # RUBY_APPEND_OPTIONS(CPPFLAGS)
+	for rb_opt in ${ansi_options}; do
+	case " ${CPPFLAGS-} " in #(
+  *" ${rb_opt} "*) :
+     ;; #(
+  '  ') :
+     CPPFLAGS="${rb_opt}" ;; #(
+  *) :
+     CPPFLAGS="$CPPFLAGS ${rb_opt}" ;;
+esac
+	done
+		   ;; #(
   *) :
      ;;
 esac
-		LIBS="$LIBS" # m lib is include in root under BeOS/Haiku
+		  { $as_echo "$as_me:${as_lineno-$LINENO}: checking appropriate _XOPEN_SOURCE value to define" >&5
+$as_echo_n "checking appropriate _XOPEN_SOURCE value to define... " >&6; }
+		  define_xopen_source=""
+		  for tmp_xpg in 7 6 5; do
+		    if test x"$define_xopen_source" != x; then
+		        break
+		    fi
+		    # Both AC_TRY_CPP and AC_TRY_COMPILE should pass
+		    # because some options may not be set to CPPFLAGS.
+		    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+			#define _XOPEN_SOURCE ${tmp_xpg}00
+			#include <unistd.h>
+			#ifndef _XPG${tmp_xpg}
+			#error _XPG${tmp_xpg} should be defined by _XOPEN_SOURCE=${tmp_xpg}00
+			#endif
+
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+
+			cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+			#define _XOPEN_SOURCE ${tmp_xpg}00
+			#include <unistd.h>
+			#ifndef _XPG${tmp_xpg}
+			#error _XPG${tmp_xpg} should be defined by _XOPEN_SOURCE=${tmp_xpg}00
+			#endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  define_xopen_source=${tmp_xpg}00
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+		  done
+		  if test x"$define_xopen_source" = x; then
+		    define_xopen_source=no
+		  fi
+		  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $define_xopen_source" >&5
+    colorize_result "$define_xopen_source" ; }
+		  if test x"$define_xopen_source" != xno; then
+		    # RUBY_APPEND_OPTIONS(CPPFLAGS)
+	for rb_opt in -D_XOPEN_SOURCE=$define_xopen_source; do
+	case " ${CPPFLAGS-} " in #(
+  *" ${rb_opt} "*) :
+     ;; #(
+  '  ') :
+     CPPFLAGS="${rb_opt}" ;; #(
+  *) :
+     CPPFLAGS="$CPPFLAGS ${rb_opt}" ;;
+esac
+	done
+		  fi
+		fi
+		 ;; #(
+  haiku*) :
+
+		LIBS="$LIBS" # m lib is include in root
 		 ;; #(
   cygwin*) :
     	ac_cv_header_langinfo_h=yes
@@ -8767,6 +9084,7 @@ esac
 		ac_cv_header_sys_time_h=no
 		ac_cv_header_sys_times_h=no
 		ac_cv_header_sys_socket_h=no
+		ac_cv_func_lstat=yes
 		ac_cv_func_times=yes
 		ac_cv_func_waitpid=yes
 		ac_cv_func_fsync=yes
@@ -8775,7 +9093,10 @@ esac
 		ac_cv_func_isinf=yes
 		ac_cv_func_isnan=yes
 		ac_cv_func_finite=yes
+		ac_cv_func_lchown=yes
 		ac_cv_func_link=yes
+		ac_cv_func_readlink=yes
+		ac_cv_func_symlink=yes
 		ac_cv_lib_crypt_crypt=no
 		ac_cv_func_getpgrp_void=no
 		ac_cv_func_memcmp_working=yes
@@ -8813,6 +9134,17 @@ _ACEOF
 fi
 done
 
+		for ac_func in _wfreopen_s
+do :
+  ac_fn_c_check_func "$LINENO" "_wfreopen_s" "ac_cv_func__wfreopen_s"
+if test "x$ac_cv_func__wfreopen_s" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE__WFREOPEN_S 1
+_ACEOF
+
+fi
+done
+
 		case " $LIBOBJS " in
   *" langinfo.$ac_objext "* ) ;;
   *) LIBOBJS="$LIBOBJS langinfo.$ac_objext"
@@ -8820,9 +9152,6 @@ done
 esac
 
 		 ;; #(
-  os2-emx*) :
-    	LIBS="-lm $LIBS"
-		ac_cv_lib_dir_opendir=no ;; #(
   bsdi*) :
     	LIBS="-lm $LIBS"
 		$as_echo "#define BROKEN_SETREUID 1" >>confdefs.h
@@ -8845,6 +9174,10 @@ esac
 		# isinf() and isnan() are macros on DragonFly.
 		ac_cv_func_isinf=yes
 		ac_cv_func_isnan=yes
+		 ;; #(
+  aix*) :
+    	LIBS="-lm $LIBS"
+		ac_cv_func_round=no
 		 ;; #(
   nacl) :
 
@@ -8910,7 +9243,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_crypt_crypt" >&5
-$as_echo "$ac_cv_lib_crypt_crypt" >&6; }
+    colorize_result "$ac_cv_lib_crypt_crypt" ; }
 if test "x$ac_cv_lib_crypt_crypt" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBCRYPT 1
@@ -8955,7 +9288,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dlopen" >&5
-$as_echo "$ac_cv_lib_dl_dlopen" >&6; }
+    colorize_result "$ac_cv_lib_dl_dlopen" ; }
 if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBDL 1
@@ -9000,7 +9333,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dld_shl_load" >&5
-$as_echo "$ac_cv_lib_dld_shl_load" >&6; }
+    colorize_result "$ac_cv_lib_dld_shl_load" ; }
 if test "x$ac_cv_lib_dld_shl_load" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBDLD 1
@@ -9045,7 +9378,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_socket_shutdown" >&5
-$as_echo "$ac_cv_lib_socket_shutdown" >&6; }
+    colorize_result "$ac_cv_lib_socket_shutdown" ; }
 if test "x$ac_cv_lib_socket_shutdown" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBSOCKET 1
@@ -9087,7 +9420,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 eval ac_res=\$$as_ac_Header
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
 if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_hdr" | $as_tr_cpp` 1
@@ -9148,7 +9481,7 @@ rm conftest.$ac_ext
 LIBS=$ac_func_search_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_opendir" >&5
-$as_echo "$ac_cv_search_opendir" >&6; }
+    colorize_result "$ac_cv_search_opendir" ; }
 ac_res=$ac_cv_search_opendir
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
@@ -9205,7 +9538,7 @@ rm conftest.$ac_ext
 LIBS=$ac_func_search_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_opendir" >&5
-$as_echo "$ac_cv_search_opendir" >&6; }
+    colorize_result "$ac_cv_search_opendir" ; }
 ac_res=$ac_cv_search_opendir
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
@@ -9289,7 +9622,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_stdbool_h" >&5
-$as_echo "$ac_cv_header_stdbool_h" >&6; }
+    colorize_result "$ac_cv_header_stdbool_h" ; }
    ac_fn_c_check_type "$LINENO" "_Bool" "ac_cv_type__Bool" "$ac_includes_default"
 if test "x$ac_cv_type__Bool" = xyes; then :
 
@@ -9341,60 +9674,476 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_sys_wait_h" >&5
-$as_echo "$ac_cv_header_sys_wait_h" >&6; }
+    colorize_result "$ac_cv_header_sys_wait_h" ; }
 if test $ac_cv_header_sys_wait_h = yes; then
 
 $as_echo "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 
 fi
 
-for ac_header in \
-  limits.h \
-  sys/file.h \
-  sys/ioctl.h \
-  sys/syscall.h \
-  fcntl.h \
-  sys/fcntl.h \
-  sys/param.h \
-  sys/select.h \
-  sys/time.h \
-  sys/times.h \
-  syscall.h \
-  pwd.h \
-  grp.h \
-  a.out.h \
-  utime.h \
-  direct.h \
-  sys/resource.h \
-  sys/mkdev.h \
-  sys/utime.h \
-  float.h \
-  ieeefp.h \
-  ucontext.h \
-  intrinsics.h \
-  langinfo.h \
-  locale.h \
-  sys/sendfile.h \
-  time.h \
-  net/socket.h \
-  sys/socket.h \
-  process.h \
-  sys/prctl.h \
-  sys/uio.h \
-  atomic.h \
-  malloc.h \
-  malloc_np.h \
-  malloc/malloc.h \
-  setjmpex.h \
-  sys/attr.h \
-  sys/id.h
 
+for ac_header in a.out.h
 do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  ac_fn_c_check_header_mongrel "$LINENO" "a.out.h" "ac_cv_header_a_out_h" "$ac_includes_default"
+if test "x$ac_cv_header_a_out_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+#define HAVE_A_OUT_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in atomic.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "atomic.h" "ac_cv_header_atomic_h" "$ac_includes_default"
+if test "x$ac_cv_header_atomic_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_ATOMIC_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in direct.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "direct.h" "ac_cv_header_direct_h" "$ac_includes_default"
+if test "x$ac_cv_header_direct_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_DIRECT_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in grp.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "grp.h" "ac_cv_header_grp_h" "$ac_includes_default"
+if test "x$ac_cv_header_grp_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_GRP_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in fcntl.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h" "$ac_includes_default"
+if test "x$ac_cv_header_fcntl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FCNTL_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in float.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "float.h" "ac_cv_header_float_h" "$ac_includes_default"
+if test "x$ac_cv_header_float_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FLOAT_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in ieeefp.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "ieeefp.h" "ac_cv_header_ieeefp_h" "$ac_includes_default"
+if test "x$ac_cv_header_ieeefp_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_IEEEFP_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in intrinsics.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "intrinsics.h" "ac_cv_header_intrinsics_h" "$ac_includes_default"
+if test "x$ac_cv_header_intrinsics_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_INTRINSICS_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in langinfo.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "langinfo.h" "ac_cv_header_langinfo_h" "$ac_includes_default"
+if test "x$ac_cv_header_langinfo_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LANGINFO_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in limits.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "limits.h" "ac_cv_header_limits_h" "$ac_includes_default"
+if test "x$ac_cv_header_limits_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIMITS_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in locale.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "locale.h" "ac_cv_header_locale_h" "$ac_includes_default"
+if test "x$ac_cv_header_locale_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LOCALE_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in malloc.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "malloc.h" "ac_cv_header_malloc_h" "$ac_includes_default"
+if test "x$ac_cv_header_malloc_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MALLOC_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in malloc/malloc.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "malloc/malloc.h" "ac_cv_header_malloc_malloc_h" "$ac_includes_default"
+if test "x$ac_cv_header_malloc_malloc_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MALLOC_MALLOC_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in malloc_np.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "malloc_np.h" "ac_cv_header_malloc_np_h" "$ac_includes_default"
+if test "x$ac_cv_header_malloc_np_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MALLOC_NP_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in net/socket.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "net/socket.h" "ac_cv_header_net_socket_h" "$ac_includes_default"
+if test "x$ac_cv_header_net_socket_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_NET_SOCKET_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in process.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "process.h" "ac_cv_header_process_h" "$ac_includes_default"
+if test "x$ac_cv_header_process_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PROCESS_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in pwd.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "pwd.h" "ac_cv_header_pwd_h" "$ac_includes_default"
+if test "x$ac_cv_header_pwd_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PWD_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in setjmpex.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "setjmpex.h" "ac_cv_header_setjmpex_h" "$ac_includes_default"
+if test "x$ac_cv_header_setjmpex_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SETJMPEX_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/attr.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/attr.h" "ac_cv_header_sys_attr_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_attr_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_ATTR_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/fcntl.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/fcntl.h" "ac_cv_header_sys_fcntl_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_fcntl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_FCNTL_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/file.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/file.h" "ac_cv_header_sys_file_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_file_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_FILE_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/id.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/id.h" "ac_cv_header_sys_id_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_id_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_ID_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/ioctl.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/ioctl.h" "ac_cv_header_sys_ioctl_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_ioctl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_IOCTL_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/mkdev.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/mkdev.h" "ac_cv_header_sys_mkdev_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_mkdev_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_MKDEV_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/param.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/param.h" "ac_cv_header_sys_param_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_param_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_PARAM_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/prctl.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/prctl.h" "ac_cv_header_sys_prctl_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_prctl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_PRCTL_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/resource.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/resource.h" "ac_cv_header_sys_resource_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_resource_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_RESOURCE_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/select.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/select.h" "ac_cv_header_sys_select_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_select_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_SELECT_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/sendfile.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/sendfile.h" "ac_cv_header_sys_sendfile_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_sendfile_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_SENDFILE_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/socket.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/socket.h" "ac_cv_header_sys_socket_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_socket_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_SOCKET_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/syscall.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/syscall.h" "ac_cv_header_sys_syscall_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_syscall_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_SYSCALL_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/time.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/time.h" "ac_cv_header_sys_time_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_time_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_TIME_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/times.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/times.h" "ac_cv_header_sys_times_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_times_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_TIMES_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/uio.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/uio.h" "ac_cv_header_sys_uio_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_uio_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_UIO_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/utime.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/utime.h" "ac_cv_header_sys_utime_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_utime_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_UTIME_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in syscall.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "syscall.h" "ac_cv_header_syscall_h" "$ac_includes_default"
+if test "x$ac_cv_header_syscall_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYSCALL_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in time.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "time.h" "ac_cv_header_time_h" "$ac_includes_default"
+if test "x$ac_cv_header_time_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_TIME_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in ucontext.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "ucontext.h" "ac_cv_header_ucontext_h" "$ac_includes_default"
+if test "x$ac_cv_header_ucontext_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UCONTEXT_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in utime.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "utime.h" "ac_cv_header_utime_h" "$ac_includes_default"
+if test "x$ac_cv_header_utime_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UTIME_H 1
 _ACEOF
 
 fi
@@ -9459,7 +10208,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gmp___gmpz_init" >&5
-$as_echo "$ac_cv_lib_gmp___gmpz_init" >&6; }
+    colorize_result "$ac_cv_lib_gmp___gmpz_init" ; }
 if test "x$ac_cv_lib_gmp___gmpz_init" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBGMP 1
@@ -9521,7 +10270,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jemalloc_malloc_conf" >&5
-$as_echo "$ac_cv_lib_jemalloc_malloc_conf" >&6; }
+    colorize_result "$ac_cv_lib_jemalloc_malloc_conf" ; }
 if test "x$ac_cv_lib_jemalloc_malloc_conf" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBJEMALLOC 1
@@ -9575,7 +10324,7 @@ rm -f core conftest.err conftest.$ac_objext \
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_jemalloc_demangle" >&5
-$as_echo "$rb_cv_jemalloc_demangle" >&6; }
+    colorize_result "$rb_cv_jemalloc_demangle" ; }
 
 fi
   if test "x$rb_cv_jemalloc_demangle" = xyes; then :
@@ -9623,7 +10372,7 @@ else
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -9651,7 +10400,7 @@ rm -f core conftest.err conftest.$ac_objext
     fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sys_largefile_CC" >&5
-$as_echo "$ac_cv_sys_largefile_CC" >&6; }
+    colorize_result "$ac_cv_sys_largefile_CC" ; }
   if test "$ac_cv_sys_largefile_CC" != no; then
     CC=$CC$ac_cv_sys_largefile_CC
   fi
@@ -9669,7 +10418,7 @@ else
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -9693,7 +10442,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -9714,7 +10463,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sys_file_offset_bits" >&5
-$as_echo "$ac_cv_sys_file_offset_bits" >&6; }
+    colorize_result "$ac_cv_sys_file_offset_bits" ; }
 case $ac_cv_sys_file_offset_bits in #(
   no | unknown) ;;
   *)
@@ -9738,7 +10487,7 @@ else
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -9762,7 +10511,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -9783,7 +10532,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sys_large_files" >&5
-$as_echo "$ac_cv_sys_large_files" >&6; }
+    colorize_result "$ac_cv_sys_large_files" ; }
 case $ac_cv_sys_large_files in #(
   no | unknown) ;;
   *)
@@ -9798,6 +10547,37 @@ rm -rf conftest*
 
 fi
 
+# On 32-bit Solaris, it is safe to define _LARGEFILE_SOURCE
+# which is not added by AC_SYS_LARGEFILE.
+if test x"$enable_largefile" != xno; then
+  case "$target_os" in #(
+  solaris*) :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking wheather _LARGEFILE_SOURCE should be defined" >&5
+$as_echo_n "checking wheather _LARGEFILE_SOURCE should be defined... " >&6; }
+    case "${ac_cv_sys_file_offset_bits}:${ac_cv_sys_large_files}" in #(
+  "64:"|"64:no"|"64:unknown") :
+
+	# insert _LARGEFILE_SOURCE before _FILE_OFFSET_BITS line
+	# that is the same order as "getconf LFS_CFLAGS" output
+	mv confdefs.h largefile0.h
+	: > confdefs.h
+	$as_echo "#define _LARGEFILE_SOURCE 1" >>confdefs.h
+
+	cat largefile0.h >> confdefs.h
+	rm largefile0.h
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
+       ;; #(
+  *) :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    $as_echo "${msg_result_no}no${msg_reset}" ; } ;;
+esac
+   ;; #(
+  *) :
+     ;;
+esac
+fi
 mv confdefs.h largefile.h
 mv confdefs1.h confdefs.h
 cat largefile.h >> confdefs.h
@@ -10031,7 +10811,7 @@ fi
     fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_bigendian" >&5
-$as_echo "$ac_cv_c_bigendian" >&6; }
+    colorize_result "$ac_cv_c_bigendian" ; }
  case $ac_cv_c_bigendian in #(
    yes)
      $as_echo "#define WORDS_BIGENDIAN 1" >>confdefs.h
@@ -10122,7 +10902,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_const" >&5
-$as_echo "$ac_cv_c_const" >&6; }
+    colorize_result "$ac_cv_c_const" ; }
 if test $ac_cv_c_const = no; then
 
 $as_echo "#define const /**/" >>confdefs.h
@@ -10156,7 +10936,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_char_unsigned" >&5
-$as_echo "$ac_cv_c_char_unsigned" >&6; }
+    colorize_result "$ac_cv_c_char_unsigned" ; }
 if test $ac_cv_c_char_unsigned = yes && test "$GCC" != yes; then
   $as_echo "#define __CHAR_UNSIGNED__ 1" >>confdefs.h
 
@@ -10187,7 +10967,7 @@ done
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_inline" >&5
-$as_echo "$ac_cv_c_inline" >&6; }
+    colorize_result "$ac_cv_c_inline" ; }
 
 case $ac_cv_c_inline in
   inline | yes) ;;
@@ -10231,7 +11011,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_volatile" >&5
-$as_echo "$ac_cv_c_volatile" >&6; }
+    colorize_result "$ac_cv_c_volatile" ; }
 if test $ac_cv_c_volatile = no; then
 
 $as_echo "#define volatile /**/" >>confdefs.h
@@ -10278,7 +11058,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
      done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_typeof" >&5
-$as_echo "$ac_cv_c_typeof" >&6; }
+    colorize_result "$ac_cv_c_typeof" ; }
   if test $ac_cv_c_typeof != no; then
 
 $as_echo "#define HAVE_TYPEOF 1" >>confdefs.h
@@ -10336,7 +11116,7 @@ fi
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_char_bit" >&5
-$as_echo "$rb_cv_char_bit" >&6; }
+    colorize_result "$rb_cv_char_bit" ; }
 
 
 
@@ -10431,7 +11211,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int" >&5
-$as_echo "$ac_cv_sizeof_int" >&6; }
+    colorize_result "$ac_cv_sizeof_int" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_int-}; do
@@ -10478,7 +11258,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int" >&5
-$as_echo "$ac_cv_sizeof_int" >&6; }
+    colorize_result "$ac_cv_sizeof_int" ; }
 
 
 
@@ -10529,7 +11309,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_short" >&5
-$as_echo "$ac_cv_sizeof_short" >&6; }
+    colorize_result "$ac_cv_sizeof_short" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_short-}; do
@@ -10576,7 +11356,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_short" >&5
-$as_echo "$ac_cv_sizeof_short" >&6; }
+    colorize_result "$ac_cv_sizeof_short" ; }
 
 
 
@@ -10703,7 +11483,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long" >&5
-$as_echo "$ac_cv_sizeof_long" >&6; }
+    colorize_result "$ac_cv_sizeof_long" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_long-}; do
@@ -10750,7 +11530,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long" >&5
-$as_echo "$ac_cv_sizeof_long" >&6; }
+    colorize_result "$ac_cv_sizeof_long" ; }
 
 
 
@@ -10801,7 +11581,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long_long" >&5
-$as_echo "$ac_cv_sizeof_long_long" >&6; }
+    colorize_result "$ac_cv_sizeof_long_long" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_long_long-}; do
@@ -10848,7 +11628,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long_long" >&5
-$as_echo "$ac_cv_sizeof_long_long" >&6; }
+    colorize_result "$ac_cv_sizeof_long_long" ; }
 
 
 
@@ -10899,7 +11679,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int64" >&5
-$as_echo "$ac_cv_sizeof___int64" >&6; }
+    colorize_result "$ac_cv_sizeof___int64" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof___int64-}; do
@@ -10946,110 +11726,12 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int64" >&5
-$as_echo "$ac_cv_sizeof___int64" >&6; }
+    colorize_result "$ac_cv_sizeof___int64" ; }
 
 
 
 cat >>confdefs.h <<_ACEOF
 #define SIZEOF___INT64 $ac_cv_sizeof___int64
-_ACEOF
-
-
-fi
-
-if test "$universal_binary" = yes; then
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of __int128" >&5
-$as_echo_n "checking size of __int128... " >&6; }
-if ${ac_cv_sizeof___int128+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    unset ac_cv_sizeof___int128
-    rbcv_var="
-typedef __int128 ac__type_sizeof_;
-static ac__type_sizeof_ *rbcv_ptr;
-#define SIZEOF___INT128 sizeof((*rbcv_ptr))
-"
-
-    unset cond
-
-    {
-    test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF___INT128" "t"        "$ac_includes_default
-${cond+$cond
-#else}
-$rbcv_var
-${cond+#endif}
-#ifndef SIZEOF___INT128
-#define SIZEOF___INT128 0
-#endif"; then :
-
-else
-  t=0
-fi
-
-    test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof___int128="${ac_cv_sizeof___int128+${ac_cv_sizeof___int128-} }${t}"
-    fi
-    }
-    : ${ac_cv_sizeof___int128=0}
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int128" >&5
-$as_echo "$ac_cv_sizeof___int128" >&6; }
-{
-    unset cond
-    for t in ${ac_cv_sizeof___int128-}; do
-	case "$t" in #(
-  [0-9]*|SIZEOF_*) :
-
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF___INT128 $t"
-	    break
-	     ;; #(
-  *) :
-
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF___INT128 $[s / rb_cv_char_bit]"
-	    cond=1
-	     ;;
-esac
-    done
-    ${cond+echo "#endif"}
-} >> confdefs.h
-else
-# The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of __int128" >&5
-$as_echo_n "checking size of __int128... " >&6; }
-if ${ac_cv_sizeof___int128+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (__int128))" "ac_cv_sizeof___int128"        "$ac_includes_default"; then :
-
-else
-  if test "$ac_cv_type___int128" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (__int128)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof___int128=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int128" >&5
-$as_echo "$ac_cv_sizeof___int128" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF___INT128 $ac_cv_sizeof___int128
 _ACEOF
 
 
@@ -11095,7 +11777,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_off_t" >&5
-$as_echo "$ac_cv_sizeof_off_t" >&6; }
+    colorize_result "$ac_cv_sizeof_off_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_off_t-}; do
@@ -11142,7 +11824,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_off_t" >&5
-$as_echo "$ac_cv_sizeof_off_t" >&6; }
+    colorize_result "$ac_cv_sizeof_off_t" ; }
 
 
 
@@ -11269,7 +11951,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_voidp" >&5
-$as_echo "$ac_cv_sizeof_voidp" >&6; }
+    colorize_result "$ac_cv_sizeof_voidp" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_voidp-}; do
@@ -11316,7 +11998,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_voidp" >&5
-$as_echo "$ac_cv_sizeof_voidp" >&6; }
+    colorize_result "$ac_cv_sizeof_voidp" ; }
 
 
 
@@ -11367,7 +12049,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_float" >&5
-$as_echo "$ac_cv_sizeof_float" >&6; }
+    colorize_result "$ac_cv_sizeof_float" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_float-}; do
@@ -11414,7 +12096,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_float" >&5
-$as_echo "$ac_cv_sizeof_float" >&6; }
+    colorize_result "$ac_cv_sizeof_float" ; }
 
 
 
@@ -11465,7 +12147,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_double" >&5
-$as_echo "$ac_cv_sizeof_double" >&6; }
+    colorize_result "$ac_cv_sizeof_double" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_double-}; do
@@ -11512,7 +12194,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_double" >&5
-$as_echo "$ac_cv_sizeof_double" >&6; }
+    colorize_result "$ac_cv_sizeof_double" ; }
 
 
 
@@ -11589,7 +12271,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_time_t" >&5
-$as_echo "$ac_cv_sizeof_time_t" >&6; }
+    colorize_result "$ac_cv_sizeof_time_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_time_t-}; do
@@ -11637,7 +12319,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_time_t" >&5
-$as_echo "$ac_cv_sizeof_time_t" >&6; }
+    colorize_result "$ac_cv_sizeof_time_t" ; }
 
 
 
@@ -11689,7 +12371,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_clock_t" >&5
-$as_echo "$ac_cv_sizeof_clock_t" >&6; }
+    colorize_result "$ac_cv_sizeof_clock_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_clock_t-}; do
@@ -11737,7 +12419,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_clock_t" >&5
-$as_echo "$ac_cv_sizeof_clock_t" >&6; }
+    colorize_result "$ac_cv_sizeof_clock_t" ; }
 
 
 
@@ -11778,7 +12460,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_packed_struct" >&5
-$as_echo "$rb_cv_packed_struct" >&6; }
+    colorize_result "$rb_cv_packed_struct" ; }
 packed_struct_unaligned=x
 if test "$rb_cv_packed_struct" != no; then
     cat >>confdefs.h <<_ACEOF
@@ -11861,7 +12543,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_pri_prefix_long_long" >&5
-$as_echo "$rb_cv_pri_prefix_long_long" >&6; }
+    colorize_result "$rb_cv_pri_prefix_long_long" ; }
 if test "$rb_cv_pri_prefix_long_long" != NONE; then
     cat >>confdefs.h <<_ACEOF
 #define PRI_LL_PREFIX "$rb_cv_pri_prefix_long_long"
@@ -11932,7 +12614,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_pri_prefix___int64" >&5
-$as_echo "$rb_cv_pri_prefix___int64" >&6; }
+    colorize_result "$rb_cv_pri_prefix___int64" ; }
 if test "$rb_cv_pri_prefix___int64" != NONE; then
     cat >>confdefs.h <<_ACEOF
 #define PRI_LL_PREFIX "$rb_cv_pri_prefix___int64"
@@ -12029,8 +12711,25 @@ esac
 	rb_cv_pid_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_pid_t_convertible" >&5
-$as_echo "$rb_cv_pid_t_convertible" >&6; }
-    test "${ac_cv_type_pid_t}" = "yes" && n="pid_t"
+    colorize_result "$rb_cv_pid_t_convertible" ; }
+    if test "${ac_cv_type_pid_t}" = "yes"; then
+	n="pid_t"
+    else
+	case "${rb_cv_pid_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_pid_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_pid_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12142,8 +12841,25 @@ esac
 	rb_cv_uid_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_uid_t_convertible" >&5
-$as_echo "$rb_cv_uid_t_convertible" >&6; }
-    test "${ac_cv_type_uid_t}" = "yes" && n="uid_t"
+    colorize_result "$rb_cv_uid_t_convertible" ; }
+    if test "${ac_cv_type_uid_t}" = "yes"; then
+	n="uid_t"
+    else
+	case "${rb_cv_uid_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_uid_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_uid_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12255,8 +12971,25 @@ esac
 	rb_cv_gid_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_gid_t_convertible" >&5
-$as_echo "$rb_cv_gid_t_convertible" >&6; }
-    test "${ac_cv_type_gid_t}" = "yes" && n="gid_t"
+    colorize_result "$rb_cv_gid_t_convertible" ; }
+    if test "${ac_cv_type_gid_t}" = "yes"; then
+	n="gid_t"
+    else
+	case "${rb_cv_gid_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_gid_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_gid_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12371,8 +13104,25 @@ esac
 	rb_cv_time_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_time_t_convertible" >&5
-$as_echo "$rb_cv_time_t_convertible" >&6; }
-    test "${ac_cv_type_time_t}" = "yes" && n="time_t"
+    colorize_result "$rb_cv_time_t_convertible" ; }
+    if test "${ac_cv_type_time_t}" = "yes"; then
+	n="time_t"
+    else
+	case "${rb_cv_time_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_time_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_time_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12484,8 +13234,25 @@ esac
 	rb_cv_dev_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dev_t_convertible" >&5
-$as_echo "$rb_cv_dev_t_convertible" >&6; }
-    test "${ac_cv_type_dev_t}" = "yes" && n="dev_t"
+    colorize_result "$rb_cv_dev_t_convertible" ; }
+    if test "${ac_cv_type_dev_t}" = "yes"; then
+	n="dev_t"
+    else
+	case "${rb_cv_dev_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_dev_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_dev_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12600,8 +13367,25 @@ esac
 	rb_cv_mode_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_mode_t_convertible" >&5
-$as_echo "$rb_cv_mode_t_convertible" >&6; }
-    test "${ac_cv_type_mode_t}" = "yes" && n="mode_t"
+    colorize_result "$rb_cv_mode_t_convertible" ; }
+    if test "${ac_cv_type_mode_t}" = "yes"; then
+	n="mode_t"
+    else
+	case "${rb_cv_mode_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_mode_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_mode_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12740,8 +13524,25 @@ esac
 	rb_cv_rlim_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_rlim_t_convertible" >&5
-$as_echo "$rb_cv_rlim_t_convertible" >&6; }
-    test "${ac_cv_type_rlim_t}" = "yes" && n="rlim_t"
+    colorize_result "$rb_cv_rlim_t_convertible" ; }
+    if test "${ac_cv_type_rlim_t}" = "yes"; then
+	n="rlim_t"
+    else
+	case "${rb_cv_rlim_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_rlim_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_rlim_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12853,8 +13654,25 @@ esac
 	rb_cv_off_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_off_t_convertible" >&5
-$as_echo "$rb_cv_off_t_convertible" >&6; }
-    test "${ac_cv_type_off_t}" = "yes" && n="off_t"
+    colorize_result "$rb_cv_off_t_convertible" ; }
+    if test "${ac_cv_type_off_t}" = "yes"; then
+	n="off_t"
+    else
+	case "${rb_cv_off_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_off_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_off_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -12966,8 +13784,25 @@ esac
 	rb_cv_clockid_t_convertible=${u}${t}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_clockid_t_convertible" >&5
-$as_echo "$rb_cv_clockid_t_convertible" >&6; }
-    test "${ac_cv_type_clockid_t}" = "yes" && n="clockid_t"
+    colorize_result "$rb_cv_clockid_t_convertible" ; }
+    if test "${ac_cv_type_clockid_t}" = "yes"; then
+	n="clockid_t"
+    else
+	case "${rb_cv_clockid_t_convertible}" in #(
+  *LL) :
+    n="long long" ;; #(
+  *LONG) :
+    n="long" ;; #(
+  *) :
+    n="int" ;;
+esac
+	case "${rb_cv_clockid_t_convertible}" in #(
+  U*) :
+    n="unsigned $n" ;; #(
+  *) :
+     ;;
+esac
+    fi
     case "${rb_cv_clockid_t_convertible}" in #(
   U*) :
     u=+1 ;; #(
@@ -13020,7 +13855,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_have_prototypes" >&5
-$as_echo "$rb_cv_have_prototypes" >&6; }
+    colorize_result "$rb_cv_have_prototypes" ; }
 if test "$rb_cv_have_prototypes" = yes; then
   $as_echo "#define HAVE_PROTOTYPES 1" >>confdefs.h
 
@@ -13050,7 +13885,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_tokenpaste" >&5
-$as_echo "$rb_cv_tokenpaste" >&6; }
+    colorize_result "$rb_cv_tokenpaste" ; }
 if test "$rb_cv_tokenpaste" = ansi; then
   $as_echo "#define TOKEN_PASTE(x,y) x##y" >>confdefs.h
 
@@ -13098,7 +13933,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_stringization" >&5
-$as_echo "$rb_cv_stringization" >&6; }
+    colorize_result "$rb_cv_stringization" ; }
 $as_echo "#define STRINGIZE(expr) STRINGIZE0(expr)" >>confdefs.h
 
 if test x"$rb_cv_stringization" != xno -a "$rb_cv_stringization" != "#expr"; then
@@ -13143,7 +13978,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_string_literal_concatenation" >&5
-$as_echo "$rb_cv_string_literal_concatenation" >&6; }
+    colorize_result "$rb_cv_string_literal_concatenation" ; }
 if test "$rb_cv_string_literal_concatenation" = no; then
   $as_echo "#define NO_STRING_LITERAL_CONCATENATION 1" >>confdefs.h
 
@@ -13183,7 +14018,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_stdarg" >&5
-$as_echo "$rb_cv_stdarg" >&6; }
+    colorize_result "$rb_cv_stdarg" ; }
 if test "$rb_cv_stdarg" = yes; then
   $as_echo "#define HAVE_STDARG_PROTOTYPES 1" >>confdefs.h
 
@@ -13216,11 +14051,14 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_va_args_macro" >&5
-$as_echo "$rb_cv_va_args_macro" >&6; }
+    colorize_result "$rb_cv_va_args_macro" ; }
 if test "$rb_cv_va_args_macro" = yes; then
   $as_echo "#define HAVE_VA_ARGS_MACRO 1" >>confdefs.h
 
 fi
+
+
+
 
 
 
@@ -13253,7 +14091,9 @@ for mac in \
 
 #define NORETURN(x) $mac
 
-    NORETURN(void conftest_attribute_check(void));
+#define x void conftest_attribute_check(void)
+
+    NORETURN(x);
 int
 main ()
 {
@@ -13277,7 +14117,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_noreturn" >&5
-$as_echo "$rb_cv_func_noreturn" >&6; }
+    colorize_result "$rb_cv_func_noreturn" ; }
 if test "$rb_cv_func_noreturn" != x; then
         cat >>confdefs.h <<_ACEOF
 #define NORETURN(x) $rb_cv_func_noreturn
@@ -13313,7 +14153,9 @@ for mac in \
 
 #define DEPRECATED(x) $mac
 
-    DEPRECATED(void conftest_attribute_check(void));
+#define x void conftest_attribute_check(void)
+
+    DEPRECATED(x);
 int
 main ()
 {
@@ -13337,10 +14179,136 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_deprecated" >&5
-$as_echo "$rb_cv_func_deprecated" >&6; }
+    colorize_result "$rb_cv_func_deprecated" ; }
 if test "$rb_cv_func_deprecated" != x; then
         cat >>confdefs.h <<_ACEOF
 #define DEPRECATED(x) $rb_cv_func_deprecated
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for DEPRECATED_BY function attribute" >&5
+$as_echo_n "checking for DEPRECATED_BY function attribute... " >&6; }
+if ${rb_cv_func_deprecated_by+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func_deprecated_by=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((deprecated(\"by \"#n))) x" \
+    "x __attribute__ ((deprecated(\"by \"#n)))" \
+    "__declspec(deprecated(\"by \"#n)) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define DEPRECATED_BY(n,x) $mac
+
+#define x void conftest_attribute_check(void)
+
+    DEPRECATED_BY(n,x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func_deprecated_by="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_deprecated_by" >&5
+    colorize_result "$rb_cv_func_deprecated_by" ; }
+if test "$rb_cv_func_deprecated_by" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define DEPRECATED_BY(n,x) $rb_cv_func_deprecated_by
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for DEPRECATED_TYPE type attribute" >&5
+$as_echo_n "checking for DEPRECATED_TYPE type attribute... " >&6; }
+if ${rb_cv_type_deprecated+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_type_deprecated=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((deprecated mesg)) x" \
+    "x __attribute__ ((deprecated mesg))" \
+    "__declspec(deprecated mesg) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define DEPRECATED_TYPE(mesg,x) $mac
+
+
+#define x struct conftest_attribute_check {int i;}
+#define mesg ("")
+
+    DEPRECATED_TYPE(mesg,x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_type_deprecated="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_deprecated" >&5
+    colorize_result "$rb_cv_type_deprecated" ; }
+if test "$rb_cv_type_deprecated" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define DEPRECATED_TYPE(mesg,x) $rb_cv_type_deprecated
 _ACEOF
 
 fi
@@ -13373,7 +14341,9 @@ for mac in \
 
 #define NOINLINE(x) $mac
 
-    NOINLINE(void conftest_attribute_check(void));
+#define x void conftest_attribute_check(void)
+
+    NOINLINE(x);
 int
 main ()
 {
@@ -13397,7 +14367,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_noinline" >&5
-$as_echo "$rb_cv_func_noinline" >&6; }
+    colorize_result "$rb_cv_func_noinline" ; }
 if test "$rb_cv_func_noinline" != x; then
         cat >>confdefs.h <<_ACEOF
 #define NOINLINE(x) $rb_cv_func_noinline
@@ -13406,9 +14376,75 @@ _ACEOF
 fi
 
 
-if_i386=${universal_binary+defined __i386__}
 
-rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for WEAK function attribute" >&5
+$as_echo_n "checking for WEAK function attribute... " >&6; }
+if ${rb_cv_func_weak+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func_weak=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((weak)) x" \
+    "x __attribute__ ((weak))" \
+    "__declspec(weak) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define WEAK(x) $mac
+
+#define x void conftest_attribute_check(void)
+
+    WEAK(x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func_weak="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_weak" >&5
+    colorize_result "$rb_cv_func_weak" ; }
+if test "$rb_cv_func_weak" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define WEAK(x) $rb_cv_func_weak
+_ACEOF
+
+fi
+
+
+if test "$rb_cv_func_weak" != x; then
+   $as_echo "#define HAVE_FUNC_WEAK 1" >>confdefs.h
+
+fi
+
+if_i386=${universal_binary+defined __i386__}
+         rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdcall function attribute" >&5
 $as_echo_n "checking for stdcall function attribute... " >&6; }
 if ${rb_cv_func_stdcall+:} false; then :
@@ -13437,7 +14473,9 @@ ${rbcv_cond+#if $rbcv_cond}
 ${rbcv_cond+#else}
 ${rbcv_cond+#define FUNC_STDCALL(x) x}
 ${rbcv_cond+#endif}
-    FUNC_STDCALL(void conftest_attribute_check(void));
+#define x void conftest_attribute_check(void)
+
+    FUNC_STDCALL(x);
 int
 main ()
 {
@@ -13461,7 +14499,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_stdcall" >&5
-$as_echo "$rb_cv_func_stdcall" >&6; }
+    colorize_result "$rb_cv_func_stdcall" ; }
 if test "$rb_cv_func_stdcall" != x; then
         test "X${rbcv_cond}" = X || cat <<EOH >> confdefs.h
 #if ${rbcv_cond}
@@ -13476,7 +14514,7 @@ EOH
 fi
 unset rbcv_cond
 
-rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
+         rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cdecl function attribute" >&5
 $as_echo_n "checking for cdecl function attribute... " >&6; }
 if ${rb_cv_func_cdecl+:} false; then :
@@ -13505,7 +14543,9 @@ ${rbcv_cond+#if $rbcv_cond}
 ${rbcv_cond+#else}
 ${rbcv_cond+#define FUNC_CDECL(x) x}
 ${rbcv_cond+#endif}
-    FUNC_CDECL(void conftest_attribute_check(void));
+#define x void conftest_attribute_check(void)
+
+    FUNC_CDECL(x);
 int
 main ()
 {
@@ -13529,7 +14569,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_cdecl" >&5
-$as_echo "$rb_cv_func_cdecl" >&6; }
+    colorize_result "$rb_cv_func_cdecl" ; }
 if test "$rb_cv_func_cdecl" != x; then
         test "X${rbcv_cond}" = X || cat <<EOH >> confdefs.h
 #if ${rbcv_cond}
@@ -13544,7 +14584,7 @@ EOH
 fi
 unset rbcv_cond
 
-rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
+         rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fastcall function attribute" >&5
 $as_echo_n "checking for fastcall function attribute... " >&6; }
 if ${rb_cv_func_fastcall+:} false; then :
@@ -13573,7 +14613,9 @@ ${rbcv_cond+#if $rbcv_cond}
 ${rbcv_cond+#else}
 ${rbcv_cond+#define FUNC_FASTCALL(x) x}
 ${rbcv_cond+#endif}
-    FUNC_FASTCALL(void conftest_attribute_check(void));
+#define x void conftest_attribute_check(void)
+
+    FUNC_FASTCALL(x);
 int
 main ()
 {
@@ -13597,7 +14639,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_fastcall" >&5
-$as_echo "$rb_cv_func_fastcall" >&6; }
+    colorize_result "$rb_cv_func_fastcall" ; }
 if test "$rb_cv_func_fastcall" != x; then
         test "X${rbcv_cond}" = X || cat <<EOH >> confdefs.h
 #if ${rbcv_cond}
@@ -13611,6 +14653,68 @@ EOH
 
 fi
 unset rbcv_cond
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FUNC_UNOPTIMIZED function attribute" >&5
+$as_echo_n "checking for FUNC_UNOPTIMIZED function attribute... " >&6; }
+if ${rb_cv_func_unoptimized+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func_unoptimized=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((optimize(\"O0\"))) x" \
+    "x __attribute__ ((optimize(\"O0\")))" \
+    "__declspec(optimize(\"O0\")) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define FUNC_UNOPTIMIZED(x) $mac
+
+#define x void conftest_attribute_check(void)
+
+    FUNC_UNOPTIMIZED(x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func_unoptimized="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_unoptimized" >&5
+    colorize_result "$rb_cv_func_unoptimized" ; }
+if test "$rb_cv_func_unoptimized" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define FUNC_UNOPTIMIZED(x) $rb_cv_func_unoptimized
+_ACEOF
+
+fi
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for FUNC_MINIMIZED function attribute" >&5
@@ -13639,7 +14743,9 @@ for mac in \
 
 #define FUNC_MINIMIZED(x) $mac
 
-    FUNC_MINIMIZED(void conftest_attribute_check(void));
+#define x void conftest_attribute_check(void)
+
+    FUNC_MINIMIZED(x);
 int
 main ()
 {
@@ -13663,13 +14769,14 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_minimized" >&5
-$as_echo "$rb_cv_func_minimized" >&6; }
+    colorize_result "$rb_cv_func_minimized" ; }
 if test "$rb_cv_func_minimized" != x; then
         cat >>confdefs.h <<_ACEOF
 #define FUNC_MINIMIZED(x) $rb_cv_func_minimized
 _ACEOF
 
 fi
+
 
 
 if test "$GCC" = yes; then
@@ -13700,7 +14807,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_gcc_function_alias" >&5
-$as_echo "$rb_cv_gcc_function_alias" >&6; }
+    colorize_result "$rb_cv_gcc_function_alias" ; }
     if test "$rb_cv_gcc_function_alias" != no; then
 	$as_echo "#define HAVE_ATTRIBUTE_FUNCTION_ALIAS 1" >>confdefs.h
 
@@ -13746,7 +14853,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_gcc_atomic_builtins" >&5
-$as_echo "$rb_cv_gcc_atomic_builtins" >&6; }
+    colorize_result "$rb_cv_gcc_atomic_builtins" ; }
     if test "$rb_cv_gcc_atomic_builtins" = yes; then
 	$as_echo "#define HAVE_GCC_ATOMIC_BUILTINS 1" >>confdefs.h
 
@@ -13785,7 +14892,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_gcc_sync_builtins" >&5
-$as_echo "$rb_cv_gcc_sync_builtins" >&6; }
+    colorize_result "$rb_cv_gcc_sync_builtins" ; }
     if test "$rb_cv_gcc_sync_builtins" = yes; then
 	$as_echo "#define HAVE_GCC_SYNC_BUILTINS 1" >>confdefs.h
 
@@ -13833,7 +14940,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___builtin_unreachable" >&5
-$as_echo "$rb_cv_func___builtin_unreachable" >&6; }
+    colorize_result "$rb_cv_func___builtin_unreachable" ; }
     if test "$rb_cv_func___builtin_unreachable" = yes; then
 	cat >>confdefs.h <<_ACEOF
 #define UNREACHABLE __builtin_unreachable()
@@ -13886,7 +14993,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_exported" >&5
-$as_echo "$rb_cv_func_exported" >&6; }
+    colorize_result "$rb_cv_func_exported" ; }
 if test "$rb_cv_func_exported" != no; then
     cat >>confdefs.h <<_ACEOF
 #define RUBY_FUNC_EXPORTED $rb_cv_func_exported extern
@@ -13949,11 +15056,78 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_function_name_string" >&5
-$as_echo "$rb_cv_function_name_string" >&6; }
+    colorize_result "$rb_cv_function_name_string" ; }
 if test "$rb_cv_function_name_string" != no; then
     cat >>confdefs.h <<_ACEOF
 #define RUBY_FUNCTION_NAME_STRING $rb_cv_function_name_string
 _ACEOF
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if enum over int is allowed" >&5
+$as_echo_n "checking if enum over int is allowed... " >&6; }
+if ${rb_cv_enum_over_int+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    rb_cv_enum_over_int=no
+    if test "x$ac_cv_type_long_long" = xyes; then
+	type="unsigned long long" max="ULLONG_MAX"
+    else
+	type="unsigned long" max="ULONG_MAX"
+    fi
+    save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                    #include <limits.h>
+                    enum {conftest_max = $max};
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(
+                    (conftest_max == $max) &&
+                    (sizeof(conftest_max) == sizeof($type))
+
+	    )];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_enum_over_int=yes
+else
+  rb_cv_enum_over_int=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_enum_over_int" >&5
+    colorize_result "$rb_cv_enum_over_int" ; }
+if test $rb_cv_enum_over_int = yes; then
+    $as_echo "#define ENUM_OVER_INT 1" >>confdefs.h
 
 fi
 
@@ -14112,7 +15286,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_size_t" >&5
-$as_echo "$ac_cv_sizeof_size_t" >&6; }
+    colorize_result "$ac_cv_sizeof_size_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_size_t-}; do
@@ -14160,7 +15334,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_size_t" >&5
-$as_echo "$ac_cv_sizeof_size_t" >&6; }
+    colorize_result "$ac_cv_sizeof_size_t" ; }
 
 
 
@@ -14237,7 +15411,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ptrdiff_t" >&5
-$as_echo "$ac_cv_sizeof_ptrdiff_t" >&6; }
+    colorize_result "$ac_cv_sizeof_ptrdiff_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_ptrdiff_t-}; do
@@ -14285,7 +15459,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ptrdiff_t" >&5
-$as_echo "$ac_cv_sizeof_ptrdiff_t" >&6; }
+    colorize_result "$ac_cv_sizeof_ptrdiff_t" ; }
 
 
 
@@ -14358,7 +15532,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_pri_prefix_size_t" >&5
-$as_echo "$rb_cv_pri_prefix_size_t" >&6; }
+    colorize_result "$rb_cv_pri_prefix_size_t" ; }
 if test "$rb_cv_pri_prefix_size_t" != NONE; then
     cat >>confdefs.h <<_ACEOF
 #define PRI_SIZE_PREFIX "$rb_cv_pri_prefix_size_t"
@@ -14428,7 +15602,7 @@ else
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_pri_prefix_ptrdiff_t" >&5
-$as_echo "$rb_cv_pri_prefix_ptrdiff_t" >&6; }
+    colorize_result "$rb_cv_pri_prefix_ptrdiff_t" ; }
 if test "$rb_cv_pri_prefix_ptrdiff_t" != NONE; then
     cat >>confdefs.h <<_ACEOF
 #define PRI_PTRDIFF_PREFIX "$rb_cv_pri_prefix_ptrdiff_t"
@@ -14548,7 +15722,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_stat_st_size" >&5
-$as_echo "$ac_cv_sizeof_struct_stat_st_size" >&6; }
+    colorize_result "$ac_cv_sizeof_struct_stat_st_size" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_struct_stat_st_size-}; do
@@ -14639,7 +15813,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_stat_st_blocks" >&5
-$as_echo "$ac_cv_sizeof_struct_stat_st_blocks" >&6; }
+    colorize_result "$ac_cv_sizeof_struct_stat_st_blocks" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_struct_stat_st_blocks-}; do
@@ -14730,7 +15904,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_stat_st_ino" >&5
-$as_echo "$ac_cv_sizeof_struct_stat_st_ino" >&6; }
+    colorize_result "$ac_cv_sizeof_struct_stat_st_ino" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_struct_stat_st_ino-}; do
@@ -14949,7 +16123,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_timeval_tv_sec" >&5
-$as_echo "$ac_cv_sizeof_struct_timeval_tv_sec" >&6; }
+    colorize_result "$ac_cv_sizeof_struct_timeval_tv_sec" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_struct_timeval_tv_sec-}; do
@@ -15094,8 +16268,6 @@ else
      rb_cv_type_int8_t="long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_int8_t="__int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_int8_t="__int128" ;; #(
   *) :
      rb_cv_type_int8_t=no ;;
 esac
@@ -15103,7 +16275,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int8_t" >&5
-$as_echo "$rb_cv_type_int8_t" >&6; }
+    colorize_result "$rb_cv_type_int8_t" ; }
 if test "${rb_cv_type_int8_t}" != no; then
     $as_echo "#define HAVE_INT8_T 1" >>confdefs.h
 
@@ -15133,7 +16305,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int8_t" >&5
-$as_echo "$ac_cv_sizeof_int8_t" >&6; }
+    colorize_result "$ac_cv_sizeof_int8_t" ; }
 
 
 
@@ -15187,8 +16359,6 @@ else
      rb_cv_type_uint8_t="unsigned long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_uint8_t="unsigned __int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_uint8_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint8_t=no ;;
 esac
@@ -15196,7 +16366,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint8_t" >&5
-$as_echo "$rb_cv_type_uint8_t" >&6; }
+    colorize_result "$rb_cv_type_uint8_t" ; }
 if test "${rb_cv_type_uint8_t}" != no; then
     $as_echo "#define HAVE_UINT8_T 1" >>confdefs.h
 
@@ -15226,7 +16396,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uint8_t" >&5
-$as_echo "$ac_cv_sizeof_uint8_t" >&6; }
+    colorize_result "$ac_cv_sizeof_uint8_t" ; }
 
 
 
@@ -15280,8 +16450,6 @@ else
      rb_cv_type_int16_t="long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_int16_t="__int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_int16_t="__int128" ;; #(
   *) :
      rb_cv_type_int16_t=no ;;
 esac
@@ -15289,7 +16457,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int16_t" >&5
-$as_echo "$rb_cv_type_int16_t" >&6; }
+    colorize_result "$rb_cv_type_int16_t" ; }
 if test "${rb_cv_type_int16_t}" != no; then
     $as_echo "#define HAVE_INT16_T 1" >>confdefs.h
 
@@ -15319,7 +16487,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int16_t" >&5
-$as_echo "$ac_cv_sizeof_int16_t" >&6; }
+    colorize_result "$ac_cv_sizeof_int16_t" ; }
 
 
 
@@ -15373,8 +16541,6 @@ else
      rb_cv_type_uint16_t="unsigned long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_uint16_t="unsigned __int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_uint16_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint16_t=no ;;
 esac
@@ -15382,7 +16548,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint16_t" >&5
-$as_echo "$rb_cv_type_uint16_t" >&6; }
+    colorize_result "$rb_cv_type_uint16_t" ; }
 if test "${rb_cv_type_uint16_t}" != no; then
     $as_echo "#define HAVE_UINT16_T 1" >>confdefs.h
 
@@ -15412,7 +16578,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uint16_t" >&5
-$as_echo "$ac_cv_sizeof_uint16_t" >&6; }
+    colorize_result "$ac_cv_sizeof_uint16_t" ; }
 
 
 
@@ -15466,8 +16632,6 @@ else
      rb_cv_type_int32_t="long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_int32_t="__int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_int32_t="__int128" ;; #(
   *) :
      rb_cv_type_int32_t=no ;;
 esac
@@ -15475,7 +16639,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int32_t" >&5
-$as_echo "$rb_cv_type_int32_t" >&6; }
+    colorize_result "$rb_cv_type_int32_t" ; }
 if test "${rb_cv_type_int32_t}" != no; then
     $as_echo "#define HAVE_INT32_T 1" >>confdefs.h
 
@@ -15505,7 +16669,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int32_t" >&5
-$as_echo "$ac_cv_sizeof_int32_t" >&6; }
+    colorize_result "$ac_cv_sizeof_int32_t" ; }
 
 
 
@@ -15559,8 +16723,6 @@ else
      rb_cv_type_uint32_t="unsigned long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_uint32_t="unsigned __int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_uint32_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint32_t=no ;;
 esac
@@ -15568,7 +16730,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint32_t" >&5
-$as_echo "$rb_cv_type_uint32_t" >&6; }
+    colorize_result "$rb_cv_type_uint32_t" ; }
 if test "${rb_cv_type_uint32_t}" != no; then
     $as_echo "#define HAVE_UINT32_T 1" >>confdefs.h
 
@@ -15598,7 +16760,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uint32_t" >&5
-$as_echo "$ac_cv_sizeof_uint32_t" >&6; }
+    colorize_result "$ac_cv_sizeof_uint32_t" ; }
 
 
 
@@ -15652,8 +16814,6 @@ else
      rb_cv_type_int64_t="long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_int64_t="__int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_int64_t="__int128" ;; #(
   *) :
      rb_cv_type_int64_t=no ;;
 esac
@@ -15661,7 +16821,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int64_t" >&5
-$as_echo "$rb_cv_type_int64_t" >&6; }
+    colorize_result "$rb_cv_type_int64_t" ; }
 if test "${rb_cv_type_int64_t}" != no; then
     $as_echo "#define HAVE_INT64_T 1" >>confdefs.h
 
@@ -15691,7 +16851,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int64_t" >&5
-$as_echo "$ac_cv_sizeof_int64_t" >&6; }
+    colorize_result "$ac_cv_sizeof_int64_t" ; }
 
 
 
@@ -15745,8 +16905,6 @@ else
      rb_cv_type_uint64_t="unsigned long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_uint64_t="unsigned __int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_uint64_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint64_t=no ;;
 esac
@@ -15754,7 +16912,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint64_t" >&5
-$as_echo "$rb_cv_type_uint64_t" >&6; }
+    colorize_result "$rb_cv_type_uint64_t" ; }
 if test "${rb_cv_type_uint64_t}" != no; then
     $as_echo "#define HAVE_UINT64_T 1" >>confdefs.h
 
@@ -15784,7 +16942,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uint64_t" >&5
-$as_echo "$ac_cv_sizeof_uint64_t" >&6; }
+    colorize_result "$ac_cv_sizeof_uint64_t" ; }
 
 
 
@@ -15800,192 +16958,6 @@ _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
 #define SIZEOF_UINT64_T SIZEOF_`$as_echo "$rb_cv_type_uint64_t" | $as_tr_cpp`
-_ACEOF
-
-    fi
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for int128_t" >&5
-$as_echo_n "checking for int128_t... " >&6; }
-if ${rb_cv_type_int128_t+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$ac_includes_default
-typedef int128_t t; int s = sizeof(t) == 42;
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  rb_cv_type_int128_t=yes
-else
-  case 16 in #(
-  "1") :
-     rb_cv_type_int128_t="signed char" ;; #(
-  "$ac_cv_sizeof_short") :
-     rb_cv_type_int128_t="short" ;; #(
-  "$ac_cv_sizeof_int") :
-     rb_cv_type_int128_t="int" ;; #(
-  "$ac_cv_sizeof_long") :
-     rb_cv_type_int128_t="long" ;; #(
-  "$ac_cv_sizeof_long_long") :
-     rb_cv_type_int128_t="long long" ;; #(
-  "$ac_cv_sizeof___int64") :
-     rb_cv_type_int128_t="__int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_int128_t="__int128" ;; #(
-  *) :
-     rb_cv_type_int128_t=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int128_t" >&5
-$as_echo "$rb_cv_type_int128_t" >&6; }
-if test "${rb_cv_type_int128_t}" != no; then
-    $as_echo "#define HAVE_INT128_T 1" >>confdefs.h
-
-    if test "${rb_cv_type_int128_t}" = yes; then
-	# The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of int128_t" >&5
-$as_echo_n "checking size of int128_t... " >&6; }
-if ${ac_cv_sizeof_int128_t+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (int128_t))" "ac_cv_sizeof_int128_t"        "$ac_includes_default
-"; then :
-
-else
-  if test "$ac_cv_type_int128_t" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (int128_t)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof_int128_t=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int128_t" >&5
-$as_echo "$ac_cv_sizeof_int128_t" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INT128_T $ac_cv_sizeof_int128_t
-_ACEOF
-
-
-    else
-	cat >>confdefs.h <<_ACEOF
-#define int128_t $rb_cv_type_int128_t
-_ACEOF
-
-	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INT128_T SIZEOF_`$as_echo "$rb_cv_type_int128_t" | $as_tr_cpp`
-_ACEOF
-
-    fi
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uint128_t" >&5
-$as_echo_n "checking for uint128_t... " >&6; }
-if ${rb_cv_type_uint128_t+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$ac_includes_default
-typedef uint128_t t; int s = sizeof(t) == 42;
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  rb_cv_type_uint128_t=yes
-else
-  case 16 in #(
-  "1") :
-     rb_cv_type_uint128_t="unsigned char" ;; #(
-  "$ac_cv_sizeof_short") :
-     rb_cv_type_uint128_t="unsigned short" ;; #(
-  "$ac_cv_sizeof_int") :
-     rb_cv_type_uint128_t="unsigned int" ;; #(
-  "$ac_cv_sizeof_long") :
-     rb_cv_type_uint128_t="unsigned long" ;; #(
-  "$ac_cv_sizeof_long_long") :
-     rb_cv_type_uint128_t="unsigned long long" ;; #(
-  "$ac_cv_sizeof___int64") :
-     rb_cv_type_uint128_t="unsigned __int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_uint128_t="unsigned __int128" ;; #(
-  *) :
-     rb_cv_type_uint128_t=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint128_t" >&5
-$as_echo "$rb_cv_type_uint128_t" >&6; }
-if test "${rb_cv_type_uint128_t}" != no; then
-    $as_echo "#define HAVE_UINT128_T 1" >>confdefs.h
-
-    if test "${rb_cv_type_uint128_t}" = yes; then
-	# The cast to long int works around a bug in the HP C Compiler
-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
-# This bug is HP SR number 8606223364.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of uint128_t" >&5
-$as_echo_n "checking size of uint128_t... " >&6; }
-if ${ac_cv_sizeof_uint128_t+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (uint128_t))" "ac_cv_sizeof_uint128_t"        "$ac_includes_default
-"; then :
-
-else
-  if test "$ac_cv_type_uint128_t" = yes; then
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error 77 "cannot compute sizeof (uint128_t)
-See \`config.log' for more details" "$LINENO" 5; }
-   else
-     ac_cv_sizeof_uint128_t=0
-   fi
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uint128_t" >&5
-$as_echo "$ac_cv_sizeof_uint128_t" >&6; }
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define SIZEOF_UINT128_T $ac_cv_sizeof_uint128_t
-_ACEOF
-
-
-    else
-	cat >>confdefs.h <<_ACEOF
-#define uint128_t $rb_cv_type_uint128_t
-_ACEOF
-
-	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_UINT128_T SIZEOF_`$as_echo "$rb_cv_type_uint128_t" | $as_tr_cpp`
 _ACEOF
 
     fi
@@ -16024,8 +16996,6 @@ else
      rb_cv_type_intptr_t="long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_intptr_t="__int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_intptr_t="__int128" ;; #(
   *) :
      rb_cv_type_intptr_t=no ;;
 esac
@@ -16033,7 +17003,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_intptr_t" >&5
-$as_echo "$rb_cv_type_intptr_t" >&6; }
+    colorize_result "$rb_cv_type_intptr_t" ; }
 if test "${rb_cv_type_intptr_t}" != no; then
     $as_echo "#define HAVE_INTPTR_T 1" >>confdefs.h
 
@@ -16104,7 +17074,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_intptr_t" >&5
-$as_echo "$ac_cv_sizeof_intptr_t" >&6; }
+    colorize_result "$ac_cv_sizeof_intptr_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_intptr_t-}; do
@@ -16152,7 +17122,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_intptr_t" >&5
-$as_echo "$ac_cv_sizeof_intptr_t" >&6; }
+    colorize_result "$ac_cv_sizeof_intptr_t" ; }
 
 
 
@@ -16208,8 +17178,6 @@ else
      rb_cv_type_uintptr_t="unsigned long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_uintptr_t="unsigned __int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_uintptr_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uintptr_t=no ;;
 esac
@@ -16217,7 +17185,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uintptr_t" >&5
-$as_echo "$rb_cv_type_uintptr_t" >&6; }
+    colorize_result "$rb_cv_type_uintptr_t" ; }
 if test "${rb_cv_type_uintptr_t}" != no; then
     $as_echo "#define HAVE_UINTPTR_T 1" >>confdefs.h
 
@@ -16288,7 +17256,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uintptr_t" >&5
-$as_echo "$ac_cv_sizeof_uintptr_t" >&6; }
+    colorize_result "$ac_cv_sizeof_uintptr_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_uintptr_t-}; do
@@ -16336,7 +17304,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uintptr_t" >&5
-$as_echo "$ac_cv_sizeof_uintptr_t" >&6; }
+    colorize_result "$ac_cv_sizeof_uintptr_t" ; }
 
 
 
@@ -16393,8 +17361,6 @@ else
      rb_cv_type_ssize_t="long long" ;; #(
   "$ac_cv_sizeof___int64") :
      rb_cv_type_ssize_t="__int64" ;; #(
-  "$ac_cv_sizeof___int128") :
-     rb_cv_type_ssize_t="__int128" ;; #(
   *) :
      rb_cv_type_ssize_t=no ;;
 esac
@@ -16402,7 +17368,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_ssize_t" >&5
-$as_echo "$rb_cv_type_ssize_t" >&6; }
+    colorize_result "$rb_cv_type_ssize_t" ; }
 if test "${rb_cv_type_ssize_t}" != no; then
     $as_echo "#define HAVE_SSIZE_T 1" >>confdefs.h
 
@@ -16475,7 +17441,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ssize_t" >&5
-$as_echo "$ac_cv_sizeof_ssize_t" >&6; }
+    colorize_result "$ac_cv_sizeof_ssize_t" ; }
 {
     unset cond
     for t in ${ac_cv_sizeof_ssize_t-}; do
@@ -16524,7 +17490,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ssize_t" >&5
-$as_echo "$ac_cv_sizeof_ssize_t" >&6; }
+    colorize_result "$ac_cv_sizeof_ssize_t" ; }
 
 
 
@@ -16654,7 +17620,7 @@ rm -f core conftest.err conftest.$ac_objext \
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_stack_end_address" >&5
-$as_echo "$rb_cv_stack_end_address" >&6; }
+    colorize_result "$rb_cv_stack_end_address" ; }
 if test $rb_cv_stack_end_address != no; then
   cat >>confdefs.h <<_ACEOF
 #define STACK_END_ADDRESS $rb_cv_stack_end_address
@@ -16705,7 +17671,7 @@ fi
      done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_page_size_log" >&5
-$as_echo "$rb_cv_page_size_log" >&6; }
+    colorize_result "$rb_cv_page_size_log" ; }
   if test $rb_cv_page_size_log != no; then
     cat >>confdefs.h <<_ACEOF
 #define HEAP_ALIGN_LOG $rb_cv_page_size_log
@@ -16742,7 +17708,7 @@ rm -f conftest*
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_uid_t" >&5
-$as_echo "$ac_cv_type_uid_t" >&6; }
+    colorize_result "$ac_cv_type_uid_t" ; }
 if test $ac_cv_type_uid_t = no; then
 
 $as_echo "#define uid_t int" >>confdefs.h
@@ -16812,7 +17778,7 @@ rm -f conftest*
 fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_getgroups" >&5
-$as_echo "$ac_cv_type_getgroups" >&6; }
+    colorize_result "$ac_cv_type_getgroups" ; }
 
 cat >>confdefs.h <<_ACEOF
 #define GETGROUPS_T $ac_cv_type_getgroups
@@ -16845,7 +17811,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_type_signal" >&5
-$as_echo "$ac_cv_type_signal" >&6; }
+    colorize_result "$ac_cv_type_signal" ; }
 
 cat >>confdefs.h <<_ACEOF
 #define RETSIGTYPE $ac_cv_type_signal
@@ -16921,7 +17887,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_working_alloca_h" >&5
-$as_echo "$ac_cv_working_alloca_h" >&6; }
+    colorize_result "$ac_cv_working_alloca_h" ; }
 if test $ac_cv_working_alloca_h = yes; then
 
 $as_echo "#define HAVE_ALLOCA_H 1" >>confdefs.h
@@ -16974,7 +17940,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_alloca_works" >&5
-$as_echo "$ac_cv_func_alloca_works" >&6; }
+    colorize_result "$ac_cv_func_alloca_works" ; }
 
 if test $ac_cv_func_alloca_works = yes; then
 
@@ -17015,7 +17981,7 @@ rm -f conftest*
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_os_cray" >&5
-$as_echo "$ac_cv_os_cray" >&6; }
+    colorize_result "$ac_cv_os_cray" ; }
 if test $ac_cv_os_cray = yes; then
   for ac_func in _getb67 GETB67 getb67; do
     as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
@@ -17071,7 +18037,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_stack_direction" >&5
-$as_echo "$ac_cv_c_stack_direction" >&6; }
+    colorize_result "$ac_cv_c_stack_direction" ; }
 cat >>confdefs.h <<_ACEOF
 #define STACK_DIRECTION $ac_cv_c_stack_direction
 _ACEOF
@@ -17114,7 +18080,7 @@ rm -f core conftest.err conftest.$ac_objext \
     done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dynamic_alloca" >&5
-$as_echo "$rb_cv_dynamic_alloca" >&6; }
+    colorize_result "$rb_cv_dynamic_alloca" ; }
     if test "x$rb_cv_dynamic_alloca" = "x__chkstk"; then
 	cat >>confdefs.h <<_ACEOF
 #define RUBY_ALLOCA_CHKSTK _$rb_cv_dynamic_alloca
@@ -17185,7 +18151,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_memcmp_working" >&5
-$as_echo "$ac_cv_func_memcmp_working" >&6; }
+    colorize_result "$ac_cv_func_memcmp_working" ; }
 test $ac_cv_func_memcmp_working = no && case " $LIBOBJS " in
   *" memcmp.$ac_objext "* ) ;;
   *) LIBOBJS="$LIBOBJS memcmp.$ac_objext"
@@ -17228,7 +18194,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_broken_glibc_ia64_erfc" >&5
-$as_echo "$rb_cv_broken_glibc_ia64_erfc" >&6; }
+    colorize_result "$rb_cv_broken_glibc_ia64_erfc" ; }
 case $rb_cv_broken_glibc_ia64_erfc in #(
   yes) :
     ac_cv_func_erf=no ;; #(
@@ -17324,6 +18290,20 @@ else
   case " $LIBOBJS " in
   *" erf.$ac_objext "* ) ;;
   *) LIBOBJS="$LIBOBJS erf.$ac_objext"
+ ;;
+esac
+
+fi
+
+
+ac_fn_c_check_func "$LINENO" "explicit_bzero" "ac_cv_func_explicit_bzero"
+if test "x$ac_cv_func_explicit_bzero" = xyes; then :
+  $as_echo "#define HAVE_EXPLICIT_BZERO 1" >>confdefs.h
+
+else
+  case " $LIBOBJS " in
+  *" explicit_bzero.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS explicit_bzero.$ac_objext"
  ;;
 esac
 
@@ -17607,7 +18587,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_have_signbit" >&5
-$as_echo "$rb_cv_have_signbit" >&6; }
+    colorize_result "$rb_cv_have_signbit" ; }
 if test "$rb_cv_have_signbit" = yes; then
   $as_echo "#define HAVE_SIGNBIT 1" >>confdefs.h
 
@@ -17619,6 +18599,53 @@ else
 esac
 
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for broken memmem" >&5
+$as_echo_n "checking for broken memmem... " >&6; }
+if ${rb_cv_broken_memmem+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test "$cross_compiling" = yes; then :
+  rb_cv_broken_memmem=yes
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <string.h>
+
+int
+main(int argc, char **argv)
+{
+    const char *str = "hogefugafoobar";
+    const char *rs = "foo";
+    const char *empty = "";
+    char *p;
+
+    p = memmem(str, strlen(str), rs, strlen(rs));
+    if (p == str+8) {
+	p = memmem(str, strlen(str), empty, strlen(empty));
+	if (p == str)
+	    return 0;
+    }
+    return 1;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  rb_cv_broken_memmem=no
+else
+  rb_cv_broken_memmem=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_broken_memmem" >&5
+    colorize_result "$rb_cv_broken_memmem" ; }
+test x"$rb_cv_broken_memmem" = xyes && ac_cv_func_memmem=no
 
 ac_fn_c_check_type "$LINENO" "pid_t" "ac_cv_type_pid_t" "$ac_includes_default"
 if test "x$ac_cv_type_pid_t" = xyes; then :
@@ -17689,7 +18716,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_fork_works" >&5
-$as_echo "$ac_cv_func_fork_works" >&6; }
+    colorize_result "$ac_cv_func_fork_works" ; }
 
 else
   ac_cv_func_fork_works=$ac_cv_func_fork
@@ -17820,7 +18847,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_vfork_works" >&5
-$as_echo "$ac_cv_func_vfork_works" >&6; }
+    colorize_result "$ac_cv_func_vfork_works" ; }
 
 fi;
 if test "x$ac_cv_func_fork_works" = xcross; then
@@ -17867,6 +18894,8 @@ _ACEOF
 fi
 done
 		# used for AC_ARG_WITH(setjmp-type)
+# we don't use _setjmp if _longjmp doesn't exist.
+test x$ac_cv_func__longjmp = xno && ac_cv_func__setjmp=no
 for ac_func in _setjmp
 do :
   ac_fn_c_check_func "$LINENO" "_setjmp" "ac_cv_func__setjmp"
@@ -18083,6 +19112,17 @@ do :
 if test "x$ac_cv_func_fdatasync" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_FDATASYNC 1
+_ACEOF
+
+fi
+done
+
+for ac_func in fgetattrlist
+do :
+  ac_fn_c_check_func "$LINENO" "fgetattrlist" "ac_cv_func_fgetattrlist"
+if test "x$ac_cv_func_fgetattrlist" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FGETATTRLIST 1
 _ACEOF
 
 fi
@@ -18495,6 +19535,17 @@ _ACEOF
 fi
 done
 
+for ac_func in memset_s
+do :
+  ac_fn_c_check_func "$LINENO" "memset_s" "ac_cv_func_memset_s"
+if test "x$ac_cv_func_memset_s" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MEMSET_S 1
+_ACEOF
+
+fi
+done
+
 for ac_func in writev
 do :
   ac_fn_c_check_func "$LINENO" "writev" "ac_cv_func_writev"
@@ -18523,6 +19574,28 @@ do :
 if test "x$ac_cv_func_memmem" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_MEMMEM 1
+_ACEOF
+
+fi
+done
+
+for ac_func in mkfifo
+do :
+  ac_fn_c_check_func "$LINENO" "mkfifo" "ac_cv_func_mkfifo"
+if test "x$ac_cv_func_mkfifo" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MKFIFO 1
+_ACEOF
+
+fi
+done
+
+for ac_func in mknod
+do :
+  ac_fn_c_check_func "$LINENO" "mknod" "ac_cv_func_mknod"
+if test "x$ac_cv_func_mknod" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MKNOD 1
 _ACEOF
 
 fi
@@ -19079,6 +20152,19 @@ fi
 done
 
 
+if test "$ac_cv_func_memset_s" = yes; then :
+      test "X!defined __STDC_WANT_LIB_EXT1__" = X || cat <<EOH >> confdefs.h
+#if !defined __STDC_WANT_LIB_EXT1__
+EOH
+cat >>confdefs.h <<_ACEOF
+#define __STDC_WANT_LIB_EXT1__ 1
+_ACEOF
+    test "X!defined __STDC_WANT_LIB_EXT1__" = X || cat <<EOH >> confdefs.h
+#endif /* !defined __STDC_WANT_LIB_EXT1__ */
+EOH
+
+fi
+
 if test "$ac_cv_func_getcwd" = yes; then :
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getcwd allocates buffer if NULL is given" >&5
@@ -19128,7 +20214,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_getcwd_malloc" >&5
-$as_echo "$rb_cv_getcwd_malloc" >&6; }
+    colorize_result "$rb_cv_getcwd_malloc" ; }
     if test "$rb_cv_getcwd_malloc" = no; then :
   $as_echo "#define NO_GETCWD_MALLOC 1" >>confdefs.h
 
@@ -19162,7 +20248,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_bswap16" >&5
-$as_echo "$rb_cv_builtin___builtin_bswap16" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_bswap16" ; }
 if test "${rb_cv_builtin___builtin_bswap16}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_BSWAP16 1" >>confdefs.h
 
@@ -19192,7 +20278,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_bswap32" >&5
-$as_echo "$rb_cv_builtin___builtin_bswap32" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_bswap32" ; }
 if test "${rb_cv_builtin___builtin_bswap32}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_BSWAP32 1" >>confdefs.h
 
@@ -19222,7 +20308,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_bswap64" >&5
-$as_echo "$rb_cv_builtin___builtin_bswap64" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_bswap64" ; }
 if test "${rb_cv_builtin___builtin_bswap64}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_BSWAP64 1" >>confdefs.h
 
@@ -19252,7 +20338,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_clz" >&5
-$as_echo "$rb_cv_builtin___builtin_clz" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_clz" ; }
 if test "${rb_cv_builtin___builtin_clz}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_CLZ 1" >>confdefs.h
 
@@ -19282,7 +20368,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_clzl" >&5
-$as_echo "$rb_cv_builtin___builtin_clzl" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_clzl" ; }
 if test "${rb_cv_builtin___builtin_clzl}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_CLZL 1" >>confdefs.h
 
@@ -19312,7 +20398,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_clzll" >&5
-$as_echo "$rb_cv_builtin___builtin_clzll" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_clzll" ; }
 if test "${rb_cv_builtin___builtin_clzll}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_CLZLL 1" >>confdefs.h
 
@@ -19328,7 +20414,10 @@ int foo;
 int
 main ()
 {
-__builtin_choose_expr(0, 0, 0);
+
+    int x[__extension__(__builtin_choose_expr(1, 1, -1))];
+    int y[__extension__(__builtin_choose_expr(0, -1, 1))];
+    ;
   ;
   return 0;
 }
@@ -19342,12 +20431,13 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_choose_expr" >&5
-$as_echo "$rb_cv_builtin___builtin_choose_expr" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_choose_expr" ; }
 if test "${rb_cv_builtin___builtin_choose_expr}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_CHOOSE_EXPR 1" >>confdefs.h
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_choose_expr_constant_p" >&5
+if test x$rb_cv_builtin___builtin_choose_expr = xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_choose_expr_constant_p" >&5
 $as_echo_n "checking for __builtin_choose_expr_constant_p... " >&6; }
 if ${rb_cv_builtin___builtin_choose_expr_constant_p+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -19358,7 +20448,10 @@ int foo;
 int
 main ()
 {
-__builtin_choose_expr(__builtin_constant_p(foo), 0, 0);
+
+    int x[__extension__(__builtin_choose_expr(__builtin_constant_p(1), 1, -1))];
+    int y[__extension__(__builtin_choose_expr(__builtin_constant_p(foo), -1, 1))];
+    ;
   ;
   return 0;
 }
@@ -19372,10 +20465,11 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_choose_expr_constant_p" >&5
-$as_echo "$rb_cv_builtin___builtin_choose_expr_constant_p" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_choose_expr_constant_p" ; }
 if test "${rb_cv_builtin___builtin_choose_expr_constant_p}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_CHOOSE_EXPR_CONSTANT_P 1" >>confdefs.h
 
+fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_types_compatible_p" >&5
 $as_echo_n "checking for __builtin_types_compatible_p... " >&6; }
@@ -19402,7 +20496,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_types_compatible_p" >&5
-$as_echo "$rb_cv_builtin___builtin_types_compatible_p" >&6; }
+    colorize_result "$rb_cv_builtin___builtin_types_compatible_p" ; }
 if test "${rb_cv_builtin___builtin_types_compatible_p}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_TYPES_COMPATIBLE_P 1" >>confdefs.h
 
@@ -19439,7 +20533,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_gnu_qsort_r" >&5
-$as_echo "$rb_cv_gnu_qsort_r" >&6; }
+    colorize_result "$rb_cv_gnu_qsort_r" ; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether qsort_r is BSD version" >&5
 $as_echo_n "checking whether qsort_r is BSD version... " >&6; }
 if ${rb_cv_bsd_qsort_r+:} false; then :
@@ -19469,11 +20563,16 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_bsd_qsort_r" >&5
-$as_echo "$rb_cv_bsd_qsort_r" >&6; }
+    colorize_result "$rb_cv_bsd_qsort_r" ; }
   case "$rb_cv_gnu_qsort_r:$rb_cv_bsd_qsort_r" in #(
   yes:no) :
 
     $as_echo "#define HAVE_GNU_QSORT_R 1" >>confdefs.h
+
+   ;; #(
+  no:yes) :
+
+    $as_echo "#define HAVE_BSD_QSORT_R 1" >>confdefs.h
 
    ;; #(
   *) :
@@ -19536,9 +20635,69 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_atan2_inf_c99" >&5
-$as_echo "$rb_cv_atan2_inf_c99" >&6; }
+    colorize_result "$rb_cv_atan2_inf_c99" ; }
 if test "x$rb_cv_atan2_inf_c99" = xyes; then :
   $as_echo "#define ATAN2_INF_C99 1" >>confdefs.h
+
+fi
+
+if test "x$ac_cv_func_lgamma_r" = xyes; then :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether lgamma_r handles -0.0" >&5
+$as_echo_n "checking whether lgamma_r handles -0.0... " >&6; }
+if ${rb_cv_lgamma_r_m0+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	if test "$cross_compiling" = yes; then :
+  rb_cv_lgamma_r_m0=yes
+
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS 0
+#endif
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE 1
+#endif
+
+int
+main(int argc, char **argv)
+{
+    int sign;
+    double x = lgamma_r(-0.0, &sign);
+
+    /* should be [+inf, -1] */
+    if (x <= 0) return EXIT_FAILURE;
+    if (!isinf(x)) return EXIT_FAILURE;
+    if (sign != -1) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  rb_cv_lgamma_r_m0=yes
+else
+  rb_cv_lgamma_r_m0=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_lgamma_r_m0" >&5
+    colorize_result "$rb_cv_lgamma_r_m0" ; }
+    if test "x$rb_cv_lgamma_r_m0" = xno; then :
+  $as_echo "#define LGAMMA_R_M0_FIX 1" >>confdefs.h
+
+fi
 
 fi
 
@@ -19581,7 +20740,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
-$as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
+    colorize_result "$ac_cv_lib_rt_clock_gettime" ; }
 if test "x$ac_cv_lib_rt_clock_gettime" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBRT 1
@@ -19634,7 +20793,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_unsetenv_return_value" >&5
-$as_echo "$rb_cv_unsetenv_return_value" >&6; }
+    colorize_result "$rb_cv_unsetenv_return_value" ; }
 if test "$rb_cv_unsetenv_return_value" = no; then
   $as_echo "#define VOID_UNSETENV 1" >>confdefs.h
 
@@ -19667,12 +20826,9 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_sigsetjmp" >&5
-$as_echo "$ac_cv_func_sigsetjmp" >&6; }
+    colorize_result "$ac_cv_func_sigsetjmp" ; }
 
 
-
-# we don't use _setjmp if _longjmp doesn't exist.
-test x$ac_cv_func__longjmp = xno && ac_cv_func__setjmp=no
 
 
 # End of setjmp check.
@@ -19716,7 +20872,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_struct_tm" >&5
-$as_echo "$ac_cv_struct_tm" >&6; }
+    colorize_result "$ac_cv_struct_tm" ; }
 if test $ac_cv_struct_tm = sys/time.h; then
 
 $as_echo "#define TM_IN_SYS_TIME 1" >>confdefs.h
@@ -19782,7 +20938,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_var_tzname" >&5
-$as_echo "$ac_cv_var_tzname" >&6; }
+    colorize_result "$ac_cv_var_tzname" ; }
   if test $ac_cv_var_tzname = yes; then
 
 $as_echo "#define HAVE_TZNAME 1" >>confdefs.h
@@ -19814,7 +20970,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_member_struct_tm_tm_gmtoff" >&5
-$as_echo "$rb_cv_member_struct_tm_tm_gmtoff" >&6; }
+    colorize_result "$rb_cv_member_struct_tm_tm_gmtoff" ; }
 if test "$rb_cv_member_struct_tm_tm_gmtoff" = yes; then
   $as_echo "#define HAVE_STRUCT_TM_TM_GMTOFF 1" >>confdefs.h
 
@@ -19845,7 +21001,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_have_daylight" >&5
-$as_echo "$rb_cv_have_daylight" >&6; }
+    colorize_result "$rb_cv_have_daylight" ; }
 if test "$rb_cv_have_daylight" = yes; then
   $as_echo "#define HAVE_DAYLIGHT 1" >>confdefs.h
 
@@ -19903,7 +21059,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_var_timezone" >&5
-$as_echo "$rb_cv_var_timezone" >&6; }
+    colorize_result "$rb_cv_var_timezone" ; }
 if test "${rb_cv_var_timezone}" != no; then
   $as_echo "#define HAVE_VAR_TIMEZONE 1" >>confdefs.h
 
@@ -19964,7 +21120,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_var_altzone" >&5
-$as_echo "$rb_cv_var_altzone" >&6; }
+    colorize_result "$rb_cv_var_altzone" ; }
 if test "${rb_cv_var_altzone}" != no; then
   $as_echo "#define HAVE_VAR_ALTZONE 1" >>confdefs.h
 
@@ -20010,7 +21166,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_timezone_void" >&5
-$as_echo "$rb_cv_func_timezone_void" >&6; }
+    colorize_result "$rb_cv_func_timezone_void" ; }
   if test $rb_cv_func_timezone_void = yes; then
     $as_echo "#define TIMEZONE_VOID 1" >>confdefs.h
 
@@ -20070,7 +21226,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_negative_time_t" >&5
-$as_echo "$rb_cv_negative_time_t" >&6; }
+    colorize_result "$rb_cv_negative_time_t" ; }
 if test "$rb_cv_negative_time_t" = yes; then
   $as_echo "#define NEGATIVE_TIME_T 1" >>confdefs.h
 
@@ -20133,7 +21289,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_localtime_overflow" >&5
-$as_echo "$rb_cv_localtime_overflow" >&6; }
+    colorize_result "$rb_cv_localtime_overflow" ; }
 if test "$rb_cv_localtime_overflow" = no; then
   $as_echo "#define LOCALTIME_OVERFLOW_PROBLEM 1" >>confdefs.h
 
@@ -20195,7 +21351,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_bsd_signal" >&5
-$as_echo "$rb_cv_bsd_signal" >&6; }
+    colorize_result "$rb_cv_bsd_signal" ; }
   if test "$rb_cv_bsd_signal" = yes; then
     $as_echo "#define BSD_SIGNAL 1" >>confdefs.h
 
@@ -20233,7 +21389,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_getpgrp_void" >&5
-$as_echo "$ac_cv_func_getpgrp_void" >&6; }
+    colorize_result "$ac_cv_func_getpgrp_void" ; }
 if test $ac_cv_func_getpgrp_void = yes; then
 
 $as_echo "#define GETPGRP_VOID 1" >>confdefs.h
@@ -20278,13 +21434,48 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_setpgrp_void" >&5
-$as_echo "$ac_cv_func_setpgrp_void" >&6; }
+    colorize_result "$ac_cv_func_setpgrp_void" ; }
 if test $ac_cv_func_setpgrp_void = yes; then
 
 $as_echo "#define SETPGRP_VOID 1" >>confdefs.h
 
 fi
 
+fi
+
+if test x"$ac_cv_func_dirfd" = xno; then
+  case "$target_os" in #(
+  solaris*) :
+    ac_fn_c_check_member "$LINENO" "DIR" "d_fd" "ac_cv_member_DIR_d_fd" "
+#include <sys/types.h>
+#include <dirent.h>
+
+"
+if test "x$ac_cv_member_DIR_d_fd" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DIR_D_FD 1
+_ACEOF
+
+
+fi
+ac_fn_c_check_member "$LINENO" "DIR" "dd_fd" "ac_cv_member_DIR_dd_fd" "
+#include <sys/types.h>
+#include <dirent.h>
+
+"
+if test "x$ac_cv_member_DIR_dd_fd" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DIR_DD_FD 1
+_ACEOF
+
+
+fi
+ ;; #(
+  *) :
+     ;;
+esac
 fi
 
 if test x"$target_cpu" = xia64; then
@@ -20319,7 +21510,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv___libc_ia64_register_backing_store_base" >&5
-$as_echo "$rb_cv___libc_ia64_register_backing_store_base" >&6; }
+    colorize_result "$rb_cv___libc_ia64_register_backing_store_base" ; }
     if test $rb_cv___libc_ia64_register_backing_store_base = yes; then
       $as_echo "#define HAVE___LIBC_IA64_REGISTER_BACKING_STORE_BASE 1" >>confdefs.h
 
@@ -20353,7 +21544,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_rshift_sign" >&5
-$as_echo "$rb_cv_rshift_sign" >&6; }
+    colorize_result "$rb_cv_rshift_sign" ; }
 if test "$rb_cv_rshift_sign" = yes; then
   $as_echo "#define RSHIFT(x,y) ((x)>>(int)(y))" >>confdefs.h
 
@@ -20394,7 +21585,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_have_sc_clk_tck" >&5
-$as_echo "$rb_cv_have_sc_clk_tck" >&6; }
+    colorize_result "$rb_cv_have_sc_clk_tck" ; }
   if test "$rb_cv_have_sc_clk_tck" = yes; then
     $as_echo "#define HAVE__SC_CLK_TCK 1" >>confdefs.h
 
@@ -20467,7 +21658,7 @@ eval $as_stack_grow_dir=\$dir
 fi
 eval ac_res=\$$as_stack_grow_dir
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
 eval dir=\$$as_stack_grow_dir
 
 	if test x$stack_dir = x; then
@@ -20554,7 +21745,7 @@ eval $as_stack_grow_dir=\$dir
 fi
 eval ac_res=\$$as_stack_grow_dir
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
 eval dir=\$$as_stack_grow_dir
 
     cat >>confdefs.h <<_ACEOF
@@ -20602,7 +21793,7 @@ LIBS=$ac_check_lib_save_LIBS
 fi
 eval ac_res=\$$as_ac_Lib
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
+    colorize_result "$ac_res" ; }
 if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
   rb_with_pthread=yes
 else
@@ -20682,7 +21873,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_scalar_pthread_t" >&5
-$as_echo "$rb_cv_scalar_pthread_t" >&6; }
+    colorize_result "$rb_cv_scalar_pthread_t" ; }
     if test x"$rb_cv_scalar_pthread_t" = xyes; then
 	: # RUBY_CHECK_SIZEOF(pthread_t, [void* int long], [], [#include <pthread.h>])
     else
@@ -20690,11 +21881,11 @@ $as_echo "$rb_cv_scalar_pthread_t" >&6; }
 
     fi
     for ac_func in sched_yield pthread_attr_setinheritsched \
-	pthread_getattr_np pthread_attr_get_np pthread_attr_getstack\
+	pthread_attr_get_np pthread_attr_getstack\
 	pthread_get_stackaddr_np pthread_get_stacksize_np \
 	thr_stksegment pthread_stackseg_np pthread_getthrds_np \
 	pthread_cond_init pthread_condattr_setclock pthread_condattr_init \
-	pthread_sigmask pthread_setname_np
+	pthread_sigmask pthread_setname_np pthread_set_name_np
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -20706,6 +21897,22 @@ _ACEOF
 fi
 done
 
+    case "$target_os" in #(
+  aix*) :
+    ac_cv_func_pthread_getattr_np=no ;; #(
+  *) :
+    for ac_func in pthread_getattr_np
+do :
+  ac_fn_c_check_func "$LINENO" "pthread_getattr_np" "ac_cv_func_pthread_getattr_np"
+if test "x$ac_cv_func_pthread_getattr_np" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PTHREAD_GETATTR_NP 1
+_ACEOF
+
+fi
+done
+ ;;
+esac
     if test "${host_os}" = "nacl"; then
       ac_cv_func_pthread_attr_init=no
     else
@@ -20721,6 +21928,7 @@ fi
 done
 
     fi
+    set_current_thread_name=
     if test "$ac_cv_func_pthread_setname_np" = yes; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking arguments of pthread_setname_np" >&5
 $as_echo_n "checking arguments of pthread_setname_np... " >&6; }
@@ -20763,21 +21971,69 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_pthread_setname_np_arguments" >&5
-$as_echo "$rb_cv_func_pthread_setname_np_arguments" >&6; }
+    colorize_result "$rb_cv_func_pthread_setname_np_arguments" ; }
 	if test -n "${rb_cv_func_pthread_setname_np_arguments}"; then
-	    cat >>confdefs.h <<_ACEOF
-#define SET_THREAD_NAME(name) pthread_setname_np${rb_cv_func_pthread_setname_np_arguments}
-_ACEOF
-
-	else
-	    cat >>confdefs.h <<_ACEOF
-#define SET_THREAD_NAME(name) (void)0
-_ACEOF
-
+	    set_current_thread_name="pthread_setname_np${rb_cv_func_pthread_setname_np_arguments}"
 	fi
+    elif test "$ac_cv_func_pthread_set_name_np" = yes; then
+	set_current_thread_name="pthread_set_name_np(pthread_self(), name)"
+    fi
+    if test -n "$set_current_thread_name"; then :
+
+	cat >>confdefs.h <<_ACEOF
+#define SET_CURRENT_THREAD_NAME(name) $set_current_thread_name
+_ACEOF
+
+	case $set_current_thread_name in #(
+  *'pthread_self()'*) :
+
+		set_another_thread_name=`echo "$set_current_thread_name" | sed 's/pthread_self()/thid/'`
+		cat >>confdefs.h <<_ACEOF
+#define SET_ANOTHER_THREAD_NAME(thid,name) $set_another_thread_name
+_ACEOF
+
+	     ;; #(
+  *) :
+     ;;
+esac
+
+fi
+fi
+
+if test x"$ac_cv_header_ucontext_h" = xno; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if signal.h defines ucontext_t" >&5
+$as_echo_n "checking if signal.h defines ucontext_t... " >&6; }
+if ${rb_cv_ucontext_in_signal_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <signal.h>
+int
+main ()
+{
+size_t size = sizeof(ucontext_t);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_ucontext_in_signal_h=yes
+else
+  rb_cv_ucontext_in_signal_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_ucontext_in_signal_h" >&5
+    colorize_result "$rb_cv_ucontext_in_signal_h" ; }
+    if test x"$rb_cv_ucontext_in_signal_h" = xyes; then
+	    cat >>confdefs.h <<_ACEOF
+#define UCONTEXT_IN_SIGNAL_H 1
+_ACEOF
+
     fi
 fi
-if test x"$ac_cv_header_ucontext_h" = xyes; then
+if test x"$ac_cv_header_ucontext_h" = xyes -o x"$rb_cv_ucontext_in_signal_h" = xyes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if mcontext_t is a pointer" >&5
 $as_echo_n "checking if mcontext_t is a pointer... " >&6; }
 if ${rb_cv_mcontext_t_ptr+:} false; then :
@@ -20785,8 +22041,12 @@ if ${rb_cv_mcontext_t_ptr+:} false; then :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <ucontext.h>
-	mcontext_t test(mcontext_t mc) {return mc+1;}
+
+	    #include <signal.h>
+	    #ifdef HAVE_UCONTEXT_H
+	    #include <ucontext.h>
+	    #endif
+        mcontext_t test(mcontext_t mc) {return mc+1;}
 
 int
 main ()
@@ -20804,7 +22064,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_mcontext_t_ptr" >&5
-$as_echo "$rb_cv_mcontext_t_ptr" >&6; }
+    colorize_result "$rb_cv_mcontext_t_ptr" ; }
     if test x"$rb_cv_mcontext_t_ptr" = xyes; then
 	cat >>confdefs.h <<_ACEOF
 #define DEFINE_MCONTEXT_PTR(mc, uc) mcontext_t mc = (uc)->uc_mcontext
@@ -20912,7 +22172,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_fork_with_pthread" >&5
-$as_echo "$rb_cv_fork_with_pthread" >&6; }
+    colorize_result "$rb_cv_fork_with_pthread" ; }
     test x$rb_cv_fork_with_pthread = xyes || $as_echo "#define CANNOT_FORK_WITH_PTHREAD 1" >>confdefs.h
 
 fi
@@ -20972,7 +22232,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_binary_elf" >&5
-$as_echo "$rb_cv_binary_elf" >&6; }
+    colorize_result "$rb_cv_binary_elf" ; }
 
 if test "$rb_cv_binary_elf" = yes; then
   $as_echo "#define USE_ELF 1" >>confdefs.h
@@ -21046,7 +22306,7 @@ $as_echo_n "checking whether OS depend dynamic link works... " >&6; }
   *) :
      CCDLFLAGS="$CCDLFLAGS -fno-common" ;;
 esac ;; #(
-  bsdi*|beos*|haiku*|cygwin*|mingw*|aix*|interix*) :
+  bsdi*|cygwin*|mingw*|aix*|interix*) :
       ;; #(
   *) :
 
@@ -21105,6 +22365,10 @@ fi
 			fi
 			if test "$ac_cv_sizeof_voidp" = 8; then
 			    : ${LIBPATHENV=LD_LIBRARY_PATH_64}
+			    : ${PRELOADENV=LD_PRELOAD_64}
+			else
+			    : ${LIBPATHENV=LD_LIBRARY_PATH_32}
+			    : ${PRELOADENV=LD_PRELOAD_32}
 			fi
 			rb_cv_dlopen=yes ;; #(
   sunos*) :
@@ -21133,7 +22397,7 @@ fi
   *) :
      ;;
 esac ;; #(
-  linux* | gnu* | k*bsd*-gnu | netbsd* | bsdi* | kopensolaris*-gnu) :
+  linux* | gnu* | k*bsd*-gnu | netbsd* | bsdi* | kopensolaris*-gnu | haiku*) :
 
 			: ${LDSHARED='$(CC) -shared'}
 			if test "$rb_cv_binary_elf" = yes; then
@@ -21165,14 +22429,7 @@ esac ;; #(
     	: ${LDSHARED='$(CC) -dynamic -bundle'}
 			: ${LDFLAGS=""}
 			: ${LIBPATHENV=DYLD_LIBRARY_PATH}
-			# /usr/local/include is always searched for
-			# some reason, but /usr/local/lib is not.
-			hdr=`find /usr/local/include -name \*.h -type f | sed 's:^/usr/local/include/::;q'`
-			if test -n "$hdr" && $CC -E -include "$hdr" -xc - </dev/null 2>/dev/null | fgrep -q "$hdr"; then
-			    $CC -print-search-dirs | grep -q '^libraries:.*:/usr/local/lib/*' ||
-			    echo " $LDFLAGS " | grep -q ' -L */usr/local/lib/* ' ||
-			    LDFLAGS="${LDFLAGS:+$LDFLAGS }-L/usr/local/lib"
-			fi
+			: ${PRELOADENV=DYLD_INSERT_LIBRARIES}
 			rb_cv_dlopen=yes ;; #(
   aix*) :
     	: ${LDSHARED='$(CC)'}
@@ -21186,43 +22443,6 @@ esac ;; #(
 			: ${LIBPATHENV=LIBPATH}
 			RPATHFLAG=" ${linker_flag}-blibpath:%1\$-s:${prefix}/lib:${LIBPATH:-/usr/lib:/lib}"
 			rb_cv_dlopen=yes ;; #(
-  beos*) :
-    	case "$target_cpu" in #(
-  powerpc*) :
-
-			    : ${LDSHARED='$(LD) -xms'}
-			    EXTDLDFLAGS='-export $(TARGET_ENTRY)'
-			    DLDFLAGS="$DLDFLAGS -lbe -lroot glue-noinit.a init_term_dyn.o start_dyn.o"
-			    LDFLAGS="$LDFLAGS -L/boot/home/config/lib -lbe -lroot"
-			     ;; #(
-  i586*) :
-
-			    : ${LDSHARED='$(LD) -shared'}
-			    DLDFLAGS="$DLDFLAGS -L/boot/develop/lib/x86 -L/boot/home/config/lib \$(topdir)/_APP_ -lroot"
-			    LDFLAGS="$LDFLAGS -L/boot/develop/lib/x86 -L/boot/home/config/lib -lroot"
-			     ;; #(
-  *) :
-     ;;
-esac
-			: ${LIBPATHENV=LIBRARY_PATH}
-			rb_cv_dlopen=yes ;; #(
-  haiku*) :
-    	case "$target_cpu" in #(
-  powerpc*) :
-
-			    : ${LDSHARED='$(LD) -xms'}
-			    EXTDLDFLAGS='-export $(TARGET_ENTRY)'
-			    DLDFLAGS="$DLDFLAGS -lroot glue-noinit.a init_term_dyn.o start_dyn.o"
-                             ;; #(
-  i586*) :
-
-			    : ${LDSHARED='$(CC) -shared'}
-			     ;; #(
-  *) :
-     ;;
-esac
-			: ${LIBPATHENV=LIBRARY_PATH}
-			rb_cv_dlopen=yes  ;; #(
   nto-qnx*) :
     	DLDFLAGS="$DLDFLAGS -L/lib -L/usr/lib -L/usr/local/lib"
 			: ${LDSHARED='$(LD) -Bshareable -x'}
@@ -21234,22 +22454,20 @@ esac
 			XLDFLAGS="$XLDFLAGS -Wl,--stack,0x00200000,--enable-auto-import"
 			DLDFLAGS="${DLDFLAGS} -Wl,--enable-auto-image-base,--enable-auto-import"
 			: ${LIBPATHENV=""}
+			: ${PRELOADENV=""}
 			rb_cv_dlopen=yes ;; #(
   hiuxmpp) :
     	: ${LDSHARED='$(LD) -r'} ;; #(
   atheos*) :
     	: ${LDSHARED='$(CC) -shared'}
 			rb_cv_dlopen=yes ;; #(
-  os2-emx*) :
-    	LDFLAGS="$LDFLAGS -Zomf"
-			 ;; #(
   nacl) :
      LDSHARED='$(CC) -shared'  ;; #(
   *) :
     	: ${LDSHARED='$(LD)'} ;;
 esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dlopen" >&5
-$as_echo "$rb_cv_dlopen" >&6; }
+    colorize_result "$rb_cv_dlopen" ; }
 
   if test "$rb_cv_dlopen" = yes; then
     case "$target_os" in #(
@@ -21259,7 +22477,7 @@ $as_echo "$rb_cv_dlopen" >&6; }
 	  "-undefined dynamic_lookup" \
 	  "-multiply_defined suppress" \
 	  ; do
-	  test "x${linker_flag}" = x || flag="${linker_flag}${flag// /,}"
+	  test "x${linker_flag}" = x || flag="${linker_flag}`echo ${flag} | tr ' ' ,`"
 
     save_LDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS $flag"
@@ -21288,11 +22506,11 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   flag=
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -21370,11 +22588,11 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   rpathflag=
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -21430,6 +22648,8 @@ esac
 
 LIBPATHENV="${LIBPATHENV-LD_LIBRARY_PATH}"
 
+PRELOADENV="${PRELOADENV-LD_PRELOAD}"
+
 
 
 if test "x$OPT_DIR" != x; then
@@ -21439,11 +22659,13 @@ if test "x$OPT_DIR" != x; then
         for dir in $OPT_DIR; do
             echo x ${LIBPATHFLAG} ${RPATHFLAG} |
             sed "s/^x *//;s${IFS}"'%1\\$-s'"${IFS}${dir}/lib${IFS}g;s${IFS}%s${IFS}${dir}/lib${IFS}g"
-        done | tr '\012' ' '`
-    test x"${LDFLAGS}" = x || LDFLAGS="$LDFLAGS "
-    LDFLAGS="$LDFLAGS$val"
-    test x"${DLDFLAGS}" = x || DLDFLAGS="$DLDFLAGS "
-    DLDFLAGS="$DLDFLAGS$val"
+        done | tr '\012' ' ' | sed 's/ *$//'`
+    if test x"$val" != x; then
+	test x"${LDFLAGS}" = x || LDFLAGS="$LDFLAGS "
+	LDFLAGS="$LDFLAGS$val"
+	test x"${DLDFLAGS}" = x || DLDFLAGS="$DLDFLAGS "
+	DLDFLAGS="$DLDFLAGS$val"
+    fi
     LDFLAGS_OPTDIR="$val"
 fi
 
@@ -21485,7 +22707,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_procstat_procstat_open_sysctl" >&5
-$as_echo "$ac_cv_lib_procstat_procstat_open_sysctl" >&6; }
+    colorize_result "$ac_cv_lib_procstat_procstat_open_sysctl" ; }
 if test "x$ac_cv_lib_procstat_procstat_open_sysctl" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBPROCSTAT 1
@@ -21495,6 +22717,19 @@ _ACEOF
 
 fi
 
+    if test "x$ac_cv_lib_procstat_procstat_open_sysctl" = xyes; then
+	for ac_func in procstat_getvmmap
+do :
+  ac_fn_c_check_func "$LINENO" "procstat_getvmmap" "ac_cv_func_procstat_getvmmap"
+if test "x$ac_cv_func_procstat_getvmmap" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PROCSTAT_GETVMMAP 1
+_ACEOF
+
+fi
+done
+
+    fi
      ;; #(
   *) :
      ;;
@@ -21550,7 +22785,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_execinfo_backtrace" >&5
-$as_echo "$ac_cv_lib_execinfo_backtrace" >&6; }
+    colorize_result "$ac_cv_lib_execinfo_backtrace" ; }
 if test "x$ac_cv_lib_execinfo_backtrace" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBEXECINFO 1
@@ -21559,6 +22794,18 @@ _ACEOF
   LIBS="-lexecinfo $LIBS"
 
 fi
+
+	for ac_header in libunwind.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "libunwind.h" "ac_cv_header_libunwind_h" "$ac_includes_default"
+if test "x$ac_cv_header_libunwind_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBUNWIND_H 1
+_ACEOF
+
+fi
+
+done
 
     fi ;; #(
   *-freebsd*|x86_64-netbsd*) :
@@ -21611,7 +22858,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_execinfo_backtrace" >&5
-$as_echo "$ac_cv_lib_execinfo_backtrace" >&6; }
+    colorize_result "$ac_cv_lib_execinfo_backtrace" ; }
 if test "x$ac_cv_lib_execinfo_backtrace" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBEXECINFO 1
@@ -21656,7 +22903,7 @@ rm -f core conftest.err conftest.$ac_objext \
 LIBS=$ac_check_lib_save_LIBS
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_unwind_unw_backtrace" >&5
-$as_echo "$ac_cv_lib_unwind_unw_backtrace" >&6; }
+    colorize_result "$ac_cv_lib_unwind_unw_backtrace" ; }
 if test "x$ac_cv_lib_unwind_unw_backtrace" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBUNWIND 1
@@ -21753,7 +23000,7 @@ fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_broken_backtrace" >&5
-$as_echo "$rb_cv_broken_backtrace" >&6; }
+    colorize_result "$rb_cv_broken_backtrace" ; }
   if test "$rb_cv_broken_backtrace" = yes; then
     $as_echo "#define BROKEN_BACKTRACE 1" >>confdefs.h
 
@@ -21814,7 +23061,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dln_a_out" >&5
-$as_echo "$rb_cv_dln_a_out" >&6; }
+    colorize_result "$rb_cv_dln_a_out" ; }
     if test "$rb_cv_dln_a_out" = yes; then
       dln_a_out_works=yes
       $as_echo "#define USE_DLN_A_OUT 1" >>confdefs.h
@@ -21848,10 +23095,6 @@ else
      XLDFLAGS="$XLDFLAGS -Wl,-u,_objc_msgSend" ;;
 esac
 	DLEXT=bundle ;; #(
-  os2-emx*) :
-
-	LOAD_RELATIVE=1
-	DLEXT=dll ;; #(
   cygwin*|mingw*|*djgpp*) :
 
 	LOAD_RELATIVE=1
@@ -21923,10 +23166,10 @@ fi
 STRIP=$ac_cv_prog_STRIP
 if test -n "$STRIP"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $STRIP" >&5
-$as_echo "$STRIP" >&6; }
+    colorize_result "$STRIP" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -21963,10 +23206,10 @@ fi
 ac_ct_STRIP=$ac_cv_prog_ac_ct_STRIP
 if test -n "$ac_ct_STRIP"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_STRIP" >&5
-$as_echo "$ac_ct_STRIP" >&6; }
+    colorize_result "$ac_ct_STRIP" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
   if test "x$ac_ct_STRIP" = x; then
@@ -22130,6 +23373,7 @@ if test x"$cross_compiling" = xyes; then
   RUNRUBY_COMMAND='$(MINIRUBY) -I`cd $(srcdir)/lib; pwd`'
   RUNRUBY='$(RUNRUBY_COMMAND)'
   XRUBY='$(MINIRUBY)'
+  BOOTSTRAPRUBY='$(BASERUBY)'
   TEST_RUNNABLE=no
   CROSS_COMPILING=yes
 
@@ -22153,9 +23397,11 @@ else
   RUNRUBY_COMMAND='$(MINIRUBY) $(srcdir)/tool/runruby.rb --extout=$(EXTOUT) $(RUNRUBYOPT)'
   RUNRUBY='$(RUNRUBY_COMMAND) --'
   XRUBY='$(RUNRUBY)'
+  BOOTSTRAPRUBY='$(MINIRUBY)'
   TEST_RUNNABLE=yes
   CROSS_COMPILING=no
 fi
+
 
 
 
@@ -22175,7 +23421,7 @@ LIBRUBYARG='$(LIBRUBYARG_STATIC)'
 SOLIBS=
 
 case "$target_os" in #(
-  cygwin*|mingw*|beos*|haiku*|darwin*|os2-emx*) :
+  cygwin*|mingw*|haiku*|darwin*) :
 
     : ${DLDLIBS=""}
      ;; #(
@@ -22287,11 +23533,11 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   no_undefined=yes
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   no_undefined=no
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -22326,7 +23572,7 @@ esac
 
 	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR) lib$(RUBY_SO_NAME).so'
 	 ;; #(
-  linux* | gnu* | k*bsd*-gnu | atheos* | kopensolaris*-gnu) :
+  linux* | gnu* | k*bsd*-gnu | atheos* | kopensolaris*-gnu | haiku*) :
 
 	LIBRUBY_DLDFLAGS='-Wl,-soname,lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR)'" $LDFLAGS_OPTDIR"
 	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR) lib$(RUBY_SO_NAME).so'
@@ -22385,17 +23631,6 @@ esac
 	LIBRUBYARG_SHARED='-L${libdir} -l${RUBY_SO_NAME}'
 	SOLIBS='-lm -lc'
 	 ;; #(
-  beos*) :
-
-	case "$target_cpu" in #(
-  powerpc*) :
-
-	    LIBRUBY_DLDFLAGS="-f ruby.exp -lnet -lbe -lroot glue-noinit.a init_term_dyn.o start_dyn.o $LDFLAGS_OPTDIR"
-	     ;; #(
-  *) :
-     ;;
-esac
-	 ;; #(
   darwin*) :
 
 	RUBY_SO_NAME="$RUBY_SO_NAME"'.$(MAJOR).$(MINOR).$(TEENY)'
@@ -22406,9 +23641,10 @@ esac
 	fi
 	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-install_name '${libprefix}'/$(LIBRUBY_SO)'
 	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-current_version $(MAJOR).$(MINOR).$(TEENY)'
-	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-compatibility_version $(ruby_version)'
+	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-compatibility_version $(RUBY_PROGRAM_VERSION)'
 	if test "$visibility_option" = ld; then
 	    LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-Wl,-unexported_symbol,_Init_*'
+	    LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-Wl,-unexported_symbol,_ruby_static_id_*'
 	    LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-Wl,-unexported_symbol,*_threadptr_*'
 	fi
 	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "' $(XLDFLAGS)'
@@ -22441,11 +23677,6 @@ else
 fi
 
   case "$target_os" in #(
-  haiku) :
-
-    # gcc supports PIE, but doesn't work correctly in Haiku
-    pie=no
-   ;; #(
   nacl) :
 
     # -pie implies -shared for NaCl.
@@ -22482,11 +23713,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   pie=yes
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   pie=no
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
@@ -22534,11 +23765,11 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   pie=
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -22612,6 +23843,25 @@ _ACEOF
 
 fi
 
+case "$cross_compiling:${LIBPATHENV}" in #(
+  yes:* | no:) :
+     ;; #(
+  *) :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether wrapper for $LIBPATHENV is needed" >&5
+$as_echo_n "checking whether wrapper for $LIBPATHENV is needed... " >&6; }
+    if env ${LIBPATHENV}=/lib /bin/sh -c ': ${'${LIBPATHENV}'?}' 2>/dev/null; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
+else
+  PREP="$PREP"' ruby-runner$(EXEEXT)'
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
+
+fi
+ ;;
+esac
+
 # Check whether --enable-dtrace was given.
 if test "${enable_dtrace+set}" = set; then :
   enableval=$enable_dtrace; enable_dtrace=$enableval
@@ -22630,8 +23880,26 @@ else
 
     echo "provider conftest{ probe fire(); };" > conftest_provider.d
     if $DTRACE -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null; then
-      # DTrace is available on the system
-      rb_cv_dtrace_available=yes
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "conftest_provider.h"
+int
+main ()
+{
+CONFTEST_FIRE();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+	# DTrace is available on the system
+	rb_cv_dtrace_available=yes
+
+else
+  rb_cv_dtrace_available=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     else
       # DTrace is not available while dtrace command exists
       # for example FreeBSD 8 or FreeBSD 9 without DTrace build option
@@ -22641,7 +23909,7 @@ else
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dtrace_available" >&5
-$as_echo "$rb_cv_dtrace_available" >&6; }
+    colorize_result "$rb_cv_dtrace_available" ; }
 
         enable_dtrace=$rb_cv_dtrace_available
     else
@@ -22650,6 +23918,7 @@ $as_echo "$rb_cv_dtrace_available" >&6; }
 fi
 
 LIBRUBY_A_OBJS='$(OBJS)'
+DTRACE_REBUILD=
 if test "${enable_dtrace}" = "yes"; then
     if test -z "$DTRACE"; then
         as_fn_error $? "dtrace(1) is missing" "$LINENO" 5
@@ -22664,8 +23933,26 @@ else
 
     echo "provider conftest{ probe fire(); };" > conftest_provider.d
     if $DTRACE -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null; then
-      # DTrace is available on the system
-      rb_cv_dtrace_available=yes
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "conftest_provider.h"
+int
+main ()
+{
+CONFTEST_FIRE();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+	# DTrace is available on the system
+	rb_cv_dtrace_available=yes
+
+else
+  rb_cv_dtrace_available=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     else
       # DTrace is not available while dtrace command exists
       # for example FreeBSD 8 or FreeBSD 9 without DTrace build option
@@ -22675,7 +23962,7 @@ else
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dtrace_available" >&5
-$as_echo "$rb_cv_dtrace_available" >&6; }
+    colorize_result "$rb_cv_dtrace_available" ; }
 
         enable_dtrace=$rb_cv_dtrace_available
         if test "${enable_dtrace}" = "no"; then
@@ -22687,6 +23974,7 @@ if ${rb_cv_prog_dtrace_g+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
+  rb_cv_prog_dtrace_g=no
   if {
     cat >conftest_provider.d <<_PROBES &&
     provider conftest {
@@ -22694,26 +23982,46 @@ else
     };
 _PROBES
     $DTRACE -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null &&
-    cat >conftest.c <<_CONF &&
-    #include "conftest_provider.h"
-    int main(void){ CONFTEST_FIRE(); return 0; }
-_CONF
-    $CC $CFLAGS $CPPFLAGS -c -o conftest.o conftest.c &&
-    $DTRACE -G -s conftest_provider.d conftest.o 2>/dev/null
+    :
   }; then
-    rb_cv_prog_dtrace_g=yes
-  else
-    rb_cv_prog_dtrace_g=no
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "conftest_provider.h"
+int
+main ()
+{
+CONFTEST_FIRE();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+	if {
+	    cp -p conftest.${ac_objext} conftest.${ac_objext}.save &&
+	    $DTRACE -G -s conftest_provider.d conftest.${ac_objext} 2>/dev/null &&
+	    :
+	}; then
+	    if cmp -s conftest.o conftest.${ac_objext}.save; then
+		rb_cv_prog_dtrace_g=yes
+	    else
+		rb_cv_prog_dtrace_g=rebuild
+	    fi
+	fi
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   fi
   rm -f conftest.co conftest_provider.dho
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_prog_dtrace_g" >&5
-$as_echo "$rb_cv_prog_dtrace_g" >&6; }
+    colorize_result "$rb_cv_prog_dtrace_g" ; }
 
-        if test "$rb_cv_prog_dtrace_g" = 'yes'; then
+        if test "$rb_cv_prog_dtrace_g" != 'no'; then
             DTRACE_OBJ='probes.$(OBJEXT)'
-            DTRACE_GLOMMED_OBJ='ruby-glommed.$(OBJEXT)'
+        fi
+        if test "$rb_cv_prog_dtrace_g" = 'rebuild'; then
+            DTRACE_REBUILD=yes
             LIBRUBY_A_OBJS='$(DTRACE_GLOMMED_OBJ)'
         fi
         case "${target_os}" in #(
@@ -22791,7 +24099,7 @@ fi
     done
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func___builtin_setjmp" >&5
-$as_echo "$ac_cv_func___builtin_setjmp" >&6; }
+    colorize_result "$ac_cv_func___builtin_setjmp" ; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for setjmp type" >&5
 $as_echo_n "checking for setjmp type... " >&6; }
@@ -22830,7 +24138,7 @@ elif { case "$ac_cv_func___builtin_setjmp" in #(
     true ;; #(
   *) :
     false ;;
-esac; }; then
+esac }; then
     setjmp_cast=`expr "$ac_cv_func___builtin_setjmp" : "yes with cast (\(.*\))"`
     setjmp_prefix=__builtin_
     setjmp_suffix=
@@ -22858,7 +24166,7 @@ else
     unset setjmp_sigmask
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${setjmp_prefix}setjmp${setjmp_suffix}${setjmp_cast:+\($setjmp_cast\)}" >&5
-$as_echo "${setjmp_prefix}setjmp${setjmp_suffix}${setjmp_cast:+\($setjmp_cast\)}" >&6; }
+    colorize_result "${setjmp_prefix}setjmp${setjmp_suffix}${setjmp_cast:+\($setjmp_cast\)}" ; }
 cat >>confdefs.h <<_ACEOF
 #define RUBY_SETJMP(env) ${setjmp_prefix}setjmp${setjmp_suffix}($setjmp_cast(env)${setjmp_sigmask+,0})
 _ACEOF
@@ -22959,7 +24267,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_symbol_prefix" >&5
-$as_echo "$rb_cv_symbol_prefix" >&6; }
+    colorize_result "$rb_cv_symbol_prefix" ; }
 SYMBOL_PREFIX="$rb_cv_symbol_prefix"
 test "x$SYMBOL_PREFIX" = xNONE && SYMBOL_PREFIX=''
 DLNOBJ=dln.o
@@ -23017,19 +24325,6 @@ esac
      LIBRUBYARG_STATIC="$LIBRUBYARG_STATIC -framework CoreFoundation" ;;
 esac
 	 ;; #(
-  os2-emx) :
-
-	case " $LIBOBJS " in
-  *" os2.$ac_objext "* ) ;;
-  *) LIBOBJS="$LIBOBJS os2.$ac_objext"
- ;;
-esac
-
-	CFLAGS="$CFLAGS -DOS2"
-	LIBRUBY_A=`echo $LIBRUBY_A | sed 's/^lib//'`
-	LIBRUBY_SO=`echo $LIBRUBY_SO | sed 's/^lib//'`
-	LIBRUBY_ALIASES=`for i in $LIBRUBY_ALIASES; do echo "$i"; done | sed 's/^lib//'`
-	 ;; #(
   osf*) :
 
 	if test "$GCC" != "yes" ; then
@@ -23048,16 +24343,6 @@ esac
 	  rm -f /tmp/main.o
 	  CFLAGS="$CFLAGS -std"
 	fi
-	 ;; #(
-  beos*) :
-
-	case "$target_cpu" in #(
-  powerpc*) :
-    CFLAGS="$CFLAGS -relax_pointers" ;; #(
-  *) :
-     ;;
-esac
-	CPPFLAGS="$CPPFLAGS -I/boot/home/config/include"
 	 ;; #(
   cygwin*|mingw*) :
 
@@ -23201,7 +24486,7 @@ $as_echo_n "checking if ${MAKE-make} is GNU make... " >&6; }
 	gnumake=no ;;
 esac
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gnumake" >&5
-$as_echo "$gnumake" >&6; }
+    colorize_result "$gnumake" ; }
  ;;
 esac
 if test "$gnumake" = yes; then :
@@ -23226,7 +24511,7 @@ $as_echo_n "checking for safe null command for ${MAKE-make}... " >&6; }
 	as_fn_error $? "no candidate for safe null command" "$LINENO" 5
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NULLCMD" >&5
-$as_echo "$NULLCMD" >&6; }
+    colorize_result "$NULLCMD" ; }
 
 fi
 
@@ -23288,10 +24573,10 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
@@ -23302,7 +24587,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_architecture_macros" >&5
-$as_echo "$rb_cv_architecture_macros" >&6; }
+    colorize_result "$rb_cv_architecture_macros" ; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether __ARCHITECTURE__ is available" >&5
 $as_echo_n "checking whether __ARCHITECTURE__ is available... " >&6; }
 if ${rb_cv_architecture_available+:} false; then :
@@ -23328,62 +24613,8 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_architecture_available" >&5
-$as_echo "$rb_cv_architecture_available" >&6; }
+    colorize_result "$rb_cv_architecture_available" ; }
 fi
-
-if test "$ac_cv_func_memmem" = yes; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for broken memmem" >&5
-$as_echo_n "checking for broken memmem... " >&6; }
-if ${rb_cv_broken_memmem+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    if test "$cross_compiling" = yes; then :
-  rb_cv_broken_memmem=yes
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <string.h>
-
-int
-main()
-{
-  char *str = "hogefugafoobar";
-  char *rs = "foo";
-  char *empty = "";
-  char *p;
-
-  p = memmem(str, strlen(str), rs, strlen(rs));
-  if (p == str+8) {
-    p = memmem(str, strlen(str), empty, strlen(empty));
-    if (p == str)
-      return 0;
-    else
-      return 1;
-  }
-  else {
-    return 1;
-  }
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  rb_cv_broken_memmem=no
-else
-  rb_cv_broken_memmem=yes
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_broken_memmem" >&5
-$as_echo "$rb_cv_broken_memmem" >&6; }
-  test x"$rb_cv_broken_memmem" = xyes && ac_cv_func_memmem=no
-fi
-
 
 CPPFLAGS="$CPPFLAGS "'$(DEFS)'
 test -z "$CPPFLAGS" || CPPFLAGS="$CPPFLAGS "; CPPFLAGS="$CPPFLAGS"'${cppflags}'
@@ -23576,6 +24807,7 @@ fi
 libdirname=${multiarch+arch}libdir
 
 
+CONFIGURE="`echo $0 | sed 's|.*/||'`"
 configure_args="`echo "${ac_configure_args}" | sed 's/\\$/$$/g'`"
 
 if test "${universal_binary-no}" = yes ; then
@@ -23713,7 +24945,7 @@ fi
 if test "${with_mantype+set}" = set; then :
   withval=$with_mantype;
 			case "$withval" in #(
-  man|doc) :
+  man|man.gz|man.bz2|doc|doc.gz|doc.bz2) :
     MANTYPE=$withval ;; #(
   *) :
     as_fn_error $? "invalid man type: $withval" "$LINENO" 5 ;;
@@ -23758,10 +24990,10 @@ fi
 NROFF=$ac_cv_path_NROFF
 if test -n "$NROFF"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NROFF" >&5
-$as_echo "$NROFF" >&6; }
+    colorize_result "$NROFF" ; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
 fi
 
 
@@ -23803,7 +25035,10 @@ guard=INCLUDE_RUBY_CONFIG_H
   grep -v "^#define PACKAGE_" confdefs.h
   echo "#endif /* $guard */"
 } | tr -d '\015' |
-${srcdir}/tool/ifchange "${config_h}" -
+(
+  if test "x$CONFIGURE_TTY" = xyes; then color=--color; else color=; fi
+  exec ${srcdir}/tool/ifchange $color "${config_h}" -
+) || as_fn_error $? "failed to create ${config_h}" "$LINENO" 5
 tr -d '\015' < largefile.h > confdefs.h
 rm largefile.h
 
@@ -23811,7 +25046,7 @@ BUILTIN_ENCS="`sed -n -e '/^BUILTIN_ENCS[ 	]*=/{' \
 	-e s/// -e :l -e '/\\\\$/N' -e 's/\\\\\\n/ /' -e 't l' -e p \
 	-e '}' "${srcdir}/enc/Makefile.in"`"
 BUILTIN_ENCOBJS=
-for e in $BUILTIN_ENCS; do BUILTIN_ENCOBJS="$BUILTIN_ENCOBJS `basename $e .c`"'.$(OBJEXT)'; done
+for e in $BUILTIN_ENCS; do BUILTIN_ENCOBJS="$BUILTIN_ENCOBJS "`echo $e | sed 's/\.c$/.$(OBJEXT)/'`; done
 
 
 BUILTIN_TRANSES="`sed -n -e '/^BUILTIN_TRANSES[ 	]*=/{' \
@@ -23820,16 +25055,16 @@ BUILTIN_TRANSES="`sed -n -e '/^BUILTIN_TRANSES[ 	]*=/{' \
 BUILTIN_TRANSSRCS=
 BUILTIN_TRANSOBJS=
 for e in $BUILTIN_TRANSES; do
-  BUILTIN_TRANSSRCS="$BUILTIN_TRANSSRCS `basename $e .trans`"'.c';
-  BUILTIN_TRANSOBJS="$BUILTIN_TRANSOBJS `basename $e .trans`"'.$(OBJEXT)';
+  BUILTIN_TRANSSRCS="$BUILTIN_TRANSSRCS "`echo $e | sed 's/\.trans$/.c/'`
+  BUILTIN_TRANSOBJS="$BUILTIN_TRANSOBJS "`echo $e | sed 's/\.trans$/.$(OBJEXT)/'`
 done
 
 
 
 PACKAGE=$RUBY_BASE_NAME
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $PACKAGE library version = $ruby_version" >&5
-$as_echo "$PACKAGE library version = $ruby_version" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: $PACKAGE library version = $ruby_version" >&5
+$as_echo "$as_me: $PACKAGE library version = $ruby_version" >&6;}
 
 case " $CPP " in #(
   *" $CC "*) :

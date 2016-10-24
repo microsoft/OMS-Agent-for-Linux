@@ -23,9 +23,11 @@ SCX_INTERMEDIATE_DIR := $(SCX_DIR)/intermediate/$(BUILD_CONFIGURATION)
 DSC_TARGET_DIR := $(DSC_DIR)/release
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
+# This Ruby version number refers only to the major/minor version (not teeny)
+#      of the Ruby installed with the OMSAgent
+RUBY_VER := 2.3.0
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
-RUBYGEMS_SSL_PATCHES_DIR := $(BASE_DIR)/source/ext/patches/rubygems/ssl_certs
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
@@ -34,8 +36,6 @@ ifeq ($(ULINUX),1)
 # Doesn't matter what version of SSL/Ruby we use to compile or link the OMI plugin
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/098/ruby
 OMI_LIBRARY_DIR := $(OMI_ROOT)/output_openssl_0.9.8/lib
-RUBY_100_DIR := $(INTERMEDIATE_DIR)/100/ruby
-RUBY_098_DIR := $(INTERMEDIATE_DIR)/098/ruby
 else
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
 OMI_LIBRARY_DIR := $(OMI_ROOT)/output/lib
@@ -52,7 +52,7 @@ DEBUG_FLAGS := -g
 endif
 
 # Need to use RUBY_COMPILE_FLAGS when compiling code that uses C Ruby interfaces
-# (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.2.0)
+# (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.3.3)
 RUBY_COMPILE_FLAGS := $(DEBUG_FLAGS) -D_REENTRANT -fstack-protector-all -Wall -fno-nonansi-builtins -Woverloaded-virtual -Wformat -Wformat-security -Wcast-align -Wswitch-enum  -Wwrite-strings  -Werror -Wcast-qual -fPIC # -Wshadow -Wredundant-decls
 PLUGIN_LINK_LIBRARIES := -L$(OMI_LIBRARY_DIR) -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
 SHARED_FLAGS := -shared
@@ -96,7 +96,7 @@ IN_PLUGINS_LIB := $(INTERMEDIATE_DIR)/Libomi.so
 
 OMI_INCLUDES := -I$(OMI_ROOT) -I$(OMI_ROOT)/common -I$(OMI_ROOT)/common/linux -I$(OMI_ROOT)/base -I$(OMI_ROOT)/output/include
 PAL_INCLUDES := -I$(PAL_DIR)/source/code/include/util
-RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/include/ruby-2.2.0/$(RUBY_ARCM) -I$(RUBY_DEST_DIR)/include/ruby-2.2.0
+RUBY_INCLUDES := -I$(RUBY_DEST_DIR)/include/ruby-$(RUBY_VER)/$(RUBY_ARCM) -I$(RUBY_DEST_DIR)/include/ruby-$(RUBY_VER)
 
 ifeq ($(ULINUX),1)
   OUTPUT_PACKAGE_PREFIX=omsagent-$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH)-$(OMS_BUILDVERSION_BUILDNR).universal.$(PF_ARCH)
@@ -158,6 +158,7 @@ distclean : clean clean-ruby clean-dsc clean-scx
 	-$(RMDIR) $(OMI_ROOT)/output*
 
 	cd $(BASE_DIR)/source/ext/fluentd; git checkout -- lib/fluent/env.rb
+	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c
 	-$(RM) $(BASE_DIR)/build/Makefile.version
 	-$(RM) $(BASE_DIR)/build/config.mak
 	-$(RM) $(PAL_DIR)/build/config.mak
@@ -201,8 +202,6 @@ $(RUBY_TESTING_DIR) :
 	@$(ECHO) "========================= Performing Building Ruby for testing"
 	# $(MKPATH) $(INTERMEDIATE_DIR)
 	$(BASE_DIR)/build/buildRuby.sh test
-	@$(ECHO) "========================= Performing Copying SSL certificates into Ruby for testing"
-	sudo $(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_TESTING_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
 
 # Build the version of Ruby that we distribute
 
@@ -218,18 +217,6 @@ ifeq ($(ULINUX),1)
 else
 	@$(ECHO) "========================= Performing Building Ruby"
 	$(BASE_DIR)/build/buildRuby.sh
-endif
-
-#================================================================================
-# Can be removed after ruby is upgraded to version 2.3 or above
-#================================================================================
-ifeq ($(ULINUX),1)
-	@$(ECHO) "========================= Performing Copying SSL certificates into Ruby."
-	$(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_100_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
-	$(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_098_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
-else
-	@$(ECHO) "========================= Performing Copying SSL certificates into Ruby"
-	$(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_DEST_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
 endif
 
 #================================================================================
@@ -512,12 +499,15 @@ endif
 #--------------------------------------------------------------------------------
 # Run unit tests
 #
+# Note: With the upgrade to Ruby 2.3, rake needs the temporary $PATH (system
+#       environment variable) change to execute using the correct Ruby (the
+#       OMSAgent test Ruby)
 
 tests : test
 
 unittest : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
-	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb test \
+	cd $(BASE_DIR); PATH=$(RUBY_TESTING_DIR)/bin:$(PATH) $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb test \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
 		RUBY_DEST_DIR=$(RUBY_TESTING_DIR)
@@ -530,7 +520,7 @@ systemtestrb : $(RUBY_TESTING_DIR)
 	# Any tests that are slow or communicate with a remote server
 	@echo "========================= Performing System Test"
 	. $(SYSTEST_CONFIG); \
-	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb systemtest \
+	cd $(BASE_DIR); PATH=$(RUBY_TESTING_DIR)/bin:$(PATH) $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb systemtest \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
 		RUBY_TESTING_DIR=$(RUBY_TESTING_DIR) \

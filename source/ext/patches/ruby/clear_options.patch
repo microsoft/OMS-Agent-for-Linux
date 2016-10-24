@@ -1,0 +1,11 @@
+--- ../source/ext/ruby/ext/openssl/ossl_ssl.c	2016-12-19 11:57:06.000000000 -0800
++++ ../source/ext/ruby/ext/openssl/ossl_ssl.c.new	2016-12-19 11:56:50.000000000 -0800
+@@ -671,7 +671,7 @@
+     rb_check_frozen(self);
+     GetSSLCTX(self, ctx);
+ 
+-    SSL_CTX_clear_options(ctx, SSL_CTX_get_options(ctx));
++//    SSL_CTX_clear_options(ctx, SSL_CTX_get_options(ctx));
+ 
+     if (NIL_P(options)) {
+ 	SSL_CTX_set_options(ctx, SSL_OP_ALL);

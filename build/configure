@@ -205,6 +205,21 @@ EOF
     exit 0
 fi
 
+# This relies on checking an error status; must be called before "set -e" is
+# Parameter: patch file path (like /etc/clear_options.patch)
+# Parameter: file to patch (like /etc/file_to_be_changed)
+apply_patch() {
+    patch -p0 -N --dry-run --silent < $1 2>/dev/null 1>&2
+    if [ $? -eq 0 ]; then
+        patch -p0 -N $2 < $1
+    else
+        echo "Patch $1 already applied"
+    fi
+}
+
+# Necessary patch for upgrade to Ruby 2.3, incompatibility with OpenSSL 0.9.8
+apply_patch ${base_dir}/source/ext/patches/ruby/clear_options.patch ${base_dir}/source/ext/ruby/ext/openssl/ossl_ssl.c
+
 # No errors allowed from this point forward
 set -e
 
@@ -379,7 +394,7 @@ else
     ruby_optimize_flag=-O3
 fi
 
-ruby_cflags="${ruby_optimize_flag} -fno-fast-math -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration"
+ruby_cflags="${ruby_optimize_flag} -fno-fast-math -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -std=gnu99"
 
 ruby_configure_quals=(
     \"CFLAGS=${ruby_cflags}\"
