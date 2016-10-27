@@ -74,12 +74,12 @@ The OMS agent for Linux is provided in a self-extracting and installable shell s
 
 **To install and onboard directly:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --install –w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --install -w <workspaceid> -s <shared key>
 ```
 
 **To install and onboard directly using an HTTP proxy:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> –w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspaceid> -s <shared key>
 ```
 
 **To install the agent packages and onboard at a later time:**
@@ -89,7 +89,7 @@ sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade
 
 **To extract the agent packages from the bundle without installing:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh –-extract
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --extract
 ```
 
 **All bundle operations:**
@@ -143,7 +143,7 @@ The proxy server can be specified during installation or directly in a file (at 
 The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use. 
 
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> –w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspaceid> -s <shared key>
 ```
 
 **Define the proxy configuration in a file **
@@ -277,7 +277,7 @@ sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable
 
 To re-enable centralized configuration:
 ```
-sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py –enable
+sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py -enable
 ```
 
 ### Syslog events
@@ -574,7 +574,7 @@ To collect alerts from a Nagios server, the following configuration changes must
 *	Grant the user **omsagent** read access to the Nagios log file (i.e. `/var/log/nagios/nagios.log`). Assuming the nagios.log file is owned by the group `nagios`, you can add the user **omsagent** to the **nagios** group. 
 
 ```
-sudo usermod –a -G nagios omsagent
+sudo usermod -a -G nagios omsagent
 ```
 *	Modify the `omsagent.conf` configuration file (`/etc/opt/microsoft/omsagent/conf/omsagent.conf`). Ensure the following entries are present and not commented out:
 
