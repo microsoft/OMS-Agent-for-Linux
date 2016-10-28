@@ -10,9 +10,10 @@ class ChangeTrackingTest < Test::Unit::TestCase
     @service_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxServiceResource&quot;&gt;&lt;PROPERTY NAME=&quot;Publisher&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;(none)&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ReturnCode&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;omsagent&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FilePath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageGroup&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Installed&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;InstalledOn&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1458339065&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1.1.0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Ensure&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;present&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;x86_64&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Arguments&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageManager&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageDescription&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Microsoft Operations Management Suite for UNIX/Linux agent&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Size&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;38487871&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
     @fileInventory_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxFileInventoryResource&quot;&gt;&lt;PROPERTY NAME=&quot;Group&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;root&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Checksum&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1471727542&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;DestinationPath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;/etc/yum.conf&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Mode&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;644&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;CreatedDate&quot; TYPE=&quot;datetime&quot;&gt;&lt;VALUE&gt;20160820211222.000000+300&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Owner&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;root&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Type&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;file&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ModifiedDate&quot; TYPE=&quot;datetime&quot;&gt;&lt;VALUE&gt;20160820211222.000000+300&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Contents&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FileSize&quot; TYPE=&quot;uint64&quot;&gt;&lt;VALUE&gt;835&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
 
-    @inventoryPath = File.join(File.dirname(__FILE__), 'Inventory.xml')
+    @packageinventoryPath = File.join(File.dirname(__FILE__), 'InventoryPackage.xml')
+    @serviceinventoryPath = File.join(File.dirname(__FILE__), 'InventoryService.xml')
+    @fileinventoryPath = File.join(File.dirname(__FILE__), 'InventoryFile.xml')
     ChangeTracking.prev_hash = nil
-    ChangeTracking.log = OMS::MockLog.new
   end
 
   def teardown
@@ -220,13 +221,30 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal(expectedHash, instanceHash)
   end
 
-  def test_transform_and_wrap
-    expectedHash = {"DataItems"=>
-       [{"Collections"=>[],
+  def test_transform_and_wrap_Package
+    expectedHash={"DataItems"=>
+       [{"Collections"=>
+         [{"Architecture"=>"x86_64",
+           "CollectionName"=>"rsyslog",
+           "CurrentVersion"=>"7.4.7",
+           "Name"=>"rsyslog",
+           "Publisher"=>"CentOS BuildSystem <http://bugs.centos.org>",
+           "Size"=>"2033615",
+           "Timestamp"=>"2015-10-19T16:13:03.000Z"}],
          "Computer"=>"HostName",
          "ConfigChangeType"=>"Software.Packages",
-         "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-        {"Collections"=>
+         "Timestamp"=>"2016-03-15T19:02:38.577Z"}],
+       "DataType"=>"CONFIG_CHANGE_BLOB",
+       "IPName"=>"changetracking"}
+    expectedTime = Time.utc(2016,3,15,19,2,38.5776)
+    transformedHash = ChangeTracking::transform(@package_xml_str)
+    wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
+    assert_equal(expectedHash, wrappedHash)
+  end
+
+  def test_transform_and_wrap_Service
+    expectedHash = {"DataItems"=>
+       [{"Collections"=>
           [{"Architecture"=>"x86_64",
            "Arguments"=>"",
            "CollectionName"=>"omsagent",
@@ -245,29 +263,18 @@ class ChangeTrackingTest < Test::Unit::TestCase
            "Version"=>"1.1.0"}],
          "Computer"=>"HostName",
          "ConfigChangeType"=>"Daemons",
-         "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-        {"Collections"=>[],
-         "Computer"=>"HostName",
-         "ConfigChangeType"=>"Files",
          "Timestamp"=>"2016-03-15T19:02:38.577Z"}],
        "DataType"=>"CONFIG_CHANGE_BLOB",
        "IPName"=>"changetracking"}
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = ChangeTracking::transform_and_wrap(@service_xml_str, "HostName", expectedTime)
+    transformedHash = ChangeTracking::transform(@service_xml_str)
+    wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
     assert_equal(expectedHash, wrappedHash)
   end
 
   def test_transform_and_wrap_file_inventory
     expectedHash = {"DataItems"=>
-    [{"Collections"=>[],
-      "Computer"=>"HostName",
-      "ConfigChangeType"=>"Software.Packages",
-      "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-     {"Collections"=>[],
-      "Computer"=>"HostName",
-      "ConfigChangeType"=>"Daemons",
-      "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-     {"Collections"=>
+    [{"Collections"=>
        [{"CollectionName"=>"/etc/yum.conf",
          "Contents"=>"",
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
@@ -284,71 +291,94 @@ class ChangeTrackingTest < Test::Unit::TestCase
     "IPName"=>"changetracking"}
 
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = ChangeTracking::transform_and_wrap(@fileInventory_xml_str, "HostName", expectedTime)
+    transformedHash = ChangeTracking::transform(@fileInventory_xml_str)
+    wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
     assert_equal(expectedHash, wrappedHash, "#{wrappedHash}")
   end
 
-  def test_performance
-    inventoryXMLstr = File.read(@inventoryPath)
+  def test_performance_packagechangetracking
+    inventoryXMLstr = File.read(@packageinventoryPath)
 
     start = Time.now
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now)
+    expectedTime = Time.now
+    transformedHash = ChangeTracking::transform(inventoryXMLstr)
+    wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
     finish = Time.now
     time_spent = finish - start
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(1371, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of package instances.")
-    assert_equal(209, wrappedHash["DataItems"][1]["Collections"].size, "Got the wrong number of service instances.")
-    assert_equal(1, wrappedHash["DataItems"][2]["Collections"].size, "Got the wrong number of file inventory instances")
     if time_spent > 1.0
       warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete.")
     end
   end
 
-  def test_force_send_true
-    inventoryXMLstr = File.read(@inventoryPath)
-    t = Time.now
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, 1)
-    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, 1)
-    assert_equal(wrappedHash, wrappedHash2)
-    assert_not_equal({}, wrappedHash2)
+  def test_performance_servicechangetracking
+    inventoryXMLstr = File.read(@serviceinventoryPath)
+
+    start = Time.now
+    expectedTime = Time.now
+    transformedHash = ChangeTracking::transform(inventoryXMLstr)
+    wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
+    finish = Time.now
+    time_spent = finish - start
+    # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
+    assert_equal(209, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of service instances.")
+    if time_spent > 1.0
+      warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete.")
+    end
   end
 
-  def test_force_send_false
-    # If we don't force to send up the inventory data and it doesn't change, discard it.
-    inventoryXMLstr = File.read(@inventoryPath)
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 0)
-    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 0)
-    assert_not_equal({}, wrappedHash)
-    assert_equal({}, wrappedHash2)
+
+  def test_performance_filechangetracking
+    inventoryXMLstr = File.read(@fileinventoryPath)
+
+    start = Time.now
+    expectedTime = Time.now
+    transformedHash = ChangeTracking::transform(inventoryXMLstr)
+    wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
+    finish = Time.now
+    time_spent = finish - start
+    # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
+    assert_equal(1, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
+    if time_spent > 1.0
+      warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete.")
+    end
   end
 
-  def test_remove_duplicates
-    inventoryXMLstr = File.read(@inventoryPath)
+  def test_remove_duplicates_service
+    inventoryXMLstr = File.read(@serviceinventoryPath)
     inventoryXML = ChangeTracking::strToXML(inventoryXMLstr)
     instancesXML = ChangeTracking::getInstancesXML(inventoryXML)
     servicesXML = instancesXML.select { |instanceXML| ChangeTracking::isServiceInstanceXML(instanceXML) }
     services = servicesXML.map { |service| ChangeTracking::serviceXMLtoHash(service)}
 
-    fileInventoriesXML = instancesXML.select { |instanceXML| ChangeTracking::isFileInventoryInstanceXML(instanceXML) }
-    fileInventories = fileInventoriesXML.map { |fileInventory|  ChangeTracking::fileInventoryXMLtoHash(fileInventory)}
     assert_equal(216, services.size)
-    assert_equal(2, fileInventories.size)
 
     collectionNames = services.map { |service| service["CollectionName"] }
     collectionNamesSet = Set.new collectionNames
     assert_equal(209, collectionNamesSet.size) # 7 duplicates
     assert(collectionNamesSet.size < collectionNames.size, "Test data does not contain duplicate Collection Names")
 
+    data_items_dedup = ChangeTracking::removeDuplicateCollectionNames(services)
+    assert_equal(collectionNamesSet.size, data_items_dedup.size, "Deduplication failed")
+  end
+
+  def test_remove_duplicates_file
+    inventoryXMLstr = File.read(@fileinventoryPath)
+    inventoryXML = ChangeTracking::strToXML(inventoryXMLstr)
+    instancesXML = ChangeTracking::getInstancesXML(inventoryXML)
+    servicesXML = instancesXML.select { |instanceXML| ChangeTracking::isServiceInstanceXML(instanceXML) }
+
+    fileInventoriesXML = instancesXML.select { |instanceXML| ChangeTracking::isFileInventoryInstanceXML(instanceXML) }
+    fileInventories = fileInventoriesXML.map { |fileInventory|  ChangeTracking::fileInventoryXMLtoHash(fileInventory)}
+    assert_equal(2, fileInventories.size)
+
     fileInventoriesNames = fileInventories.map { |fileInventory| fileInventory["CollectionName"] }
     fileInventoriesNamesSet = Set.new fileInventoriesNames
     assert_equal(1, fileInventoriesNamesSet.size) # 1 duplicate
     assert(fileInventoriesNamesSet.size < fileInventoriesNames.size, "Test data does not contain duplicate Collection Names")
 
-    data_items_dedup = ChangeTracking::removeDuplicateCollectionNames(services)
-    assert_equal(collectionNamesSet.size, data_items_dedup.size, "Deduplication failed")
-
     file_items_dedup = ChangeTracking::removeDuplicateCollectionNames(fileInventories)
     assert_equal(fileInventoriesNamesSet.size, file_items_dedup.size, "Deduplication failed")
   end
-
 end

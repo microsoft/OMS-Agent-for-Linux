@@ -2,15 +2,20 @@ require 'rexml/document'
 require 'cgi'
 require 'digest'
 require 'set'
+require 'logger'
 
 require_relative 'oms_common'
 
 class ChangeTracking
 
-    @@log = nil
-    def self.log= (value)
-        @@log = value
+    @@log =  Logger.new(STDERR) #nil
+    @@log.formatter = proc do |severity, time, progname, msg|
+        "#{severity} #{msg}\n"
     end
+
+    # def self.log= (value)
+    #     @@log = value
+    # end
 
     @@force_send_last_upload = Time.now
 
@@ -97,20 +102,7 @@ class ChangeTracking
         instanceXML.attributes['CLASSNAME'] == 'MSFT_nxFileInventoryResource'
     end
 
-    def self.transform_and_wrap(inventoryXMLstr, host, time, force_send_run_interval = 0)
-
-        # Do not send duplicate data if we are not forced to
-        hash = Digest::SHA256.hexdigest(inventoryXMLstr)
-
-        if force_send_run_interval > 0 and Time.now - @@force_send_last_upload > force_send_run_interval
-            @@log.debug "Changetracking : Force sending inventory data"
-            @@force_send_last_upload = Time.now
-        elsif hash == @@prev_hash
-            @@log.debug "ChangeTracking : Discarding duplicate inventory data. Hash=#{hash[0..5]}"
-            return {}
-        end
-        @@prev_hash = hash
-
+    def self.transform(inventoryXMLstr, log = nil)
         # Extract the instances in xml format
         inventoryXML = strToXML(inventoryXMLstr)
         instancesXML = getInstancesXML(inventoryXML)
@@ -118,7 +110,7 @@ class ChangeTracking
         # Split packages from services 
         packagesXML = instancesXML.select { |instanceXML| isPackageInstanceXML(instanceXML) }
         servicesXML = instancesXML.select { |instanceXML| isServiceInstanceXML(instanceXML) }
-	fileInventoriesXML = instancesXML.select { |instanceXML| isFileInventoryInstanceXML(instanceXML) }
+        fileInventoriesXML = instancesXML.select { |instanceXML| isFileInventoryInstanceXML(instanceXML) }
 
         # Convert to xml to hash/json representation
         packages = packagesXML.map { |package|  packageXMLtoHash(package)}
@@ -129,40 +121,69 @@ class ChangeTracking
         packages = removeDuplicateCollectionNames(packages)
         services = removeDuplicateCollectionNames(services)
         fileInventories = removeDuplicateCollectionNames(fileInventories)
-
-        if (packages.size > 0 or services.size > 0 or fileInventories.size > 0)
-            timestamp = OMS::Common.format_time(time)
-            wrapper = {
-              "DataType"=>"CONFIG_CHANGE_BLOB",
-              "IPName"=>"changetracking",
-              "DataItems"=>[
-                {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
-                    "ConfigChangeType"=> "Software.Packages",
-                    "Collections"=> packages
-                },
-                {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
-                    "ConfigChangeType"=> "Daemons",
-                    "Collections"=> services
-                },
-                {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
-                    "ConfigChangeType"=> "Files",
-                    "Collections"=> fileInventories
-                }
-              ]
-            }
-            @@log.debug "ChangeTracking : Packages x #{packages.size}, Services x #{services.size}, Files x #{fileInventories.size}"
-            return wrapper
-        else
-            # no data items, send a empty array that tells ODS
-            # output plugin to not the data
-            return {}
+        
+        ret = {}
+        if packages.size > 0
+            ret["packages"] = packages
         end
+        if services.size > 0
+            ret["services"] = services
+        end
+        if fileInventories.size > 0
+            ret["fileInventories"] = fileInventories
+        end
+
+        return ret
     end
 
+    def self.wrap (inventory_hash, host, time)
+        timestamp = OMS::Common.format_time(time)
+        @@log.debug "The keys in inventory_hash - #{inventory_hash.keys}"        
+        wrapper = {
+                    "DataType"=>"CONFIG_CHANGE_BLOB",
+                    "IPName"=>"changetracking",
+                    "DataItems"=>[]
+                }
+
+        # Add entries to DataItems array only if they exist.
+        if inventory_hash.has_key?("packages")
+            wrapper["DataItems"] << {
+                            "Timestamp" => timestamp,
+                            "Computer" => host,
+                            "ConfigChangeType"=> "Software.Packages",
+                            "Collections"=> inventory_hash["packages"]
+                        }
+        end
+
+        if inventory_hash.has_key?("services")
+            wrapper["DataItems"] << {
+                            "Timestamp" => timestamp,
+                            "Computer" => host,
+                            "ConfigChangeType"=> "Daemons",
+                            "Collections"=> inventory_hash["services"]
+                        }
+        end
+
+        if inventory_hash.has_key?("fileInventories")
+            wrapper["DataItems"] << {
+                            "Timestamp" => timestamp,
+                            "Computer" => host,
+                            "ConfigChangeType"=> "Files",
+                            "Collections"=> inventory_hash["fileInventories"]
+                        }
+        end
+
+        # Returning the default wrapper. This can be nil as well (nothing in the
+        # DatatItems array)
+        if wrapper["DataItems"].size == 1
+            return wrapper
+        elsif wrapper["DataItems"].size > 1
+            @@log.warn "Multiple change types found. Incorrect inventory xml generated.\n 
+                        The inventory XML should only have one change type, but this XML had -
+                        #{inventory_hash.keys}"
+            return {} # Returning null.
+        else
+            return {} # Returning null.
+        end
+    end
 end
