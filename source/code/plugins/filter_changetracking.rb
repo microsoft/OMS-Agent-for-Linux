@@ -23,7 +23,6 @@ module Fluent
       super
       # This is the first method to be called when it starts running
       # Use it to allocate resources, etc.
-      ChangeTracking.log = @log
     end
 
     def shutdown
@@ -33,10 +32,8 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      xml_string = record['xml']
-      @log.debug "ChangeTracking : Filtering xml size=#{xml_string.size}"
-      return ChangeTracking.transform_and_wrap(xml_string, @hostname, time, @force_send_run_interval)
+      @log.debug "ChangeTracking: Got new data to send"
+      return record
     end # filter
-
   end # class
 end # module
