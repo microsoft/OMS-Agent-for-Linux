@@ -245,6 +245,7 @@ ${{RUBY_DEST}}/lib/ruby/2.2.0/rubygems/ssl_certs/Class3PublicPrimaryCertificatio
 ${{RUBY_DEST}}/lib/ruby/2.2.0/rubygems/ssl_certs/GeoTrustGlobalCA.pem;   ${{RUBY_INT}}/lib/ruby/2.2.0/rubygems/ssl_certs/GeoTrustGlobalCA.pem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/rubygems/ssl_certs/AddTrustExternalCARoot.pem; ${{RUBY_INT}}/lib/ruby/2.2.0/rubygems/ssl_certs/AddTrustExternalCARoot.pem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/rubygems/ssl_certs/DigiCertHighAssuranceEVRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.2.0/rubygems/ssl_certs/DigiCertHighAssuranceEVRootCA.pem; 644; root; root
+${{RUBY_DEST}}/lib/ruby/2.2.0/rubygems/ssl_certs/GlobalSignRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.2.0/rubygems/ssl_certs/GlobalSignRootCA.pem; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/2.2.0/rubygems/security.rb;                      ${{RUBY_INT}}/lib/ruby/2.2.0/rubygems/security.rb;               644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.2.0/rubygems/dependency.rb;                    ${{RUBY_INT}}/lib/ruby/2.2.0/rubygems/dependency.rb;             644; root; root

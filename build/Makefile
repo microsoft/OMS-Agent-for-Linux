@@ -25,6 +25,7 @@ DSC_TARGET_DIR := $(DSC_DIR)/release
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
+RUBYGEMS_SSL_PATCHES_DIR := $(BASE_DIR)/source/ext/patches/rubygems/ssl_certs
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
@@ -33,6 +34,8 @@ ifeq ($(ULINUX),1)
 # Doesn't matter what version of SSL/Ruby we use to compile or link the OMI plugin
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/098/ruby
 OMI_LIBRARY_DIR := $(OMI_ROOT)/output_openssl_0.9.8/lib
+RUBY_100_DIR := $(INTERMEDIATE_DIR)/100/ruby
+RUBY_098_DIR := $(INTERMEDIATE_DIR)/098/ruby
 else
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
 OMI_LIBRARY_DIR := $(OMI_ROOT)/output/lib
@@ -198,6 +201,8 @@ $(RUBY_TESTING_DIR) :
 	@$(ECHO) "========================= Performing Building Ruby for testing"
 	# $(MKPATH) $(INTERMEDIATE_DIR)
 	$(BASE_DIR)/build/buildRuby.sh test
+	@$(ECHO) "========================= Performing Copying SSL certificates into Ruby for testing"
+	sudo $(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_TESTING_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
 
 # Build the version of Ruby that we distribute
 
@@ -213,6 +218,18 @@ ifeq ($(ULINUX),1)
 else
 	@$(ECHO) "========================= Performing Building Ruby"
 	$(BASE_DIR)/build/buildRuby.sh
+endif
+
+#================================================================================
+# Can be removed after ruby is upgraded to version 2.3 or above
+#================================================================================
+ifeq ($(ULINUX),1)
+	@$(ECHO) "========================= Performing Copying SSL certificates into Ruby."
+	$(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_100_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
+	$(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_098_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
+else
+	@$(ECHO) "========================= Performing Copying SSL certificates into Ruby"
+	$(COPY) $(RUBYGEMS_SSL_PATCHES_DIR)/*.pem $(RUBY_DEST_DIR)/lib/ruby/2.2.0/rubygems/ssl_certs/
 endif
 
 #================================================================================
