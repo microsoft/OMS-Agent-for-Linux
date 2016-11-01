@@ -68,6 +68,11 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/out_oms_api.rb;                          source/code/plugins/out_oms_api.rb;                    744; root; root
 /opt/microsoft/omsagent/plugin/in_sudo_tail.rb;                         source/code/plugins/in_sudo_tail.rb;                   744; root; root
 
+/opt/microsoft/omsagent/plugin/filter_security_baseline.rb;             source/code/plugins/filter_security_baseline.rb;       744; root; root
+/opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
+/opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms_audits.xml;          installer/conf/omsagent.d/oms_audits.xml;              644; root; root
+
 /opt/microsoft/omsagent/plugin/security_lib.rb;                         source/code/plugins/security_lib.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/filter_syslog_security.rb;               source/code/plugins/filter_syslog_security.rb;         744; root; root
 /opt/microsoft/omsagent/plugin/filter_changetracking.rb;                source/code/plugins/filter_changetracking.rb;          744; root; root
@@ -166,6 +171,11 @@ fi
 # Copy over omi_mapping.json
 if [ ! -f ${{CONF_DIR}}/omsagent.d/omi_mapping.json ]; then
    cp /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json ${{CONF_DIR}}/omsagent.d/omi_mapping.json
+fi
+
+# Copy oms_audits.xml file by default
+if [ ! -f ${{CONF_DIR}}/omsagent.d/oms_audits.xml ]; then
+   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms_audits.xml ${{CONF_DIR}}/omsagent.d/oms_audits.xml
 fi
 
 # Copy over standalone plugin configurations
