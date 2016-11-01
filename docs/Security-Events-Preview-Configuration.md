@@ -64,4 +64,4 @@ OMS supports collection of the following 3rd party security log types:
 8. The events will appear in OMS under the **CommonSecurityLog** type.  
 Log search query: ```Type=CommonSecurityLog```
 
-[1]: https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/4e90f23e62e935c32a90974ddc082b4966f26254/installer/conf/omsagent.d/security_events.conf
+[1]: https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/installer/conf/omsagent.d/security_events.conf
