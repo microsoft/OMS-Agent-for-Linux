@@ -519,7 +519,9 @@ unittest : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
 	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb test \
 		BASE_DIR=$(BASE_DIR) \
-		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins
+		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
+		RUBY_DEST_DIR=$(RUBY_TESTING_DIR)
+
 
 systemtest: systemtestrb systemtestsh
 

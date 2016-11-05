@@ -3,7 +3,6 @@ require_relative ENV['BASE_DIR'] + '/source/ext/fluentd/test/helper'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/out_oms'
 require_relative 'omstestlib'
 require_relative 'out_oms_systestbase'
-
 class OutOMSTest < OutOMSSystemTestBase 
 
   def test_send_data
@@ -81,6 +80,41 @@ class OutOMSTest < OutOMSSystemTestBase
             }
 
     assert(output.handle_record("oms.changetracking", record), "Failed to send change tracking updates data : '#{$log.logs}'")
+
+    $log.clear
+    
+    record = 
+    {
+      "DataType"=>"UPDATES_RUN_PROGRESS_BLOB", 
+      "IPName"=>"Updates", 
+      "DataItems"=>
+      [
+        {
+          "OSType"=>"Linux",
+          "Computer"=>"ShujunLinux1", 
+          "UpdateRunName"=>"Shujun_Fake_Update_Run_Name1", 
+          "UpdateTitle"=>"cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)", 
+          "UpdateId"=>"d0228460-fd73-43f7-97d9-2df3e18b4fff", 
+          "Status"=>"Succeeded", 
+          "TimeStamp"=>"2016-10-24T21:54:30.979Z",
+          "StartTime"=>"2016-10-21 04:25:51Z",
+          "EndTime"=>"2016-10-21 04:30:02Z"
+        }, 
+        {
+          "OSType"=>"Linux",
+          "Computer"=>"ShujunLinux2", 
+          "UpdateRunName"=>"Shujun_Fake_Update_Run_Name1", 
+          "UpdateTitle"=>"cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)", 
+          "UpdateId"=>"d0228460-fd73-43f7-97d9-2df3e18b4fff", 
+          "Status"=>"Succeeded", 
+          "TimeStamp"=>"2016-10-24T21:54:30.979Z",
+          "StartTime"=>"2016-10-21 04:25:51Z",
+          "EndTime"=>"2016-10-21 04:30:02Z"
+        }
+      ]
+    }                                                                                                                                        
+
+    assert(output.handle_record("oms.update_progress", record), "Failed to send update progress data: '#{$log.logs}'")
   end
 
 end

@@ -1,9 +1,9 @@
 require 'test/unit'
-
+require 'mocha/test_unit'
 require_relative '../../../source/code/plugins/patch_management_lib'
 require_relative '../../../source/code/plugins/oms_common'
 require_relative 'omstestlib'
-require_relative 'oms_common_test'
+#require_relative 'oms_common_test'
 
 class LinuxUpdatesTest < Test::Unit::TestCase
 
@@ -24,7 +24,26 @@ class LinuxUpdatesTest < Test::Unit::TestCase
 
     @inventoryPath = File.join(File.dirname(__FILE__), 'InventoryWithUpdates.xml')
     LinuxUpdates.prev_hash = nil
-    LinuxUpdates.log = OMS::MockLog.new
+
+    @linuxUpdatesInstance = LinuxUpdates.new(OMS::MockLog.new, "/tmp/schedule_run.id")
+    @fakeUpdateRunName = "Fake_Update_Run_Name"
+    @fakeAgentId ="Fake_Agent_ID"
+    
+    @myExpectedHash = {
+        "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
+        "IPName" => "Updates",
+        "DataItems" => [{
+            "Host" => "HostName",
+            "AgentId" => @fakeAgentId,
+            "OSFullName" => "Ubuntu 16.04",
+            "OSName" => "Ubuntu",
+            "OSType" => "Linux",
+            "OSVersion" => "16.04",
+            "Timestamp" => "2016-03-15T19:02:38.577Z",
+            "Collections" => []
+        }]
+    }
+
   end
 
   def teardown
@@ -33,52 +52,52 @@ class LinuxUpdatesTest < Test::Unit::TestCase
 
   def test_os_short_name()
     # Ubuntu
-    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_12.04", "12.04"), "Ubuntu_12.04")
-    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_12.10", "12.10"), "Ubuntu_12.04")
-    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_14.04", "14.04"), "Ubuntu_14.04")
-    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_15.10", "15.10"), "Ubuntu_14.04")
-    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_16.04", "16.04"), "Ubuntu_16.04")
-    assert_equal(LinuxUpdates.getOSShortName("Ubuntu_16.10", "16.10"), "Ubuntu_16.04")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_12.04", "12.04"), "Ubuntu_12.04")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_12.10", "12.10"), "Ubuntu_12.04")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_14.04", "14.04"), "Ubuntu_14.04")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_15.10", "15.10"), "Ubuntu_14.04")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_16.04", "16.04"), "Ubuntu_16.04")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_16.10", "16.10"), "Ubuntu_16.04")
     
     # CentOS 
-    assert_equal(LinuxUpdates.getOSShortName("CentOS_5.0", "5.0"), "CentOS_5.0") 
-    assert_equal(LinuxUpdates.getOSShortName("CentOS_5.7", "5.7"), "CentOS_5.0") 
-    assert_equal(LinuxUpdates.getOSShortName("CentOS_6.0", "6.0"), "CentOS_6.0") 
-    assert_equal(LinuxUpdates.getOSShortName("CentOS_6.7", "6.7"), "CentOS_6.0")
-    assert_equal(LinuxUpdates.getOSShortName("CentOS_7.0", "7.0"), "CentOS_7.0") 
-    assert_equal(LinuxUpdates.getOSShortName("CentOS_7.1", "7.1"), "CentOS_7.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_5.0", "5.0"), "CentOS_5.0") 
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_5.7", "5.7"), "CentOS_5.0") 
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_6.0", "6.0"), "CentOS_6.0") 
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_6.7", "6.7"), "CentOS_6.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_7.0", "7.0"), "CentOS_7.0") 
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_7.1", "7.1"), "CentOS_7.0")
 
     # RHEL
-    assert_equal(LinuxUpdates.getOSShortName("RHEL_5.0", "5.0"), "RHEL_5.0")
-    assert_equal(LinuxUpdates.getOSShortName("RHEL_5.5", "5.5"), "RHEL_5.0")
-    assert_equal(LinuxUpdates.getOSShortName("RHEL_6.0", "6.0"), "RHEL_6.0")
-    assert_equal(LinuxUpdates.getOSShortName("RHEL_6.6", "6.6"), "RHEL_6.0")
-    assert_equal(LinuxUpdates.getOSShortName("RHEL_7.0", "7.0"), "RHEL_7.0")
-    assert_equal(LinuxUpdates.getOSShortName("RHEL_7.7", "7.7"), "RHEL_7.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_5.0", "5.0"), "RHEL_5.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_5.5", "5.5"), "RHEL_5.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_6.0", "6.0"), "RHEL_6.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_6.6", "6.6"), "RHEL_6.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_7.0", "7.0"), "RHEL_7.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_7.7", "7.7"), "RHEL_7.0")
     
     # SLES
-    assert_equal(LinuxUpdates.getOSShortName("SUSE_11.0", "11.0"), "SUSE_11.0")
-    assert_equal(LinuxUpdates.getOSShortName("SUSE_11.10", "11.10"), "SUSE_11.0")
-    assert_equal(LinuxUpdates.getOSShortName("SUSE_12.6", "12.6"), "SUSE_12.0")
-    assert_equal(LinuxUpdates.getOSShortName("SUSE_12.0", "12.0"), "SUSE_12.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("SUSE_11.0", "11.0"), "SUSE_11.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("SUSE_11.10", "11.10"), "SUSE_11.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("SUSE_12.6", "12.6"), "SUSE_12.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("SUSE_12.0", "12.0"), "SUSE_12.0")
   end
 
   def test_strToXML
-    xml = LinuxUpdates.strToXML(@installed_packages_xml_str)
+    xml = @linuxUpdatesInstance.strToXML(@installed_packages_xml_str)
     assert(xml.is_a?(REXML::Document), "Expected return type is REXML::Document")
   end
 
   def test_strToXML_fail
     assert_raise REXML::ParseException do
-      LinuxUpdates.strToXML("<<<<")
+      @linuxUpdatesInstance.strToXML("<<<<")
     end
   end
   
   def test_getAvailableUpdatesInstancesXML
-    xml = LinuxUpdates.strToXML(@available_updates_xml_str)
+    xml = @linuxUpdatesInstance.strToXML(@available_updates_xml_str)
     assert(xml.root != nil, 'Failed find the root of the xml document')
     assert_equal("INSTANCE", xml.root.name)
-    instances = LinuxUpdates.getInstancesXML(xml)
+    instances = @linuxUpdatesInstance.getInstancesXML(xml)
     
     assert_equal(1, instances.size)
     assert_equal("INSTANCE", instances[0].name)
@@ -115,18 +134,18 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "UpdateState"=>"Needed"
     }
     
-    instanceXML = LinuxUpdates::strToXML(instanceXMLstr).root
+    instanceXML = @linuxUpdatesInstance.strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
     assert_equal("MSFT_nxAvailableUpdatesResource", instanceXML.attributes['CLASSNAME'])
-    instanceHash = LinuxUpdates::availableUpdatesXMLtoHash(instanceXML, "Ubuntu_14.04")
+    instanceHash = @linuxUpdatesInstance.availableUpdatesXMLtoHash(instanceXML, "Ubuntu_14.04")
     assert_equal(expectedHash, instanceHash)
   end
 
   def test_getInstalledPackagesInstancesXML
-    xml = LinuxUpdates.strToXML(@installed_packages_xml_str)
+    xml = @linuxUpdatesInstance.strToXML(@installed_packages_xml_str)
     assert(xml.root != nil, 'Failed find the root of the xml document')
     assert_equal("INSTANCE", xml.root.name)
-    instances = LinuxUpdates.getInstancesXML(xml)
+    instances = @linuxUpdatesInstance.getInstancesXML(xml)
     
     assert_equal(1, instances.size)
     assert_equal("INSTANCE", instances[0].name)
@@ -203,89 +222,65 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "UpdateState"=>"NotNeeded"
     }
     
-    instanceXML = LinuxUpdates::strToXML(instanceXMLstr).root
+    instanceXML = @linuxUpdatesInstance.strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
     assert_equal("MSFT_nxPackageResource", instanceXML.attributes['CLASSNAME'])
-    instanceHash = LinuxUpdates::installedPackageXMLtoHash(instanceXML, "Ubuntu_14.04")
+    instanceHash = @linuxUpdatesInstance.installedPackageXMLtoHash(instanceXML, "Ubuntu_14.04")
     assert_equal(expectedHash, instanceHash)
   end
 
   def test_installed_packages_transform_and_wrap
-    expectedHash = {
-            "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
-            "IPName" => "Updates",
-            "DataItems" => [{
-                "Host" => "HostName",
-                "AgentId" => "AgentId-123",
-                "OSFullName" => "Ubuntu 16.04",
-                "OSName" => "Ubuntu",
-                "OSType" => "Linux",
-                "OSVersion" => "16.04",
-                "Timestamp" => "2016-03-15T19:02:38.577Z",
-                "Collections" => [{
-                    "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
-                    "Installed" => true,
-                    "UpdateState"=>"NotNeeded",
-                    "Architecture"=>"all",
-                    "PackageName" => "autotools-dev",
-                    "PackageVersion" => "20150820.1",
-                    "Repository" => nil,
-                    "Size" => "151"
-                }]
+    
+    # Mock dependent methods, let them return fake values
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
+
+    @myExpectedHash["DataItems"][0]["Collections"] = [{
+                "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
+                "Installed" => true,
+                "UpdateState"=>"NotNeeded",
+                "Architecture"=>"all",
+                "PackageName" => "autotools-dev",
+                "PackageVersion" => "20150820.1",
+                "Repository" => nil,
+                "Size" => "151"
             }]
-        }
+   
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = LinuxUpdates::transform_and_wrap(@installed_packages_xml_str, "HostName", expectedTime, 
-                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 16.04",
+    
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str, "HostName", expectedTime, 
+                                                   86400,  "Ubuntu", "Ubuntu 16.04",
                                                    "16.04", "Ubuntu_16.04")
-    assert_equal(expectedHash, wrappedHash)
+    assert_equal(@myExpectedHash, wrappedHash)
   end
   
   def test_installed_packages_transform_and_wrap_with_installed_on_date
-    expectedHash = {
-            "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
-            "IPName" => "Updates",
-            "DataItems" => [{
-                "Host" => "HostName",
-                "AgentId" => "AgentId-123",
-                "OSFullName" => "Ubuntu 16.04",
-                "OSName" => "Ubuntu",
-                "OSType" => "Linux",
-                "OSVersion" => "16.04",
-                "Timestamp" => "2016-03-15T19:02:38.577Z",
-                "Collections" => [{
-                    "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
-                    "Installed" => true,
-                    "UpdateState"=>"NotNeeded",
-                    "Architecture"=>"all",
-                    "PackageName" => "autotools-dev",
-                    "PackageVersion" => "20150820.1",
-                    "Repository" => nil,
-                    "Size" => "151",
-                    "Timestamp" => "2016-07-11T02:02:16.000Z"
-                }]
-            }]
-        }
+    # Mock dependent methods, let them return fake values
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
+ 
+    @myExpectedHash["DataItems"][0]["Collections"] = [{
+        "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
+        "Installed" => true,
+        "UpdateState"=>"NotNeeded",
+        "Architecture"=>"all",
+        "PackageName" => "autotools-dev",
+        "PackageVersion" => "20150820.1",
+        "Repository" => nil,
+        "Size" => "151",
+        "Timestamp" => "2016-07-11T02:02:16.000Z"
+    }]
+
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = LinuxUpdates::transform_and_wrap(@installed_packages_xml_str_with_installed_on_date, "HostName", expectedTime, 
-                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 16.04",
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str_with_installed_on_date, "HostName", expectedTime, 
+                                                   86400, "Ubuntu", "Ubuntu 16.04",
                                                    "16.04", "Ubuntu_16.04")
-    assert_equal(expectedHash, wrappedHash)
+    assert_equal(@myExpectedHash, wrappedHash)
   end
 
   def test_installed_packages_transform_and_wrap_with_nil_installed_on_date
-    expectedHash = {
-            "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
-            "IPName" => "Updates",
-            "DataItems" => [{
-                "Host" => "HostName",
-                "AgentId" => "AgentId-123",
-                "OSFullName" => "Ubuntu 16.04",
-                "OSName" => "Ubuntu",
-                "OSType" => "Linux",
-                "OSVersion" => "16.04",
-                "Timestamp" => "2016-03-15T19:02:38.577Z",
-                "Collections" => [{
+    # Mock dependent methods, let them return fake values
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
+  
+    @myExpectedHash["DataItems"][0]["Collections"] = [{
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
                     "UpdateState"=>"NotNeeded",
@@ -295,28 +290,19 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "Repository" => nil,
                     "Size" => "151"
                 }]
-            }]
-        }
+
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = LinuxUpdates::transform_and_wrap(@installed_packages_xml_str_with_nil_installed_on_date, "HostName", expectedTime, 
-                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 16.04",
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str_with_nil_installed_on_date, "HostName", expectedTime, 
+                                                   86400, "Ubuntu", "Ubuntu 16.04",
                                                    "16.04", "Ubuntu_16.04")
-    assert_equal(expectedHash, wrappedHash)
+    assert_equal(@myExpectedHash, wrappedHash)
   end
   
   def test_available_updates_transform_and_wrap
-    expectedHash = {
-            "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
-            "IPName" => "Updates",
-            "DataItems" => [{
-                "Host" => "HostName",
-                "AgentId" => "AgentId-123",
-                "OSFullName" => "Ubuntu 15.04",
-                "OSName" => "Ubuntu",
-                "OSType" => "Linux",
-                "OSVersion" => "15.04",
-                "Timestamp" => "2016-03-15T19:02:38.577Z",
-                "Collections" => [{
+    # Mock dependent methods, let them return fake values
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
+
+    @myExpectedHash["DataItems"][0]["Collections"] = [{
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "UpdateState"=>"Needed",
@@ -325,28 +311,25 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "PackageVersion" => "1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
-            }]
-        }
+
+    expectedOSVersion = "15.04"
+    expectedOSFullName = "Ubuntu 15.04"
+    @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
+    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName
+    
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = LinuxUpdates::transform_and_wrap(@available_updates_xml_str, "HostName", expectedTime,
-                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 15.04",
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@available_updates_xml_str, "HostName", expectedTime,
+                                                   86400, "Ubuntu", "Ubuntu 15.04",
                                                    "15.04", "Ubuntu_15.04")
-    assert_equal(expectedHash, wrappedHash)
+    assert_equal(@myExpectedHash, wrappedHash)
+
+
   end
 
   def test_available_updates_transform_and_wrap_with_build_date
-    expectedHash = {
-            "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
-            "IPName" => "Updates",
-            "DataItems" => [{
-                "Host" => "HostName",
-                "AgentId" => "AgentId-123",
-                "OSFullName" => "Ubuntu 15.04",
-                "OSName" => "Ubuntu",
-                "OSType" => "Linux",
-                "OSVersion" => "15.04",
-                "Timestamp" => "2016-03-15T19:02:38.577Z",
-                "Collections" => [{
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
+    
+    @myExpectedHash["DataItems"][0]["Collections"] = [{
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "UpdateState"=>"Needed",
@@ -356,28 +339,23 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "Repository" => "Ubuntu:15.04/xenial-updates",
                     "Timestamp" => "2016-07-11T02:02:16.000Z"
                 }]
-            }]
-        }
+
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = LinuxUpdates::transform_and_wrap(@available_updates_xml_str_with_build_date, "HostName", expectedTime,
-                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 15.04",
-                                                   "15.04", "Ubuntu_15.04")
-    assert_equal(expectedHash, wrappedHash)
+    expectedOSVersion = "15.04"
+    expectedOSFullName = "Ubuntu 15.04"
+    @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
+    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName
+
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@available_updates_xml_str_with_build_date, "HostName", expectedTime,
+                                                   86400, "Ubuntu", expectedOSFullName,
+                                                  expectedOSVersion, "Ubuntu_15.04")
+    assert_equal(@myExpectedHash, wrappedHash)
   end
 
   def test_available_updates_transform_and_wrap_with_nil_build_date
-    expectedHash = {
-            "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
-            "IPName" => "Updates",
-            "DataItems" => [{
-                "Host" => "HostName",
-                "AgentId" => "AgentId-123",
-                "OSFullName" => "Ubuntu 15.04",
-                "OSName" => "Ubuntu",
-                "OSType" => "Linux",
-                "OSVersion" => "15.04",
-                "Timestamp" => "2016-03-15T19:02:38.577Z",
-                "Collections" => [{
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
+
+    @myExpectedHash["DataItems"][0]["Collections"] = [{
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "UpdateState"=>"Needed",
@@ -386,21 +364,24 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "PackageVersion" => "1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
-            }]
-        }
+    
+    expectedOSVersion = "15.04"
+    expectedOSFullName = "Ubuntu 15.04"
+    @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
+    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = LinuxUpdates::transform_and_wrap(@available_updates_xml_str_with_nil_build_date, "HostName", expectedTime,
-                                                   86400, "AgentId-123", "Ubuntu", "Ubuntu 15.04",
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@available_updates_xml_str_with_nil_build_date, "HostName", expectedTime,
+                                                   86400, "Ubuntu", "Ubuntu 15.04",
                                                    "15.04", "Ubuntu_15.04")
-    assert_equal(expectedHash, wrappedHash)
+    assert_equal(@myExpectedHash, wrappedHash)
   end
   
   def test_performance
     inventoryXMLstr = File.read(@inventoryPath)
-
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
     start = Time.now
-    wrappedHash = LinuxUpdates::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 86400,
-                                                   "AgentId-123", "Ubuntu", "Ubuntu 16.04", "16.04", 
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 86400,
+                                                   "Ubuntu", "Ubuntu 16.04", "16.04", 
                                                    "Ubuntu_16.04")
     finish = Time.now
     time_spent = finish - start
@@ -414,10 +395,10 @@ class LinuxUpdatesTest < Test::Unit::TestCase
   # Test if it removes the duplicate installed package.
   def test_remove_duplicates_installed_packages
     inventoryXMLstr = File.read(@inventoryPath)
-    inventoryXML = LinuxUpdates::strToXML(inventoryXMLstr)
-    instancesXML = LinuxUpdates::getInstancesXML(inventoryXML)
-    installedPackageXML = instancesXML.select { |instanceXML| LinuxUpdates::isInstalledPackageInstanceXML(instanceXML) }
-    installedPackages = installedPackageXML.map { |installedPackage| LinuxUpdates::installedPackageXMLtoHash(installedPackage, "Ubuntu_16.04")}
+    inventoryXML = @linuxUpdatesInstance.strToXML(inventoryXMLstr)
+    instancesXML = @linuxUpdatesInstance.getInstancesXML(inventoryXML)
+    installedPackageXML = instancesXML.select { |instanceXML| @linuxUpdatesInstance.isInstalledPackageInstanceXML(instanceXML) }
+    installedPackages = installedPackageXML.map { |installedPackage| @linuxUpdatesInstance.installedPackageXMLtoHash(installedPackage, "Ubuntu_16.04")}
     assert_equal(605, installedPackages.size)
 
     collectionNames = installedPackages.map { |installedPackage| installedPackage["CollectionName"] }
@@ -425,17 +406,17 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal(598, collectionNamesSet.size) # 7 duplicates
     assert(collectionNamesSet.size < collectionNames.size, "Test data does not contain duplicate Collection Names")
 
-    data_items_dedup = LinuxUpdates::removeDuplicateCollectionNames(installedPackages)
+    data_items_dedup = @linuxUpdatesInstance.removeDuplicateCollectionNames(installedPackages)
     assert_equal(collectionNamesSet.size, data_items_dedup.size, "Deduplication failed")
   end
   
   # Test if it removes the duplicate available package.
   def test_remove_duplicates_available_packages
     inventoryXMLstr = File.read(@inventoryPath)
-    inventoryXML = LinuxUpdates::strToXML(inventoryXMLstr)
-    instancesXML = LinuxUpdates::getInstancesXML(inventoryXML)
-    availableUpdatesXML = instancesXML.select { |instanceXML| LinuxUpdates::isAvailableUpdateInstanceXML(instanceXML) }
-    availableUpdates = availableUpdatesXML.map { |availableUpdate| LinuxUpdates::availableUpdatesXMLtoHash(availableUpdate, "Ubuntu_16.04")}
+    inventoryXML = @linuxUpdatesInstance.strToXML(inventoryXMLstr)
+    instancesXML = @linuxUpdatesInstance.getInstancesXML(inventoryXML)
+    availableUpdatesXML = instancesXML.select { |instanceXML| @linuxUpdatesInstance.isAvailableUpdateInstanceXML(instanceXML) }
+    availableUpdates = availableUpdatesXML.map { |availableUpdate| @linuxUpdatesInstance.availableUpdatesXMLtoHash(availableUpdate, "Ubuntu_16.04")}
     assert_equal(25, availableUpdates.size)
     
     collectionNames = availableUpdates.map { |availableUpdate| availableUpdate["CollectionName"] }
@@ -443,7 +424,41 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal(20, collectionNamesSet.size) # 5 duplicates
     assert(collectionNamesSet.size < collectionNames.size, "Test data does not contain duplicate Collection Names")
 
-    data_items_dedup = LinuxUpdates::removeDuplicateCollectionNames(availableUpdates)
+    data_items_dedup = @linuxUpdatesInstance.removeDuplicateCollectionNames(availableUpdates)
     assert_equal(collectionNamesSet.size, data_items_dedup.size, "Deduplication failed")
   end
+
+
+ def test_filter_updaterun_progress
+    fakeEndDate = '2016-10-20  15:00:29'
+    
+    logContent = 
+    [
+      "Commandline: aptdaemon role='role-install-packages' sender=':1.93\'",
+      "Install: cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic), gnome-session:amd64 (3.18.1.2-1ubuntu1.16.04.2, automatic)",
+      "Upgrade: gnome-settings-daemon-schemas:amd64 (3.18.2-0ubuntu3, 3.18.2-0ubuntu3.1), gnome-session-common:amd64 (3.18.1.2-1ubuntu1.16.04.1)",
+      "Requested-By: shujun (1000)",
+      "End-Date: " + fakeEndDate
+    ].join("\n");
+    
+    fakeStartDate = '2016-10-20  15:00:24'
+    record = 
+    {
+      'start-date' => fakeStartDate, 
+      'apt-logs' => logContent
+    }
+    
+    # Mock dependent methods, let them return fake values
+    @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
+    
+    result = @linuxUpdatesInstance.process_update_run(record, 'tag', 'HostName', Time.now)
+    assert(result != nil)
+    assert_equal(4, result['DataItems'].size)
+    assert_equal("HostName", result['DataItems'][0]["Computer"])
+    assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
+    assert_equal('cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)', result['DataItems'][0]["UpdateTitle"])
+    assert_equal(fakeEndDate, result['DataItems'][0]["EndTime"])
+    assert_equal(fakeStartDate, result['DataItems'][0]["StartTime"])
+  end
+  
 end

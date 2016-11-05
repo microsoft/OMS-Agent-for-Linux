@@ -1,18 +1,22 @@
 require "rexml/document"
 require "cgi"
+require 'json'
 
 require_relative 'patch_management_lib'
 require_relative 'oms_common'
 
 module Fluent
-  class LinuxUpdatesFilter < Filter
+  class LinuxUpdatesRunProgressFilter < Filter
 
-    Fluent::Plugin.register_filter('filter_patch_management', self)    
+    Fluent::Plugin.register_filter('filter_linux_update_run_progress', self)    
+
+    config_param :current_update_run_file, :string, default: "/var/opt/microsoft/omsagent/state/schedule_run.id"
 
     def configure(conf)
       super
       @hostname = OMS::Common.get_hostname or "Unknown host"
-      # do the usual configuration here
+      # do the usual configuration here   
+      @test_conf = conf['test_conf']
     end
 
     def start
@@ -29,10 +33,8 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      xml_string = record['xml']
-      @log.debug "LinuxUpdates : Filtering xml size=#{xml_string.size}"
-      linuxUpdates = LinuxUpdates.new(@log, nil)
-      return linuxUpdates.transform_and_wrap(xml_string, @hostname, time)
+      linuxUpdates = LinuxUpdates.new(@log, @current_update_run_file)
+      return linuxUpdates.process_update_run(record, tag, @hostname, time)
     end # filter
   end # class
 end # module

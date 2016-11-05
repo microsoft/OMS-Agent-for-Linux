@@ -80,6 +80,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/heartbeat_lib.rb;                        source/code/plugins/heartbeat_lib.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/filter_patch_management.rb;              source/code/plugins/filter_patch_management.rb;        744; root; root
 /opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
+/opt/microsoft/omsagent/plugin/filter_linux_update_run_progress.rb;     source/code/plugins/filter_linux_update_run_progress.rb;           744; root; root
+
 /opt/microsoft/omsagent/plugin/filter_flatten.rb;                       source/code/plugins/filter_flatten.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/flattenjson_lib.rb;                      source/code/plugins/flattenjson_lib.rb;                744; root; root
 /opt/microsoft/omsagent/plugin/statsd_lib.rb;                           source/code/plugins/statsd_lib.rb;                     744; root; root
