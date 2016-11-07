@@ -1,6 +1,8 @@
 # Configuration for collection of security solution logs (Preview)
 
-OMS supports collection of the following 3rd party security log types:
+**This feature is part of the OMS Security and Compliance solution. The solution needs to be enabled before the events can be collected.**
+
+Collection of the following 3rd party security log types is supported:
 - **Common Event Format (CEF) logs**
 - **Cisco ASA logs**
 
