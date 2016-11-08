@@ -41,6 +41,10 @@ module OMS
         def tzLocalTimePath=(localtimepath)
           @@tzLocalTimePath = localtimepath
         end
+
+        def Hostname=(hostname)
+          @@Hostname = hostname
+        end
       end
     end
 
@@ -177,6 +181,29 @@ module OMS
       # Sanity check
       assert_not_equal(nil, hostname, "Could not get the hostname")
       assert(hostname.size > 0, "Hostname returned is empty")
+    end
+
+    def test_get_hostname_in_containerzed_agent
+      $log = MockLog.new
+      file_hostname = '/etc/containerhostname'
+      test_hostname = 'test_hostname'
+      Common.Hostname = nil
+
+      # create container hostname file
+      # get_hostname should read hostname from this file when exist
+      out_file = File.new(file_hostname, "w+")
+      out_file.puts(test_hostname)
+      out_file.close
+      hostname = Common.get_hostname
+      assert_equal(test_hostname, hostname, 'get_hostname should read from /etc/containerhostname file')
+
+      # Remove container host name file
+      # get_hostname should get hostname from Socket.gethostname when this file when doesn't exist
+      Common.Hostname = nil
+      File.delete(file_hostname)
+      hostname = Common.get_hostname
+      test_hostname = Socket.gethostname.split(".")[0]
+      assert_equal(test_hostname, hostname, 'get_hostname should read from Socket.gethostname')
     end
 
     def test_get_fqdn

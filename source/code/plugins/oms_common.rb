@@ -577,6 +577,24 @@ module OMS
       def get_hostname
         return @@Hostname if !@@Hostname.nil?
 
+        # Issue:
+        #   When omsagent runs inside a container, gethostname returns the hostname of the container (random name)
+        #   not the actual machine hostname.
+        #   One way to solve this problem is to set the container hostname same as machine name, but this is not
+        #   possible when host-machine is a private VM inside a cluster.
+        # Solution:
+        #   Share/mount ‘/etc/hostname’ as '/etc/containerhostname' with container and omsagent will read hostname from shared file.
+
+        begin
+          file_hostname = '/etc/containerhostname'
+          if File.exist?(file_hostname) && File.readable?(file_hostname)
+            @@Hostname = File.read(file_hostname).strip
+            return @@Hostname
+          end
+        rescue => error
+          Log.warn_once("Unable to read the hostname from #{file_hostname}: #{error}")
+        end
+
         begin
           hostname = Socket.gethostname.split(".")[0]
         rescue => error
