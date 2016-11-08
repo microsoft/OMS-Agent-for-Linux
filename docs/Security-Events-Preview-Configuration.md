@@ -1,6 +1,6 @@
 # Configuration for collection of security solution logs (Preview)
 
-**This feature is part of the OMS Security and Compliance solution. The solution needs to be enabled before the events can be collected.**
+**This feature is part of the OMS Security and Audit solution. The solution needs to be enabled before the events can be collected.**
 
 Collection of the following 3rd party security log types is supported:
 - **Common Event Format (CEF) logs**
