@@ -734,6 +734,14 @@ MySQL Server | Query Cache Use Pct
 MySQL Server | Table Cache Hit Pct
 MySQL Server | Table Cache Use Pct
 MySQL Server | Table Lock Contention Pct
+Network | Total Bytes Transmitted
+Network | Total Bytes Received
+Network | Total Bytes
+Network | Total Packets Transmitted
+Network | Total Packets Received
+Network | Total Rx Errors
+Network | Total Tx Errors
+Network | Total Collisions
 Physical Disk | Avg. Disk sec/Read
 Physical Disk | Avg. Disk sec/Transfer
 Physical Disk | Avg. Disk sec/Write
@@ -757,6 +765,8 @@ System | Processes
 System | Size Stored In Paging Files
 System | Uptime
 System | Users
+
+*Note: For Network Statistics the calculation is from start of the omiagent process
  
 ##Appendix B: Database Permissions Required for MySQL Performance Counters
 *Note: To grant permissions to a MySQL monitoring user the granting user must have the ‘GRANT option’ privilege as well as the privilege being granted. *
