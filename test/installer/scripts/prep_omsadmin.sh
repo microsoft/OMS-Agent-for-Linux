@@ -10,9 +10,8 @@ OMSADMIN=$TESTDIR/omsadmin.sh
 cp $BASE_DIR/installer/scripts/omsadmin.sh $OMSADMIN
 chmod u+wx $OMSADMIN
 
-sed -i s,TMP_DIR=.*,TMP_DIR=$TESTDIR,1 $OMSADMIN
-sed -i s,CONF_DIR=.*,CONF_DIR=$TESTDIR,1 $OMSADMIN
-sed -i s,CERT_DIR=.*,CERT_DIR=$TESTDIR,1 $OMSADMIN
+sed -i s,VAR_DIR=.*,VAR_DIR=$TESTDIR,1 $OMSADMIN
+sed -i s,ETC_DIR=.*,ETC_DIR=$TESTDIR,1 $OMSADMIN
 sed -i s,OS_INFO=.*,OS_INFO=$TESTDIR/scx-release,1 $OMSADMIN
 sed -i s,RUBY=.*,RUBY=${RUBY_TESTVERS}/bin/ruby,1 $OMSADMIN
 sed -i s,AUTH_KEY_SCRIPT=.*,AUTH_KEY_SCRIPT=$BASE_DIR/installer/scripts/auth_key.rb,1 $OMSADMIN
