@@ -2,10 +2,21 @@
 
 set -e
 
-TMP_DIR=/var/opt/microsoft/omsagent/tmp
-CERT_DIR=/etc/opt/microsoft/omsagent/certs
-CONF_DIR=/etc/opt/microsoft/omsagent/conf
-SYSCONF_DIR=/etc/opt/microsoft/omsagent/sysconf
+VAR_DIR=/var/opt/microsoft/omsagent
+ETC_DIR=/etc/opt/microsoft/omsagent
+
+DF_TMP_DIR=$VAR_DIR/tmp
+DF_RUN_DIR=$VAR_DIR/run
+DF_STATE_DIR=$VAR_DIR/state
+DF_LOG_DIR=$VAR_DIR/log
+
+DF_CERT_DIR=$ETC_DIR/certs
+DF_CONF_DIR=$ETC_DIR/conf
+
+TMP_DIR=$DF_TMP_DIR
+CERT_DIR=$DF_CERT_DIR
+CONF_DIR=$DF_CONF_DIR
+SYSCONF_DIR=$ETC_DIR/sysconf
 COLLECTD_DIR=/etc/collectd/collectd.conf.d
 
 # Optional file with initial onboarding credentials
@@ -331,8 +342,9 @@ onboard()
         clean_exit 1
     fi
 
-    PREV_WID=`grep WORKSPACE_ID $CONF_OMSADMIN 2> /dev/null | cut -d= -f2`
-    if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN -a "$PREV_WID" = $WORKSPACE_ID ]; then
+    create_workspace_directories $WORKSPACE_ID
+
+    if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
         # Keep the same agent GUID by loading it from the previous conf
         AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
         log_info "Reusing previous agent GUID"
@@ -357,7 +369,7 @@ onboard()
     REQ_DATE=`date +%Y-%m-%dT%T.%N%:z`
     CERT_SERVER=`cat $FILE_CRT | awk 'NR>2 { print line } { line = $0 }'`
     set_FQDN
- 
+
     # append telemetry to $BODY_ONBOARD
     `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$FQDN" "$AGENT_GUID" "$CERT_SERVER"` 
     [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding. "
@@ -423,6 +435,10 @@ onboard()
     fi
 
     save_config
+
+    copy_omsagent_conf
+
+    update_symlinks
 
     # If a test is not in progress then register omsagent as a service and start the agent 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
@@ -597,6 +613,100 @@ collectd()
     fi
     echo "...Done"
 }
+
+create_workspace_directories()
+{
+    VAR_DIR_WS=$VAR_DIR/$1
+    ETC_DIR_WS=$ETC_DIR/$1
+
+    make_dir $VAR_DIR_WS
+    make_dir $ETC_DIR_WS
+
+    TMP_DIR=$VAR_DIR_WS/tmp
+    STATE_DIR=$VAR_DIR_WS/state
+    RUN_DIR=$VAR_DIR_WS/run
+    LOG_DIR=$VAR_DIR_WS/log
+    CERT_DIR=$ETC_DIR_WS/certs
+    CONF_DIR=$ETC_DIR_WS/conf
+
+    make_dir $TMP_DIR
+    make_dir $STATE_DIR
+    make_dir $RUN_DIR
+    make_dir $LOG_DIR
+    make_dir $CERT_DIR
+    make_dir $CONF_DIR
+
+    # Generated conf file containing information for this script
+    CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
+
+    # Omsagent daemon configuration
+    CONF_OMSAGENT=$CONF_DIR/omsagent.conf
+
+    # Omsagent proxy configuration
+    CONF_PROXY=$CONF_DIR/proxy.conf
+
+    # Certs
+    FILE_KEY=$CERT_DIR/oms.key
+    FILE_CRT=$CERT_DIR/oms.crt
+
+    # Temporary files
+    SHARED_KEY_FILE=$TMP_DIR/shared_key
+    BODY_ONBOARD=$TMP_DIR/body_onboard.xml
+    RESP_ONBOARD=$TMP_DIR/resp_onboard.xml
+
+    BODY_HEARTBEAT=$TMP_DIR/body_heartbeat.xml
+    RESP_HEARTBEAT=$TMP_DIR/resp_heartbeat.xml
+
+    BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
+    RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
+}
+
+make_dir()
+{
+    if [ ! -d $1 ]; then
+        mkdir $1
+    fi
+
+    chown_omsagent $1
+}
+
+copy_omsagent_conf()
+{
+    cp $SYSCONF_DIR/omsagent.conf $CONF_DIR
+    chown_omsagent $CONF_DIR/*
+
+    OMSAGENTD_DIR=$CONF_DIR/omsagent.d
+    make_dir $OMSAGENTD_DIR
+
+    cp $SYSCONF_DIR/omsagent.d/monitor.conf $OMSAGENTD_DIR
+    cp $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
+    cp $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
+
+    chown_omsagent $OMSAGENTD_DIR/*
+}
+
+update_symlinks()
+{
+    link_dir $DF_TMP_DIR $TMP_DIR
+    link_dir $DF_RUN_DIR $RUN_DIR
+    link_dir $DF_STATE_DIR $STATE_DIR
+    link_dir $DF_LOG_DIR $LOG_DIR
+
+    link_dir $DF_CERT_DIR $CERT_DIR
+    link_dir $DF_CONF_DIR $CONF_DIR
+}
+
+link_dir()
+{
+    if [ -d $1 ]; then
+        rm -r $1
+    fi
+
+    ln -s $2 $1
+
+    chown_omsagent $1
+}
+
 main()
 {
     check_user
