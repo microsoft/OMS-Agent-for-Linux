@@ -674,6 +674,9 @@ make_dir()
 copy_omsagent_conf()
 {
     cp $SYSCONF_DIR/omsagent.conf $CONF_DIR
+
+    update_path $CONF_DIR/omsagent.conf
+
     chown_omsagent $CONF_DIR/*
 
     OMSAGENTD_DIR=$CONF_DIR/omsagent.d
@@ -683,7 +686,19 @@ copy_omsagent_conf()
     cp $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
 
+    update_path $OMSAGENTD_DIR/monitor.conf
+
     chown_omsagent $OMSAGENTD_DIR/*
+}
+
+update_path()
+{
+    sed -i s,%CONF_DIR_WS%,$CONF_DIR,1 $1
+    sed -i s,%CERT_DIR_WS%,$CERT_DIR,1 $1
+    sed -i s,%TMP_DIR_WS%,$TMP_DIR,1 $1
+    sed -i s,%RUN_DIR_WS%,$RUN_DIR,1 $1
+    sed -i s,%STATE_DIR_WS%,$STATE_DIR,1 $1
+    sed -i s,%LOG_DIR_WS%,$LOG_DIR,1 $1
 }
 
 update_symlinks()
