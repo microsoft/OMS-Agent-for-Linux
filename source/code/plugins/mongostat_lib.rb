@@ -27,6 +27,8 @@ module MongoStatModule
       if record.start_with?('insert')
         record.sub!("locked db", "locked-db") if record.include? "locked db"
         record.sub!("idx miss %", "idx-miss-%") if record.include? "idx miss %"
+        record.sub!("% dirty", "dirty") if record.include? "% dirty"
+        record.sub!("% used", "used") if record.include? "% used"
 
         # @counters saves the state of the counters as the counternames get printed at fixed intervals
         # reset values to [] when counter names are reset
@@ -40,15 +42,15 @@ module MongoStatModule
         rec = Hash[@counters.zip @values]
         transformed_rec = {}
         begin
-          transformed_rec["Insert Operations/sec"] = rec["insert"].delete("*") 
+          transformed_rec["Insert Operations/sec"] = rec["insert"].delete("*")
           transformed_rec["Query Operations/sec"] = rec["query"].delete("*")
           transformed_rec["Update Operations/sec"] = rec["update"].delete("*")
           transformed_rec["Delete Operations/sec"] = rec["delete"].delete("*")
-          transformed_rec["Total Data Mapped (MB)"] = rec["mapped"].delete("M")
+          transformed_rec["Total Data Mapped (MB)"] = rec["mapped"].delete("M") if rec.has_key?("mapped")
           transformed_rec["Virtual Memory Process Usage (MB)"] = rec["vsize"].delete("M")
-          transformed_rec["Resident Memory Process Usage (MB)"] = rec["res"].delete("M") 
+          transformed_rec["Resident Memory Process Usage (MB)"] = rec["res"].delete("M")
           transformed_rec["Get More Operations/sec"] = rec["getmore"]
-          transformed_rec["Page Faults/sec"] = rec["faults"]
+          transformed_rec["Page Faults/sec"] = rec["faults"] if rec.has_key?("faults")
           transformed_rec["Global Write Lock %"] = rec["locked-db"] if rec.has_key?("locked-db")
           transformed_rec["% Index Access Miss"] = rec["idx-miss-%"] if rec.has_key?("idx-miss-%")
           transformed_rec["Total Open Connections"] = rec["conn"]
@@ -64,19 +66,21 @@ module MongoStatModule
           transformed_rec["Queue Length (Read)"] = qr
           transformed_rec["Queue Length (Write)"] = qw
 
-          command = rec["command"]
-          if command.include?("|")
-            local, replicated = command.split("|")
-            transformed_rec["Local Commands/sec"] = local
-            transformed_rec["Replicated Commands/sec"] = replicated
-          else
-            transformed_rec["Commands/sec"] = command 
+          if rec.has_key?("command")
+            command = rec["command"]
+            if command.include?("|")
+              local, replicated = command.split("|")
+              transformed_rec["Local Commands/sec"] = local
+              transformed_rec["Replicated Commands/sec"] = replicated
+            else
+              transformed_rec["Commands/sec"] = command
+            end
           end
 
           #version >= 3 rec has the counternames locked, dirty, used, non-mapped, flushes
-          transformed_record["% Time Global Write Lock"] = rec["locked"] if rec.has_key?("locked")
-          transformed_record["% WiredTiger Dirty Byte Cache"] = rec["dirty"]  if rec.has_key?("dirty")
-          transformed_record["% WiredTiger Cache in Use"] = rec["used"] if rec.has_key?("used")
+          transformed_rec["% Time Global Write Lock"] = rec["locked"] if rec.has_key?("locked")
+          transformed_rec["% WiredTiger Dirty Byte Cache"] = rec["dirty"]  if rec.has_key?("dirty")
+          transformed_rec["% WiredTiger Cache in Use"] = rec["used"] if rec.has_key?("used")
           if rec.has_key?("non-mapped")
             transformed_rec["Total Virtual Memory (MB)"] = rec["non-mapped"].delete("M")
           end
