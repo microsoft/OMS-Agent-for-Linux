@@ -24,8 +24,6 @@ handle_return_code()
 }
 
 DBG_ONDBOARD=$TESTDIR/debug_onboarding
-DBG_HEARTBEAT=$TESTDIR/debug_heartbeat
-DBG_RENEWCERT=$TESTDIR/debug_renew_cert
 
 echo -n "Test Onboarding...  "
 echo "======================== TEST ONBOARDING  ========================" > $DBG_ONDBOARD 
@@ -33,18 +31,6 @@ echo "======================== TEST ONBOARDING  ========================" > $DBG
 echo "bash -x $OMSADMIN -v -w $TEST_WORKSPACE_ID -s $TEST_SHARED_KEY" >> $DBG_ONDBOARD
 bash -x $OMSADMIN -v -w $TEST_WORKSPACE_ID -s $TEST_SHARED_KEY >> $DBG_ONDBOARD 2>&1
 handle_return_code $? $DBG_ONDBOARD
-
-echo -n "Test Heartbeat...   "
-echo "======================== TEST HEARTBEAT ========================" > $DBG_HEARTBEAT
-echo "bash -x $OMSADMIN -v -b"  >> $DBG_HEARTBEAT
-bash -x $OMSADMIN -v -b  >> $DBG_HEARTBEAT 2>&1
-handle_return_code $? $DBG_HEARTBEAT
-
-echo -n "Test Renew certs... "
-echo "======================== TEST RENEW CERTS ========================" > $DBG_RENEWCERT
-echo "bash -x $OMSADMIN -v -r" >> $DBG_RENEWCERT
-bash -x $OMSADMIN -v -r  >> $DBG_RENEWCERT 2>&1
-handle_return_code $? $DBG_RENEWCERT
 
 # Leave folder around if there was a failure for post mortem debug
 if [ $HAS_FAILURE -eq 0 ]; then
