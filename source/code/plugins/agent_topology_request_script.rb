@@ -112,6 +112,26 @@ def obj_to_hash(obj)
   }
   return hash
 end
+
+class AgentTopologyRequestHandler < StrongTypedClass
+  def handle_request(os_info, conf_omsadmin, fqdn, entity_type_id, auth_cert, telemetry)
+    topology_request = AgentTopologyRequest.new
+    topology_request.FullyQualfiedDomainName = fqdn
+    topology_request.EntityTypeId = entity_type_id
+    topology_request.AuthenticationCertificate = auth_cert
+
+    if telemetry
+      topology_request.get_telemetry_data(os_info, conf_omsadmin)
+    end
+
+    body_heartbeat = "<?xml version=\"1.0\"?>\n"
+    body_heartbeat.concat(Gyoku.xml({ "AgentTopologyRequest" => {:content! => obj_to_hash(topology_request), \
+:'@xmlns:xsi' => "http://www.w3.org/2001/XMLSchema-instance", :'@xmlns:xsd' => "http://www.w3.org/2001/XMLSchema", \
+:@xmlns => "http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/"}}))
+
+    return body_heartbeat
+  end
+end
               
 if __FILE__ == $0
   options = {}
@@ -121,23 +141,10 @@ if __FILE__ == $0
     end
   end.parse!  
 
+  topology_request_xml = AgentTopologyRequestHandler.new.handle_request(ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5], options[:telemetry])
+
   path = ARGV[0]
-  os_info = ARGV[1]
-  conf_omsadmin = ARGV[2]
-
-  topology_request = AgentTopologyRequest.new
-  topology_request.FullyQualfiedDomainName = ARGV[3]
-  topology_request.EntityTypeId = ARGV[4]
-  topology_request.AuthenticationCertificate = ARGV[5] 
-
-  if options[:telemetry]
-    topology_request.get_telemetry_data(os_info, conf_omsadmin)
-  end
- 
   File.open(path, 'a') do |f|
-    f << "<?xml version=\"1.0\"?>\n"
-    f << Gyoku.xml({ "AgentTopologyRequest" => {:content! => obj_to_hash(topology_request), \
-:'@xmlns:xsi' => "http://www.w3.org/2001/XMLSchema-instance", :'@xmlns:xsd' => "http://www.w3.org/2001/XMLSchema", \
-:@xmlns => "http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/"}})
+    f << topology_request_xml
   end
 end

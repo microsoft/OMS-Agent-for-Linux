@@ -25,6 +25,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking_inventory.mof;    installer/conf/omsagent.d/change_tracking_inventory.mof;    644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf;            installer/conf/omsagent.d/monitor.conf;                644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/heartbeat.conf;          installer/conf/omsagent.d/heartbeat.conf;              644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management.conf;      installer/conf/omsagent.d/patch_management.conf;          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management_inventory.mof;  installer/conf/omsagent.d/patch_management_inventory.mof;        644; root; root
 
@@ -101,6 +102,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/parser_vmware_logs.rb;                   source/code/plugins/parser_vmware_logs.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/in_dsc_monitor.rb;                       source/code/plugins/in_dsc_monitor.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/agent_topology_request_script.rb;        source/code/plugins/agent_topology_request_script.rb;  744; root; root
+/opt/microsoft/omsagent/plugin/in_heartbeat_request.rb;                 source/code/plugins/in_heartbeat_request.rb;           744; root; root
+/opt/microsoft/omsagent/plugin/agent_maintenance_script.rb;             source/code/plugins/agent_maintenance_script.rb;       744; root; root
 
 /opt/microsoft/omsagent/plugin/filter_hdinsight.rb;                     source/code/plugins/filter_hdinsight.rb;               744; root; root
 
