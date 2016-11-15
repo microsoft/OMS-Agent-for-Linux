@@ -7,12 +7,13 @@ Wants=omid.service
 Type=simple
 User=omsagent
 Group=omiusers
-PIDFile=/var/opt/microsoft/omsagent/run/omsagent.pid
+PIDFile=%RUN_DIR_WS%/omsagent.pid
 ExecStart=/opt/microsoft/omsagent/bin/omsagent \
-  -d /var/opt/microsoft/omsagent/run/omsagent.pid \
-  -o /var/opt/microsoft/omsagent/log/omsagent.log \
+  -d %RUN_DIR_WS%/omsagent.pid \
+  -o %LOG_DIR_WS%/omsagent.log \
+  -c %CONF_DIR_WS%/omsagent.conf \
   --no-supervisor
-ExecStop=/bin/rm -f /var/opt/microsoft/omsagent/run/omsagent.pid
+ExecStop=/bin/rm -f %RUN_DIR_WS%/omsagent.pid
 KillMode=process
 KillSignal=SIGKILL
 TimeoutStartSec=10
