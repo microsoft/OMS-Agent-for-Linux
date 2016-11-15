@@ -16,10 +16,11 @@
 # Description:       Operations Management Suite (omsagent) Server
 ### END INIT INFO
 
+WORKSPACE_ID=""
 OMS_HOME=/opt/microsoft/omsagent
-OMS_NAME="Operations Management Suite agent"
+OMS_NAME="Operations Management Suite agent ($WORKSPACE_ID)"
 
-OMS_BIN=$OMS_HOME/bin/omsagent
+OMS_BIN=$OMS_HOME/bin/omsagent-$WORKSPACE_ID
 test -x $OMS_BIN || { echo "$OMS_BIN not installed";
     if [ "$1" = "stop" ]; then exit 0;
     else exit 5; fi; }
@@ -53,13 +54,13 @@ USER_REQ=""
 case "$1" in
      start)
         AGENT_RUNNING=is_omsagent_running
-        START_QUALS="-d $PIDFILE --no-supervisor -o $LOGFILE"
+        START_QUALS="-d $PIDFILE --no-supervisor -o $LOGFILE -c $CONFFILE"
 
         case $INIT_STYLE in
             D)
                 log_begin_msg "Starting $OMS_NAME: "
                 [ "`id -u`" -eq 0 ] && USER_REQ="--chuid omsagent"
-                $AGENT_RUNNING && /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --name "omsagent" --startas $OMS_BIN -- $START_QUALS
+                $AGENT_RUNNING && /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --exec $OMS_BIN -- $START_QUALS
                 RETVAL=$?
                 log_end_msg $RETVAL
                 ;;               
