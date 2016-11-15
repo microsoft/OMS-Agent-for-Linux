@@ -16,9 +16,45 @@
 #    reload:   Reload agent configuration
 #
 
-LOGFILE=/var/opt/microsoft/omsagent/log/omsagent.log
-PIDFILE=/var/opt/microsoft/omsagent/run/omsagent.pid
-OMSADMIN_CONF=/etc/opt/microsoft/omsagent/conf/omsadmin.conf
+setup_variables()
+{
+    VAR_DIR=/var/opt/microsoft/omsagent
+    ETC_DIR=/etc/opt/microsoft/omsagent
+    BIN_DIR=/opt/microsoft/omsagent/bin
+
+    if [ -z "$1" ]; then
+        if [ -f $ETC_DIR/conf/omsadmin.conf ]; then
+            . "$ETC_DIR/conf/omsadmin.conf"
+        else
+            echo "Warning: No workspace is onboarded"
+            exit 0 
+        fi
+    else
+        if [ -f $ETC_DIR/$1/conf/omsadmin.conf ]; then
+            . "$ETC_DIR/$1/conf/omsadmin.conf"
+        else
+            echo "Warning: Specified workspace $1 doesn't exist"
+            exit 0
+        fi
+    fi
+
+    VAR_DIR_WS=$VAR_DIR/$WORKSPACE_ID
+    ETC_DIR_WS=$ETC_DIR/$WORKSPACE_ID
+
+    TMP_DIR=$VAR_DIR_WS/tmp
+    STATE_DIR=$VAR_DIR_WS/state
+    RUN_DIR=$VAR_DIR_WS/run
+    LOG_DIR=$VAR_DIR_WS/log
+    CERT_DIR=$ETC_DIR_WS/certs
+    CONF_DIR=$ETC_DIR_WS/conf
+
+    LOGFILE=$LOG_DIR/omsagent.log
+    PIDFILE=$RUN_DIR/omsagent.pid
+    CONFFILE=$CONF_DIR/omsagent.conf
+    OMSADMIN_CONF=$CONF_DIR/omsadmin.conf
+
+    OMSAGENT_WS=omsagent-$WORKSPACE_ID
+}
 
 verify_privileges()
 {
@@ -93,7 +129,7 @@ stop_omsagent_process()
 
 start_omsagent_process()
 {
-    is_omsagent_running && /opt/microsoft/omsagent/bin/omsagent -d $PIDFILE --no-supervisor -o $LOGFILE
+    is_omsagent_running && /opt/microsoft/omsagent/bin/omsagent -d $PIDFILE --no-supervisor -o $LOGFILE -c $CONFFILE
 }
 
 #
@@ -109,14 +145,14 @@ start_omsagent()
 
     # If systemd lives here, then we have a systemd unit file
     if pidof systemd 1> /dev/null 2> /dev/null; then
-        /bin/systemctl start omsagent
+        /bin/systemctl start $OMSAGENT_WS
     else
         if [ -x /usr/sbin/invoke-rc.d ]; then
-            /usr/sbin/invoke-rc.d omsagent start
+            /usr/sbin/invoke-rc.d $OMSAGENT_WS start
         elif [ -x /sbin/service ]; then
-            /sbin/service omsagent start
+            /sbin/service $OMSAGENT_WS start
         elif [ -x /bin/systemctl ]; then
-            /bin/systemctl start omsagent
+            /bin/systemctl start $OMSAGENT_WS
         else
             echo "Unrecognized service controller to start OMS Agent service" 1>&2
             exit 1
@@ -130,14 +166,14 @@ stop_omsagent()
     if [ $? -ne 0 ]; then
         # If systemd lives here, then we have a systemd unit file
         if pidof systemd 1> /dev/null 2> /dev/null; then
-            /bin/systemctl stop omsagent
+            /bin/systemctl stop $OMSAGENT_WS
         else
             if [ -x /usr/sbin/invoke-rc.d ]; then
-                /usr/sbin/invoke-rc.d omsagent stop
+                /usr/sbin/invoke-rc.d $OMSAGENT_WS stop
             elif [ -x /sbin/service ]; then
-                /sbin/service omsagent stop
+                /sbin/service $OMSAGENT_WS stop
             elif [ -x /bin/systemctl ]; then
-                /bin/systemctl stop omsagent
+                /bin/systemctl stop $OMSAGENT_WS
             else
                 echo "Unrecognized service controller to stop OMS Agent service" 1>&2
                 exit 1
@@ -160,14 +196,14 @@ restart_omsagent()
 
     # If systemd lives here, then we have a systemd unit file
     if pidof systemd 1> /dev/null 2> /dev/null; then
-        /bin/systemctl restart omsagent
+        /bin/systemctl restart $OMSAGENT_WS
     else
         if [ -x /usr/sbin/invoke-rc.d ]; then
-            /usr/sbin/invoke-rc.d omsagent restart
+            /usr/sbin/invoke-rc.d $OMSAGENT_WS restart
         elif [ -x /sbin/service ]; then
-            /sbin/service omsagent restart
+            /sbin/service $OMSAGENT_WS restart
         elif [ -x /bin/systemctl ]; then
-            /bin/systemctl restart omsagent
+            /bin/systemctl restart $OMSAGENT_WS
         else
             echo "Unrecognized service controller to restart OMS Agent service" 1>&2
             exit 1
@@ -207,29 +243,46 @@ find_systemd_dir()
 enable_omsagent_service()
 {
     exit_if_agent_not_onboarded
-    if [ ! -f /etc/opt/microsoft/omsagent/conf/.service_registered ] && [ -f $OMSADMIN_CONF ]; then
+    if [ ! -f $CONF_DIR/.service_registered ] && [ -f $OMSADMIN_CONF ]; then
         echo "Configuring OMS agent service ..."
+        if [ ! -f $BIN_DIR/$OMSAGENT_WS ]; then
+            ln -s $BIN_DIR/omsagent $BIN_DIR/$OMSAGENT_WS
+        fi
+
         if pidof systemd 1> /dev/null 2> /dev/null; then
             # systemd
             local systemd_dir=$(find_systemd_dir)
-            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd ${systemd_dir}/omsagent.service
+            local omsagent_service=${systemd_dir}/$OMSAGENT_WS.service
+
+            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd $omsagent_service 
+
+            sed -i s,%CONF_DIR_WS%,$CONF_DIR,1 $omsagent_service
+            sed -i s,%CERT_DIR_WS%,$CERT_DIR,1 $omsagent_service
+            sed -i s,%TMP_DIR_WS%,$TMP_DIR,1 $omsagent_service
+            sed -i s,%RUN_DIR_WS%,$RUN_DIR,1 $omsagent_service
+            sed -i s,%STATE_DIR_WS%,$STATE_DIR,1 $omsagent_service
+            sed -i s,%LOG_DIR_WS%,$LOG_DIR,1 $omsagent_service
+
             /bin/systemctl daemon-reload
-            /bin/systemctl -q enable omsagent
+            /bin/systemctl -q enable $OMSAGENT_WS
         else
-            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux /etc/init.d/omsagent
+            local omsagent_initd=/etc/init.d/$OMSAGENT_WS
+            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux $omsagent_initd
+
+            sed -i s,WORKSPACE_ID=.*,WORKSPACE_ID=$WORKSPACE_ID,1 $omsagent_initd
 
             if [ -x /usr/sbin/update-rc.d ]; then
-                update-rc.d omsagent defaults > /dev/null
+                update-rc.d $OMSAGENT_WS defaults > /dev/null
             elif [ -x /usr/lib/lsb/install_initd ]; then
-                /usr/lib/lsb/install_initd /etc/init.d/omsagent
+                /usr/lib/lsb/install_initd $omsagent_initd
             elif [ -x /sbin/chkconfig ]; then
-                chkconfig --add omsagent > /dev/null
+                /sbin/chkconfig --add $OMSAGENT_WS > /dev/null
             else
                 echo "Could not find a service controller to configure the OMS Agent Service."
                 exit 1
             fi
         fi
-        touch  /etc/opt/microsoft/omsagent/conf/.service_registered
+        touch  $CONF_DIR/.service_registered
     fi 
 }
 
@@ -241,51 +294,59 @@ disable_omsagent_service()
 
     # Registered as a systemd service?
     local systemd_dir=$(find_systemd_dir)
-    if [ -f ${systemd_dir}/omsagent.service ]; then
+    local omsagent_service=${systemd_dir}/$OMSAGENT_WS.service
+    local omsagent_initd=/etc/init.d/$OMSAGENT_WS
+    if [ -f $omsagent_service ]; then
         echo "Unconfiguring OMS agent (systemd) service ..."
-        /bin/systemctl -q disable omsagent
-        rm -f ${systemd_dir}/omsagent.service
+        /bin/systemctl -q disable $OMSAGENT_WS
+        rm -f $omsagent_service
         /bin/systemctl daemon-reload
-    elif [ -f /etc/init.d/omsagent ]; then
+    elif [ -f $omsagent_initd ]; then
         echo "Unconfiguring OMS agent service ..."
         if [ -f /usr/sbin/update-rc.d ]; then
-            /usr/sbin/update-rc.d -f omsagent remove
+            /usr/sbin/update-rc.d -f $OMSAGENT_WS remove
         elif [ -x /usr/lib/lsb/remove_initd ]; then
-            /usr/lib/lsb/remove_initd /etc/init.d/omsagent
+            /usr/lib/lsb/remove_initd $omsagent_initd
         elif [ -x /sbin/chkconfig ]; then
-            chkconfig --del omsagent > /dev/null
+            /sbin/chkconfig --del $OMSAGENT_WS > /dev/null
         else
             echo "Unrecognized Service Controller to unregister OMS Agent Service."
             exit 1
         fi
 
-        rm /etc/init.d/omsagent
+        rm $omsagent_initd
     fi
-    rm -f /etc/opt/microsoft/omsagent/conf/.service_registered
+    rm -f $CONF_DIR/.service_registered
 }
 
 case "$1" in
     functions)
+        setup_variables $2
         ;;
 
     is-running)
+        setup_variables $2
         is_omsagent_running
         exit $?
         ;;
 
     start)
+        setup_variables $2
         start_omsagent
         ;;
 
     stop)
+        setup_variables $2
         stop_omsagent
         ;;
 
     restart)
+        setup_variables $2
         restart_omsagent
         ;;
 
     reload)
+        setup_variables $2
         # TODO: Due to a bug in OMS right now, we can't reload via a signal
         restart_omsagent
         ;;
@@ -295,10 +356,12 @@ case "$1" in
         ;;
 
     enable)
+        setup_variables $2
         enable_omsagent_service
         ;;
 
     disable)
+        setup_variables $2
         disable_omsagent_service
         ;;
 

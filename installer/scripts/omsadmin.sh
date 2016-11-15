@@ -60,7 +60,7 @@ BODY_RENEW_CERT=$TMP_DIR/body_renew_cert.xml
 RESP_RENEW_CERT=$TMP_DIR/resp_renew_cert.xml
 
 AGENT_USER=omsagent
-AGENT_GROUP=omsagent
+AGENT_GROUP=omiusers
 
 # Default settings
 URL_TLD=opinsights.azure.com
@@ -443,8 +443,8 @@ onboard()
     # If a test is not in progress then register omsagent as a service and start the agent 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         # Register omsagent as a service and start the agent
-        /opt/microsoft/omsagent/bin/service_control start 
-
+        /opt/microsoft/omsagent/bin/service_control start $WORKSPACE_ID 
+    fi
         # Configure omsconfig
         if [ "$USER_ID" -eq "0" ]; then
             su - $AGENT_USER -c $METACONFIG_PY > /dev/null
