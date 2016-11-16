@@ -5,6 +5,7 @@ module OMS
 
     @@error_proc = Proc.new {|message| $log.error message }
     @@warn_proc  = Proc.new {|message| $log.warn message }
+    @@info_proc = Proc.new {|message| $log.info message }
     @@debug_proc = Proc.new {|message| $log.debug message }
 
     @@logged_hashes = Set.new
@@ -16,6 +17,10 @@ module OMS
 
       def warn_once(message, tag=nil)
         log_once(@@warn_proc, @@debug_proc, message, tag)
+      end
+
+      def info_once(message, tag=nil)
+        log_once(@@info_proc, @@debug_proc, message, tag)
       end
 
       def log_once(first_loglevel_proc, next_loglevel_proc, message, tag=nil)

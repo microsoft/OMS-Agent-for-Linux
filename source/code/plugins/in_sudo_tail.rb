@@ -4,6 +4,7 @@ require 'fluent/event'
 require 'fluent/config/error'
 require 'fluent/parser'
 require 'open3'
+require_relative 'omslog'
 
 module Fluent
   class SudoTail < Input
@@ -12,6 +13,7 @@ module Fluent
     def initialize
       super
       @command = nil
+      @paths = []
     end
 
     attr_accessor :command
@@ -58,12 +60,9 @@ module Fluent
  
       @parser = Plugin.new_parser(conf['format'])
       @parser.configure(conf)
-
-      @command = "sudo " << RUBY_DIR << TAILSCRIPT << @path <<  " -p #{@pos_file}" 
     end
 
     def start
-      #$log.info "Sudo tail command is #{@command}"
       @finished = false
       @thread = Thread.new(&method(:run_periodic))
     end
@@ -100,7 +99,28 @@ module Fluent
       $log.info "#{line}" if line.start_with?('INFO')
     end
  
+    def set_system_command
+      @paths = @path.split(',').map {|path| path.strip }
+      date = Time.now
+      paths = ""
+      @paths.each { |path|
+        path = date.strftime(path)
+        if path.include?('*')
+          Dir.glob(path).select { |p|
+            paths += p + " "
+            OMS::Log.info_once("Following tail of #{p}")
+          }
+        else
+          paths += path + " "
+          OMS::Log.info_once("Following tail of #{path}")
+        end
+      }
+      @command = "sudo " << RUBY_DIR << TAILSCRIPT << paths <<  " -p #{@pos_file}"
+    end
+
     def run_periodic
+      set_system_command
+
       if @read_from_head
         sleep @run_interval
         Open3.popen3(@command + " --readfromhead") {|writeio, readio, errio, wait_thread|
