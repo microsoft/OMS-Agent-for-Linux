@@ -32,7 +32,7 @@ if [ ! -f /opt/microsoft/omsagent/bin/service_control ]; then
     exit 1
 fi
 
-. /opt/microsoft/omsagent/bin/service_control functions
+. /opt/microsoft/omsagent/bin/service_control functions $WORKSPACE_ID
 
 if [ -f /etc/init.d/functions ]; then
     INIT_STYLE=R      # INIT_STYLE uses R/S/D for its representative platform RedHat/SuSE/Debian 

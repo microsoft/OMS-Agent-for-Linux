@@ -26,7 +26,7 @@ module Fluent
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
     config_param :cert_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.crt'
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
-    config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/proxy.conf'
+    config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf'
     config_param :api_version, :string, :default => '2016-04-01'
     config_param :compress, :bool, :default => true
     config_param :time_generated_field, :string, :default => ''

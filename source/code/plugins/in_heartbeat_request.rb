@@ -15,7 +15,7 @@ module Fluent
     config_param :omsadmin_conf_path, :string
     config_param :cert_path, :string
     config_param :key_path, :string
-    config_param :proxy_path, :string
+    config_param :proxy_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf' #optional
     config_param :os_info, :string, :default => '/etc/opt/microsoft/scx/conf/scx-release' #optional
     config_param :install_info, :string, :default => '/etc/opt/microsoft/omsagent/sysconf/installinfo.txt' #optional
 
