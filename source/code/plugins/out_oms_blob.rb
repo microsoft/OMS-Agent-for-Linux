@@ -29,7 +29,7 @@ module Fluent
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
     config_param :blob_uri_expiry, :string, :default => '00:10:00'
     config_param :url_suffix_template, :string, :default => "custom_data_type + '/00000000-0000-0000-0000-000000000002/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + suffix + '.log'"
-    config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/proxy.conf'
+    config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf'
 
     def configure(conf)
       super
