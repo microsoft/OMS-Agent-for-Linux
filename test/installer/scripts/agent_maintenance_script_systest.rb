@@ -63,9 +63,9 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
     onboarded_output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_no_match(/(e|E)rror/, onboarded_output, "Unexpected error onboarding for maintenance tests")
     # Onboarded valid data
-    @omsadmin_conf_path = "#{@omsadmin_test_dir}/omsadmin.conf"
-    @cert_path = "#{@omsadmin_test_dir}/oms.crt"
-    @key_path = "#{@omsadmin_test_dir}/oms.key"
+    @omsadmin_conf_path = "#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf"
+    @cert_path = "#{@omsadmin_test_dir_ws1}/certs/oms.crt"
+    @key_path = "#{@omsadmin_test_dir_ws1}/certs/oms.key"
     @os_info_path = "#{@omsadmin_test_dir}/scx-release"
     @install_info_path = "#{@base_dir}/installer/conf/installinfo.txt"
     @log = OMS::MockLog.new

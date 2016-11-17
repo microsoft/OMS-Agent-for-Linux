@@ -37,6 +37,7 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
     # Setup test onboarding script and folder
     @omsadmin_test_dir = `#{@prep_omsadmin} #{@base_dir} #{@ruby_test_dir}`.strip()
     assert_equal(0, $?.to_i, "Unexpected failure setting up the test")
+    @omsadmin_test_dir_ws = "#{@omsadmin_test_dir}/#{TEST_WORKSPACE_ID}"
   end
   
   def do_onboard
@@ -47,9 +48,9 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
 
   def load_configurations
     # Mock the configuration
-    conf_path = "#{@omsadmin_test_dir}/omsadmin.conf"
-    cert_path = "#{@omsadmin_test_dir}/oms.crt"
-    key_path = "#{@omsadmin_test_dir}/oms.key"
+    conf_path = "#{@omsadmin_test_dir_ws}/conf/omsadmin.conf"
+    cert_path = "#{@omsadmin_test_dir_ws}/certs/oms.crt"
+    key_path = "#{@omsadmin_test_dir_ws}/certs/oms.key"
 
     conf = %[
       omsadmin_conf_path #{conf_path}
