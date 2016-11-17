@@ -16,12 +16,12 @@
 #    reload:   Reload agent configuration
 #
 
+VAR_DIR=/var/opt/microsoft/omsagent
+ETC_DIR=/etc/opt/microsoft/omsagent
+BIN_DIR=/opt/microsoft/omsagent/bin
+
 setup_variables()
 {
-    VAR_DIR=/var/opt/microsoft/omsagent
-    ETC_DIR=/etc/opt/microsoft/omsagent
-    BIN_DIR=/opt/microsoft/omsagent/bin
-
     if [ -z "$1" ]; then
         if [ -f $ETC_DIR/conf/omsadmin.conf ]; then
             . "$ETC_DIR/conf/omsadmin.conf"
@@ -319,6 +319,15 @@ disable_omsagent_service()
     rm -f $CONF_DIR/.service_registered
 }
 
+disable_all_omsagent_services()
+{
+    for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+    do
+       setup_variables ${ws_id}
+       disable_omsagent_service
+    done
+}
+
 case "$1" in
     functions)
         setup_variables $2
@@ -365,6 +374,9 @@ case "$1" in
         disable_omsagent_service
         ;;
 
+    disableall)
+        disable_all_omsagent_services
+        ;;
     *)
         echo "Unknown parameter : $1" 1>&2
         exit 1

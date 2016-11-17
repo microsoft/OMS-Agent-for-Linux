@@ -13,6 +13,8 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     @ruby_test_dir = ENV["RUBY_TESTING_DIR"]
     @prep_omsadmin = "#{@base_dir}/test/installer/scripts/prep_omsadmin.sh"
     @omsadmin_test_dir = nil
+    @omsadmin_test_dir_ws1 = nil
+    @omsadmin_test_dir_ws2 = nil
     @omsadmin_script = nil
     @proxy_conf = nil
     prep_omsadmin
@@ -39,6 +41,9 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     @omsadmin_test_dir = `#{@prep_omsadmin} #{@base_dir} #{@ruby_test_dir}`.strip()
     assert_equal(0, $?.to_i, "Unexpected failure setting up the test")
     assert_equal(true, File.directory?(@omsadmin_test_dir), "'#{@omsadmin_test_dir}' does not exist!")
+
+    @omsadmin_test_dir_ws1 = "#{@omsadmin_test_dir}/#{TEST_WORKSPACE_ID}"
+    @omsadmin_test_dir_ws2 = "#{@omsadmin_test_dir}/#{TEST_WORKSPACE_ID_2}"
 
     @omsadmin_script = "#{@omsadmin_test_dir}/omsadmin.sh"
     assert_equal(true, File.file?(@omsadmin_script), "'#{@omsadmin_script}' does not exist!")
@@ -69,10 +74,21 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     return onboard_out
   end
 
-  def get_GUID
-    conf = File.read("#{@omsadmin_test_dir}/omsadmin.conf")
+  def get_GUID(ws_dir = @omsadmin_test_dir_ws1)
+    conf = File.read("#{ws_dir}/conf/omsadmin.conf")
     guid = conf[/AGENT_GUID=(.*)/, 1]
     return guid
   end
 
+  def remove_workspace(workspace_id, should_succeed = true)
+    remove_out = `#{@omsadmin_script} -x #{workspace_id}`
+    result = $?
+    if should_succeed
+      assert_equal(0, result.to_i, "Unexpected failure removing workspace: '#{remove_out}'")
+    else
+      assert_equal(0, result.to_i, "Unexpected failure removing workspace: '#{remove_out}'")
+      assert_match(/Workspace #{workspace_id} doesn't exist/, remove_out, "Removing workspace message is not expected  #{remove_out}")
+    end
+    return remove_out
+  end
 end
