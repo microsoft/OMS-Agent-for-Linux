@@ -1,6 +1,7 @@
 require_relative '../../../source/ext/fluentd/test/helper'
 require 'fluent/test'
 require_relative '../../../source/code/plugins/in_sudo_tail'
+require 'mocha/test_unit'
 
 class SudoTailTest < Test::Unit::TestCase
   TMP_DIR = File.dirname(__FILE__) + "/../tmp/tail#{ENV['TEST_ENV_NUMBER']}"
@@ -51,6 +52,7 @@ class SudoTailTest < Test::Unit::TestCase
 
     d = create_driver
     d.instance.command = "ruby #{TMP_DIR}/tail.rb "
+    d.instance.stubs(:set_system_command).returns(nil)
     d.run
     emits = d.emits
 
