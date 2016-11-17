@@ -29,7 +29,7 @@ CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
 CONF_OMSAGENT=$CONF_DIR/omsagent.conf
 
 # Omsagent proxy configuration
-CONF_PROXY=$CONF_DIR/proxy.conf
+CONF_PROXY=$ETC_DIR/proxy.conf
 
 # File with OS information for telemetry
 OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
@@ -77,6 +77,15 @@ usage()
     echo "Maintenance tool for OMS:"
     echo "Onboarding:"
     echo "$basename -w <workspace id> -s <shared key> [-d <top level domain>]"
+    echo
+    echo "List Workspaces:"
+    echo "$basename -l"
+    echo
+    echo "Remove Workspace:"
+    echo "$basename -x <workspace id>"
+    echo
+    echo "Remove All Workspaces:"
+    echo "$basename -X"
     echo
     echo "Define proxy settings ('-u' will prompt for password):"
     echo "$basename [-u user] -p host[:port]"
@@ -181,7 +190,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:c" opt; do
+    while getopts "h?s:w:d:vp:u:a:clx:X" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -214,6 +223,16 @@ parse_args()
         c) 
             COLLECTD=1
             echo "Setting up collectd for OMS..."
+            ;;
+        l)
+            LIST_WORKSPACES=1
+            ;;
+        x)
+            REMOVE=1
+            WORKSPACE_ID=$OPTARG
+            ;;
+        X)
+            REMOVE_ALL=1
             ;;
         esac
     done
@@ -301,11 +320,7 @@ onboard()
         clean_exit 1
     fi
 
-
-    # If a test is not in progress then create workspace-specific directories
-    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
-        create_workspace_directories $WORKSPACE_ID 
-    fi
+    create_workspace_directories $WORKSPACE_ID
 
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
         # Keep the same agent GUID by loading it from the previous conf
@@ -412,13 +427,12 @@ onboard()
 
     save_config
 
+    copy_omsagent_conf
+
+    update_symlinks
+
     # If a test is not in progress then register omsagent as a service and start the agent 
-    # If a test is in progress then omsagent conf/symlinks do not need to be updated
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
-        copy_omsagent_conf
-
-        update_symlinks
-
         /opt/microsoft/omsagent/bin/service_control start $WORKSPACE_ID 
     fi
 
@@ -458,13 +472,131 @@ collectd()
     echo "...Done"
 }
 
-create_workspace_directories()
+remove_workspace()
+{
+    setup_workspace_variables $WORKSPACE_ID
+
+    if [ -d "$CONF_DIR" ]; then
+        log_info "Disable workspace: $WORKSPACE_ID"
+
+        /opt/microsoft/omsagent/bin/service_control disable $WORKSPACE_ID
+    else
+        log_error "Workspace $WORKSPACE_ID doesn't exist"
+    fi
+
+    log_info "Cleanup the folders"
+
+    rm -rf "$VAR_DIR_WS" "$ETC_DIR_WS"
+
+    reset_default_workspace
+}
+
+reset_default_workspace()
+{
+    if [ -h $DF_CONF_DIR -a ! -d $DF_CONF_DIR ]; then
+        # default conf folder is removed
+        local ws_id=`ls -1t $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' | head -n1`
+
+        if [ "${ws_id}" != "" ]; then
+            # find 1 workspace
+            setup_workspace_variables ${ws_id}
+
+            update_symlinks
+        else
+            # no workspace, remove the default symlinks
+            remove_symlinks
+        fi
+    fi
+}
+
+remove_symlinks()
+{
+    rm "$DF_TMP_DIR" "$DF_RUN_DIR" "$DF_STATE_DIR" "$DF_LOG_DIR" "$DF_CERT_DIR" "$DF_CONF_DIR" > /dev/null 2>&1 
+}
+
+remove_all()
+{
+    # remove the symlinks first so that the remove_workspace will not reset them
+    remove_symlinks
+
+    for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+    do
+        WORKSPACE_ID=${ws_id}
+        remove_workspace
+    done
+}
+
+show_workspace_status()
+{
+    local ws_conf_dir=$1
+    local ws_id=$2
+    local is_primary=$3
+    local status='Unknown'
+
+    if [ -f ${ws_conf_dir}/.service_registered ]; then
+        status='Success(OMSAgent Registered)'
+    elif [ -f ${ws_conf_dir}/omsadmin.conf ]; then
+        status='Failure(OMSAgent Not Registered)'
+    else
+        status='Failure(Agent Not Onboarded)'
+    fi
+
+    if [ ${is_primary} -eq 1 ]; then
+        echo "Primary Workspace: ${ws_id}    ${status}"
+    else
+        echo "Workspace: ${ws_id}    ${status}"
+    fi
+}
+
+list_workspaces()
+{
+    local found_ws=0
+    local ws_conf_dir=$ETC_DIR/conf
+
+    if [ -h ${ws_conf_dir} ]; then
+        # symbolic link - multiple workspace folder structure
+        local primary_ws_id=''
+        if [ -f ${ws_conf_dir}/omsadmin.conf ]; then
+            primary_ws_id=`grep WORKSPACE_ID ${ws_conf_dir}/omsadmin.conf | cut -d= -f2`
+        fi
+
+        if [ "${primary_ws_id}" != "" ]; then
+            found_ws=1
+            show_workspace_status ${ws_conf_dir} ${primary_ws_id} 1
+        fi
+
+        for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+        do
+            if [ "${primary_ws_id}" != "${ws_id}" ]; then
+                found_ws=1
+                show_workspace_status $ETC_DIR/${ws_id}/conf ${ws_id} 0
+            fi
+        done
+    elif [ -d ${ws_conf_dir} ]; then
+        # directory - single workspace folder structure
+        local ws_id=''
+
+        if [ -f ${ws_conf_dir}/omsadmin.conf ]; then
+            ws_id=`grep WORKSPACE_ID ${ws_conf_dir}/omsadmin.conf | cut -d= -f2`
+        fi
+
+        if [ "${ws_id}" != "" ]; then
+            found_ws=1
+            show_workspace_status ${ws_conf_dir} ${ws_id} 1
+        fi
+    fi
+
+    if [ $found_ws -eq 0 ]; then
+        echo "No Workspace"
+    fi
+
+    return 1
+}
+
+setup_workspace_variables()
 {
     VAR_DIR_WS=$VAR_DIR/$1
     ETC_DIR_WS=$ETC_DIR/$1
-
-    make_dir $VAR_DIR_WS
-    make_dir $ETC_DIR_WS
 
     TMP_DIR=$VAR_DIR_WS/tmp
     STATE_DIR=$VAR_DIR_WS/state
@@ -472,6 +604,14 @@ create_workspace_directories()
     LOG_DIR=$VAR_DIR_WS/log
     CERT_DIR=$ETC_DIR_WS/certs
     CONF_DIR=$ETC_DIR_WS/conf
+}
+
+create_workspace_directories()
+{
+    setup_workspace_variables $1
+
+    make_dir $VAR_DIR_WS
+    make_dir $ETC_DIR_WS
 
     make_dir $TMP_DIR
     make_dir $STATE_DIR
@@ -485,9 +625,6 @@ create_workspace_directories()
 
     # Omsagent daemon configuration
     CONF_OMSAGENT=$CONF_DIR/omsagent.conf
-
-    # Omsagent proxy configuration
-    CONF_PROXY=$CONF_DIR/proxy.conf
 
     # Certs
     FILE_KEY=$CERT_DIR/oms.key
@@ -586,8 +723,20 @@ main()
         fi
     fi
 
+    if [ "$REMOVE" = "1" ]; then
+        remove_workspace || clean_exit 1
+    fi
+
+    if [ "$REMOVE_ALL" = "1" ]; then
+        remove_all || clean_exit 1
+    fi
+
     if [ "$ONBOARDING" = "1" ]; then
         onboard || clean_exit 1
+    fi
+
+    if [ "$LIST_WORKSPACES" = "1" ]; then
+        list_workspaces || clean_exit 1
     fi
 
     if [ "$COLLECTD" = "1" ]; then
