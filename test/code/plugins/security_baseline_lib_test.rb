@@ -3,9 +3,6 @@ require_relative 'omstestlib'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/security_baseline_lib'
 
 class BaselineLibTest < Test::Unit::TestCase
-    def setup
-        OMS::SecurityBaseline.log = OMS::MockLog.new
-    end    
     
     def test_baseline_with_correct_input
 
@@ -14,7 +11,8 @@ class BaselineLibTest < Test::Unit::TestCase
 
         baseline_results_json["assessment_id"] = "3af00be8-44b9-4925-a64a-d5fd3241ddd3"
         
-        security_baseline_blob, security_baseline_summary_blob = OMS::SecurityBaseline.transform_and_wrap(baseline_results_json, "test_host", "")        
+        security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)
+        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
         
         assert_equal(security_baseline_blob["DataType"], "SECURITY_BASELINE_BLOB", "Incorrect 'DataType' value") 
         assert_equal(security_baseline_blob["IPName"], "Security", "Incorrect 'IPName' value")
@@ -68,7 +66,8 @@ class BaselineLibTest < Test::Unit::TestCase
     def test_baseline_with_empty_input
         baseline_results_json = nil
       
-        security_baseline_blob, security_baseline_summary_blob = OMS::SecurityBaseline.transform_and_wrap(baseline_results_json, "test_host", "")        
+        security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)
+        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
         
         assert_equal(security_baseline_blob, nil, "Incorrect error case support") 
         assert_equal(security_baseline_summary_blob, nil, "Incorrect error case support") 
@@ -77,8 +76,9 @@ class BaselineLibTest < Test::Unit::TestCase
     def test_baseline_with_bad_input
         baseline_results_str = '{ "baseline_id": "OMS.Linux.1" }'    
         baseline_results_json = JSON.parse(baseline_results_str)
-      
-        security_baseline_blob, security_baseline_summary_blob = OMS::SecurityBaseline.transform_and_wrap(baseline_results_json, "test_host", "")        
+
+        security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)        
+        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
         
         assert_equal(security_baseline_blob, nil, "Incorrect error case support") 
         assert_equal(security_baseline_summary_blob, nil, "Incorrect error case support") 
