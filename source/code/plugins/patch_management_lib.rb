@@ -38,7 +38,7 @@ class LinuxUpdates
                     line.split(/\r?\n/).reject{ |l|  # reject all those line
                         !l.include? "=" }.map! {|s|    # which do not
                             s.split("=")}.map! {|key, value| # have "="; split
-                                ret[key] = value     # by "=" and add to ret.
+                                @@os_details[key] = value     # by "=" and add to ret.
                         }
                 end
             end
