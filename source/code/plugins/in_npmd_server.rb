@@ -64,7 +64,7 @@ module Fluent
         RETRY_START_WAIT_TIME_SECS      = 5   # 5 seconds
         RETRY_START_ATTEMPTS_PER_BATCH  = 5
 
-        CMD_ENUMERATE_AGENT_PROCESSES = "ps aux | grep npmd"
+        CMD_ENUMERATE_AGENT_PROCESSES = "ps aux | grep "
 
         def start
             @binary_presence_test_string = "npmd_agent" if @binary_presence_test_string.nil?
@@ -86,6 +86,7 @@ module Fluent
         def shutdown
             Logger::logInfo "Received shutdown notification"
             stop_npmd()
+            kill_all_agent_instances()
             unless @npmdClientSock.nil?
                 @npmdClientSock.close()
                 @npmdClientSock = nil
@@ -148,13 +149,28 @@ module Fluent
         end
 
         def kill_all_agent_instances
-            _resultStr = `#{CMD_ENUMERATE_AGENT_PROCESSES}`
+            _cmd = "#{CMD_ENUMERATE_AGENT_PROCESSES}".chomp + " " + @binary_presence_test_string.chomp
+            _resultStr = `#{_cmd}`
             return if _resultStr.nil?
             _lines = _resultStr.split("\n")
             _lines.each do |line|
                 if line.include?@binary_presence_test_string
+                    _userName = line.split()[0]
                     _staleId = line.split()[1]
-                    Process.kill(STOP_SIGNAL, _staleId.to_i)
+                    begin
+                        _processOwnerId = Process::UID.from_name(_userName)
+                        if (Process.uid == _processOwnerId)
+                            Process.kill(STOP_SIGNAL, _staleId.to_i)
+                        end
+                    rescue Errno::ESRCH
+                        # Process already stopped
+                    rescue Errno::EPERM
+                        # Trying to kill someone else's process?
+                        package_and_send_error_log("No perm to kill process with info:#{line}: our uid:#{Process.uid}")
+                    rescue ArgumentError
+                        # Could not get info on username
+                        package_and_send_error_log("Could not process username from info:#{line}: our uid:#{Process.uid}")
+                    end
                 end
             end
         end

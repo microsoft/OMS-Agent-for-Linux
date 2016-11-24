@@ -5,7 +5,7 @@ class NPMDTest
     NPMD_CONN_CONFIRM = "NPMDAgent Connected!"
     FAKE_PATH_DATA = '{"DataItems":[{"SubType":"NetworkPath"}]}'
     FAKE_AGENT_DATA = '{"DataItems":[{"SubType":"NetworkAgent"}]}'
-    TEST_ENDPOINT = File.dirname(__FILE__) + "/test_agent.sock"
+    TEST_ENDPOINT = "tmp_npmd_test/test_agent.sock"
 
     def initialize
         @clientSock = nil

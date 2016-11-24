@@ -15,7 +15,7 @@ end
 
 class NPMDServerTest < Test::Unit::TestCase
 
-    TMP_DIR = File.dirname(__FILE__) + "/../tmp_test_npmd_plugin"
+    TMP_DIR = "tmp_npmd_test"
     FAKE_BINARY_BASENAME = "fake_npmd_binary.rb"
     FAKE_BINARY_FILENAME = File.dirname(__FILE__) + "/#{FAKE_BINARY_BASENAME}"
     RUBY_BINARY_LOCATION = "ruby"
@@ -26,7 +26,7 @@ class NPMDServerTest < Test::Unit::TestCase
     FAKE_UNIX_ENDPOINT = "#{TMP_DIR}/test_agent.sock"
     TEST_CONTROL_DATA_FILE = "#{TMP_DIR}/test_agent_config.xml"
 
-    CMD_ENUMERATE_BINARY_INSTANCES = "ps aux | grep npmd"
+    CMD_ENUMERATE_BINARY_INSTANCES = "ps aux | grep fake_npmd"
 
     CMD_START_NPMD  = "StartNPMD"
     CMD_STOP_NPMD   = "StopNPMD"
@@ -70,7 +70,7 @@ class NPMDServerTest < Test::Unit::TestCase
 
     def create_driver(conf=CONFIG)
         _d = Fluent::Test::InputTestDriver.new(Fluent::NPM).configure(conf)
-        _d.instance.binary_presence_test_string = FAKE_BINARY_BASENAME
+        _d.instance.binary_presence_test_string = "fake_npmd"
         _d.instance.binary_invocation_cmd = FAKE_BINARY_INVOCATION
         _d.instance.num_path_data = 0
         _d.instance.num_agent_data = 0
@@ -88,11 +88,19 @@ class NPMDServerTest < Test::Unit::TestCase
     end
 
     def get_num_test_binary_instances
-        _resultStr = `#{CMD_ENUMERATE_BINARY_INSTANCES}`
+        _resultStr = `#{CMD_ENUMERATE_BINARY_INSTANCES.chomp}`
         _lines = _resultStr.split("\n")
         _count = 0
         _lines.each do |line|
-            _count += 1 if line.include?FAKE_BINARY_BASENAME
+            _userName = line.split()[0]
+            if line.include?FAKE_BINARY_BASENAME
+                begin
+                    _count += 1 if (Process.uid == Process::UID.from_name(_userName))
+                rescue ArgumentError
+                    # do not ignore case when username is not mapping to UID
+                    raise "Got Argumenterror when looking for username:#{_userName} in line #{line}"
+                end
+            end
         end
         _count
     end
@@ -536,13 +544,13 @@ class NPMDServerTest < Test::Unit::TestCase
     # 1. Copy the binary file by appending "_x32" to name
     # 2. Store the modification time of copy as mtime_x32_1
     # 3. Delete the binary file
-    # 4. Run the driver
+    # 4. Run the driver after a wait
     # 5. Assert that copy with "_x32" ending does not exist
     # 6. Assert that binary file now exists
     # 7. Assert that modificiation time of binary file is equal to mtime_x32_1
     # 8. Copy the binary file by appending "_x32" to name again
     # 9. Store the modification time of binary file as mtime_bin_1
-    # 10.Run the driver
+    # 10.Run the driver after a wait
     # 11.Assert that copy with "_x32" ending does not exist
     # 12.Assert that the binary file exists
     # 13.Assert that modification time of binary file is newer than mtime_bin_1
@@ -558,6 +566,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been deleted")
 
         # Step 4
+        sleep(2)
         d = create_driver
         d.run
 
@@ -569,7 +578,7 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 7
         mtime_bin = File.mtime(FAKE_BINARY_LOCATION)
-        assert(mtime_bin == mtime_x32_1, "The new binary should have a time of modification that is newer or higher")
+        assert(mtime_bin == mtime_x32_1, "The new binary should have a time of modification that is equal to x32 one")
 
         # Step 8
         FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
@@ -578,6 +587,7 @@ class NPMDServerTest < Test::Unit::TestCase
         mtime_bin_1 = File.mtime(FAKE_BINARY_LOCATION)
 
         # Step 10
+        sleep(2)
         d.run
 
         # Step 11
@@ -596,13 +606,13 @@ class NPMDServerTest < Test::Unit::TestCase
     # 1. Copy the binary file by appending "_x64" to name
     # 2. Store the modification time of copy as mtime_x64_1
     # 3. Delete the binary file
-    # 4. Run the driver
+    # 4. Run the driver after a wait
     # 5. Assert that copy with "_x64" ending does not exist
     # 6. Assert that binary file now exists
     # 7. Assert that modificiation time of binary file is equal to mtime_x64_1
     # 8. Copy the binary file by appending "_x64" to name again
     # 9. Store the modification time of binary file as mtime_bin_1
-    # 10.Run the driver
+    # 10.Run the driver after a wait
     # 11.Assert that copy with "_x64" ending does not exist
     # 12.Assert that the binary file exists
     # 13.Assert that modification time of binary file is newer than mtime_bin_1
@@ -618,6 +628,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been deleted")
 
         # Step 4
+        sleep(2)
         d = create_driver
         d.run
 
@@ -629,7 +640,7 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 7
         mtime_bin = File.mtime(FAKE_BINARY_LOCATION)
-        assert(mtime_bin == mtime_x64_1, "The new binary should have a time of modification that is newer or higher")
+        assert(mtime_bin == mtime_x64_1, "The new binary should have a time of modification that is equal to x64 one")
 
         # Step 8
         FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
@@ -638,6 +649,7 @@ class NPMDServerTest < Test::Unit::TestCase
         mtime_bin_1 = File.mtime(FAKE_BINARY_LOCATION)
 
         # Step 10
+        sleep(2)
         d.run
 
         # Step 11
