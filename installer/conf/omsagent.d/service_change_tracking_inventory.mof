@@ -2,15 +2,17 @@
 @TargetNode='Localhost'
 */
 
-instance of MSFT_nxPackageResource
+instance of MSFT_nxServiceResource
 {
                 Name = "*";
-                ResourceId = "[MSFT_nxPackageResource]Inventory";
+                Controller = "*";
+                ResourceId = "[MSFT_nxServiceResource]Inventory";
                 ModuleName = "PSDesiredStateConfiguration";
                 ModuleVersion = "1.0";
 
 
 };
+
 
 instance of OMI_ConfigurationDocument
 {

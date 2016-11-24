@@ -97,7 +97,7 @@ class ChangeTracking
         instanceXML.attributes['CLASSNAME'] == 'MSFT_nxFileInventoryResource'
     end
 
-    def self.transform_and_wrap(inventoryXMLstr, host, time, force_send_run_interval = 0)
+    def self.transform_and_wrap(inventoryXMLstr, host, time, tag, force_send_run_interval = 0)
 
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
@@ -129,40 +129,61 @@ class ChangeTracking
         packages = removeDuplicateCollectionNames(packages)
         services = removeDuplicateCollectionNames(services)
         fileInventories = removeDuplicateCollectionNames(fileInventories)
-
-        if (packages.size > 0 or services.size > 0 or fileInventories.size > 0)
-            timestamp = OMS::Common.format_time(time)
-            wrapper = {
-              "DataType"=>"CONFIG_CHANGE_BLOB",
-              "IPName"=>"changetracking",
-              "DataItems"=>[
-                {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
-                    "ConfigChangeType"=> "Software.Packages",
-                    "Collections"=> packages
-                },
-                {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
-                    "ConfigChangeType"=> "Daemons",
-                    "Collections"=> services
-                },
-                {
-                    "Timestamp" => timestamp,
-                    "Computer" => host,
-                    "ConfigChangeType"=> "Files",
-                    "Collections"=> fileInventories
-                }
-              ]
-            }
-            @@log.debug "ChangeTracking : Packages x #{packages.size}, Services x #{services.size}, Files x #{fileInventories.size}"
-            return wrapper
-        else
-            # no data items, send a empty array that tells ODS
-            # output plugin to not the data
+        case tag
+        when "oms.changetracking.package"
+                if (packages.size > 0)
+                    timestamp = OMS::Common.format_time(time)
+                    wrapper = {
+                      "DataType"=>"CONFIG_CHANGE_BLOB",
+                      "IPName"=>"changetracking",
+                      "DataItems"=>[
+                        {
+                            "Timestamp" => timestamp,
+                            "Computer" => host,
+                            "ConfigChangeType"=> "Software.Packages",
+                            "Collections"=> packages
+                        }
+                      ]
+                    }
+                end
+        when "oms.changetracking.service"
+                if (services.size > 0)
+                    timestamp = OMS::Common.format_time(time)
+                    wrapper = {
+                      "DataType"=>"CONFIG_CHANGE_BLOB",
+                      "IPName"=>"changetracking",
+                      "DataItems"=>[
+                        {
+                            "Timestamp" => timestamp,
+                            "Computer" => host,
+                            "ConfigChangeType"=> "Daemons",
+                            "Collections"=> services
+                        }
+                      ]
+                    }
+                end
+        when "oms.changetracking.file"
+                if (fileInventories.size > 0)
+                    timestamp = OMS::Common.format_time(time)
+                    wrapper = {
+                      "DataType"=>"CONFIG_CHANGE_BLOB",
+                      "IPName"=>"changetracking",
+                      "DataItems"=>[
+                        {
+                            "Timestamp" => timestamp,
+                            "Computer" => host,
+                            "ConfigChangeType"=> "Files",
+                            "Collections"=> fileInventories
+                        }
+                      ]
+                    }
+               end
+        else 
+            @@log.debug "ChangeTracking : Error no Tag found"
             return {}
         end
+        @@log.debug "ChangeTracking : Packages x #{packages.size}, Services x #{services.size}, Files x #{fileInventories.size}"
+        return wrapper
     end
 
 end

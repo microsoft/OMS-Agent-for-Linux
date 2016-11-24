@@ -220,13 +220,29 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal(expectedHash, instanceHash)
   end
 
-  def test_transform_and_wrap
-    expectedHash = {"DataItems"=>
-       [{"Collections"=>[],
+  def test_transform_and_wrap_Package
+    expectedHash={"DataItems"=>
+       [{"Collections"=>
+         [{"Architecture"=>"x86_64",
+           "CollectionName"=>"rsyslog",
+           "CurrentVersion"=>"7.4.7",
+           "Name"=>"rsyslog",
+           "Publisher"=>"CentOS BuildSystem <http://bugs.centos.org>",
+           "Size"=>"2033615",
+           "Timestamp"=>"2015-10-19T16:13:03.000Z"}],
          "Computer"=>"HostName",
          "ConfigChangeType"=>"Software.Packages",
-         "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-        {"Collections"=>
+         "Timestamp"=>"2016-03-15T19:02:38.577Z"}],
+       "DataType"=>"CONFIG_CHANGE_BLOB",
+       "IPName"=>"changetracking"}
+    expectedTime = Time.utc(2016,3,15,19,2,38.5776)
+    wrappedHash = ChangeTracking::transform_and_wrap(@package_xml_str, "HostName", expectedTime, "oms.changetracking.package")
+    assert_equal(expectedHash, wrappedHash)
+  end
+
+  def test_transform_and_wrap_Service
+    expectedHash = {"DataItems"=>
+       [{"Collections"=>
           [{"Architecture"=>"x86_64",
            "Arguments"=>"",
            "CollectionName"=>"omsagent",
@@ -245,29 +261,17 @@ class ChangeTrackingTest < Test::Unit::TestCase
            "Version"=>"1.1.0"}],
          "Computer"=>"HostName",
          "ConfigChangeType"=>"Daemons",
-         "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-        {"Collections"=>[],
-         "Computer"=>"HostName",
-         "ConfigChangeType"=>"Files",
          "Timestamp"=>"2016-03-15T19:02:38.577Z"}],
        "DataType"=>"CONFIG_CHANGE_BLOB",
        "IPName"=>"changetracking"}
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = ChangeTracking::transform_and_wrap(@service_xml_str, "HostName", expectedTime)
+    wrappedHash = ChangeTracking::transform_and_wrap(@service_xml_str, "HostName", expectedTime, "oms.changetracking.service")
     assert_equal(expectedHash, wrappedHash)
   end
 
   def test_transform_and_wrap_file_inventory
     expectedHash = {"DataItems"=>
-    [{"Collections"=>[],
-      "Computer"=>"HostName",
-      "ConfigChangeType"=>"Software.Packages",
-      "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-     {"Collections"=>[],
-      "Computer"=>"HostName",
-      "ConfigChangeType"=>"Daemons",
-      "Timestamp"=>"2016-03-15T19:02:38.577Z"},
-     {"Collections"=>
+    [{"Collections"=>
        [{"CollectionName"=>"/etc/yum.conf",
          "Contents"=>"",
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
@@ -284,21 +288,48 @@ class ChangeTrackingTest < Test::Unit::TestCase
     "IPName"=>"changetracking"}
 
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = ChangeTracking::transform_and_wrap(@fileInventory_xml_str, "HostName", expectedTime)
+    wrappedHash = ChangeTracking::transform_and_wrap(@fileInventory_xml_str,  "HostName", expectedTime, "oms.changetracking.file")
     assert_equal(expectedHash, wrappedHash, "#{wrappedHash}")
   end
 
-  def test_performance
+  def test_performance_packagechangetracking
     inventoryXMLstr = File.read(@inventoryPath)
 
     start = Time.now
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now)
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, "oms.changetracking.package")
     finish = Time.now
     time_spent = finish - start
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(1371, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of package instances.")
-    assert_equal(209, wrappedHash["DataItems"][1]["Collections"].size, "Got the wrong number of service instances.")
-    assert_equal(1, wrappedHash["DataItems"][2]["Collections"].size, "Got the wrong number of file inventory instances")
+    if time_spent > 1.0
+      warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete.")
+    end
+  end
+
+  def test_performance_servicechangetracking
+    inventoryXMLstr = File.read(@inventoryPath)
+
+    start = Time.now
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, "oms.changetracking.service")
+    finish = Time.now
+    time_spent = finish - start
+    # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
+    assert_equal(209, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of service instances.")
+    if time_spent > 1.0
+      warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete.")
+    end
+  end
+
+
+  def test_performance_filechangetracking
+    inventoryXMLstr = File.read(@inventoryPath)
+
+    start = Time.now
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, "oms.changetracking.file")
+    finish = Time.now
+    time_spent = finish - start
+    # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
+    assert_equal(1, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
     if time_spent > 1.0
       warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete.")
     end
@@ -307,8 +338,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
   def test_force_send_true
     inventoryXMLstr = File.read(@inventoryPath)
     t = Time.now
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, 1)
-    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, 1)
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t, "oms.changetracking.package", 1)
+    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", t,"oms.changetracking.package", 1)
     assert_equal(wrappedHash, wrappedHash2)
     assert_not_equal({}, wrappedHash2)
   end
@@ -316,8 +347,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
   def test_force_send_false
     # If we don't force to send up the inventory data and it doesn't change, discard it.
     inventoryXMLstr = File.read(@inventoryPath)
-    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 0)
-    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 0)
+    wrappedHash = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, "oms.changetracking.package", 0)
+    wrappedHash2 = ChangeTracking::transform_and_wrap(inventoryXMLstr, "HostName", Time.now, "oms.changetracking.package", 0)
     assert_not_equal({}, wrappedHash)
     assert_equal({}, wrappedHash2)
   end
