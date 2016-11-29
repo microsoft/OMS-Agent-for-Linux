@@ -142,7 +142,7 @@ module OMS
 
       reset if need_reset
 
-      res = { 
+      { 
         'timers' => aggregate_timers(timers),
         'counters' => aggregate_counters(counters),
         'sets' => aggregate_sets(sets),
