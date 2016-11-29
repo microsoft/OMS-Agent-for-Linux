@@ -36,7 +36,7 @@ module OMS
             }
 
             asm_baseline_results.each do |asm_baseline_result|
-                if asm_baseline_result["result"] == "MISS"
+                if asm_baseline_result["result"] == "MISS" || asm_baseline_result["result"] == "SKIP"
                     next
                 end
                 
@@ -63,7 +63,7 @@ module OMS
     
             asm_baseline_results.each do |asm_baseline_result|
 
-                if asm_baseline_result["result"] == "MISS"
+                if asm_baseline_result["result"] == "MISS" || asm_baseline_result["result"] == "SKIP"
                     next 
                 end
                 
@@ -75,10 +75,10 @@ module OMS
                 all_failed_rules += 1
 
                 case asm_baseline_result["severity"]
-                when "Critical"
+                when "Critical", "Important"
                     critical_failed_rules += 1
-                when "Warning", "Important"
-                    warning_failed_rules += 1             
+                when "Warning"
+                    warning_failed_rules += 1
                 else
                     informational_failed_rules += 1
                 end                   
@@ -113,7 +113,7 @@ module OMS
                 "TimeAnalyzed" => scan_time,
                 "Computer" => host,
                 "CceId"=> asm_baseline_result["cceid"],
-                "Severity" => asm_baseline_result["severity"],
+                "Severity" => asm_baseline_result["severity"] == "Important" ? "Critical" : asm_baseline_result["severity"],
                 "Name" => asm_baseline_result["description"],
                 "AnalyzeResult" => asm_baseline_result["result"] == "PASS" ? "Passed" : "Failed",
                 "AssessmentId" => assessment_id,

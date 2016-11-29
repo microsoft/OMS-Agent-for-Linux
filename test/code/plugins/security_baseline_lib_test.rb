@@ -14,51 +14,51 @@ class BaselineLibTest < Test::Unit::TestCase
         security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)
         security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
         
-        assert_equal(security_baseline_blob["DataType"], "SECURITY_BASELINE_BLOB", "Incorrect 'DataType' value") 
-        assert_equal(security_baseline_blob["IPName"], "Security", "Incorrect 'IPName' value")
+        assert_equal("SECURITY_BASELINE_BLOB", security_baseline_blob["DataType"], "Incorrect 'DataType' value") 
+        assert_equal("Security", security_baseline_blob["IPName"], "Incorrect 'IPName' value")
         
         baseline_item_0 = security_baseline_blob["DataItems"][0]
-        assert_equal(baseline_item_0["TimeAnalyzed"], "2016-09-21T10:19:00.66205592Z", "Incorrect 'TimeAnalyzed' value")
-        assert_equal(baseline_item_0["Computer"], "test_host", "Incorrect 'Computer' value")
-        assert_equal(baseline_item_0["CceId"], "CCE-3522-0", "Incorrect 'CceId' value")
-        assert_equal(baseline_item_0["Severity"], "Important", "Incorrect 'Severity' value")
-        assert_equal(baseline_item_0["Name"], "The nodev option should be enabled for all removable media.", "Incorrect 'Name' value")
-        assert_equal(baseline_item_0["AnalyzeResult"], "Passed", "Incorrect 'AnalyzeResult' value")
-        assert_equal(baseline_item_0["RuleId"], "5c7537f2-b90b-44a4-89c9-4fca5fd79ef7", "Incorrect 'RuleId' value")
-        assert_not_equal(baseline_item_0["AssessmentId"], "3af00be8-44b9-4925-a64a-d5fd3241ddd3", "Incorrect 'AssessmentId' value")
-        assert_equal(baseline_item_0["OSName"], "Linux", "Incorrect 'OSName' value")
-        assert_equal(baseline_item_0["RuleType"], "Command", "Incorrect 'RuleType' value")
+        assert_equal("2016-09-21T10:19:00.66205592Z", baseline_item_0["TimeAnalyzed"], "Incorrect 'TimeAnalyzed' value")
+        assert_equal("test_host", baseline_item_0["Computer"], "Incorrect 'Computer' value")
+        assert_equal("CCE-3522-0", baseline_item_0["CceId"], "Incorrect 'CceId' value")
+        assert_equal("Critical", baseline_item_0["Severity"], "Incorrect 'Severity' value")
+        assert_equal("The nodev option should be enabled for all removable media.", baseline_item_0["Name"], "Incorrect 'Name' value")
+        assert_equal("Passed", baseline_item_0["AnalyzeResult"], "Incorrect 'AnalyzeResult' value")
+        assert_equal("5c7537f2-b90b-44a4-89c9-4fca5fd79ef7", baseline_item_0["RuleId"], "Incorrect 'RuleId' value")
+        assert_not_equal("3af00be8-44b9-4925-a64a-d5fd3241ddd3", baseline_item_0["AssessmentId"], "Incorrect 'AssessmentId' value")
+        assert_equal("Linux", baseline_item_0["OSName"], "Incorrect 'OSName' value")
+        assert_equal("Command", baseline_item_0["RuleType"], "Incorrect 'RuleType' value")
         
         baseline_item_1 = security_baseline_blob["DataItems"][1]
-        assert_equal(baseline_item_1["TimeAnalyzed"], "2016-09-21T10:19:00.66205592Z", "Incorrect 'TimeAnalyzed' value")
-        assert_equal(baseline_item_1["Computer"], "test_host", "Incorrect 'Computer' value")
-        assert_equal(baseline_item_1["CceId"], "CCE-4275-4", "Incorrect 'CceId' value")
-        assert_equal(baseline_item_1["Severity"], "Warning", "Incorrect 'Severity' value")
-        assert_equal(baseline_item_1["Name"], "The noexec option should be enabled for all removable media.", "Incorrect 'Name' value")
-        assert_equal(baseline_item_1["AnalyzeResult"], "Failed", "Incorrect 'AnalyzeResult' value")
-        assert_equal(baseline_item_1["RuleId"], "7976cc38-fddb-4913-9295-4fcac2e641c3", "Incorrect 'RuleId' value")        
-        assert_not_equal(baseline_item_1["AssessmentId"], "3af00be8-44b9-4925-a64a-d5fd3241ddd3", "Incorrect 'AssessmentId' value")
-        assert_equal(baseline_item_1["OSName"], "Linux", "Incorrect 'OSName' value")        
-        assert_equal(baseline_item_1["RuleType"], "Command", "Incorrect 'RuleType' value")
+        assert_equal("2016-09-21T10:19:00.66205592Z", baseline_item_1["TimeAnalyzed"], "Incorrect 'TimeAnalyzed' value")
+        assert_equal("test_host", baseline_item_1["Computer"], "Incorrect 'Computer' value")
+        assert_equal("CCE-4275-4", baseline_item_1["CceId"], "Incorrect 'CceId' value")
+        assert_equal("Warning", baseline_item_1["Severity"], "Incorrect 'Severity' value")
+        assert_equal("The noexec option should be enabled for all removable media.", baseline_item_1["Name"], "Incorrect 'Name' value")
+        assert_equal("Failed", baseline_item_1["AnalyzeResult"], "Incorrect 'AnalyzeResult' value")
+        assert_equal("7976cc38-fddb-4913-9295-4fcac2e641c3", baseline_item_1["RuleId"], "Incorrect 'RuleId' value")        
+        assert_not_equal("3af00be8-44b9-4925-a64a-d5fd3241ddd3", baseline_item_1["AssessmentId"], "Incorrect 'AssessmentId' value")
+        assert_equal("Linux", baseline_item_1["OSName"], "Incorrect 'OSName' value")        
+        assert_equal("Command", baseline_item_1["RuleType"], "Incorrect 'RuleType' value")
 
         # Skip rule with MISS result
         baseline_item_2 = security_baseline_blob["DataItems"][2]
-        assert_equal(baseline_item_2["TimeAnalyzed"], "2016-09-21T10:19:00.66205592Z", "Incorrect 'TimeAnalyzed' value")
-        assert_equal(baseline_item_2["Computer"], "test_host", "Incorrect 'Computer' value")
-        assert_equal(baseline_item_2["CceId"], "CCE-4368-7", "Incorrect 'CceId' value")
+        assert_equal("2016-09-21T10:19:00.66205592Z", baseline_item_2["TimeAnalyzed"], "Incorrect 'TimeAnalyzed' value")
+        assert_equal("test_host", baseline_item_2["Computer"], "Incorrect 'Computer' value")
+        assert_equal("CCE-4368-7", baseline_item_2["CceId"], "Incorrect 'CceId' value")
 
-        assert_equal(security_baseline_summary_blob["DataType"], "SECURITY_BASELINE_SUMMARY_BLOB", "Incorrect 'DataType' value") 
-        assert_equal(security_baseline_summary_blob["IPName"], "Security", "Incorrect 'IPName' value")
+        assert_equal("SECURITY_BASELINE_SUMMARY_BLOB", security_baseline_summary_blob["DataType"], "Incorrect 'DataType' value") 
+        assert_equal("Security", security_baseline_summary_blob["IPName"], "Incorrect 'IPName' value")
         
         baseline_summary_item = security_baseline_summary_blob["DataItems"][0]
-        assert_equal(baseline_summary_item["Computer"], "test_host", "Incorrect 'Computer' value")
-        assert_equal(baseline_summary_item["TotalAssessedRules"], 5, "Incorrect 'TotalAssessedRules' value")
-        assert_equal(baseline_summary_item["CriticalFailedRules"], 1, "Incorrect 'CriticalFailedRules' value")
-        assert_equal(baseline_summary_item["WarningFailedRules"], 2, "Incorrect 'WarningFailedRules' value")
-        assert_equal(baseline_summary_item["InformationalFailedRules"], 1, "Incorrect 'InformationalFailedRules' value")
-        assert_equal(baseline_summary_item["PercentageOfPassedRules"], 20, "Incorrect 'PercentageOfPassedRules' value")
-        assert_not_equal(baseline_summary_item["AssessmentId"], "3af00be8-44b9-4925-a64a-d5fd3241ddd3", "Incorrect 'AssessmentId' value")
-        assert_equal(baseline_summary_item["OSName"], "Linux", "Incorrect 'OSName' value")
+        assert_equal("test_host", baseline_summary_item["Computer"], "Incorrect 'Computer' value")
+        assert_equal(5, baseline_summary_item["TotalAssessedRules"], "Incorrect 'TotalAssessedRules' value")
+        assert_equal(2, baseline_summary_item["CriticalFailedRules"], "Incorrect 'CriticalFailedRules' value")
+        assert_equal(1, baseline_summary_item["WarningFailedRules"], "Incorrect 'WarningFailedRules' value")
+        assert_equal(1, baseline_summary_item["InformationalFailedRules"], "Incorrect 'InformationalFailedRules' value")
+        assert_equal(20, baseline_summary_item["PercentageOfPassedRules"], "Incorrect 'PercentageOfPassedRules' value")
+        assert_not_equal("3af00be8-44b9-4925-a64a-d5fd3241ddd3", baseline_summary_item["AssessmentId"], "Incorrect 'AssessmentId' value")
+        assert_equal("Linux", baseline_summary_item["OSName"], "Incorrect 'OSName' value")
         
         assert_equal(baseline_item_0["AssessmentId"], baseline_summary_item["AssessmentId"], "Different 'AssessmentId' between baseline and baseline summary")
     end
@@ -69,8 +69,8 @@ class BaselineLibTest < Test::Unit::TestCase
         security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)
         security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
         
-        assert_equal(security_baseline_blob, nil, "Incorrect error case support") 
-        assert_equal(security_baseline_summary_blob, nil, "Incorrect error case support") 
+        assert_equal(nil, security_baseline_blob, "Incorrect error case support") 
+        assert_equal(nil, security_baseline_summary_blob, "Incorrect error case support") 
     end
 
     def test_baseline_with_bad_input
@@ -80,7 +80,7 @@ class BaselineLibTest < Test::Unit::TestCase
         security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)        
         security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
         
-        assert_equal(security_baseline_blob, nil, "Incorrect error case support") 
-        assert_equal(security_baseline_summary_blob, nil, "Incorrect error case support") 
+        assert_equal(nil, security_baseline_blob, "Incorrect error case support") 
+        assert_equal(nil, security_baseline_summary_blob, "Incorrect error case support") 
     end
 end
