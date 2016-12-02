@@ -43,6 +43,8 @@ class NPMDServerTest < Test::Unit::TestCase
     TEST_ERROR_LOG_EMIT = "This is a test error log"
     TEST_ERROR_LOG_BINARY_ABSENT = "Binary not found at given location"
     TEST_ERROR_LOG_BINARY_DUPLICATE = "Found both x64 and x32 staging binaries"
+    TEST_ERROR_LOG_STDERROR = "NPMDTest wrote this error log"
+    TEST_ERROR_LOG_INVALID_USER = "Invalid user:"
 
     def setup
         Fluent::Test.setup
@@ -76,6 +78,8 @@ class NPMDServerTest < Test::Unit::TestCase
         _d.instance.num_agent_data = 0
         _d.instance.num_config_sent = 0
         _d.instance.is_purged = false
+        _d.instance.omsagentUID = Process.euid
+        _d.instance.rootUID = Process.euid
         _d
     end
 
@@ -317,57 +321,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert(found_sent_log, "Sent log in test should have been seen");
     end
 
-    # Test06: Check start stop of npmd from cmd
-    # Sequence:
-    # 1. Register run post condition as:
-    #   (a) Wait for npmdClientSock to be non nil
-    #   (b) Assert only one instance of fake binary is running
-    #   (c) Send stop cmd
-    #   (d) Assert that no instance of fake binary is running
-    #   (e) Assert that npmdClientSock is nil
-    #   (f) Send start cmd
-    #   (g) Wait for npmdClientSock to be non nil
-    #   (h) Assert only one instance of fake binary is running
-    # 2. Run the driver
-    # 3. Assert that there are no fake binary instances running
-    # 4. Assert that npmdClientSock is nil again
-    def test_case_06_check_start_stop_from_cmd
-        # Step 1
-        d = create_driver
-        d.register_run_post_condition {
-            (1..ONE_MIN_IN_MSEC).each do
-                sleep(ONE_MSEC) if d.instance.npmdClientSock.nil?
-            end
-            assert(!d.instance.npmdClientSock.nil?, "NPMD client socket should be non nil")
-            assert_equal(1, get_num_test_binary_instances(), "Multiple instance found when only 1 should be running")
-
-            d.instance.process_dsc_command(CMD_STOP_NPMD)
-            sleep(100 * ONE_MSEC)
-
-            assert_equal(0, get_num_test_binary_instances(), "After stop no instance of binary should be running")
-            assert(d.instance.npmdClientSock.nil?, "After stop cmd npmdClientSock should be nil")
-
-            d.instance.process_dsc_command(CMD_START_NPMD)
-            (1..ONE_MIN_IN_MSEC).each do
-                sleep(ONE_MSEC) if d.instance.npmdClientSock.nil?
-            end
-
-            assert(!d.instance.npmdClientSock.nil?, "NPMD client socket should be non nil")
-            assert_equal(1, get_num_test_binary_instances(), "Multiple instance found when only 1 should be running")
-            true
-        }
-
-        # Step 2
-        d.run
-
-        # Step 3
-        assert_equal(0, get_num_test_binary_instances(), "No instance of fake binary should be running")
-
-        # Step 4
-        assert(d.instance.npmdClientSock.nil?, "npmdClientSock should be nil as all clients are stopped")
-    end
-
-    # Test07: Check if purge is working
+    # Test06: Check if purge is working
     # Sequence:
     # 1. Register run post condition as:
     #   (a) Wait for npmdClientSock to be non nil
@@ -379,7 +333,7 @@ class NPMDServerTest < Test::Unit::TestCase
     # 4. Assert file fake binary does not exist
     # 5. Assert file unix endpoint does not exist
     # 6. Assert uuid file does not exist
-    def test_case_07_verify_purge
+    def test_case_06_verify_purge
         # Step 1
         d = create_driver
         d.register_run_post_condition {
@@ -417,12 +371,12 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(false, File.exist?(FAKE_UUID_LOCATION), "File #{FAKE_UUID_LOCATION} should have been deleted")
     end
 
-    # Test08: Check if UUID creation is working
+    # Test07: Check if UUID creation is working
     # Sequence:
     # 1. Delete the uuid file if exists
     # 2. Run the driver without post condition
     # 3. Assert uuid file exists and is not empty
-    def test_case_08_verify_uuid_creation
+    def test_case_07_verify_uuid_creation
         # Step 1
         File.unlink(FAKE_UUID_LOCATION) if File.exist?(FAKE_UUID_LOCATION)
 
@@ -434,7 +388,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(true, File.exist?(FAKE_UUID_LOCATION), "UUID file should have been recreated")
     end
 
-    # Test09: Check that UUID is recreated post start after purge
+    # Test08: Check that UUID is recreated post start after purge
     # Sequence:
     # 1. Create UUID file with new value
     # 2. Register run post condition as:
@@ -446,7 +400,7 @@ class NPMDServerTest < Test::Unit::TestCase
     # 5. Run driver without post condition
     # 6. Assert that uuid file exists
     # 7. Assert that uuid value has changed
-    def test_case_09_verify_uuid_recreation_post_purge
+    def test_case_08_verify_uuid_recreation_post_purge
         # Step 1
         f = File.new(FAKE_UUID_LOCATION, "w")
         f.write(FAKE_AGENT_ID)
@@ -489,14 +443,14 @@ class NPMDServerTest < Test::Unit::TestCase
         assert(uuid != FAKE_AGENT_ID, "UUID should have changed from #{FAKE_AGENT_ID}")
     end
 
-    # Test10: Check that binary not found is handled properly
+    # Test09: Check that binary not found is handled properly
     # Sequence:
     # 1. Delete the binary file and any staging _x32/_x64 binaries
     # 2. Register run post condition as:
     #   (a) Wait for emit to have at least one error log
     # 3. Run the driver
     # 4. Assert that binary not found error is there in error log
-    def test_case_10_binary_not_present
+    def test_case_09_binary_not_present
         # Step 1
         File.unlink(FAKE_BINARY_LOCATION) if File.exist?(FAKE_BINARY_LOCATION)
         File.unlink("#{FAKE_BINARY_LOCATION}_x32") if File.exist?("#{FAKE_BINARY_LOCATION}_x32")
@@ -539,7 +493,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(true, found_binary_absent_log, "Binary absent log in test should have been seen");
     end
 
-    # Test11: Check that binary is getting replaced properly by "_x32"
+    # Test10: Check that binary is getting replaced properly by "_x32"
     # Sequence:
     # 1. Copy the binary file by appending "_x32" to name
     # 2. Store the modification time of copy as mtime_x32_1
@@ -554,7 +508,7 @@ class NPMDServerTest < Test::Unit::TestCase
     # 11.Assert that copy with "_x32" ending does not exist
     # 12.Assert that the binary file exists
     # 13.Assert that modification time of binary file is newer than mtime_bin_1
-    def test_case_11_binary_replaced_by_x32
+    def test_case_10_binary_replaced_by_x32
         # Step 1
         FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
 
@@ -601,7 +555,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert(mtime_bin_2 > mtime_bin_1, "The new binary should have a modification that is newer or higher than earlier")
     end
 
-    # Test12: Check that binary is getting replaced properly by "_x64"
+    # Test11: Check that binary is getting replaced properly by "_x64"
     # Sequence:
     # 1. Copy the binary file by appending "_x64" to name
     # 2. Store the modification time of copy as mtime_x64_1
@@ -616,7 +570,7 @@ class NPMDServerTest < Test::Unit::TestCase
     # 11.Assert that copy with "_x64" ending does not exist
     # 12.Assert that the binary file exists
     # 13.Assert that modification time of binary file is newer than mtime_bin_1
-    def test_case_12_binary_replaced_by_x64
+    def test_case_11_binary_replaced_by_x64
         # Step 1
         FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
 
@@ -664,7 +618,7 @@ class NPMDServerTest < Test::Unit::TestCase
 
     end
 
-    # Test13: Check that "_x64" preceeds "_x32" if both staging are present
+    # Test12: Check that "_x64" preceeds "_x32" if both staging are present
     # Sequence:
     # 1. Copy the binary file by appending "_x64" to name
     # 2. Copy the binary file by appending "_x32" to name
@@ -672,7 +626,7 @@ class NPMDServerTest < Test::Unit::TestCase
     #   (a) Wait for emit to have at least one error log
     # 4. Run the driver
     # 5. Assert that both 32, 64 found and picked 64 log is present
-    def test_case_13_check_x64_preceeds_x32
+    def test_case_12_check_x64_preceeds_x32
         # Step 1
         FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
 
@@ -714,6 +668,227 @@ class NPMDServerTest < Test::Unit::TestCase
             end
         end
         assert_equal(true, found_binary_duplicate_log, "Binary duplicate log in test should have been seen");
+    end
+
+    # Test13: Check UID of binary connecting
+    # Sequence:
+    # 1. Check if current user is omsagent
+    #   (a) If yes then declare success
+    #   (b) else proceed further
+    # 2. Set omsagentUID/rootUID to current user uid
+    # 3. Run the driver
+    # 4. Check for error logs for invalid user error
+    # 5. Assert absence of said error log
+    # 6. Update omsagentUID/rootUID to actual ones
+    # 7. Run the driver
+    # 8. Check for error logs for invalid user error
+    # 9. Assert presence of said error log
+    def test_case_13_binary_uid
+        # Step 1
+        return if Process.euid == Process::UID.from_name("omsagent")
+
+        # Step 2
+        d = create_driver
+        d.instance.omsagentUID = Process.euid
+        d.instance.rootUID = Process.euid
+
+        # Step 3
+        d.register_run_post_condition {
+            sleep (100 * ONE_MSEC)
+        }
+        d.run
+
+        # Step 4
+        emits = d.emits
+        error_logs = nil
+        assert(emits.length > 0, "At least some data should have been emitted by now")
+        emits.each do |x|
+            if x.last.key?("DataItems")
+                x.last["DataItems"].each do |z|
+                    if z.key?("Message")
+                        error_logs ||= []
+                        error_logs << z
+                    end
+                end
+            end
+        end
+
+        found_invalid_user_log = false
+        unless error_logs.nil?
+            assert(error_logs.is_a?(Array), "Error logs should be an array")
+            assert(error_logs.length > 0, "There should be at least some error logs")
+            error_logs.each do |x|
+                if x.key?("Message") and x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
+                    found_invalid_user_log = true
+                    break
+                end
+            end
+        end
+
+        # Step 5
+        assert_equal(false, found_invalid_user_log , "Invalid user log should not be seen");
+
+        # Step 6
+        d.instance.omsagentUID = Process::UID.from_name("omsagent")
+        d.instance.rootUID = Process::UID.from_name("root")
+
+        # Step 7
+        d.register_run_post_condition {
+            sleep (100 * ONE_MSEC)
+        }
+        d.run
+
+        # Step 8
+        emits = d.emits
+        error_logs = nil
+        assert(emits.length > 0, "At least some data should have been emitted by now")
+        emits.each do |x|
+            if x.last.key?("DataItems")
+                x.last["DataItems"].each do |z|
+                    if z.key?("Message")
+                        error_logs ||= []
+                        error_logs << z
+                    end
+                end
+            end
+        end
+        assert(!error_logs.nil?, "There should have been at least some error logs")
+        assert(error_logs.is_a?(Array), "Error logs should be an array")
+        assert(error_logs.length > 0, "There should be at least some error logs")
+        found_invalid_user_log = false
+        error_logs.each do |x|
+            if x.key?("Message") and x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
+                found_invalid_user_log = true
+                break
+            end
+        end
+
+        # Step 9
+        assert_equal(true, found_invalid_user_log , "Invalid user log should have been seen");
+    end
+
+    # Test14: Check that root is needed for cmd triggering
+    # Sequence:
+    # 1. Check if current user is root
+    #   (a) If yes then declare success
+    #   (b) else proceed further
+    # 2. Update UIDs as
+    #   (a) omsagentUID as omsagent uid
+    #   (b) rootUID as current user
+    # 3. Register post condition as
+    #   (a) Send error log via cmd
+    # 4. Run the driver
+    # 5. Assert that log is absent in emit
+    # 6. Assert that invalid user log is present in emit
+    # 7. Update UIDs as
+    #   (a) omsagentUID as omsagent uid
+    #   (b) rootUID as root uid
+    # 8. Register post condition as
+    #   (a) Send error log via cmd
+    # 9. Run the driver
+    #10. Assert that log is absent in emit
+    #11. Assert that invalid user log is present in emit
+    def test_case_14_root_uid_for_cmd
+        # Step 1
+        return if Process.euid == Process::UID.from_name("root")
+
+        # Step 2
+        d1 = create_driver
+        d1.instance.omsagentUID = Process::UID.from_name("omsagent")
+        d1.instance.rootUID = Process::UID.from_name("root")
+
+        # Step 3
+        d1.register_run_post_condition {
+            begin
+                UNIXSocket.open(FAKE_UNIX_ENDPOINT) do |c|
+                    c.puts "#{CMD_LOG_NPMD}:#{TEST_ERROR_LOG_EMIT}"
+                end
+                sleep (100 * ONE_MSEC)
+            rescue => e
+            end
+        }
+
+        # Step 4
+        d1.run
+
+        # Step 5
+        emits = d1.emits
+        error_logs = nil
+        assert(emits.length > 0, "At least some data should have been emitted by now")
+        emits.each do |x|
+            if x.last.key?("DataItems")
+                x.last["DataItems"].each do |z|
+                    if z.key?("Message")
+                        error_logs ||= []
+                        error_logs << z
+                    end
+                end
+            end
+        end
+        assert(!error_logs.nil?, "There should have been at least some error logs")
+        assert(error_logs.is_a?(Array), "Error logs should be an array")
+        assert(error_logs.length > 0, "There should be at least some error logs")
+        found_invalid_user_log = false
+        found_error_emit_log = false
+        error_logs.each do |x|
+            if x.key?("Message")
+                found_invalid_user_log = true if x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
+                found_error_emit_log = true if x["Message"].include?(TEST_ERROR_LOG_EMIT)
+            end
+        end
+        assert_equal(false, found_error_emit_log, "Error emit log should not seen when sent via non root user")
+
+        # Step 6
+        assert_equal(true, found_invalid_user_log, "Invalid user log should be present when sent via non root user")
+
+        # Step 7
+        d2 = create_driver
+        d2.instance.omsagentUID = Process::UID.from_name("omsagent")
+        d2.instance.rootUID = Process.euid
+
+        # Step 8
+        d2.register_run_post_condition {
+            begin
+                UNIXSocket.open(FAKE_UNIX_ENDPOINT) do |c|
+                    c.puts "#{CMD_LOG_NPMD}:#{TEST_ERROR_LOG_EMIT}"
+                end
+                sleep (100 * ONE_MSEC)
+            rescue => e
+            end
+        }
+
+        # Step 9
+        d2.run
+
+        # Step 10
+        emits = d2.emits
+        error_logs = nil
+        assert(emits.length > 0, "At least some data should have been emitted by now")
+        emits.each do |x|
+            if x.last.key?("DataItems")
+                x.last["DataItems"].each do |z|
+                    if z.key?("Message")
+                        error_logs ||= []
+                        error_logs << z
+                    end
+                end
+            end
+        end
+        assert(!error_logs.nil?, "There should have been at least some error logs")
+        assert(error_logs.is_a?(Array), "Error logs should be an array")
+        assert(error_logs.length > 0, "There should be at least some error logs")
+        found_invalid_user_log = false
+        found_error_emit_log = false
+        error_logs.each do |x|
+            if x.key?("Message")
+                found_invalid_user_log = true if x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
+                found_error_emit_log = true if x["Message"].include?(TEST_ERROR_LOG_EMIT)
+            end
+        end
+        assert_equal(true, found_error_emit_log, "Error emit log should be seen when sent via root user")
+
+        # Step 11
+        assert_equal(false, found_invalid_user_log, "Invalid user log should not be present when sent via root user")
     end
 
 end
