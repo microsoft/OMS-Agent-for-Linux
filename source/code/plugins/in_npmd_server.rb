@@ -52,10 +52,10 @@ module Fluent
         attr_accessor :is_purged
         attr_accessor :omsagentUID, :rootUID
 
-        CMD_START         = "StartNPMD"
-        CMD_STOP          = "StopNPMD"
-        CMD_CONFIG        = "ConfigNPMD"
-        CMD_PURGE         = "PurgeNPMD"
+        CMD_START         = "StartNPM"
+        CMD_STOP          = "StopNPM"
+        CMD_CONFIG        = "Config"
+        CMD_PURGE         = "Purge"
         CMD_LOG           = "ErrorLog"
 
         CONN_AGENT        = 1

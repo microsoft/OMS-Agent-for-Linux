@@ -28,11 +28,11 @@ class NPMDServerTest < Test::Unit::TestCase
 
     CMD_ENUMERATE_BINARY_INSTANCES = "ps aux | grep fake_npmd"
 
-    CMD_START_NPMD  = "StartNPMD"
-    CMD_STOP_NPMD   = "StopNPMD"
-    CMD_CONFIG_NPMD = "ConfigNPMD"
-    CMD_PURGE_NPMD  = "PurgeNPMD"
-    CMD_LOG_NPMD    = "ErrorLog"
+    CMD_START_NPMD  = Fluent::NPM::CMD_START
+    CMD_STOP_NPMD   = Fluent::NPM::CMD_STOP
+    CMD_CONFIG_NPMD = Fluent::NPM::CMD_CONFIG
+    CMD_PURGE_NPMD  = Fluent::NPM::CMD_PURGE
+    CMD_LOG_NPMD    = Fluent::NPM::CMD_LOG
 
     STALE_AGENT_COUNT = 4
     ONE_MIN_IN_MSEC = 6000
