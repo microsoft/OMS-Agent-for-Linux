@@ -46,6 +46,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
 /opt/microsoft/omsagent/bin/uninstall;                                  installer/scripts/uninstall.sh;                        755; root; root
 /opt/microsoft/omsagent/bin/tailfilereader.rb;                          installer/scripts/tailfilereader.rb;                   744; root; root
+/opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb;                 installer/scripts/hdinsightmanifestreader.rb;          744; root; root
 
 /opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root
@@ -100,6 +101,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/parser_vmware_logs.rb;                   source/code/plugins/parser_vmware_logs.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/in_dsc_monitor.rb;                       source/code/plugins/in_dsc_monitor.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/agent_topology_request_script.rb;        source/code/plugins/agent_topology_request_script.rb;  744; root; root
+
+/opt/microsoft/omsagent/plugin/filter_hdinsight.rb;                     source/code/plugins/filter_hdinsight.rb;               744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
