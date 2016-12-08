@@ -282,7 +282,8 @@ module NPMDConfig
                     value["IPs"].each do |ip|
                         _tempIp = Hash.new
                         _tempIp["IP"] = ip["Value"]
-                        _tempIp["SubnetName"] = ip["Subnet"]
+                        # Store agent subnet name as string
+                        _tempIp["SubnetName"] = ip["Subnet"].to_s
                         _agent["IPs"] << _tempIp
                     end
                     _a << _agent
