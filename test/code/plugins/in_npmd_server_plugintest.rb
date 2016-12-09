@@ -79,7 +79,6 @@ class NPMDServerTest < Test::Unit::TestCase
         _d.instance.num_config_sent = 0
         _d.instance.is_purged = false
         _d.instance.omsagentUID = Process.euid
-        _d.instance.rootUID = Process.euid
         _d
     end
 
@@ -675,11 +674,11 @@ class NPMDServerTest < Test::Unit::TestCase
     # 1. Check if current user is omsagent
     #   (a) If yes then declare success
     #   (b) else proceed further
-    # 2. Set omsagentUID/rootUID to current user uid
+    # 2. Set omsagentUID to current user uid
     # 3. Run the driver
     # 4. Check for error logs for invalid user error
     # 5. Assert absence of said error log
-    # 6. Update omsagentUID/rootUID to actual ones
+    # 6. Update omsagentUID to actual ones
     # 7. Run the driver
     # 8. Check for error logs for invalid user error
     # 9. Assert presence of said error log
@@ -690,7 +689,6 @@ class NPMDServerTest < Test::Unit::TestCase
         # Step 2
         d = create_driver
         d.instance.omsagentUID = Process.euid
-        d.instance.rootUID = Process.euid
 
         # Step 3
         d.register_run_post_condition {
@@ -730,7 +728,6 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 6
         d.instance.omsagentUID = Process::UID.from_name("omsagent")
-        d.instance.rootUID = Process::UID.from_name("root")
 
         # Step 7
         d.register_run_post_condition {
@@ -767,35 +764,32 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(true, found_invalid_user_log , "Invalid user log should have been seen");
     end
 
-    # Test14: Check that root is needed for cmd triggering
+    # Test14: Check that omsagent is needed for cmd triggering
     # Sequence:
-    # 1. Check if current user is root
+    # 1. Check if current user is omsagent
     #   (a) If yes then declare success
     #   (b) else proceed further
     # 2. Update UIDs as
-    #   (a) omsagentUID as omsagent uid
-    #   (b) rootUID as current user
+    #   (a) omsagentUID as current user
     # 3. Register post condition as
     #   (a) Send error log via cmd
     # 4. Run the driver
     # 5. Assert that log is absent in emit
     # 6. Assert that invalid user log is present in emit
     # 7. Update UIDs as
-    #   (a) omsagentUID as omsagent uid
-    #   (b) rootUID as root uid
+    #   (a) omsagentUID as omsagent user
     # 8. Register post condition as
     #   (a) Send error log via cmd
     # 9. Run the driver
     #10. Assert that log is absent in emit
     #11. Assert that invalid user log is present in emit
-    def test_case_14_root_uid_for_cmd
+    def test_case_14_omsagent_uid_for_cmd
         # Step 1
-        return if Process.euid == Process::UID.from_name("root")
+        return if Process.euid == Process::UID.from_name("omsagent")
 
         # Step 2
         d1 = create_driver
         d1.instance.omsagentUID = Process::UID.from_name("omsagent")
-        d1.instance.rootUID = Process::UID.from_name("root")
 
         # Step 3
         d1.register_run_post_condition {
@@ -836,15 +830,14 @@ class NPMDServerTest < Test::Unit::TestCase
                 found_error_emit_log = true if x["Message"].include?(TEST_ERROR_LOG_EMIT)
             end
         end
-        assert_equal(false, found_error_emit_log, "Error emit log should not seen when sent via non root user")
+        assert_equal(false, found_error_emit_log, "Error emit log should not seen when sent via non omsagent user")
 
         # Step 6
-        assert_equal(true, found_invalid_user_log, "Invalid user log should be present when sent via non root user")
+        assert_equal(true, found_invalid_user_log, "Invalid user log should be present when sent via non omsagent user")
 
         # Step 7
         d2 = create_driver
-        d2.instance.omsagentUID = Process::UID.from_name("omsagent")
-        d2.instance.rootUID = Process.euid
+        d2.instance.omsagentUID = Process.euid
 
         # Step 8
         d2.register_run_post_condition {
@@ -885,10 +878,10 @@ class NPMDServerTest < Test::Unit::TestCase
                 found_error_emit_log = true if x["Message"].include?(TEST_ERROR_LOG_EMIT)
             end
         end
-        assert_equal(true, found_error_emit_log, "Error emit log should be seen when sent via root user")
+        assert_equal(true, found_error_emit_log, "Error emit log should be seen when sent via omsagent user")
 
         # Step 11
-        assert_equal(false, found_invalid_user_log, "Invalid user log should not be present when sent via root user")
+        assert_equal(false, found_invalid_user_log, "Invalid user log should not be present when sent via omsagent user")
     end
 
 end

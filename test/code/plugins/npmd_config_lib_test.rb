@@ -1,5 +1,3 @@
-#!/usr/bin/ruby -w
-
 require 'test/unit'
 require_relative '../../../source/code/plugins/npmd_config_lib'
 
