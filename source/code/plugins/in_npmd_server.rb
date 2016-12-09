@@ -50,7 +50,7 @@ module Fluent
         attr_accessor :num_path_data, :num_agent_data
         attr_accessor :num_config_sent
         attr_accessor :is_purged
-        attr_accessor :omsagentUID, :rootUID
+        attr_accessor :omsagentUID
 
         CMD_START         = "StartNPM"
         CMD_STOP          = "StopNPM"
@@ -72,20 +72,28 @@ module Fluent
 
         CMD_ENUMERATE_PROCESSES_PREFIX = "ps aux | grep "
 
+        MAX_LENGTH_DSC_COMMAND = 300
+
+        WATCHDOG_PET_INTERVAL_SECS    = 1 * 60 * 60 # 1 hour
+
         def start
             @binary_presence_test_string = "npmd_agent" if @binary_presence_test_string.nil?
             @binary_invocation_cmd = @location_agent_binary if @binary_invocation_cmd.nil?
             kill_all_agent_instances()
+            upload_pending_stderrors()
             check_and_update_binaries()
             setup_endpoint()
             @fqdn = get_fqdn()
             check_and_get_guid()
             @server_thread = Thread.new(&method(:server_run))
             @npmdIntendedStop = false
-            @stderrFileQueue = Queue.new
+            @stderrFileNameHash = Hash.new
             @stop_sync = Mutex.new
             # Initialize to true to prevent wait on first start
             start_npmd_async_retry_thread()
+            @watch_dog_thread = Thread.new(&method(:watch_dog_wait_for_pet))
+            @watch_dog_sync = Mutex.new
+            @watch_dog_last_pet = Time.new
         end
 
         def shutdown
@@ -94,10 +102,12 @@ module Fluent
             kill_all_agent_instances()
             @npmdClientSock.close() unless @npmdClientSock.nil?
             @npmdClientSock = nil
+            Thread.kill(@watch_dog_thread)
             Thread.kill(@server_thread)
             File.unlink(@location_unix_endpoint) if File.exist?@location_unix_endpoint
             File.unlink(@location_agent_binary) if File.exist?@location_agent_binary and (!@do_purge.nil? and @do_purge)
             File.unlink(@location_uuid_file) if File.exist?@location_uuid_file and (!@do_purge.nil? and @do_purge)
+            delete_stale_stderror_files() if (!@do_purge.nil? and @do_purge)
             @is_purged = true unless @is_purged.nil?
         end
 
@@ -188,7 +198,10 @@ module Fluent
                         Logger::logInfo "Exiting reader thread as npmdAgent found stopped"
                         break
                     end
-                    next if _line.nil? or _line == " "
+                    @watch_dog_sync.synchronize do
+                        @watch_dog_last_pet = Time.now
+                    end
+                    next if _line.nil? or _line.strip== ""
                     _json = check_and_get_json(_line.chomp)
                     unless !_json.nil?
                         Logger::logWarn "Sent string to plugin is not a json string", Logger::loop
@@ -321,7 +334,7 @@ module Fluent
                     package_and_send_error_log(_msg)
                 end
             else
-                Logger::logWarn "Unknown command #{cmd} received from DSC resource provider"
+                log_error "Unknown command #{cmd} received from DSC resource provider"
             end
         end
 
@@ -362,43 +375,61 @@ module Fluent
             }
         end
 
+        def delete_stale_stderror_files
+            begin
+                _fileDir = File.dirname(@location_unix_endpoint)
+                _globPrefix = "#{_fileDir}/stderror_"
+                _fileList = Dir["#{_globPrefix}*"]
+                _fileList.each do |x|
+                    File.unlink(x)
+                end
+            rescue => e
+                log_error "Deleting stale stderror files exception: #{e}", Logger::resc
+            end
+        end
+
+        def upload_pending_stderrors
+            _arr = Array.new
+            begin
+                _fileDir = File.dirname(@location_unix_endpoint)
+                _globPrefix = "#{_fileDir}/stderror_"
+                _fileList = Dir["#{_globPrefix}*"]
+                _fileList.each do |x|
+                    File.readlines(x).each do |line|
+                        _hMessage = Hash.new
+                        _hMessage["Message"] = "Previous Stderror:#{line}"
+                        Logger::logInfo "Prev STDERR: #{line}", 2*Logger::loop
+                        _arr << _hMessage
+                    end
+                    File.unlink(x)
+                end
+                emit_error_log_dataitems(_arr) unless _arr.empty?
+            rescue => e
+                Logger::logInfo "Got error while uploading pending stderrors: #{e}"
+            end
+        end
+
         def handle_exit(_processId)
             _exitRes = Process.waitpid2(_processId)
             _arr = Array.new
-            _doBreak = false
 
             @stop_sync.synchronize do
-                Logger::logInfo "Size of stderrQueue is #{@stderrFileQueue.length()}"
-                while @stderrFileQueue.length() > 0
+                @stderrFileNameHash.each do |procId, fileName|
                     begin
-                        _h = @stderrFileQueue.pop(true)
-                        if !_h.nil? and _h.key?("pid")
-                            Logger::logInfo "Processing stderr pid:#{_h["pid"]} and file:#{_h["file"]}"
-                            # Stop processing if required pid is seen
-                            if _h["pid"] == _processId
-                                _doBreak = true
-                            # If current pid then reset queue
-                            elsif _h["pid"] == @npmdProcessId
-                                @stderrFileQueue.clear()
-                                @stderrFileQueue << _h
-                                Logger::logInfo "Size of stderrQueue is #{@stderrFileQueue.length()}"
-                                break
+                        if File.exist?(fileName)
+                            File.readlines(fileName).each do |line|
+                                _hMessage = Hash.new
+                                _hMessage["Message"] = "PID:#{procId}:#{line}"
+                                Logger::logInfo "STDERR for #{_hMessage["Message"]}"
+                                _arr << _hMessage
                             end
-                            if File.exist?(_h["file"])
-                                File.readlines(_h["file"]).each do |line|
-                                    _hMessage = Hash.new
-                                    _hMessage["Message"] = "PID:#{_h["pid"]}:#{line}"
-                                    Logger::logError "STDERR for #{_hMessage["Message"]}"
-                                    _arr << _hMessage
-                                end
-                                File.unlink(_h["file"])
-                            end
-                            break if _doBreak
+                            File.unlink(fileName)
                         end
-                    rescue ThreadError => e
-                        Logger::logInfo "Error in processing stderror file queue: #{e}"
+                    rescue => e
+                        log_error "Got error while processing stderr files: #{e}"
                     end
                 end
+                @stderrFileNameHash.clear()
             end
             emit_error_log_dataitems(_arr) unless _arr.empty?
 
@@ -406,6 +437,7 @@ module Fluent
             if @npmdIntendedStop
                 Logger::logInfo "NpmdAgent exited normally"
             else
+                # only place for restarting crashed NPMD
                 log_error "NpmdAgent ended with exit status #{_exitRes[1]}"
                 Logger::logInfo "Restarting NPMD"
                 start_npmd_async_retry_thread()
@@ -417,10 +449,7 @@ module Fluent
                 @npmdIntendedStop = false
                 _stderrFileName = "#{File.dirname(@location_unix_endpoint)}/stderror_#{SecureRandom.uuid}.log"
                 @npmdProcessId = Process.spawn(@binary_invocation_cmd, :err=>_stderrFileName)
-                _h = Hash.new
-                _h["pid"] = @npmdProcessId
-                _h["file"] = _stderrFileName
-                @stderrFileQueue << _h
+                @stderrFileNameHash[@npmdProcessId] = _stderrFileName
                 _t = Thread.new {handle_exit(@npmdProcessId)}
                 Logger::logInfo "NPMD Agent running with process id #{@npmdProcessId}"
             else
@@ -463,6 +492,7 @@ module Fluent
                         @npmdClientSock.puts _agentConfig
                         @npmdClientSock.flush
                         @num_config_sent += 1 unless @num_config_sent.nil?
+                        Logger::logInfo "Configuration file sent to npmd_agent"
 
                     else
                         Logger::logWarn "NPMD client socket not connected yet!"
@@ -476,19 +506,19 @@ module Fluent
         def triage_conn(clientSock)
             begin
                 @omsagentUID = Process::UID.from_name("omsagent") if @omsagentUID.nil?
-                @rootUID = Process::UID.from_name("root") if @rootUID.nil?
                 _opt = clientSock.getsockopt(Socket::Constants::SOL_SOCKET,
                                              Socket::Constants::SO_PEERCRED)
                 _pid, _euid, _egid = _opt.unpack("i3")
 
                 if _euid == @omsagentUID
                     # Check if this is NPMDAgent binary
-                    return CONN_UNKNOWN if @npmdProcessId.nil? or _pid != @npmdProcessId.to_i
-                    _rawLine = clientSock.gets
-                    return CONN_AGENT if (!_rawLine.nil? and _rawLine.chomp == NPMD_CONN_CONFIRM)
-                elsif _euid == @rootUID
-                    # This is DSC command
-                    return CONN_DSC
+                    if !@npmdProcessId.nil? and _pid == @npmdProcessId.to_i
+                        _rawLine = clientSock.gets
+                        return CONN_AGENT if (!_rawLine.nil? and _rawLine.chomp == NPMD_CONN_CONFIRM)
+                    else
+                        # This is DSC command
+                        return CONN_DSC
+                    end
                 else
                     # Invalid user id
                     _psswd = Etc.getpwuid(_euid)
@@ -516,11 +546,43 @@ module Fluent
                         @npmdAgentReaderThread = Thread.new{npmd_reader()}
                         send_config()
                     elsif _clientTriage == CONN_DSC
-                        _rawLine = _client.gets
+                        _rawLine, _senderInfo = _client.recvfrom(MAX_LENGTH_DSC_COMMAND)
                         process_dsc_command(_rawLine) if !_rawLine.nil?
                     end
                 end
             end
         end
+
+        def watch_dog_wait_for_pet
+            _sleepInterval = WATCHDOG_PET_INTERVAL_SECS
+            loop do
+                sleep(_sleepInterval)
+                _diffTime = Time.now
+
+                @watch_dog_sync.synchronize do
+                    _diffTime -= @watch_dog_last_pet
+                end
+
+                if _diffTime > WATCHDOG_PET_INTERVAL_SECS
+                    # Case when watchdog would bark
+                    watch_dog_bark()
+                    _sleepInterval = WATCHDOG_PET_INTERVAL_SECS
+                else
+                    # Sleep for interval period from last update time
+                    _sleepInterval = WATCHDOG_PET_INTERVAL_SECS - _diffTime
+                end
+                _sleepInterval = WATCHDOG_PET_INTERVAL_SECS if _sleepInterval > WATCHDOG_PET_INTERVAL_SECS
+            end
+        end
+
+        def watch_dog_bark
+            if defined?@npmdProcessId and is_npmd_seen_in_ps()
+                log_error "WatchDog: Killing agent for restart"
+                Process.kill(STOP_SIGNAL, @npmdProcessId.to_i)
+            else
+                log_error "WatchDog: NPMD agent found already stopped"
+            end
+        end
+
     end
 end
