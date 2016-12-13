@@ -429,7 +429,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
   end
 
 
- def test_filter_updaterun_progress
+  def test_filter_apt_updaterun_progress
     fakeEndDate = '2016-10-20  15:00:29'
     
     logContent = 
@@ -451,7 +451,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
     
-    result = @linuxUpdatesInstance.process_update_run(record, 'tag', 'HostName', Time.now)
+    result = @linuxUpdatesInstance.process_apt_update_run(record, 'tag', 'HostName', Time.now)
     assert(result != nil)
     assert_equal(4, result['DataItems'].size)
     assert_equal("HostName", result['DataItems'][0]["Computer"])
@@ -461,4 +461,49 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal(fakeStartDate, result['DataItems'][0]["StartTime"])
   end
   
+  def test_filter_yum_updaterun_progress
+    record =
+        {
+            'update-action-date' => 'Nov 03 20:20:30',
+            'update-action' => 'updated',
+            'package-name' => 'libXft-2.3.2-1.el6.x86$-1.28-12.el6.x86_64'
+        }
+
+    @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
+
+    result = @linuxUpdatesInstance.process_yum_update_run(record, 'tag', 'HostName', Time.now)
+    assert(result != nil)
+    assert_equal(1, result['DataItems'].size)
+    assert_equal("HostName", result['DataItems'][0]["Computer"])
+    assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
+    assert_equal('libXft-2.3.2-1.el6.x86$-1.28-12.el6.x86_64', result['DataItems'][0]["UpdateTitle"])
+    assert_equal('Succeeded', result['DataItems'][0]["Status"])
+  end
+  
+  def test_filter_yum_updaterun_progress_error_record
+    record =
+        {
+            'update-action-date' => 'Dec 30 20:20:30',
+            'update-action' => 'Error',
+            'package-name' => 'openldap-2.4.40-9.el7_2.x86_64'
+        }
+
+    @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
+
+    result = @linuxUpdatesInstance.process_yum_update_run(record, 'tag', 'HostName', Time.now)
+    assert(result != nil)
+    assert_equal(1, result['DataItems'].size)
+    assert_equal("HostName", result['DataItems'][0]["Computer"])
+    assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
+    assert_equal('openldap-2.4.40-9.el7_2.x86_64', result['DataItems'][0]["UpdateTitle"])
+    assert_equal('Failed', result['DataItems'][0]["Status"])
+  end
+  
+  def test_get_yum_update_status
+  	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Installed"), "Succeeded")
+	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Updated"), "Succeeded")
+	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Erased"), "Succeeded")
+	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Error"), "Failed")
+	assert_equal(@linuxUpdatesInstance.get_yum_update_status("installed"), "Succeeded")
+  end  
 end

@@ -34,6 +34,7 @@ class LinuxUpdates
         if(@@os_details.nil?)    
            if File.exist?(SCX_RELEASE_FILE) # If file exists
             File.open(SCX_RELEASE_FILE, "r") do |f| # Open file
+			@@os_details={}
                 f.each_line do |line|       # Split each line and
                     line.split(/\r?\n/).reject{ |l|  # reject all those line
                         !l.include? "=" }.map! {|s|    # which do not
@@ -378,7 +379,7 @@ class LinuxUpdates
         return ret
     end
     
-    def process_update_run(record, tag, host, time)
+    def process_apt_update_run(record, tag, host, time)
         processedJson = {}
         processedJson ["Start-Date"] = record['start-date']
         processedJson ["Timezone"] = OMS::Common.get_current_timezone()
@@ -405,4 +406,47 @@ class LinuxUpdates
             return {}
         end
     end
+	
+    def process_yum_record(record, tag, host, time)
+		@log.debug "LinuxUpdatesProgress: Parsing a record of type #{tag}"
+		update_run = []
+		update_run_record = {}
+		update_run_record["Computer"] = host
+		update_run_record["OSType"] = "Linux"
+		update_run_record["UpdateRunName"] = getUpdateRunName()
+		update_run_record["UpdateTitle"] = record["package-name"]
+		update_run_record["UpdateId"] = SecureRandom.uuid
+		update_run_record["TimeStamp"] = OMS::Common.format_time(time)
+		update_run_record["Tag"] = tag
+		
+		#commenting the time as the date is not start date and seems to be package available date in yum log.		
+		#update_run_record ["StartTime"] = DateTime.parse(record["update-action-date"]).strftime(APT_GET_START_DATE_TIME_FORMAT)
+		update_run_record ["Status"] = get_yum_update_status(record["update-action"])
+
+		update_run << update_run_record
+		return update_run
+    end
+   
+	def get_yum_update_status(update_action)
+		if (update_action =~ /Updated/i || update_action =~ /Installed/i || update_action =~ /Erased/i)
+			return "Succeeded"
+		else
+			return "Failed"
+		end		
+	end
+	
+    def get_update_run_progress_blob(list_of_updates)
+		@log.debug "creating blob for yum record"
+		wrapper = {
+			"DataType" => "UPDATES_RUN_PROGRESS_BLOB",
+			"IPName" => "Updates",
+			"DataItems" => list_of_updates
+		}
+		return wrapper
+	end
+  
+    def process_yum_update_run(record, tag, host, time)
+		list_of_updates = process_yum_record(record, tag, host, time)
+		return get_update_run_progress_blob(list_of_updates)
+	end
 end
