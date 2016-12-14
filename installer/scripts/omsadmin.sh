@@ -70,6 +70,12 @@ OMSCLOUD_ID=""
 UUID=""
 USER_ID=`id -u`
 
+DEFAULT_SYSLOG_PORT=25224
+DEFAULT_MONITOR_AGENT_PORT=25324
+
+SYSLOG_PORT=$DEFAULT_SYSLOG_PORT
+MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
+
 usage()
 {
     local basename=`basename $0`
@@ -431,6 +437,10 @@ onboard()
 
     update_symlinks
 
+    configure_syslog
+
+    configure_monitor_agent
+
     # If a test is not in progress then register omsagent as a service and start the agent 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         /opt/microsoft/omsagent/bin/service_control start $WORKSPACE_ID 
@@ -480,6 +490,14 @@ remove_workspace()
     fi
 
     log_info "Cleanup the folders"
+
+    local port=`grep 'port .*' $CONF_DIR/omsagent.d/syslog.conf | cut -d ' ' -f4`
+
+    if [ -z ${port} ]; then
+        port=`grep 'port .*' $CONF_DIR/omsagent.conf | cut -d ' ' -f4`
+    fi
+
+    /opt/microsoft/omsagent/bin/configure_syslog.sh unconfigure $WORKSPACE_ID ${port}
 
     rm -rf "$VAR_DIR_WS" "$ETC_DIR_WS"
 
@@ -653,6 +671,7 @@ copy_omsagent_conf()
     make_dir $OMSAGENTD_DIR
 
     cp $SYSCONF_DIR/omsagent.d/monitor.conf $OMSAGENTD_DIR
+    cp $SYSCONF_DIR/omsagent.d/syslog.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omsagent.d/heartbeat.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
@@ -693,6 +712,34 @@ link_dir()
     ln -s $2 $1
 
     chown_omsagent $1
+}
+
+find_available_port()
+{
+    local port=$1
+    local result=$2
+
+    until [ -z "`netstat -an | grep ${port}`" ]; do
+        port=$((port+1))
+    done
+
+    eval $result="${port}"
+}
+
+configure_syslog()
+{
+    find_available_port $DEFAULT_SYSLOG_PORT SYSLOG_PORT
+
+    sed -i s,%SYSLOG_PORT%,$SYSLOG_PORT,1 $CONF_DIR/omsagent.d/syslog.conf
+
+    /opt/microsoft/omsagent/bin/configure_syslog.sh configure $WORKSPACE_ID $SYSLOG_PORT
+}
+
+configure_monitor_agent()
+{
+    find_available_port $DEFAULT_MONITOR_AGENT_PORT MONITOR_AGENT_PORT
+
+    sed -i s,%MONITOR_AGENT_PORT%,$MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
 }
 
 main()

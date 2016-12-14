@@ -1,8 +1,8 @@
 %Variables
 PF:           'Linux'
-RSYSLOG_DEST: '/etc/rsyslog.d/95-omsagent.conf'
 OMI_SERVICE:  '/opt/omi/bin/service_control'
 OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
+CONF_SYSLOG:  '/opt/microsoft/omsagent/bin/configure_syslog.sh'
 
 %Directories
 /etc;                                                   755; root; root; sysdir
@@ -16,123 +16,6 @@ OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/sudoers;                            installer/conf/sudoers;                                664; root; root
-
-%Syslog_Services
-RestartService() {
-    if [ -z "$1" ]; then
-        echo "RestartService requires parameter (service name to restart)" 1>&2
-        return 1
-    fi
-
-    echo "Restarting service: $1"
-
-    # Does the service exist under systemd?
-    local systemd_dir=$(${{OMS_SERVICE}} find-systemd-dir)
-    pidof systemd 1> /dev/null 2> /dev/null
-    if [ $? -eq 0 -a -f ${systemd_dir}/${1}.service ]; then
-        /bin/systemctl restart $1
-    else
-        if [ -x /usr/sbin/invoke-rc.d ]; then
-            /usr/sbin/invoke-rc.d $1 restart
-        elif [ -x /sbin/service ]; then
-            /sbin/service $1 restart
-        elif [ -x /bin/systemctl ]; then
-            /bin/systemctl restart $1
-        else
-            echo "Unrecognized service controller to start service $1" 1>&2
-	    return 1
-        fi
-     fi    
-}
-
-ConfigureRsyslog() {
-    if [ ! -f ${{RSYSLOG_DEST}} ]; then
-        echo "Configuring rsyslog for OMS logging"
-
-        cp /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf ${{RSYSLOG_DEST}}
-        chown omsagent:omsagent ${{RSYSLOG_DEST}}
-        RestartService rsyslog
-    fi
-}
-
-UnconfigureRsyslog() {
-    if [ -f ${{RSYSLOG_DEST}} ]; then
-        echo "Unconfiguring rsyslog for OMS logging"
-
-        rm -f ${{RSYSLOG_DEST}}
-        RestartService rsyslog
-    fi
-}
-
-ConfigureOldRsyslog() {
-    # Don't configure Rsyslog (old version) if already configured (avoid duplicate entries)
-    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/rsyslog.conf
-    if [ $? -ne 0 ]; then
-        echo "Configuring (old) rsyslog for OMS logging"
-
-        cat /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf >> /etc/rsyslog.conf
-        RestartService rsyslog
-    fi
-}
-
-UnconfigureOldRsyslog() {
-    egrep -q "OMS Syslog|@127.0.0.1:25224" /etc/rsyslog.conf
-    if [ $? -eq 0 ]; then
-        echo "Unconfiguring (old) rsyslog for OMS logging"
-
-        cp /etc/rsyslog.conf /etc/rsyslog.bak
-        egrep -v "OMS Syslog|@127.0.0.1:25224" /etc/rsyslog.bak > /etc/rsyslog.conf
-        RestartService rsyslog
-    fi
-}
-
-ConfigureSyslog_ng() {
-    # Don't reconfigure syslog-ng if already configured (avoid duplicate entries)
-    egrep -q "OMS_|_oms" /etc/syslog-ng/syslog-ng.conf
-    if [ $? -ne 0 ]; then
-        echo "Configuring syslog-ng for OMS logging"
-
-        cat /etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf >> /etc/syslog-ng/syslog-ng.conf
-        RestartService syslog
-    fi
-}
-
-UnconfigureSyslog_ng() {
-    egrep -q "OMS_|_oms" /etc/syslog-ng/syslog-ng.conf
-    if [ $? -eq 0 ]; then
-        echo "Unconfiguring syslog-ng for OMS logging"
-
-        cp /etc/syslog-ng/syslog-ng.conf /etc/syslog-ng/syslog-ng.bak
-        egrep -v "OMS_|_oms" /etc/syslog-ng/syslog-ng.bak > /etc/syslog-ng/syslog-ng.conf
-        RestartService syslog
-    fi
-}
-
-ConfigureSyslog() {
-    if [ -f /etc/rsyslog.conf -a -d /etc/rsyslog.d ]; then
-        ConfigureRsyslog
-    elif [ -f /etc/rsyslog.conf ]; then
-        ConfigureOldRsyslog
-    elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
-        ConfigureSyslog_ng
-    else
-        echo "No supported syslog daemon found. Syslog messages will not be processed."
-        return 1
-    fi
-}
-
-UnconfigureSyslog() {
-    if [ -f /etc/rsyslog.conf -a -d /etc/rsyslog.d ]; then
-        UnconfigureRsyslog
-    elif [ -f /etc/rsyslog.conf ]; then
-        UnconfigureOldRsyslog
-    elif [ -f /etc/syslog-ng/syslog-ng.conf ]; then
-        UnconfigureSyslog_ng
-    else
-        echo "No supported syslog daemon found; unable to unconfigure syslog monitoring."
-        return 1
-    fi
-}
 
 %Sudoer_Functions
 RemoveSudoersSupport() {
@@ -169,14 +52,11 @@ SudoSupportsIncludeDirective() {
 
 
 %Preinstall_1000
-#include Syslog_Services
 
 # If our service is already running, stop it
 if [ -f ${{OMS_SERVICE}} ]; then
    ${{OMS_SERVICE}} stop
 fi
-
-UnconfigureSyslog
 
 # The OMS_SERVICE script will not be present on a fresh install
 [ -f ${{OMS_SERVICE}} ] && ${{OMS_SERVICE}} disableall
@@ -200,13 +80,10 @@ fi
 /usr/sbin/usermod -g omiusers omsagent 1> /dev/null 2> /dev/null
 
 %Postinstall_500
-#include Syslog_Services
 #include Sudoer_Functions
 
 ${{OMI_SERVICE}} reload
 ${{OMS_SERVICE}} enable
-
-ConfigureSyslog
 
 # Unconfigure sudo if it's already configured
 
@@ -226,11 +103,10 @@ chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
 
 
 %Preuninstall_10
-#include Syslog_Services
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
-    UnconfigureSyslog
     ${{OMS_SERVICE}} disableall
+    ${{CONF_SYSLOG}} purge
 fi
 
 
