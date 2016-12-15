@@ -1,5 +1,6 @@
 require 'optparse'
 require 'gyoku'
+require 'rexml/document'
 
 class StrongTypedClass
   def self.strongtyped_accessor(name, type)
@@ -50,7 +51,7 @@ class AgentTopologyRequest < StrongTypedClass
   strongtyped_accessor :OperatingSystem, AgentTopologyRequestOperatingSystem    
 
   
-  def get_telemetry_data(os_info, conf_omsadmin)
+  def get_telemetry_data(os_info, conf_omsadmin, pid_file)
     os = AgentTopologyRequestOperatingSystem.new
     telemetry = AgentTopologyRequestOperatingSystemTelemetry.new
 
@@ -66,7 +67,13 @@ class AgentTopologyRequest < StrongTypedClass
 
     # Get process stats from omsagent for telemetry
     if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(conf_omsadmin)
-      process_stats = `/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Name like 'omsagent'\" | grep =`
+      process_stats = ""
+      # If there is no PID file, the omsagent process has not started, so no telemetry
+      if File.exist?(pid_file) and File.readable?(pid_file)
+        pid = File.read(pid_file)
+        process_stats = `/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '#{pid}'\" | grep =`
+      end
+
       process_stats.each_line do |line|
         telemetry.PercentUserTime = line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
         telemetry.PercentPrivilegedTime = line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
@@ -114,14 +121,14 @@ def obj_to_hash(obj)
 end
 
 class AgentTopologyRequestHandler < StrongTypedClass
-  def handle_request(os_info, conf_omsadmin, fqdn, entity_type_id, auth_cert, telemetry)
+  def handle_request(os_info, conf_omsadmin, fqdn, entity_type_id, auth_cert, pid_file, telemetry)
     topology_request = AgentTopologyRequest.new
     topology_request.FullyQualfiedDomainName = fqdn
     topology_request.EntityTypeId = entity_type_id
     topology_request.AuthenticationCertificate = auth_cert
 
     if telemetry
-      topology_request.get_telemetry_data(os_info, conf_omsadmin)
+      topology_request.get_telemetry_data(os_info, conf_omsadmin, pid_file)
     end
 
     body_heartbeat = "<?xml version=\"1.0\"?>\n"
@@ -132,6 +139,28 @@ class AgentTopologyRequestHandler < StrongTypedClass
     return body_heartbeat
   end
 end
+
+# Returns true if the provided XML string has Operating System Telemetry within it
+def xml_contains_telemetry(xmlstring)
+  if xmlstring.nil? or xmlstring.empty?
+    return false
+  end
+
+  doc = REXML::Document.new(xmlstring)
+  if !doc.root.nil? and doc.root.elements.respond_to? :each
+    doc.root.elements.each do |root_elem|
+      if root_elem.name == "OperatingSystem" and root_elem.elements.respond_to? :each
+        root_elem.elements.each do |op_sys_elem|
+          if op_sys_elem.name == "Telemetry" and !op_sys_elem.attributes.empty?
+            return true
+          end
+        end
+      end
+    end
+  end
+
+  return false
+end
               
 if __FILE__ == $0
   options = {}
@@ -141,7 +170,8 @@ if __FILE__ == $0
     end
   end.parse!  
 
-  topology_request_xml = AgentTopologyRequestHandler.new.handle_request(ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5], options[:telemetry])
+  topology_request_xml = AgentTopologyRequestHandler.new.handle_request(ARGV[1], ARGV[2],
+      ARGV[3], ARGV[4], ARGV[5], ARGV[6], options[:telemetry])
 
   path = ARGV[0]
   File.open(path, 'a') do |f|
