@@ -328,7 +328,7 @@ onboard()
         log_info "Reusing previous agent GUID"
     else
         AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
-        $RUBY $MAINTENANCE_TASKS_SCRIPT -c "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" -w "$WORKSPACE_ID" -a "$AGENT_GUID" $CURL_VERBOSE
+        $RUBY $MAINTENANCE_TASKS_SCRIPT -c "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" -w "$WORKSPACE_ID" -a "$AGENT_GUID" $CURL_VERBOSE
         if [ $? -ne 0 ]; then
           log_error "Error generating certs"
           clean_exit 1
@@ -403,7 +403,7 @@ onboard()
     fi
 
     if [ "$RET_CODE" = "200" ]; then
-        $RUBY $MAINTENANCE_TASKS_SCRIPT --endpoints "$RESP_ONBOARD","$ENDPOINT_FILE" "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" $CURL_VERBOSE
+        $RUBY $MAINTENANCE_TASKS_SCRIPT --endpoints "$RESP_ONBOARD","$ENDPOINT_FILE" "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" $CURL_VERBOSE
         if [ $? -ne 0 ]; then
             log_warning "During onboarding request, certificate update and DSC endpoints may not have been extracted."
         else

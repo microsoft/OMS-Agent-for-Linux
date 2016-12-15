@@ -15,6 +15,7 @@ module Fluent
     config_param :omsadmin_conf_path, :string
     config_param :cert_path, :string
     config_param :key_path, :string
+    config_param :pid_path, :string
     config_param :proxy_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf' #optional
     config_param :os_info, :string, :default => '/etc/opt/microsoft/scx/conf/scx-release' #optional
     config_param :install_info, :string, :default => '/etc/opt/microsoft/omsagent/sysconf/installinfo.txt' #optional
@@ -30,14 +31,14 @@ module Fluent
       if !@key_path
         raise Fluent::ConfigError, "'key_path' option is required on heartbeat_request input"
       end
-      if !@proxy_path
-        raise Fluent::ConfigError, "'proxy_path' option is required on heartbeat_request input"
+      if !@pid_path
+        raise Fluent::ConfigError, "'pid_path' option is required on heartbeat_request input"
       end
     end
 
     def start
       @maintenance_script = MaintenanceModule::Maintenance.new(@omsadmin_conf_path, @cert_path,
-                              @key_path, @proxy_path, @os_info, @install_info, @log)
+                              @key_path, @pid_path, @proxy_path, @os_info, @install_info, @log)
 
       if @run_interval
         @finished = false

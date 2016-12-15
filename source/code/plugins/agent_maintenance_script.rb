@@ -18,7 +18,8 @@ module MaintenanceModule
     attr_reader :AGENT_USER, :load_config_success
     attr_accessor :suppress_stdout
   
-    def initialize(omsadmin_conf_path, cert_path, key_path, proxy_path, os_info, install_info, log = nil, verbose = false)
+    def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path,
+                   os_info, install_info, log = nil, verbose = false)
       @suppress_logging = true  # suppress_logging suppresses all output, including both print and logger
       @suppress_stdout = false  # suppress_stdout suppresses only print
 
@@ -27,6 +28,7 @@ module MaintenanceModule
       @omsadmin_conf_path = omsadmin_conf_path
       @cert_path = cert_path
       @key_path = key_path
+      @pid_path = pid_path
       @proxy_path = proxy_path
       @os_info = os_info
       @install_info = install_info
@@ -126,6 +128,11 @@ module MaintenanceModule
     def log_error(message)
       print("error\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @logger.error(message) if !@suppress_logging
+    end
+
+    def log_debug(message)
+      print("debug\t#{message}\n") if !@suppress_logging and !@suppress_stdout
+      @logger.debug(message) if !@suppress_logging
     end
 
     # Helper method that returns true if a file exists and is non-empty
@@ -335,9 +342,12 @@ module MaintenanceModule
       # Generate the request body
       begin
         body_hb_xml = AgentTopologyRequestHandler.new.handle_request(@os_info, @omsadmin_conf_path,
-            @FQDN, @AGENT_GUID, get_cert_server(@cert_path), telemetry=true)
+            @FQDN, @AGENT_GUID, get_cert_server(@cert_path), @pid_path, telemetry=true)
+        if !xml_contains_telemetry(body_hb_xml)
+          log_debug("No Telemetry data was appended to the heartbeat request")
+        end
       rescue => e
-        log_error("Error when appending Telemetry to Heartbeat")
+        log_error("Error when appending Telemetry to Heartbeat: #{e.message}")
       end
 
       # Form headers
@@ -552,7 +562,7 @@ end # module MaintenanceModule
 # Define the usage of this maintenance script
 def usage
   basename = File.basename($0)
-  necessary_inputs = "<omsadmin_conf> <cert> <key> <proxy> <os_info> <install_info>"
+  necessary_inputs = "<omsadmin_conf> <cert> <key> <pid> <proxy> <os_info> <install_info>"
   print("\nMaintenance tool for OMS Agent onboarded to workspace:"\
         "\nHeartbeat:\n"\
         "ruby #{basename} -h #{necessary_inputs}\n"\
@@ -593,7 +603,7 @@ if __FILE__ == $0
     end
   end.parse!
 
-  if (ARGV.length < 6)
+  if (ARGV.length < 7)
     usage
     exit 0
   end
@@ -601,12 +611,13 @@ if __FILE__ == $0
   omsadmin_conf_path = ARGV[0]
   cert_path = ARGV[1]
   key_path = ARGV[2]
-  proxy_path = ARGV[3]
-  os_info = ARGV[4]
-  install_info = ARGV[5]
+  pid_path = ARGV[3]
+  proxy_path = ARGV[4]
+  os_info = ARGV[5]
+  install_info = ARGV[6]
 
-  maintenance = MaintenanceModule::Maintenance.new(omsadmin_conf_path, cert_path, key_path, proxy_path,
-                    os_info, install_info, log = nil, options[:verbose])
+  maintenance = MaintenanceModule::Maintenance.new(omsadmin_conf_path, cert_path, key_path,
+                    pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
   ret_code = 0
 
   if !maintenance.check_user
