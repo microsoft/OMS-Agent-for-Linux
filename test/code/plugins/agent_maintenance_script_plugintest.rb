@@ -44,6 +44,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     @omsadmin_conf_file = Tempfile.new("omsadmin_conf")
     @cert_file = Tempfile.new("oms_crt")
     @key_file = Tempfile.new("oms_key")
+    @pid_file = Tempfile.new("omsagent_pid")  # this does not need to have meaningful data during testing
     @proxy_file = Tempfile.new("proxy_conf")
     @os_info_file = Tempfile.new("os_info")
     @install_info_file = Tempfile.new("install_info")
@@ -54,18 +55,20 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     @omsadmin_conf_file.unlink
     @cert_file.unlink
     @key_file.unlink
+    @pid_file.unlink
     @proxy_file.unlink
     @os_info_file.unlink
     @install_info_file.unlink
   end
 
   # Helper to create a new Maintenance class object to test
-  def get_new_maintenance_obj(omsadmin_path = @omsadmin_conf_file.path, cert_path = @cert_file.path,
-       key_path = @key_file.path, proxy_path = @proxy_file.path, os_info_path = @os_info_file.path,
+  def get_new_maintenance_obj(omsadmin_path = @omsadmin_conf_file.path,
+       cert_path = @cert_file.path, key_path = @key_file.path, pid_path = @pid_file.path,
+       proxy_path = @proxy_file.path, os_info_path = @os_info_file.path,
        install_info_path = @install_info_file.path, log = @log, verbose = false)
 
-    m = MaintenanceModule::Maintenance.new(omsadmin_path, cert_path, key_path, proxy_path,
-         os_info_path, install_info_path, log, verbose)
+    m = MaintenanceModule::Maintenance.new(omsadmin_path, cert_path, key_path, pid_path,
+         proxy_path, os_info_path, install_info_path, log, verbose)
     m.suppress_stdout = true
     return m
   end
