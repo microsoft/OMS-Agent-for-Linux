@@ -66,6 +66,7 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
     @omsadmin_conf_path = "#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf"
     @cert_path = "#{@omsadmin_test_dir_ws1}/certs/oms.crt"
     @key_path = "#{@omsadmin_test_dir_ws1}/certs/oms.key"
+    @pid_path = Tempfile.new("omsagent_pid")  # this does not need to be meaningful during testing
     @os_info_path = "#{@omsadmin_test_dir}/scx-release"
     @install_info_path = "#{@base_dir}/installer/conf/installinfo.txt"
     @log = OMS::MockLog.new
@@ -77,6 +78,7 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
   end
 
   def teardown
+    @pid_path.unlink
     @test_omsadmin_conf.unlink
     @test_cert.unlink
     @test_key.unlink
@@ -86,11 +88,12 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
 
   # Helper to create a new Maintenance class object to test; uses valid files by default
   def get_new_maintenance_obj(omsadmin_path = @omsadmin_conf_path, cert_path = @cert_path,
-       key_path = @key_path, proxy_path = @proxy_conf, os_info_path = @os_info_path,
-       install_info_path = @install_info_path, log = @log, verbose = false)
+       key_path = @key_path, pid_path = @pid_path.path, proxy_path = @proxy_conf,
+       os_info_path = @os_info_path, install_info_path = @install_info_path, log = @log,
+       verbose = false)
 
-    m = MaintenanceModule::Maintenance.new(omsadmin_path, cert_path, key_path, proxy_path,
-         os_info_path, install_info_path, log, verbose)
+    m = MaintenanceModule::Maintenance.new(omsadmin_path, cert_path, key_path, pid_path,
+         proxy_path, os_info_path, install_info_path, log, verbose)
     m.suppress_stdout = true
     return m
   end
@@ -120,7 +123,8 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
 
   def test_heartbeat_malformed_os_info
     File.write(@test_os_info.path, "Malformed OS Name\nMalformed OS Version\n")
-    m = get_new_maintenance_obj(@omsadmin_conf_path, @cert_path, @key_path, @proxy_conf, @test_os_info.path)
+    m = get_new_maintenance_obj(@omsadmin_conf_path, @cert_path, @key_path, @pid_path.path,
+            @proxy_conf, @test_os_info.path)
     assert_equal(0, m.heartbeat, "Heartbeat failed with malformed os_info")
   end
 
