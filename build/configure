@@ -246,6 +246,10 @@ fi
 
 cp ${base_dir}/source/ext/patches/ruby/configure ${base_dir}/source/ext/ruby/configure
 
+# We need to patch Ruby for handling any references to SSLv3 symbols, apply this patch
+
+patch ${base_dir}/source/ext/ruby/ext/openssl/ossl_ssl.c < ${base_dir}/source/ext/patches/ruby/sslv3.patch
+
 # We modify fluentd for branding purposes (omsagent), copy those changes
 
 cp ${base_dir}/source/ext/patches/fluentd/env.rb ${base_dir}/source/ext/fluentd/lib/fluent/env.rb
