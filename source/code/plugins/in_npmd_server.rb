@@ -14,6 +14,7 @@ module Fluent
             require 'json'
             require 'securerandom'
             require 'etc'
+            require 'enumerator'
 
             require_relative 'npmd_config_lib'
         end
@@ -73,6 +74,7 @@ module Fluent
         CMD_ENUMERATE_PROCESSES_PREFIX = "ps aux | grep "
 
         MAX_LENGTH_DSC_COMMAND = 300
+        MAX_ELEMENT_EMIT_CHUNK = 5000
 
         WATCHDOG_PET_INTERVAL_SECS    = 1 * 60 * 60 # 1 hour
 
@@ -257,11 +259,13 @@ module Fluent
         end
 
         def emit_upload_data_dataitems(dataitems)
-            _record = Hash.new
-            _record["DataType"] = "NETWORK_MONITORING_BLOB"
-            _record["IPName"]   = "NetworkMonitoring"
-            _record["DataItems"] = dataitems
-            router.emit(@tag, Engine.now, _record)
+            dataitems.each_slice(MAX_ELEMENT_EMIT_CHUNK) do |items|
+                _record = Hash.new
+                _record["DataType"] = "NETWORK_MONITORING_BLOB"
+                _record["IPName"]   = "NetworkMonitoring"
+                _record["DataItems"] = items
+                router.emit(@tag, Engine.now, _record)
+            end
         end
 
         def check_and_update_binaries
