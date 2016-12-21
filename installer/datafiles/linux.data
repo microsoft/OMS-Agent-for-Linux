@@ -53,13 +53,8 @@ SudoSupportsIncludeDirective() {
 
 %Preinstall_1000
 
-# If our service is already running, stop it
-if [ -f ${{OMS_SERVICE}} ]; then
-   ${{OMS_SERVICE}} stop
-fi
-
 # The OMS_SERVICE script will not be present on a fresh install
-[ -f ${{OMS_SERVICE}} ] && ${{OMS_SERVICE}} disableall
+[ -f ${{OMS_SERVICE}} ] && ${{OMS_SERVICE}} disable
 
 # Add the 'omsagent' group if it does not already exist
 # (Can't use useradd with -U since that doesn't exist on older systems)
@@ -83,7 +78,6 @@ fi
 #include Sudoer_Functions
 
 ${{OMI_SERVICE}} reload
-${{OMS_SERVICE}} enable
 
 # Unconfigure sudo if it's already configured
 
@@ -101,11 +95,13 @@ fi
 
 chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
 
+%Postinstall_600
+${{OMS_SERVICE}} start
 
 %Preuninstall_10
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
-    ${{OMS_SERVICE}} disableall
+    ${{OMS_SERVICE}} disable
     ${{CONF_SYSLOG}} purge
 fi
 
