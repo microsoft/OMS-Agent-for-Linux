@@ -67,16 +67,15 @@ module Fluent
 
         STOP_SIGNAL       = "SIGKILL"
 
-        RETRY_START_BACKOFF_TIME_SECS   = 900 # 15 minutes
-        RETRY_START_WAIT_TIME_SECS      = 5   # 5 seconds
-        RETRY_START_ATTEMPTS_PER_BATCH  = 5
-
         CMD_ENUMERATE_PROCESSES_PREFIX = "ps aux | grep "
 
         MAX_LENGTH_DSC_COMMAND = 300
         MAX_ELEMENT_EMIT_CHUNK = 5000
 
         WATCHDOG_PET_INTERVAL_SECS    = 1 * 60 * 60 # 1 hour
+
+        EXIT_RESTART_BACKOFF_TIMES_SECS = [60, 120, 300, 600, 1200, 2400]
+        EXIT_RESTART_BACKOFF_THRES_SECS = 900
 
         def start
             @binary_presence_test_string = "npmd_agent" if @binary_presence_test_string.nil?
@@ -91,8 +90,9 @@ module Fluent
             @npmdIntendedStop = false
             @stderrFileNameHash = Hash.new
             @stop_sync = Mutex.new
-            # Initialize to true to prevent wait on first start
-            start_npmd_async_retry_thread()
+            @agent_restart_count = 0
+            @last_npmd_start = nil
+            start_npmd()
             @watch_dog_thread = Thread.new(&method(:watch_dog_wait_for_pet))
             @watch_dog_sync = Mutex.new
             @watch_dog_last_pet = Time.new
@@ -319,7 +319,7 @@ module Fluent
 
             if _req.start_with?CMD_START
                 Logger::logInfo "Processing NPMD Start command"
-                start_npmd_async_retry_thread()
+                start_npmd()
             elsif _req.start_with?CMD_STOP
                 Logger::logInfo "Processing NPMD Stop command"
                 stop_npmd()
@@ -350,33 +350,6 @@ module Fluent
             rescue Errno::ESRCH
                 false
             end
-        end
-
-        def start_npmd_with_retry(retryCount, cadence, rescheduleTime)
-            @stop_sync.synchronize do
-                _isStarted = false
-                (1..retryCount).each do |x|
-                    start_npmd()
-                    break if (_isStarted = is_npmd_seen_in_ps())
-                    Logger::logInfo "Waiting for #{cadence} seconds before retry"
-                    sleep(cadence) unless x == retryCount
-                end
-                unless _isStarted
-                    _delayedStarter = Thread.new {
-                        Logger::logInfo "Now waiting for #{rescheduleTime} seconds"
-                        sleep(rescheduleTime)
-                        start_npmd_with_retry(retryCount, cadence, rescheduleTime)
-                    }
-                end
-            end
-        end
-
-        def start_npmd_async_retry_thread
-            _npmdStarter = Thread.new {
-                start_npmd_with_retry(RETRY_START_ATTEMPTS_PER_BATCH,
-                                      RETRY_START_WAIT_TIME_SECS,
-                                      RETRY_START_BACKOFF_TIME_SECS)
-            }
         end
 
         def delete_stale_stderror_files
@@ -443,21 +416,42 @@ module Fluent
             else
                 # only place for restarting crashed NPMD
                 log_error "NpmdAgent ended with exit status #{_exitRes[1]}"
+
+                _currentTime = Time.now
+                @stop_sync.synchronize do
+                    if !@last_npmd_start.nil? and
+                       (_currentTime - @last_npmd_start) < EXIT_RESTART_BACKOFF_THRES_SECS
+                        if @agent_restart_count >= EXIT_RESTART_BACKOFF_TIMES_SECS.length
+                            @agent_restart_count = EXIT_RESTART_BACKOFF_TIMES_SECS.length
+                        else
+                            @agent_restart_count += 1
+                        end
+                        _sleepFor = EXIT_RESTART_BACKOFF_TIMES_SECS[@agent_restart_count - 1]
+                        Logger::logInfo "Sleeping for #{_sleepFor} secs before restarting agent"
+                        sleep(_sleepFor)
+                    else
+                        @agent_restart_count = 0
+                    end
+                end
+
                 Logger::logInfo "Restarting NPMD"
-                start_npmd_async_retry_thread()
+                start_npmd()
             end
         end
 
         def start_npmd
-            unless is_npmd_seen_in_ps()
-                @npmdIntendedStop = false
-                _stderrFileName = "#{File.dirname(@location_unix_endpoint)}/stderror_#{SecureRandom.uuid}.log"
-                @npmdProcessId = Process.spawn(@binary_invocation_cmd, :err=>_stderrFileName)
-                @stderrFileNameHash[@npmdProcessId] = _stderrFileName
-                _t = Thread.new {handle_exit(@npmdProcessId)}
-                Logger::logInfo "NPMD Agent running with process id #{@npmdProcessId}"
-            else
-                Logger::logInfo "Npmd already seen in PS"
+            @stop_sync.synchronize do
+                unless is_npmd_seen_in_ps()
+                    @npmdIntendedStop = false
+                    _stderrFileName = "#{File.dirname(@location_unix_endpoint)}/stderror_#{SecureRandom.uuid}.log"
+                    @npmdProcessId = Process.spawn(@binary_invocation_cmd, :err=>_stderrFileName)
+                    @last_npmd_start = Time.now
+                    @stderrFileNameHash[@npmdProcessId] = _stderrFileName
+                    _t = Thread.new {handle_exit(@npmdProcessId)}
+                    Logger::logInfo "NPMD Agent running with process id #{@npmdProcessId}"
+                else
+                    Logger::logInfo "Npmd already seen in PS"
+                end
             end
         end
 

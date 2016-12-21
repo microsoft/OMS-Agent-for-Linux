@@ -74,7 +74,7 @@ module NPMDConfig
                 _doc.root.elements << _agentsElement
                 _networksElement = createNetworkElements(configHash["Networks"], _subnetInfo["IDs"])
                 _doc.root.elements << _networksElement
-                _rulesElement = createRuleElements(configHash["Rules"])
+                _rulesElement = createRuleElements(configHash["Rules"], _subnetInfo["IDs"])
                 _doc.root.elements << _rulesElement
 
                 _formatter = REXML::Formatters::Pretty.new(2)
@@ -158,7 +158,28 @@ module NPMDConfig
             _networks
         end
 
-        def self.createRuleElements(ruleArray)
+        def self.createActOnElements(actOnArray, subnetIdHash, xmlElemName)
+            _xmlElement = REXML::Element.new(xmlElemName)
+            actOnArray.each do |a|
+                _sSubnetId = "*"
+                _dSubnetId = "*"
+                if a["SS"] != "*" and a["SS"] != ""
+                    _sSubnetId = subnetIdHash[a["SS"].to_s]
+                end
+                if a["DS"] != "*" and a["DS"] != ""
+                    _dSubnetId = subnetIdHash[a["DS"].to_s]
+                end
+                _snPair = REXML::Element.new("SubnetPair")
+                _snPair.add_attribute("SourceSubnet", _sSubnetId)
+                _snPair.add_attribute("SourceNetwork", a["SN"])
+                _snPair.add_attribute("DestSubnet", _dSubnetId)
+                _snPair.add_attribute("DestNetwork", a["DN"])
+                _xmlElement.elements << _snPair
+            end
+            _xmlElement
+        end
+
+        def self.createRuleElements(ruleArray, subnetIdHash)
             _rules = REXML::Element.new("Rules")
             ruleArray.each do |x|
                 _rule = REXML::Element.new("Rule")
@@ -168,17 +189,11 @@ module NPMDConfig
                 _alertConfig = REXML::Element.new("AlertConfiguration")
                 _alertConfig.add_element("Loss", {"Threshold" => x["LossThreshold"] })
                 _alertConfig.add_element("Latency", {"Threshold" => x["LatencyThreshold"]})
-                _netTestMtx = REXML::Element.new("NetworkTestMatrix")
-                x["Rules"].each do |r|
-                    _snPair = REXML::Element.new("SubnetPair")
-                    _snPair.add_attribute("SourceSubnet", r["SS"])
-                    _snPair.add_attribute("SourceNetwork", r["SN"])
-                    _snPair.add_attribute("DestSubnet", r["DS"])
-                    _snPair.add_attribute("DestNetwork", r["DN"])
-                    _netTestMtx.elements << _snPair
-                end
+                _netTestMtx = createActOnElements(x["Rules"], subnetIdHash, "NetworkTestMatrix")
+                _exceptions = createActOnElements(x["Exceptions"], subnetIdHash, "Exceptions")
                 _rule.elements << _alertConfig
                 _rule.elements << _netTestMtx
+                _rule.elements << _exceptions
                 _rules.elements << _rule
             end
             _rules
