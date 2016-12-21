@@ -145,49 +145,10 @@ WriteInstallInfo
 # owned by omsagent account. So create them as part of Postinstall, after the
 # service account is created.
 
-mkdir -m 700 /etc/opt/microsoft/omsagent/certs/ 2> /dev/null || true
-chown -R omsagent:omsagent /etc/opt/microsoft/omsagent/certs
-
 mkdir -m 755 /var/opt/microsoft/omsagent        2> /dev/null || true
-mkdir -m 755 /var/opt/microsoft/omsagent/log    2> /dev/null || true
-mkdir -m 755 /var/opt/microsoft/omsagent/run    2> /dev/null || true
-mkdir -m 755 /var/opt/microsoft/omsagent/state  2> /dev/null || true
-mkdir -m 755 /var/opt/microsoft/omsagent/tmp    2> /dev/null || true
-chown -R omsagent:omsagent /var/opt/microsoft/omsagent
+chown -R omsagent:omiusers /var/opt/microsoft/omsagent
 
 # Ditto for conf directory in /etc/opt/microsoft/omsagent/conf ...
-
-mkdir -m 755 ${{CONF_DIR}} 2> /dev/null || true
-
-if [ ! -f ${{CONF_DIR}}/omsagent.conf ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf ${{CONF_DIR}}
-fi
-
-# Folder for omsagent.conf includes
-mkdir -m 755 ${{CONF_DIR}}/omsagent.d 2> /dev/null || true
-
-# Copy monitor plugins conf file by default
-if [ ! -f ${{CONF_DIR}}/omsagent.d/monitor.conf ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf ${{CONF_DIR}}/omsagent.d/monitor.conf
-fi
-
-# Copy operation.conf file by default
-if [ ! -f ${{CONF_DIR}}/omsagent.d/operation.conf ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf ${{CONF_DIR}}/omsagent.d/operation.conf
-fi
-
-# Copy over omi_mapping.json
-if [ ! -f ${{CONF_DIR}}/omsagent.d/omi_mapping.json ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/omi_mapping.json ${{CONF_DIR}}/omsagent.d/omi_mapping.json
-fi
-
-# Copy oms_audits.xml file by default
-if [ ! -f ${{CONF_DIR}}/omsagent.d/oms_audits.xml ]; then
-   cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms_audits.xml ${{CONF_DIR}}/omsagent.d/oms_audits.xml
-fi
-
-# Copy over standalone plugin configurations
-#cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/* ${{CONF_DIR}}/omsagent.d
 
 # Copy collectd conf files only if collectd_marker.conf exists 
 if [ -f /etc/collectd_marker.conf ]; then
@@ -196,12 +157,12 @@ if [ -f /etc/collectd_marker.conf ]; then
     else
         cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd/collectd.conf.d/oms.conf
     fi
-    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf ${{CONF_DIR}}/omsagent.d/collectd.conf
+    #cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf ${{CONF_DIR}}/omsagent.d/collectd.conf
     rm /etc/collectd_marker.conf
 fi
 
-# The real conf directory has to be owned by omsagent to be readable by the omsagent daemon
-chown -R omsagent:omsagent ${{CONF_DIR}}
+%Postinstall_200
+/opt/microsoft/omsagent/bin/omsadmin.sh -m
 
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
@@ -221,17 +182,11 @@ fi
 # Thus, if we're an upgrade, skip all of this cleanup
 if ${{PERFORMING_UPGRADE_NOT}}; then
    # Clean up directory tree (created via PostInstall) if dirs are empty
-   rmdir /etc/opt/microsoft/omsagent/certs/ 2> /dev/null
-   rmdir /var/opt/microsoft/omsagent/tmp 2> /dev/null
-   rmdir /var/opt/microsoft/omsagent/state 2> /dev/null
-   rmdir /var/opt/microsoft/omsagent/run 2> /dev/null
-   rmdir /var/opt/microsoft/omsagent/log 2> /dev/null
-   rmdir /var/opt/microsoft/omsagent 2> /dev/null
+   rm -rf /var/opt/microsoft/omsagent 2> /dev/null
 
    # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
    rm -f /etc/opt/microsoft/omsagent/sysconf/installinfo.txt*
-   rmdir /etc/opt/microsoft/omsagent/sysconf 2> /dev/null
-   rmdir /etc/opt/microsoft/omsagent 2> /dev/null
+   rm -rf /etc/opt/microsoft/omsagent 2> /dev/null
    rmdir /etc/opt/microsoft 2> /dev/null
    rmdir /etc/opt 2> /dev/null
 fi
