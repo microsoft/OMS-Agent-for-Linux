@@ -34,6 +34,9 @@ CONF_PROXY=$ETC_DIR/proxy.conf
 # File with OS information for telemetry
 OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
 
+# Service Control script
+SERVICE_CONTROL=/opt/microsoft/omsagent/bin/service_control
+
 # File with information about the agent installed
 INSTALL_INFO=/etc/opt/microsoft/omsagent/sysconf/installinfo.txt
 
@@ -92,6 +95,9 @@ usage()
     echo
     echo "Remove All Workspaces:"
     echo "$basename -X"
+    echo
+    echo "Migrate Old Workspace to the New Folder Structure:"
+    echo "$basename -m"
     echo
     echo "Define proxy settings ('-u' will prompt for password):"
     echo "$basename [-u user] -p host[:port]"
@@ -196,7 +202,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:clx:X" opt; do
+    while getopts "h?s:w:d:vp:u:a:clx:Xm" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -239,6 +245,9 @@ parse_args()
             ;;
         X)
             REMOVE_ALL=1
+            ;;
+        m)
+            MIGRATE_OLD_WS=1
             ;;
         esac
     done
@@ -443,7 +452,7 @@ onboard()
 
     # If a test is not in progress then register omsagent as a service and start the agent 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
-        /opt/microsoft/omsagent/bin/service_control start $WORKSPACE_ID 
+        $SERVICE_CONTROL start $WORKSPACE_ID 
     fi
         # Configure omsconfig
         if [ "$USER_ID" -eq "0" ]; then
@@ -473,8 +482,8 @@ collectd()
     if [ -d "$COLLECTD_DIR" ]; then
         cp $SYSCONF_DIR/omsagent.d/oms.conf $COLLECTD_DIR/oms.conf
         cp $SYSCONF_DIR/omsagent.d/collectd.conf $CONF_DIR/omsagent.d/collectd.conf
-        chown omsagent:omsagent $CONF_DIR/omsagent.d/collectd.conf
-        /opt/microsoft/omsagent/bin/service_control restart 
+        chown omsagent:omiusers $CONF_DIR/omsagent.d/collectd.conf
+        $SERVICE_CONTROL restart 
     else
         echo "$COLLECTD_DIR - directory does not exist. Please make sure collectd is installed properly"
         return 1
@@ -489,17 +498,16 @@ remove_workspace()
     if [ -d "$CONF_DIR" ]; then
         log_info "Disable workspace: $WORKSPACE_ID"
 
-        /opt/microsoft/omsagent/bin/service_control disable $WORKSPACE_ID
+        $SERVICE_CONTROL disable $WORKSPACE_ID
     else
         log_error "Workspace $WORKSPACE_ID doesn't exist"
     fi
 
     log_info "Cleanup the folders"
 
-    local port=`grep 'port .*' $CONF_DIR/omsagent.d/syslog.conf | cut -d ' ' -f4`
-
-    if [ -z ${port} ]; then
-        port=`grep 'port .*' $CONF_DIR/omsagent.conf | cut -d ' ' -f4`
+    local port=$DEFAULT_SYSLOG_PORT
+    if [ -e "$CONF_DIR/omsagent.d/syslog.conf" ]; then
+        port=`grep 'port .*' $CONF_DIR/omsagent.d/syslog.conf | cut -d ' ' -f4`
     fi
 
     /opt/microsoft/omsagent/bin/configure_syslog.sh unconfigure $WORKSPACE_ID ${port}
@@ -611,6 +619,34 @@ list_workspaces()
     return 1
 }
 
+migrate_old_workspace()
+{
+    if [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR ]; then
+        WORKSPACE_ID=`grep WORKSPACE_ID $DF_CONF_DIR/omsadmin.conf | cut -d= -f2`
+
+        if [ $? -ne 0 -o -z $WORKSPACE_ID ]; then
+            echo "WORKSPACE_ID is not found. Skip migration."
+            return
+        fi
+
+        create_workspace_directories $WORKSPACE_ID
+
+        cp -rpf $DF_TMP_DIR $VAR_DIR_WS
+        cp -rpf $DF_STATE_DIR $VAR_DIR_WS
+        cp -rpf $DF_RUN_DIR $VAR_DIR_WS
+        cp -rpf $DF_LOG_DIR $VAR_DIR_WS
+
+        cp -rpf $DF_CERT_DIR $ETC_DIR_WS
+        cp -rpf $DF_CONF_DIR $ETC_DIR_WS
+
+        if [ -f $DF_CONF_DIR/proxy.conf ]; then
+            cp -pf $DF_CONF_DIR/proxy.conf $ETC_DIR
+        fi
+
+        update_symlinks
+    fi
+}
+
 setup_workspace_variables()
 {
     VAR_DIR_WS=$VAR_DIR/$1
@@ -637,6 +673,8 @@ create_workspace_directories()
     make_dir $LOG_DIR
     make_dir $CERT_DIR
     make_dir $CONF_DIR
+
+    chmod 700 $CERT_DIR
 
     # Generated conf file containing information for this script
     CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
@@ -680,6 +718,7 @@ copy_omsagent_conf()
     cp $SYSCONF_DIR/omsagent.d/heartbeat.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
+    cp $SYSCONF_DIR/oms_audits.xml $OMSAGENTD_DIR
 
     update_path $OMSAGENTD_DIR/monitor.conf
     update_path $OMSAGENTD_DIR/heartbeat.conf
@@ -784,6 +823,10 @@ main()
 
     if [ "$LIST_WORKSPACES" = "1" ]; then
         list_workspaces || clean_exit 1
+    fi
+
+    if [ "$MIGRATE_OLD_WS" = "1" ]; then
+        migrate_old_workspace || clean_exit 1
     fi
 
     if [ "$COLLECTD" = "1" ]; then

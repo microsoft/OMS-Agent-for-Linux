@@ -20,6 +20,8 @@ VAR_DIR=/var/opt/microsoft/omsagent
 ETC_DIR=/etc/opt/microsoft/omsagent
 BIN_DIR=/opt/microsoft/omsagent/bin
 
+WORKSPACE_REGEX='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+
 setup_variables()
 {
     if [ -z "$1" ]; then
@@ -319,9 +321,45 @@ disable_omsagent_service()
     rm -f $CONF_DIR/.service_registered
 }
 
+start_all_omsagent()
+{
+    for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
+    do
+       setup_variables ${ws_id}
+       start_omsagent
+    done
+}
+
+stop_all_omsagent()
+{
+    for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
+    do
+       setup_variables ${ws_id}
+       stop_omsagent
+    done
+}
+
+restart_all_omsagent()
+{
+    for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
+    do
+       setup_variables ${ws_id}
+       restart_omsagent
+    done
+}
+
+enable_all_omsagent_services()
+{
+    for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
+    do
+       setup_variables ${ws_id}
+       enable_omsagent_service
+    done
+}
+
 disable_all_omsagent_services()
 {
-    for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+    for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
     do
        setup_variables ${ws_id}
        disable_omsagent_service
@@ -340,24 +378,40 @@ case "$1" in
         ;;
 
     start)
-        setup_variables $2
-        start_omsagent
+        if [ -z $2 ]; then
+            start_all_omsagent
+        else
+            setup_variables $2
+            start_omsagent
+        fi
         ;;
 
     stop)
-        setup_variables $2
-        stop_omsagent
+        if [ -z $2 ]; then
+            stop_all_omsagent
+        else
+            setup_variables $2
+            stop_omsagent
+        fi
         ;;
 
     restart)
-        setup_variables $2
-        restart_omsagent
+        if [ -z $2 ]; then
+            restart_all_omsagent
+        else
+            setup_variables $2
+            restart_omsagent
+        fi
         ;;
 
     reload)
-        setup_variables $2
         # TODO: Due to a bug in OMS right now, we can't reload via a signal
-        restart_omsagent
+        if [ -z $2 ]; then
+            restart_all_omsagent
+        else
+            setup_variables $2
+            restart_omsagent
+        fi
         ;;
 
     find-systemd-dir)
@@ -365,18 +419,23 @@ case "$1" in
         ;;
 
     enable)
-        setup_variables $2
-        enable_omsagent_service
+        if [ -z $2 ]; then
+            enable_all_omsagent_services
+        else
+            setup_variables $2
+            enable_omsagent_service
+        fi
         ;;
 
     disable)
-        setup_variables $2
-        disable_omsagent_service
+        if [ -z $2 ]; then
+	    disable_all_omsagent_services
+        else
+            setup_variables $2
+	    disable_omsagent_service
+        fi
         ;;
 
-    disableall)
-        disable_all_omsagent_services
-        ;;
     *)
         echo "Unknown parameter : $1" 1>&2
         exit 1
