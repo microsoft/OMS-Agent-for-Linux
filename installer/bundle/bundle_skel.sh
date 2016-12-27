@@ -66,6 +66,8 @@ usage()
     echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
     echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  -a id, --azure-resource id Use Azure Resource ID <id>."
+    echo "  -m marker, --multi-homing-marker marker"
+    echo "                             Onboard as a multi-homing(Non-Primary) workspace."
     echo
     echo "  -? | -h | --help           shows this usage text."
 }
@@ -565,6 +567,11 @@ do
             shift 2
             ;;
 
+        -m|--multi-homing-marker)
+            multiHoming=$2
+            shift 2
+            ;;
+
         -\? | -h | --help)
             usage `basename $0` >&2
             cleanup_and_exit 0
@@ -612,6 +619,11 @@ if [ -n "$onboardID" -a -n "$onboardKey" ]; then
     if [ -n "$azureResourceID" ]; then
         echo "AZURE_RESOURCE_ID=$azureResourceID" >> $ONBOARD_FILE
     fi
+
+    if [ -n "$multiHoming" ]; then
+        echo "MULTI_HOMING_MARKER=$multiHoming" >> $ONBOARD_FILE
+    fi
+
 fi
 
 #

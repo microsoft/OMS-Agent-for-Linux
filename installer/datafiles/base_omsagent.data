@@ -16,7 +16,7 @@ MAINTAINER:              'Microsoft Corporation'
 %Defines
 
 %Files
-/etc/logrotate.d/omsagent;                                              installer/conf/logrotate.conf;                         644; root; root
+/etc/opt/microsoft/omsagent/sysconf/logrotate.conf;                     installer/conf/logrotate.conf;                         644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
@@ -40,6 +40,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf;        installer/conf/omsagent.d/vmware_esxi.conf;            644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf;          installer/conf/omsagent.d/operation.conf;              644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/postgresql_logs.conf;    installer/conf/omsagent.d/postgresql_logs.conf;        644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms_audits.xml;          installer/conf/omsagent.d/oms_audits.xml;              644; root; root
 
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
@@ -75,7 +76,6 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/filter_security_baseline.rb;             source/code/plugins/filter_security_baseline.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
 /opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root
-/etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms_audits.xml;          installer/conf/omsagent.d/oms_audits.xml;              644; root; root
 
 /opt/microsoft/omsagent/plugin/security_lib.rb;                         source/code/plugins/security_lib.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/filter_syslog_security.rb;               source/code/plugins/filter_syslog_security.rb;         744; root; root
@@ -162,7 +162,7 @@ if [ -f /etc/collectd_marker.conf ]; then
 fi
 
 %Postinstall_200
-/opt/microsoft/omsagent/bin/omsadmin.sh -m
+/opt/microsoft/omsagent/bin/omsadmin.sh -M
 
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
