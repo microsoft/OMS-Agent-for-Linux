@@ -72,6 +72,7 @@ AZURE_RESOURCE_ID=""
 OMSCLOUD_ID=""
 UUID=""
 USER_ID=`id -u`
+MULTI_HOMING_MARKER=
 
 DEFAULT_SYSLOG_PORT=25224
 DEFAULT_MONITOR_AGENT_PORT=25324
@@ -97,7 +98,10 @@ usage()
     echo "$basename -X"
     echo
     echo "Migrate Old Workspace to the New Folder Structure:"
-    echo "$basename -m"
+    echo "$basename -M"
+    echo
+    echo "Onboard the workspace with a multi-homing marker. The workspace will be regarded as secondary."
+    echo "$basename -m <multi-homing marker>"
     echo
     echo "Define proxy settings ('-u' will prompt for password):"
     echo "$basename [-u user] -p host[:port]"
@@ -202,7 +206,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:clx:Xm" opt; do
+    while getopts "h?s:w:d:vp:u:a:clx:XMm:" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -246,8 +250,11 @@ parse_args()
         X)
             REMOVE_ALL=1
             ;;
-        m)
+        M)
             MIGRATE_OLD_WS=1
+            ;;
+        m)
+            MULTI_HOMING_MARKER=$OPTARG
             ;;
         esac
     done
@@ -368,7 +375,7 @@ onboard()
     set_FQDN
 
     # append telemetry to $BODY_ONBOARD
-    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$FQDN" "$AGENT_GUID" "$CERT_SERVER"` 
+    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$FQDN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"` 
     [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding. "
 
     cat /dev/null > "$SHARED_KEY_FILE"
@@ -444,11 +451,21 @@ onboard()
 
     copy_omsagent_conf
 
-    update_symlinks
+    if [ -z "$MULTI_HOMING_MARKER" ]; then
+        # update the default folders when onboard to a workspace as primary
+        # this is the default behavior
+        update_symlinks
+    else
+        # do not update the default folders when onboard the workspace as secondary
+        # leave a marker in the etc folder of the workspace to indicate the partner
+        echo $MULTI_HOMING_MARKER > $CONF_DIR/.multihoming_marker
+    fi
 
     configure_syslog
 
     configure_monitor_agent
+
+    configure_logrotate
 
     # If a test is not in progress then register omsagent as a service and start the agent 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
@@ -512,7 +529,9 @@ remove_workspace()
 
     /opt/microsoft/omsagent/bin/configure_syslog.sh unconfigure $WORKSPACE_ID ${port}
 
-    rm -rf "$VAR_DIR_WS" "$ETC_DIR_WS"
+    rm -rf "$VAR_DIR_WS" "$ETC_DIR_WS" > /dev/null 2>&1
+
+    rm -f /etc/logrotate.d/omsagent-$WORKSPACE_ID > /dev/null 2>&1
 
     reset_default_workspace
 }
@@ -520,31 +539,13 @@ remove_workspace()
 reset_default_workspace()
 {
     if [ -h $DF_CONF_DIR -a ! -d $DF_CONF_DIR ]; then
-        # default conf folder is removed
-        local ws_id=`ls -1t $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' | head -n1`
-
-        if [ "${ws_id}" != "" ]; then
-            # find 1 workspace
-            setup_workspace_variables ${ws_id}
-
-            update_symlinks
-        else
-            # no workspace, remove the default symlinks
-            remove_symlinks
-        fi
+        # default conf folder is removed, remove the symlinks
+        rm "$DF_TMP_DIR" "$DF_RUN_DIR" "$DF_STATE_DIR" "$DF_LOG_DIR" "$DF_CERT_DIR" "$DF_CONF_DIR" > /dev/null 2>&1 
     fi
-}
-
-remove_symlinks()
-{
-    rm "$DF_TMP_DIR" "$DF_RUN_DIR" "$DF_STATE_DIR" "$DF_LOG_DIR" "$DF_CERT_DIR" "$DF_CONF_DIR" > /dev/null 2>&1 
 }
 
 remove_all()
 {
-    # remove the symlinks first so that the remove_workspace will not reset them
-    remove_symlinks
-
     for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
     do
         WORKSPACE_ID=${ws_id}
@@ -567,10 +568,15 @@ show_workspace_status()
         status='Failure(Agent Not Onboarded)'
     fi
 
+    local mh_marker=
+    if [ -f ${ws_conf_dir}/.multihoming_marker ]; then
+        mh_marker="(`cat ${ws_conf_dir}/.multihoming_marker`)"
+    fi
+    
     if [ ${is_primary} -eq 1 ]; then
         echo "Primary Workspace: ${ws_id}    ${status}"
     else
-        echo "Workspace: ${ws_id}    ${status}"
+        echo "Workspace${mh_marker}: ${ws_id}    ${status}"
     fi
 }
 
@@ -610,6 +616,13 @@ list_workspaces()
             found_ws=1
             show_workspace_status ${ws_conf_dir} ${ws_id} 1
         fi
+    else
+        # no default conf folder, check all the potential workspace folders
+        for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+        do
+            found_ws=1
+            show_workspace_status $ETC_DIR/${ws_id}/conf ${ws_id} 0
+        done
     fi
 
     if [ $found_ws -eq 0 ]; then
@@ -621,7 +634,7 @@ list_workspaces()
 
 migrate_old_workspace()
 {
-    if [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR ]; then
+    if [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR -a -f $DF_CONF_DIR/omsadmin.conf ]; then
         WORKSPACE_ID=`grep WORKSPACE_ID $DF_CONF_DIR/omsadmin.conf | cut -d= -f2`
 
         if [ $? -ne 0 -o -z $WORKSPACE_ID ]; then
@@ -718,7 +731,7 @@ copy_omsagent_conf()
     cp $SYSCONF_DIR/omsagent.d/heartbeat.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
-    cp $SYSCONF_DIR/oms_audits.xml $OMSAGENTD_DIR
+    cp $SYSCONF_DIR/omsagent.d/oms_audits.xml $OMSAGENTD_DIR
 
     update_path $OMSAGENTD_DIR/monitor.conf
     update_path $OMSAGENTD_DIR/heartbeat.conf
@@ -786,6 +799,11 @@ configure_monitor_agent()
     sed -i s,%MONITOR_AGENT_PORT%,$MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
 }
 
+configure_logrotate()
+{
+     cat $SYSCONF_DIR/logrotate.conf | sed "s/%WORKSPACE_ID%/$WORKSPACE_ID/g" >> /etc/logrotate.d/omsagent-$WORKSPACE_ID
+}
+
 main()
 {
     check_user
@@ -809,14 +827,6 @@ main()
         fi
     fi
 
-    if [ "$REMOVE" = "1" ]; then
-        remove_workspace || clean_exit 1
-    fi
-
-    if [ "$REMOVE_ALL" = "1" ]; then
-        remove_all || clean_exit 1
-    fi
-
     if [ "$ONBOARDING" = "1" ]; then
         onboard || clean_exit 1
     fi
@@ -827,6 +837,14 @@ main()
 
     if [ "$MIGRATE_OLD_WS" = "1" ]; then
         migrate_old_workspace || clean_exit 1
+    fi
+
+    if [ "$REMOVE" = "1" ]; then
+        remove_workspace || clean_exit 1
+    fi
+
+    if [ "$REMOVE_ALL" = "1" ]; then
+        remove_all || clean_exit 1
     fi
 
     if [ "$COLLECTD" = "1" ]; then
