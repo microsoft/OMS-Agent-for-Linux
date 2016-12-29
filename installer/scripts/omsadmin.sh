@@ -444,6 +444,11 @@ onboard()
         fi
     fi
     return 0
+
+    # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
+    if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
+        echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+    fi
 }
 
 apply_certificate_update_endpoint()

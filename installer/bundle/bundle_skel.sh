@@ -842,18 +842,6 @@ case "$installMode" in
         fi
 		
         if [ $KIT_STATUS -eq 0 ]; then
-            # These conditionals exist due to some upgrade bugs in the postuninstall scripts of previous kits. These can be removed after GA.
-            if [ -d /opt/microsoft/omsconfig ]; then
-                if [ ! -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf ]; then
-                    if ! cp -f /opt/microsoft/omsconfig/etc/omsconfig.consistencyinvoker.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf; then
-                        echo "Failure to copy consistencyinvoker.conf file"
-                        KIT_STATUS=1
-                    else
-                        chown omsagent /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
-                        /opt/microsoft/omsagent/bin/service_control reload
-                    fi
-                fi
-            fi
             /opt/omi/bin/service_control restart
         fi
 
