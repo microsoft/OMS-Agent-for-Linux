@@ -647,12 +647,38 @@ migrate_old_workspace()
         cp -rpf $DF_CERT_DIR $ETC_DIR_WS
         cp -rpf $DF_CONF_DIR $ETC_DIR_WS
 
+        copy_omsagent_d_conf
+
+        migrate_old_omsagent_conf
+
+        sed -i s,%SYSLOG_PORT%,$DEFAULT_SYSLOG_PORT,1 $CONF_DIR/omsagent.d/syslog.conf
+        sed -i s,%MONITOR_AGENT_PORT%,$DEFAULT_MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
+
         if [ -f $DF_CONF_DIR/proxy.conf ]; then
             cp -pf $DF_CONF_DIR/proxy.conf $ETC_DIR
         fi
 
         update_symlinks
     fi
+}
+
+migrate_old_omsagent_conf()
+{
+    # migrate the omsagent.conf
+    cp -f $CONF_DIR/omsagent.conf $CONF_DIR/omsagent.conf.bak
+
+    # update the heartbeat configure to use the fake command
+    sed -i s,"command /opt/microsoft/omsagent/bin/omsadmin.sh -b > /dev/null","command echo > /dev/null",1 $CONF_DIR/omsagent.conf
+
+    # remove the syslog configuration. it has been moved to omsagent.d/syslog.conf
+    sed -zi 's/\n<source>\n  type syslog.*tag oms.syslog\n<\/source>\n//' $CONF_DIR/omsagent.conf
+    sed -zi 's/\n<filter oms\.syslog\.\*\*>\n  type filter_syslog\n<\/filter>\n//' $CONF_DIR/omsagent.conf
+
+    # add the workspace conf, cert and key to the output plugins
+    sed -i s,".*buffer_chunk_limit.*","\n  omsadmin_conf_path $CONF_DIR/omsadmin.conf\n  cert_path $CERT_DIR/oms.crt\n  key_path $CERT_DIR/oms.key\n\n&",g $CONF_DIR/omsagent.conf
+
+    # update the workspace state folder
+    sed -i s,"/var/opt/microsoft/omsagent/state",$STATE_DIR,g $CONF_DIR/omsagent.conf
 }
 
 setup_workspace_variables()
@@ -718,6 +744,11 @@ copy_omsagent_conf()
 
     chown_omsagent $CONF_DIR/*
 
+    copy_omsagent_d_conf
+}
+
+copy_omsagent_d_conf()
+{
     OMSAGENTD_DIR=$CONF_DIR/omsagent.d
     make_dir $OMSAGENTD_DIR
 
@@ -771,7 +802,7 @@ find_available_port()
     local port=$1
     local result=$2
 
-    until [ -z "`netstat -an | grep ${port}`" ]; do
+    until [ -z "`netstat -an | grep ${port}`" -a -z "`grep ${port} $ETC_DIR/*/conf/omsagent.d/*.conf`" ]; do
         port=$((port+1))
     done
 
