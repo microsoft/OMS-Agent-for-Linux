@@ -533,7 +533,8 @@ systemtestrb : $(RUBY_TESTING_DIR)
 	cd $(BASE_DIR); $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb systemtest \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
-		RUBY_TESTING_DIR=$(RUBY_TESTING_DIR)
+		RUBY_TESTING_DIR=$(RUBY_TESTING_DIR) \
+		RUBY_DEST_DIR=$(RUBY_TESTING_DIR)
 else
 systemtestrb:
 	@echo "Warning: ruby system tests will not run without $(SYSTEST_CONFIG)" >&2
