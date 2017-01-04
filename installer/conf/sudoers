@@ -1,5 +1,6 @@
 # Begin sudo configuration for omsagent
 Defaults:omsagent !requiretty
+Defaults:omsagent lecture = never 
 
 #update and restart syslog
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSRsyslog.post.sh
@@ -29,4 +30,26 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsof
 
 #run hdinsightmanifestreader.rb
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb
+
+#run update management commands
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get update 
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get dist-upgrade * 
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get upgrade *  
+
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum check-updates
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -y upgrade
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -y update
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -y upgrade *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -y update *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum update *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum upgrade *
+
+omsagent ALL=(ALL) NOPASSWD: /bin/yum check-updates
+omsagent ALL=(ALL) NOPASSWD: /bin/yum -y update
+omsagent ALL=(ALL) NOPASSWD: /bin/yum -y upgrade
+omsagent ALL=(ALL) NOPASSWD: /bin/yum -y update *
+omsagent ALL=(ALL) NOPASSWD: /bin/yum -y upgrade *
+omsagent ALL=(ALL) NOPASSWD: /bin/yum upgrade *
+omsagent ALL=(ALL) NOPASSWD: /bin/yum update *
+
 # End sudo configuration for omsagent
