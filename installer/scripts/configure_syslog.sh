@@ -57,6 +57,7 @@ ConfigureRsyslog() {
             echo "Configuring rsyslog for OMS logging"
 
             cat ${RSYSLOG_TEMP} | sed "s/%WORKSPACE_ID%/${WORKSPACE_ID}/g" | sed "s/%SYSLOG_PORT%/${SYSLOG_PORT}/g" >> ${RSYSLOG_DEST}
+            RestartService rsyslog
         fi
     fi
 }
