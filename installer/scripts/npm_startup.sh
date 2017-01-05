@@ -45,6 +45,7 @@ tcp_port=8084
 release_file=/etc/os-release
 str_centOS7="CentOS Linux 7"
 str_rhel7="Red Hat Enterprise Linux Server 7.0"
+require_notify=1
 if [ -f $release_file ];
 then
         pretty_name=`cat $release_file | grep PRETTY_NAME=`
@@ -61,6 +62,7 @@ then
                                 echo "Opening of port $tcp_port: " $res_open_port
                                 res_reloading_firewalld=`firewall-cmd --reload`
                                 echo "Reloading firewall rules: " $res_reloading_firewalld
+                                require_notify=0
                         else
                             echo "Firewalld is not running!"
                         fi
@@ -72,3 +74,7 @@ else
         echo "File $release_file not found!"
 fi
 
+if [ $require_notify -eq 1 ];
+then
+    echo "Please configure your firewall (if running), to allow connections for destination port $tcp_port over TCP for NPM solution to run"
+fi
