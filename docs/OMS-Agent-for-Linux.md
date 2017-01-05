@@ -167,22 +167,22 @@ sudo /opt/microsoft/omsagent/bin/service_control restart
 If a workspace ID and key were not provided during the bundle installation, the agent must be subsequently registered with Operations Management Suite.
 
 ## Onboarding using the command line
-Run the omsadmin.sh command supplying the workspace id and key for your workspace. This command must be run as root (w/ sudo elevation) or run as the created omsagent user:
+Run the omsadmin.sh command supplying the workspace id and key for your workspace. This command must be run as root (w/ sudo elevation):
 ```
 cd /opt/microsoft/omsagent/bin
 sudo ./omsadmin.sh -w <WorkspaceID> -s <Shared Key>
 ```
 
 ## Onboarding using a file
-1.	Create the file `/etc/omsagent-onboard.conf` The file must be readable and writable for the user omsagent. 
-`sudo su omsagent vi /etc/omsagent-onboard.conf`
+1.	Create the file `/etc/omsagent-onboard.conf` The file must be readable and writable for root.
+`sudo vi /etc/omsagent-onboard.conf`
 2.	Insert the following lines in the file with your Workspace ID and Shared Key:
 ```
 WORKSPACE_ID=<WorkspaceID>
 SHARED_KEY=<Shared Key>
 ```
-3.	Restart the omsagent:
-`sudo service omsagent restart`
+3.	Onboard to OMS:
+`sudo /opt/microsoft/omsagent/bin/omsadmin.sh`
 4.	The file will be deleted on successful onboarding
 
 # Viewing Linux Data
