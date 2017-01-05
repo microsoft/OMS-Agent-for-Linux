@@ -832,7 +832,10 @@ configure_monitor_agent()
 
 configure_logrotate()
 {
-     cat $SYSCONF_DIR/logrotate.conf | sed "s/%WORKSPACE_ID%/$WORKSPACE_ID/g" >> /etc/logrotate.d/omsagent-$WORKSPACE_ID
+    # create the logrotate file for the workspace if it doesn't exist
+    if [ ! -f /etc/logrotate.d/omsagent-$WORKSPACE_ID ]; then
+        cat $SYSCONF_DIR/logrotate.conf | sed "s/%WORKSPACE_ID%/$WORKSPACE_ID/g" > /etc/logrotate.d/omsagent-$WORKSPACE_ID
+    fi
 }
 
 main()
