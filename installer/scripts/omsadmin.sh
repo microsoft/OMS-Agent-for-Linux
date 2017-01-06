@@ -672,12 +672,11 @@ migrate_old_omsagent_conf()
     # migrate the omsagent.conf
     cp -f $CONF_DIR/omsagent.conf $CONF_DIR/omsagent.conf.bak
 
+    # remove the syslog configuration. it has been moved to omsagent.d/syslog.conf
+    cat $CONF_DIR/omsagent.conf.bak | sed '/port 25224/,+4 d' | sed '/<filter oms\.syslog\.\*\*>/,+3 d' | tac | sed '/type syslog/,+1 d' | tac > $CONF_DIR/omsagent.conf
+
     # update the heartbeat configure to use the fake command
     sed -i s,"command /opt/microsoft/omsagent/bin/omsadmin.sh -b > /dev/null","command echo > /dev/null",1 $CONF_DIR/omsagent.conf
-
-    # remove the syslog configuration. it has been moved to omsagent.d/syslog.conf
-    sed -zi 's/\n<source>\n  type syslog.*tag oms.syslog\n<\/source>\n//' $CONF_DIR/omsagent.conf
-    sed -zi 's/\n<filter oms\.syslog\.\*\*>\n  type filter_syslog\n<\/filter>\n//' $CONF_DIR/omsagent.conf
 
     # add the workspace conf, cert and key to the output plugins
     sed -i s,".*buffer_chunk_limit.*","\n  omsadmin_conf_path $CONF_DIR/omsadmin.conf\n  cert_path $CERT_DIR/oms.crt\n  key_path $CERT_DIR/oms.key\n\n&",g $CONF_DIR/omsagent.conf

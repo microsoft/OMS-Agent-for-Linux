@@ -7,7 +7,7 @@
 #
 
 ### BEGIN INIT INFO
-# Provides:          omsagent
+# Provides:          omsagent-%WORKSPACE_ID%
 # Required-Start:    $network
 # Required-Stop:     $network
 # Default-Start:     2 3 4 5
@@ -16,7 +16,7 @@
 # Description:       Operations Management Suite (omsagent) Server
 ### END INIT INFO
 
-WORKSPACE_ID=""
+WORKSPACE_ID=%WORKSPACE_ID%
 OMS_HOME=/opt/microsoft/omsagent
 OMS_NAME="Operations Management Suite agent ($WORKSPACE_ID)"
 
