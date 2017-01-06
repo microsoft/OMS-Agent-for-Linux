@@ -271,7 +271,7 @@ enable_omsagent_service()
             local omsagent_initd=/etc/init.d/$OMSAGENT_WS
             cp /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux $omsagent_initd
 
-            sed -i s,WORKSPACE_ID=.*,WORKSPACE_ID=$WORKSPACE_ID,1 $omsagent_initd
+            sed -i s,%WORKSPACE_ID%,$WORKSPACE_ID,g $omsagent_initd
 
             if [ -x /usr/sbin/update-rc.d ]; then
                 update-rc.d $OMSAGENT_WS defaults > /dev/null
