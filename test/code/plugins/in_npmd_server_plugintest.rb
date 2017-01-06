@@ -684,7 +684,13 @@ class NPMDServerTest < Test::Unit::TestCase
     # 9. Assert presence of said error log
     def test_case_13_binary_uid
         # Step 1
-        return if Process.euid == Process::UID.from_name("omsagent")
+        omsagent_euid = -1
+        begin
+            omsagent_euid = Process::UID.from_name("omsagent")
+        rescue ArgumentError => e
+            return
+        end
+        return if Process.euid == omsagent_euid
 
         # Step 2
         d = create_driver
@@ -785,7 +791,13 @@ class NPMDServerTest < Test::Unit::TestCase
     #11. Assert that invalid user log is present in emit
     def test_case_14_omsagent_uid_for_cmd
         # Step 1
-        return if Process.euid == Process::UID.from_name("omsagent")
+        omsagent_euid = -1
+        begin
+            omsagent_euid = Process::UID.from_name("omsagent")
+        rescue ArgumentError => e
+            return
+        end
+        return if Process.euid == omsagent_euid
 
         # Step 2
         d1 = create_driver
