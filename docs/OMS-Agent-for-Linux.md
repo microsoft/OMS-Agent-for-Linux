@@ -18,6 +18,7 @@
 	- [Configuring CollectD Metrics](#collectd-metrics)
 	- [Custom JSON Data](#custom-json-data-sources)
 - [Agent Logs](#agent-logs)
+	- [Log Rotation Configuration](#log-rotation-configuration)
 - [Uninstalling the OMS Agent for Linux](#uninstalling-the-oms-agent-for-linux)
 - [Compatibility with System Center Operations Manager](#compatibility-with-system-center-operations-manager)
 - [Known Limitations](#known-limitations)
@@ -620,6 +621,22 @@ The logs for the omsconfig (agent configuration) program can be found at:
 `/var/opt/microsoft/omsconfig/log/`
 Logs for the OMI and SCX components (which provide performance metrics data) can be found at:
 `/var/opt/omi/log/ and /var/opt/microsoft/scx/log`
+
+##Log Rotation Configuration##
+The log rotate configuration for omsagent can be found at:
+`/etc/logrotate.d/omsagent`
+
+The default settings are 
+```
+/var/opt/microsoft/omsagent/log/omsagent.log {
+    rotate 5
+    missingok
+    notifempty
+    compress
+    size 50k
+    copytruncate
+}
+```
 
 # Uninstalling the OMS Agent for Linux
 The agent packages can be uninstalled using dpkg or rpm, or by running the bundle .sh file with the `--remove` argument. Additionally, if you want to completely remove all pieces of the OMS Agent for Linux you can run the bundle .sh file with the `--purge` arguement. 
