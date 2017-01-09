@@ -424,14 +424,14 @@ onboard()
 
     save_config
 
-    # If a test is not in progress then register omsagent as a service and start the agent 
+    # If a test is not in progress then:  
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
+        # Register omsagent as a service and start the agent
         /opt/microsoft/omsagent/bin/service_control start 
-    fi
 
-    if [ -e $METACONFIG_PY ]; then
+        # Configure omsconfig
         if [ "$USER_ID" -eq "0" ]; then
-            su - omsagent -c $METACONFIG_PY > /dev/null
+            su - $AGENT_USER -c $METACONFIG_PY > /dev/null
         else
             $METACONFIG_PY > /dev/null || error=$?
         fi
@@ -442,12 +442,13 @@ onboard()
             log_error "Error configuring omsconfig"
             return 1
         fi
+
+        # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
+        if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
+            echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+        fi
     fi
 
-    # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
-    if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
-        echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
-    fi
     return 0
 }
 

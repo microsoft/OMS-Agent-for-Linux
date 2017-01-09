@@ -29,6 +29,7 @@ DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
 OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
+OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -625,6 +626,7 @@ cd $EXTRACT_DIR
 # Do we need to remove the package?
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
+    rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2> /dev/null 
     if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
         /opt/microsoft/omsagent/bin/uninstall $installMode
     else
@@ -842,6 +844,13 @@ case "$installMode" in
         fi
 		
         if [ $KIT_STATUS -eq 0 ]; then
+            # Remove fluentd conf for OMSConsistencyInvoker upon upgrade, if it exists
+            rm -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
+
+            # In case --upgrade is run without -w <id> and -s <key>
+            if [ ! -f "$OMS_CONSISTENCY_INVOKER" ]; then
+                echo "*/5 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
+            fi
             /opt/omi/bin/service_control restart
         fi
 

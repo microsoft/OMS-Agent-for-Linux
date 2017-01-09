@@ -20,8 +20,6 @@ sed -i s,TOPOLOGY_REQ_SCRIPT=.*,TOPOLOGY_REQ_SCRIPT=$BASE_DIR/source/code/plugin
 sed -i s,INSTALL_INFO=.*,INSTALL_INFO=$BASE_DIR/installer/conf/installinfo.txt,1 $OMSADMIN
 sed -i s,AGENT_USER=.*,AGENT_USER=`id -un`,1 $OMSADMIN
 sed -i s,AGENT_GROUP=.*,AGENT_GROUP=`id -gn`,1 $OMSADMIN
-sed -i s,METACONFIG_PY=.*,METACONFIG_PY=$TESTDIR/not_a_file,1 $OMSADMIN
-#sed -i s,PROCESS_STATS=.*,PROCESS_STATS=$TESTDIR/process_stats,1 $OMSADMIN
 
 cat <<EOF > $TESTDIR/process_stats
     PercentUserTime=2
