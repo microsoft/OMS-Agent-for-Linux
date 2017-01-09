@@ -1,4 +1,4 @@
-#!/usr/local/ruby-2.2.0/bin rake
+#!~/bin/omsagent_test_ruby/bin rake
 
 require 'rake/testtask'
 require 'rake/clean'
