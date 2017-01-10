@@ -3,8 +3,10 @@ require 'socket'
 class NPMDTest
 
     NPMD_CONN_CONFIRM = "NPMDAgent Connected!"
-    FAKE_PATH_DATA = '{"DataItems":[{"SubType":"NetworkPath"}]}'
-    FAKE_AGENT_DATA = '{"DataItems":[{"SubType":"NetworkAgent"}]}'
+    FAKE_PATH_DATA  = '{"DataItems":[{"SourceNetwork":"abcd", "SourceNetworkNodeInterface":"abcd", "SourceSubNetwork":"abcd", "DestinationNetwork":"abcd", "DestinationNetworkNodeInterface":"abcd", "DestinationSubNetwork":"abcd", "RuleName":"abcd", "TimeSinceActive":"abcd", "LossThreshold":"abcd", "LatencyThreshold":"abcd", "LossThresholdMode":"abcd", "LatencyThresholdMode":"abcd", "SubType":"NetworkPath", "HighLatency":"abcd", "MedianLatency":"abcd", "LowLatency":"abcd", "LatencyHealthState":"abcd","Loss":"abcd", "LossHealthState":"abcd", "Path":"abcd", "Computer":"abcd"}]}'
+
+    FAKE_AGENT_DATA = '{"DataItems":[{"AgentFqdn":"abcd", "AgentIP":"abcd", "AgentCapability":"abcd", "SubnetId":"abcd", "PrefixLength":"abcd", "AddressType":"abcd", "SubType":"NetworkAgent", "AgentId":"abcd"}]}'
+
     TEST_ENDPOINT = "tmp_npmd_test/test_agent.sock"
 
     def initialize
