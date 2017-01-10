@@ -213,20 +213,23 @@ module Fluent
                         else
                             _uploadData = _json["DataItems"].reject {|x| x["SubType"] == "ErrorLog"}
                             _errorLogs  = _json["DataItems"].select {|x| x["SubType"] == "ErrorLog"}
+                            _validUploadDataItems = Array.new
                             _uploadData.each do |item|
                                 if item.key?("SubType")
                                     # Append FQDN to path data
                                     if !@fqdn.nil? and item["SubType"] == "NetworkPath"
                                         @num_path_data += 1 unless @num_path_data.nil?
                                         item["Computer"] = @fqdn
-                                        # Append agent Guid to agent data
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    # Append agent Guid to agent data
                                     elsif !@agentId.nil? and item["SubType"] == "NetworkAgent"
                                         @num_agent_data += 1 unless @num_agent_data.nil?
                                         item["AgentId"] = @agentId
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
                                     end
                                 end
                             end
-                            emit_upload_data_dataitems(_uploadData) if !_uploadData.nil? and !_uploadData.empty?
+                            emit_upload_data_dataitems(_validUploadDataItems) if !_validUploadDataItems.nil? and !_validUploadDataItems.empty?
                             emit_error_log_dataitems(_errorLogs) if !_errorLogs.nil? and !_errorLogs.empty?
                         end
                     end
@@ -240,6 +243,26 @@ module Fluent
                     end
                 end
             end while !@npmdClientSock.nil?
+        end
+
+        def is_valid_dataitem(item)
+            _itemType=""
+            if item["SubType"] == "NetworkAgent"
+                _itemType = NPMContract::DATAITEM_AGENT
+            elsif item["SubType"] == "NetworkPath"
+                _itemType = NPMContract::DATAITEM_PATH
+            end
+
+            return false if _itemType.empty?
+
+            _res, _prob = NPMContract::IsValidDataitem(item, _itemType)
+
+            return true if _res == NPMContract::DATAITEM_VALID
+            if (_res == NPMContract::DATAITEM_ERR_INVALID_FIELDS)
+                Logger::logInfo "Invalid key in #{item["SubType"]} data: #{_prob}"
+            elsif (_res == NPMContract::DATAITEM_ERR_MISSING_FIELDS)
+                Logger::logInfo "Key #{_prob} absent in #{item["SubType"]} data"
+            end
         end
 
         def package_and_send_error_log(msg)

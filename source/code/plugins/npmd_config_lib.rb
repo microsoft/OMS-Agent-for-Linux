@@ -343,3 +343,65 @@ module NPMDConfig
     end
 end
 
+# NPM Contracts verification for data being uploaded
+module NPMContract
+    DATAITEM_AGENT = "agent"
+    DATAITEM_PATH  = "path"
+
+    DATAITEM_VALID = 1
+    DATAITEM_ERR_MISSING_FIELDS = 2
+    DATAITEM_ERR_INVALID_FIELDS = 3
+    DATAITEM_ERR_INVALID_TYPE = 4
+
+    CONTRACT_AGENT_DATA_KEYS = ["AgentFqdn",
+                                "AgentIP",
+                                "AgentCapability",
+                                "SubnetId",
+                                "PrefixLength",
+                                "AddressType",
+                                "SubType",
+                                "AgentId"]
+
+    CONTRACT_PATH_DATA_KEYS  = ["SourceNetwork",
+                                "SourceNetworkNodeInterface",
+                                "SourceSubNetwork",
+                                "DestinationNetwork",
+                                "DestinationNetworkNodeInterface",
+                                "DestinationSubNetwork",
+                                "RuleName",
+                                "TimeSinceActive",
+                                "LossThreshold",
+                                "LatencyThreshold",
+                                "LossThresholdMode",
+                                "LatencyThresholdMode",
+                                "SubType",
+                                "HighLatency",
+                                "MedianLatency",
+                                "LowLatency",
+                                "LatencyHealthState",
+                                "Loss",
+                                "LossHealthState",
+                                "Path",
+                                "Computer"]
+
+    def self.IsValidDataitem(item, itemType)
+        _contract=[]
+
+        if itemType == DATAITEM_AGENT
+            _contract = CONTRACT_AGENT_DATA_KEYS
+        elsif itemType == DATAITEM_PATH
+            _contract = CONTRACT_PATH_DATA_KEYS
+        end
+
+        return DATAITEM_ERR_INVALID_TYPE, nil if _contract.empty?
+
+        item.keys.each do |k|
+            return DATAITEM_ERR_INVALID_FIELDS, k if !_contract.include?(k)
+        end
+        _contract.each do |e|
+            return DATAITEM_ERR_MISSING_FIELDS, e if !item.keys.include?(e)
+        end
+        return DATAITEM_VALID, nil
+    end
+
+end
