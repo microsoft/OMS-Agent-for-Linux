@@ -97,12 +97,19 @@ class NPMDServerTest < Test::Unit::TestCase
         _lines.each do |line|
             _userName = line.split()[0]
             if line.include?FAKE_BINARY_BASENAME
+                _uId = -1
+
+                # Case when _userName is the uid itself
+                _uId = _userName.to_i if /\A\d+\z/.match(_userName.chomp)
+
+                # Get uid from _userName if _userName is -1
                 begin
-                    _count += 1 if (Process.uid == Process::UID.from_name(_userName))
+                    _uId = Process::UID.from_name(_userName) if (_uId == -1)
                 rescue ArgumentError
-                    # do not ignore case when username is not mapping to UID
                     raise "Got Argumenterror when looking for username:#{_userName} in line #{line}"
                 end
+
+                _count += 1 if (_uId == Process.uid)
             end
         end
         _count
