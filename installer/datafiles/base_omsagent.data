@@ -150,23 +150,19 @@ chown -R omsagent:omiusers /var/opt/microsoft/omsagent
 
 # Ditto for conf directory in /etc/opt/microsoft/omsagent/conf ...
 
-# Copy collectd conf files only if collectd_marker.conf exists 
-if [ -f /etc/collectd_marker.conf ]; then
-    if [ -f /etc/collectd.conf ]; then
-        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd.d/oms.conf
-    else
-        cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd/collectd.conf.d/oms.conf
-    fi
-    #cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf ${{CONF_DIR}}/omsagent.d/collectd.conf
-    rm /etc/collectd_marker.conf
-fi
 
 %Postinstall_200
 /opt/microsoft/omsagent/bin/omsadmin.sh -M
 
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
-   /opt/microsoft/omsagent/bin/omsadmin.sh
+    /opt/microsoft/omsagent/bin/omsadmin.sh
+
+    # Copy collectd conf files only if collectd_marker.conf exists
+    if [ -f /etc/collectd_marker.conf ]; then
+        /opt/microsoft/omsagent/bin/omsadmin.sh -c
+        rm /etc/collectd_marker.conf
+    fi
 fi
 
 %Postuninstall_10

@@ -470,24 +470,28 @@ onboard()
     # If a test is not in progress then register omsagent as a service and start the agent 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         $SERVICE_CONTROL start $WORKSPACE_ID 
-    fi
-        # Configure omsconfig
-        if [ "$USER_ID" -eq "0" ]; then
-            su - $AGENT_USER -c $METACONFIG_PY > /dev/null
-        else
-            $METACONFIG_PY > /dev/null || error=$?
-        fi
 
-        if [ $error -eq 0 ]; then
-            log_info "Configured omsconfig"
-        else
-            log_error "Error configuring omsconfig"
-            return 1
-        fi
-
-        # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
-        if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
-            echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+        if [ ! -z "$MULTI_HOMING_MARKER" ]; then
+            # Configure omsconfig when the workspace is primary
+            # This is a temp solution since the DSC doesn't support multi-homing now
+            # Only the primary workspace receives the configuration from the DSC service
+            if [ "$USER_ID" -eq "0" ]; then
+                su - $AGENT_USER -c $METACONFIG_PY > /dev/null
+            else
+                $METACONFIG_PY > /dev/null || error=$?
+            fi
+    
+            if [ $error -eq 0 ]; then
+                log_info "Configured omsconfig"
+            else
+                log_error "Error configuring omsconfig"
+                return 1
+            fi
+    
+            # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
+            if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
+                echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+            fi
         fi
     fi
 
@@ -499,7 +503,7 @@ collectd()
     if [ -d "$COLLECTD_DIR" ]; then
         cp $SYSCONF_DIR/omsagent.d/oms.conf $COLLECTD_DIR/oms.conf
         cp $SYSCONF_DIR/omsagent.d/collectd.conf $CONF_DIR/omsagent.d/collectd.conf
-        chown omsagent:omiusers $CONF_DIR/omsagent.d/collectd.conf
+        chown $AGENT_USER:$AGENT_GROUP $CONF_DIR/omsagent.d/collectd.conf
         $SERVICE_CONTROL restart 
     else
         echo "$COLLECTD_DIR - directory does not exist. Please make sure collectd is installed properly"
