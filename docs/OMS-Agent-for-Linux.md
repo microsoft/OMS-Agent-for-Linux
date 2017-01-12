@@ -4,12 +4,18 @@
 	- [Package Requirements](#package-requirements)
 	- [Upgrade from a Previous Release](#upgrade-from-a-previous-release)
 	- [Steps to install the OMS Agent for Linux](#steps-to-install-the-oms-agent-for-linux)
-	- [SHA256 Checksums](#sha256-checksums)
 	- [Configuring the agent for use with an HTTP proxy server](#configuring-the-agent-for-use-with-an-http-proxy-server)
 - [Onboarding with Operations Management Suite](#onboarding-with-operations-management-suite)
   - [Onboarding using the command line](#onboarding-using-the-command-line)
   - [Onboarding using a file](#onboarding-using-a-file)	
-- [Viewing Linux Data](#viewing-linux-data)	
+  - [Onboard a secondary workspace](#onboard-a-secondary-workspace)
+  - [Onboard a secondary workspace using a file](#onboard-a-secondary-workspace-using-a-file)
+- [Manage Workspaces](#manage-workspaces)
+  - [List all workspaces](#list-all-workspaces)
+  - [Remove a workspace](#remove-a-workspace)
+  - [Remove all workspaces](#remove-all-workspaces)
+- [Manage omsagent Daemon](#manage-omsagent-daemon)
+- [Viewing Linux Data](#viewing-linux-data)
 - [Configuring Data Collection](#configuring-data-collection)
 	- [Configuring Syslog collection from the OMS portal](#configuring-syslog-collection-from-the-oms-portal)
 	- [Configuring Linux Performance Counter collection from the OMS portal](#configuring-linux-performance-counter-collection-from-the-oms-portal)
@@ -75,22 +81,32 @@ The OMS agent for Linux is provided in a self-extracting and installable shell s
 
 **To install and onboard directly:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --install -w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key>
 ```
 
 **To install and onboard directly using an HTTP proxy:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+```
+
+**To install and onboard to a workspace in FairFax:**
+```
+sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -d opinsights.azure.us
 ```
 
 **To install the agent packages and onboard at a later time:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade
+sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade
+```
+
+**To install and onboard to a non-primary workspace:**
+```
+sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -m <multi-homing marker>
 ```
 
 **To extract the agent packages from the bundle without installing:**
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --extract
+sudo sh ./omsagent-1.3.0-1.universal.x64.sh --extract
 ```
 
 **All bundle operations:**
@@ -102,22 +118,25 @@ Options:
   --purge                Uninstall the package and remove all related data.
   --remove               Uninstall the package from the system.
   --restart-deps         Reconfigure and restart dependent service
+  --source-references    Show source code reference hashes.
   --upgrade              Upgrade the package in the system.
+  --version              Version of this shell bundle.
+  --version-check        Check versions already installed to see if upgradable.
   --debug                use shell debug mode.
+  --collectd             Enable collectd.
   
   -w id, --id id         Use workspace ID <id> for automatic onboarding.
   -s key, --shared key   Use <key> as the shared key for automatic onboarding.
+  -d dmn, --domain dmn   Use <dmn> as the OMS domain for onboarding. Optional.
+                         default: opinsights.azure.com
+                         ex: opinsights.azure.us (for FairFax)
   -p conf, --proxy conf  Use <conf> as the proxy configuration.
                          ex: -p [protocol://][user:password@]proxyhost[:port]
+  -a id, --azure-resource id Use Azure Resource ID <id>.
+  -m marker, --multi-homing-marker marker
+                         Onboard as a multi-homing(Non-Primary) workspace.
 
   -? | --help            shows this usage text.
-```
-
-##SHA256 Checksums##
-
-```
-a7cb3457cb5542bd6e76ad809e29a9002fb56f93d4da10816c54e79a8472f1f3  omsagent-1.1.0-28.universal.x64.sh
-3a764632e402f3138c63f315ae34e8b0d91dcfc766d27c0c9f3fab50c07023d3  omsagent-1.1.0-28.universal.x86.sh
 ```
 
 ##Configuring the agent for use with an HTTP proxy server
@@ -144,23 +163,23 @@ The proxy server can be specified during installation or directly in a file (at 
 The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use. 
 
 ```
-sudo sh ./omsagent-1.1.0-28.universal.x86.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspaceid> -s <shared key>
+sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
 ```
 
 **Define the proxy configuration in a file **
-The proxy configuration is set in the file: `/etc/opt/microsoft/omsagent/conf/proxy.conf` This file can be directly created or edited, but must be readable by the omsagent user. For example:
+The proxy configuration is set in the file: `/etc/opt/microsoft/omsagent/proxy.conf` This file can be directly created or edited, but must be readable by the omsagent user. For example:
 ```
 proxyconf="https://proxyuser:proxypassword@proxyserver01:8080"
-sudo echo $proxyconf >>/etc/opt/microsoft/omsagent/conf/proxy.conf
-sudo chown omsagent:omsagent /etc/opt/microsoft/omsagent/conf/proxy.conf
-sudo chmod 600 /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo echo $proxyconf >>/etc/opt/microsoft/omsagent/proxy.conf
+sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf
+sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf
 sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **Removing the proxy configuration**
 To remove a previously defined proxy configuration and revert to direct connectivity, remove the proxy.conf file:
 ```
-sudo rm /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo rm /etc/opt/microsoft/omsagent/proxy.conf
 sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
@@ -185,6 +204,57 @@ SHARED_KEY=<Shared Key>
 3.	Onboard to OMS:
 `sudo /opt/microsoft/omsagent/bin/omsadmin.sh`
 4.	The file will be deleted on successful onboarding
+
+## Onboard a secondary workspace
+From 1.3.0-1, OMSAgent supports to onboard the agent to multiple workspaces.
+Run the omsadmin.sh command supplying the workspace id and key for your workspace, and -m to indicate secondary workspace:
+```
+cd /opt/microsoft/omsagent/bin
+sudo ./omsadmin.sh -w <workspace id> -s <shared key> -m <multi-homing marker>
+```
+NOTE: Secondary workspace is currently unable to pull the configuration from OMS service. We are working on it.
+
+## Onboard a secondary workspace using a file
+Reference [Onboarding using a file](#onboarding-using-a-file)
+Add the following line into /etc/omsagent-onboard.conf
+```
+MULTI_HOMING_MARKER=<any string, e.g. MySecondaryWS>
+```
+
+# Manage Workspaces
+From 1.3.0-1, OMSAgent supports onboarding to multiple workspaces. Here are the commands for workspace management:
+
+## List all workspaces
+```
+sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -l
+```
+
+Sample result for an agent onboarded to 2 workspaces:
+```
+Primary Workspace: 000c7bcd-28d2-453a-84bd-8523e396f600    Success(OMSAgent Registered)
+Workspace(MySecondaryWS): ffffb0c0-7fac-4159-987c-000271282eff    Success(OMSAgent Registered)
+```
+
+## Remove a workspace
+```
+sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -x <workspace id>
+```
+
+## Remove all workspaces
+```
+sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -X
+```
+
+# Manage omsagent Daemon
+From 1.3.0-1, we will register omsagent daemon for each onboarded workspace. The daemon name is omsagent-<workspace-id>
+You can use /opt/microsoft/omsagent/bin/service_control command to operate the daemon.
+
+```
+sudo sh /opt/microsoft/omsagent/bin/service_control start|stop|restart|enable|disable [<workspace id>]
+```
+
+The workspace id is an optional parameter. If it is specified, it will only operate on the workspace-specific daemon.
+Otherwise, it will operate on all the daemons.
 
 # Viewing Linux Data
 ## Viewing Syslog events
@@ -325,7 +395,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 **To switch from UDP to TCP for syslog:**
 *	Disable centralized configuration:
 	`sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable`
-*	Edit `/etc/opt/microsoft/omsagent/conf/omsagent.conf`.  Locate the `<source>` element with: `type syslog`. Set the protocol_type from `udp` to `tcp`. 
+*	Edit `/etc/opt/microsoft/omsagent/conf/omsagent.d/syslog.conf`.  Locate the `<source>` element with: `type syslog`. Set the protocol_type from `udp` to `tcp`. 
 
 	```
 	<source>
