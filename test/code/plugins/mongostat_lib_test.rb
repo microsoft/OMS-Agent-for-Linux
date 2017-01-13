@@ -38,7 +38,7 @@ class MongostatTest < Test::Unit::TestCase
                         {"CounterName"=>"Insert Operations/sec", "Value"=>"0"},
                         {"CounterName"=>"Query Operations/sec", "Value"=>"0"},
                         {"CounterName"=>"Update Operations/sec", "Value"=>"0"},
-                        {"CounterName"=>"Delete Operations/sec", "Value"=>"0"},
+                        {"CounterName"=>"Delete Operations/sec", "Value"=>"10"},
                         {"CounterName"=>"Total Data Mapped (MB)", "Value"=>"80.0"},
                         {"CounterName"=>"Virtual Memory Process Usage (MB)", "Value"=>"358.0"},
                         {"CounterName"=>"Resident Memory Process Usage (MB)", "Value"=>"41.0"},
