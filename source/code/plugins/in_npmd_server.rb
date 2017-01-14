@@ -155,7 +155,7 @@ module Fluent
                 _json = JSON.parse(text)
                 _json
             rescue JSON::ParserError => e
-                Logger::logInfo "Json parsing failed for #{text} because of #{e}", Logger::resc
+                Logger::logInfo "Json parsing failed for #{text[0..200]} because of #{e}", Logger::resc
                 nil
             end
         end
