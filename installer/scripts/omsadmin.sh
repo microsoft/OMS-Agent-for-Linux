@@ -471,7 +471,7 @@ onboard()
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         $SERVICE_CONTROL start $WORKSPACE_ID 
 
-        if [ ! -z "$MULTI_HOMING_MARKER" ]; then
+        if [ -z "$MULTI_HOMING_MARKER" ]; then
             # Configure omsconfig when the workspace is primary
             # This is a temp solution since the DSC doesn't support multi-homing now
             # Only the primary workspace receives the configuration from the DSC service
