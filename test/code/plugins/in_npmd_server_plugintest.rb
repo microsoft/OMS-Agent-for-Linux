@@ -319,7 +319,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert(error_logs.length > 0, "There should be at least some error logs")
         found_sent_log = false
         error_logs.each do |x|
-            if x.key?("Message") and x["Message"] == TEST_ERROR_LOG_EMIT
+            if x.key?("Message") and x["Message"] == "dsc:#{TEST_ERROR_LOG_EMIT}"
                 found_sent_log = true
                 break
             end
