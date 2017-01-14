@@ -65,6 +65,8 @@ module Fluent
 
         NPMD_CONN_CONFIRM = "NPMDAgent Connected!"
 
+        NPM_DIAG          = "NPMDiagLnx"
+
         STOP_SIGNAL       = "SIGKILL"
 
         CMD_ENUMERATE_PROCESSES_PREFIX = "ps aux | grep "
@@ -160,7 +162,7 @@ module Fluent
 
         def log_error(msg, depth=0)
             Logger::logError(msg, depth + 1)
-            package_and_send_error_log(msg)
+            package_and_send_diag_log(msg)
         end
 
         def kill_all_agent_instances
@@ -182,10 +184,10 @@ module Fluent
                         # Process already stopped
                     rescue Errno::EPERM
                         # Trying to kill someone else's process?
-                        package_and_send_error_log("No perm to kill process with info:#{line}: our uid:#{Process.uid}")
+                        log_error "No perm to kill process with info:#{line}: our uid:#{Process.uid}"
                     rescue ArgumentError
                         # Could not get info on username
-                        package_and_send_error_log("Could not process username from info:#{line}: our uid:#{Process.uid}")
+                        log_error "Could not process username from info:#{line}: our uid:#{Process.uid}"
                     end
                 end
             end
@@ -212,7 +214,7 @@ module Fluent
                             Logger::logWarn "No valid data items found in sent json #{_json}", Logger::loop
                         else
                             _uploadData = _json["DataItems"].reject {|x| x["SubType"] == "ErrorLog"}
-                            _errorLogs  = _json["DataItems"].select {|x| x["SubType"] == "ErrorLog"}
+                            _diagLogs   = _json["DataItems"].select {|x| x["SubType"] == "ErrorLog"}
                             _validUploadDataItems = Array.new
                             _uploadData.each do |item|
                                 if item.key?("SubType")
@@ -229,8 +231,9 @@ module Fluent
                                     end
                                 end
                             end
+                            _diagLogs.each { |d| d["SubType"] = NPM_DIAG}
                             emit_upload_data_dataitems(_validUploadDataItems) if !_validUploadDataItems.nil? and !_validUploadDataItems.empty?
-                            emit_error_log_dataitems(_errorLogs) if !_errorLogs.nil? and !_errorLogs.empty?
+                            emit_diag_log_dataitems(_diagLogs) if !_diagLogs.nil? and !_diagLogs.empty?
                         end
                     end
                 rescue StandardError => e
@@ -251,6 +254,8 @@ module Fluent
                 _itemType = NPMContract::DATAITEM_AGENT
             elsif item["SubType"] == "NetworkPath"
                 _itemType = NPMContract::DATAITEM_PATH
+            elsif item["SubType"] == NPM_DIAG
+                _itemType = NPMContract::DATAITEM_DIAG
             end
 
             return false if _itemType.empty?
@@ -265,19 +270,25 @@ module Fluent
             end
         end
 
-        def package_and_send_error_log(msg)
-            _dataItems = Array.new
+        def make_diag_log_msg_hash(msg)
             _h = Hash.new
             _h["Message"] = msg
-            _dataItems << _h
-            emit_error_log_dataitems(_dataItems)
+            _h["SubType"] = NPM_DIAG
+            _h
         end
 
-        def emit_error_log_dataitems(dataitems)
+        def package_and_send_diag_log(msg)
+            _dataItems = Array.new
+            _dataItems << make_diag_log_msg_hash(msg)
+            emit_diag_log_dataitems(_dataItems)
+        end
+
+        def emit_diag_log_dataitems(dataitems)
+            _validItems = dataitems.select {|x| is_valid_dataitem(x)}
             _record = Hash.new
             _record["DataType"] = "HEALTH_ASSESSMENT_BLOB"
             _record["IPName"]   = "LogManagement"
-            _record["DataItems"] = dataitems
+            _record["DataItems"] = _validItems
             router.emit(@tag, Engine.now, _record)
         end
 
@@ -358,7 +369,7 @@ module Fluent
                 _ind = _req.index(":")
                 _msg = _req[_ind+1..-1]
                 unless _ind.nil? or _ind + 1 >= _req.length
-                    package_and_send_error_log(_msg)
+                    log_error "dsc:#{_msg}"
                 end
             else
                 log_error "Unknown command #{cmd} received from DSC resource provider"
@@ -396,14 +407,12 @@ module Fluent
                 _fileList = Dir["#{_globPrefix}*"]
                 _fileList.each do |x|
                     File.readlines(x).each do |line|
-                        _hMessage = Hash.new
-                        _hMessage["Message"] = "Previous Stderror:#{line}"
                         Logger::logInfo "Prev STDERR: #{line}", 2*Logger::loop
-                        _arr << _hMessage
+                        _arr << make_diag_log_msg_hash("Previous Stderror:#{line}")
                     end
                     File.unlink(x)
                 end
-                emit_error_log_dataitems(_arr) unless _arr.empty?
+                emit_diag_log_dataitems(_arr) unless _arr.empty?
             rescue => e
                 Logger::logInfo "Got error while uploading pending stderrors: #{e}"
             end
@@ -418,10 +427,8 @@ module Fluent
                     begin
                         if File.exist?(fileName)
                             File.readlines(fileName).each do |line|
-                                _hMessage = Hash.new
-                                _hMessage["Message"] = "PID:#{procId}:#{line}"
                                 Logger::logInfo "STDERR for #{_hMessage["Message"]}"
-                                _arr << _hMessage
+                                _arr << make_diag_log_msg_hash("PID:#{procId}:#{line}")
                             end
                             File.unlink(fileName)
                         end
@@ -431,7 +438,7 @@ module Fluent
                 end
                 @stderrFileNameHash.clear()
             end
-            emit_error_log_dataitems(_arr) unless _arr.empty?
+            emit_diag_log_dataitems(_arr) unless _arr.empty?
 
             # Checking if NPMD exited as planned
             if @npmdIntendedStop

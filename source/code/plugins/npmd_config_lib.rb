@@ -347,6 +347,7 @@ end
 module NPMContract
     DATAITEM_AGENT = "agent"
     DATAITEM_PATH  = "path"
+    DATAITEM_DIAG  = "diagnostics"
 
     DATAITEM_VALID = 1
     DATAITEM_ERR_MISSING_FIELDS = 2
@@ -384,6 +385,9 @@ module NPMContract
                                 "Path",
                                 "Computer"]
 
+    CONTRACT_DIAG_DATA_KEYS  = ["Message",
+                                "SubType"]
+
     def self.IsValidDataitem(item, itemType)
         _contract=[]
 
@@ -391,6 +395,8 @@ module NPMContract
             _contract = CONTRACT_AGENT_DATA_KEYS
         elsif itemType == DATAITEM_PATH
             _contract = CONTRACT_PATH_DATA_KEYS
+        elsif itemType == DATAITEM_DIAG
+            _contract = CONTRACT_DIAG_DATA_KEYS
         end
 
         return DATAITEM_ERR_INVALID_TYPE, nil if _contract.empty?

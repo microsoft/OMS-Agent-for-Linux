@@ -186,4 +186,26 @@ class NPMDConfigUT < Test::Unit::TestCase
         assert_equal(NPMContract::DATAITEM_ERR_INVALID_FIELDS, _res, "agent data with invalid fields sent but validation did not give correct error")
         assert_equal("AddressZType", _prob, "Agent data invalid field was not properly triaged")
     end
+
+    def test_contract_03_diag_data
+        # Checking for valid diag data case
+        _validDiagDataStr='{"Message":"This is a test diagnostics log message", "SubType":"NPMDiagLnx"}'
+        _validDiagData = JSON.parse(_validDiagDataStr)
+        _res, _prob = NPMContract::IsValidDataitem(_validDiagData, NPMContract::DATAITEM_DIAG)
+        assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid diag data sent but validation returned invalid")
+
+        # Checking for missing fields case
+        _missingFieldsStr='{"SubType":"NPMDiagLnx"}'
+        _missingFields = JSON.parse(_missingFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_missingFields, NPMContract::DATAITEM_DIAG)
+        assert_equal(NPMContract::DATAITEM_ERR_MISSING_FIELDS, _res, "Diag data with missing fields sent but validation did not give correct error")
+        assert_equal("Message", _prob, "Diag data missing field was not properly triaged")
+
+        # Checking for invalid fields case
+        _invalidFieldsStr='{"MesSage":"This is a test diagnostics log message", "SubType":"NPMDiagLnx"}'
+        _invalidFields = JSON.parse(_invalidFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_invalidFields, NPMContract::DATAITEM_DIAG)
+        assert_equal(NPMContract::DATAITEM_ERR_INVALID_FIELDS, _res, "diag data with invalid fields sent but validation did not give correct error")
+        assert_equal("MesSage", _prob, "Diag data invalid field was not properly triaged")
+    end
 end
