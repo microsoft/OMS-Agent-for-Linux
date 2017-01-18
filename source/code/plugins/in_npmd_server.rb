@@ -209,6 +209,7 @@ module Fluent
                     _json = check_and_get_json(_line.chomp)
                     unless !_json.nil?
                         Logger::logWarn "Sent string to plugin is not a json string", Logger::loop
+                        log_error "String received not json: #{_line[0..100]}" if _line.bytesize > 50
                     else
                         unless _json.key?("DataItems") and !_json["DataItems"].nil? and _json["DataItems"] != ""
                             Logger::logWarn "No valid data items found in sent json #{_json}", Logger::loop
@@ -267,6 +268,8 @@ module Fluent
                 Logger::logInfo "Invalid key in #{item["SubType"]} data: #{_prob}"
             elsif (_res == NPMContract::DATAITEM_ERR_MISSING_FIELDS)
                 Logger::logInfo "Key #{_prob} absent in #{item["SubType"]} data"
+            elsif (_res == NPMContract::DATAITEM_ERR_INVALID_TYPE)
+                Logger::logInfo "Invalid itemtype #{_itemType}"
             end
         end
 
@@ -427,10 +430,11 @@ module Fluent
                     begin
                         if File.exist?(fileName)
                             File.readlines(fileName).each do |line|
-                                Logger::logInfo "STDERR for #{_hMessage["Message"]}"
-                                _arr << make_diag_log_msg_hash("PID:#{procId}:#{line}")
+                                Logger::logInfo "STDERR for PID:#{procId}:#{line}"
+                                _arr << make_diag_log_msg_hash("STDERR PID:#{procId}:#{line}")
                             end
                             File.unlink(fileName)
+                            @npmdProcessId = nil if @npmdProcessId == procId
                         end
                     rescue => e
                         log_error "Got error while processing stderr files: #{e}"
@@ -570,6 +574,8 @@ module Fluent
                     _clientTriage = triage_conn(_client)
                     if _clientTriage == CONN_AGENT
                         Logger::logInfo "NPMD Agent connected"
+                        @npmdClientSock.close() unless @npmdClientSock.nil?
+                        Thread.kill(@npmdAgentReaderThread) if @npmdAgentReaderThread.is_a?(Thread)
                         @npmdClientSock = _client
                         @npmdAgentReaderThread = Thread.new{npmd_reader()}
                         send_config()

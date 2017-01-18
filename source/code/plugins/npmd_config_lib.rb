@@ -404,6 +404,9 @@ module NPMContract
         item.keys.each do |k|
             return DATAITEM_ERR_INVALID_FIELDS, k if !_contract.include?(k)
         end
+
+        return DATAITEM_VALID, nil if item.length == _contract.length
+
         _contract.each do |e|
             return DATAITEM_ERR_MISSING_FIELDS, e if !item.keys.include?(e)
         end
