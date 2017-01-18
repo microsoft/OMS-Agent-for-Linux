@@ -32,10 +32,17 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsof
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb
 
 #run update management commands
-omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get update 
-omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get dist-upgrade * 
-omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get upgrade *  
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get dist-upgrade *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get update
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get upgrade *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get * update
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get * dist-upgrade
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get * upgrade
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y --only-upgrade true install *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y --only-upgrade true -s install *
 
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum update –-assumeno
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -q check-update
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum check-updates
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -y upgrade
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -y update
@@ -44,6 +51,8 @@ omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum -y update *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum update *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/yum upgrade *
 
+omsagent ALL=(ALL) NOPASSWD: /bin/yum update -–assumeno
+omsagent ALL=(ALL) NOPASSWD: /bin/yum -q check-update
 omsagent ALL=(ALL) NOPASSWD: /bin/yum check-updates
 omsagent ALL=(ALL) NOPASSWD: /bin/yum -y update
 omsagent ALL=(ALL) NOPASSWD: /bin/yum -y upgrade
