@@ -158,7 +158,7 @@ distclean : clean clean-ruby clean-dsc clean-scx
 	-$(RMDIR) $(OMI_ROOT)/output*
 
 	cd $(BASE_DIR)/source/ext/fluentd; git checkout -- lib/fluent/env.rb
-	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c
+	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
 	-$(RM) $(BASE_DIR)/build/Makefile.version
 	-$(RM) $(BASE_DIR)/build/config.mak
 	-$(RM) $(PAL_DIR)/build/config.mak
