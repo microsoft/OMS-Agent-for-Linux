@@ -100,7 +100,7 @@ module Fluent
     #   tag: string. the tag of the item
     #   records: hash[]. an arrary of data
     def handle_records(tag, records)
-      @log.trace "Handling record : #{tag}"
+      @log.trace "Handling record : #{tag} x #{records.count}"
       tags = tag.split('.')
       if tags.size >= 3
         # tag should have 3 or 4 parts at least:
@@ -164,10 +164,19 @@ module Fluent
       # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       chunk.msgpack_each {|(tag, record)|
-        if !datatypes.has_key?(tag)
-          datatypes[tag] = []
+        if !record.to_s.empty?
+          if !datatypes.has_key?(tag)
+            datatypes[tag] = []
+          end
+
+          if record.is_a?(Array)
+            record.each do |r|
+              datatypes[tag] << r if !r.to_s.empty? and r.is_a?(Hash)
+            end
+          elsif record.is_a?(Hash)
+            datatypes[tag] << record
+          end
         end
-        datatypes[tag] << record
       }
 
       datatypes.each do |tag, records|
