@@ -80,6 +80,9 @@ DEFAULT_MONITOR_AGENT_PORT=25324
 SYSLOG_PORT=$DEFAULT_SYSLOG_PORT
 MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 
+# SCOM variables
+SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
+
 usage()
 {
     local basename=`basename $0`
@@ -319,12 +322,47 @@ set_proxy_setting()
     fi
 }
 
+onboard_scom()
+{
+    echo "Onboarding SCOM"
+    create_workspace_directories "scom"
+
+    if [ ! -f $CERT_DIR/scom-cert.pem ] || [ ! -f $CERT_DIR/scom-key.pem ]; then
+        echo "Generating SCOM certificates..."
+        # Generate client auth cert using scxsslconfig tool.
+        $SCX_SSL_CONFIG -c -g $CERT_DIR
+        if [ $? -ne 0 ]; then
+          log_error "Error generating certs"
+          clean_exit 1
+        fi
+        # Rename cert/key to more meaningful name
+        mv $CERT_DIR/omi-host-*.pem $CERT_DIR/scom-cert.pem
+        mv $CERT_DIR/omikey.pem $CERT_DIR/scom-key.pem
+        rm -f $CERT_DIR/omi.pem
+        chown_omsagent $CERT_DIR/scom-cert.pem
+        chown_omsagent $CERT_DIR/scom-key.pem
+    fi
+
+    touch $CONF_DIR/omsagent.conf
+    update_path $CONF_DIR/omsagent.conf
+    chown_omsagent $CONF_DIR/*
+    make_dir $CONF_DIR/omsagent.d
+    #Always register SCOM as secondary Workspace
+    echo "SCOM Workspace" > $CONF_DIR/.multihoming_marker
+    configure_logrotate
+}
+
 onboard()
 {
     if [ $VERBOSE -eq 1 ]; then
         echo "Workspace ID:      $WORKSPACE_ID"
         echo "Shared key:        $SHARED_KEY"
         echo "Top Level Domain:  $URL_TLD"
+    fi
+
+    if [ "$WORKSPACE_ID" = "scom" ]; then
+        onboard_scom
+        clean_exit $?
     fi
 
     local error=0

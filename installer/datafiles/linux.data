@@ -102,6 +102,7 @@ ${{OMS_SERVICE}} start
 # If we're called for upgrade, don't do anything
 if ${{PERFORMING_UPGRADE_NOT}}; then
     ${{OMS_SERVICE}} disable
+    ${{OMS_SERVICE}} disable scom
     ${{CONF_SYSLOG}} purge
 fi
 
