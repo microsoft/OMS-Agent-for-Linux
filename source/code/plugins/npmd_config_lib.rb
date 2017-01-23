@@ -361,7 +361,8 @@ module NPMContract
                                 "PrefixLength",
                                 "AddressType",
                                 "SubType",
-                                "AgentId"]
+                                "AgentId",
+                                "TimeGenerated"]
 
     CONTRACT_PATH_DATA_KEYS  = ["SourceNetwork",
                                 "SourceNetworkNodeInterface",
@@ -383,7 +384,8 @@ module NPMContract
                                 "Loss",
                                 "LossHealthState",
                                 "Path",
-                                "Computer"]
+                                "Computer",
+                                "TimeGenerated"]
 
     CONTRACT_DIAG_DATA_KEYS  = ["Message",
                                 "SubType"]
