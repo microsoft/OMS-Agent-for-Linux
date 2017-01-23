@@ -217,7 +217,9 @@ module Fluent
                             _uploadData = _json["DataItems"].reject {|x| x["SubType"] == "ErrorLog"}
                             _diagLogs   = _json["DataItems"].select {|x| x["SubType"] == "ErrorLog"}
                             _validUploadDataItems = Array.new
+                            _batchTime = Time.now.utc.strftime("%Y-%m-%d %H:%M:%SZ")
                             _uploadData.each do |item|
+                                item["TimeGenerated"] = _batchTime
                                 if item.key?("SubType")
                                     # Append FQDN to path data
                                     if !@fqdn.nil? and item["SubType"] == "NetworkPath"
