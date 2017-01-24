@@ -20,10 +20,11 @@ class HdinsightFilterTest < Test::Unit::TestCase
 
   def test_filter
     d = create_driver
-    d.instance.command = "echo 'fake_cluster_name'"
+    d.instance.command = "echo '{\"cluster_name\":\"fake_cluster_name\", \"cluster_type\":\"fake_cluster_type\"}'"
     d.run
     record = Hash.new
     emit = d.instance.filter("", "", record)
-    assert_equal("fake_cluster_name\n", emit["ClusterName"])
+    assert_equal("fake_cluster_name", emit["ClusterName"])
+    assert_equal("fake_cluster_type", emit["ClusterType"])
   end
 end
