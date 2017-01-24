@@ -37,7 +37,6 @@ module MaintenanceModule
       @WORKSPACE_ID = nil
       @AGENT_GUID = nil
       @URL_TLD = nil
-      @FQDN = nil
       @LOG_FACILITY = nil
       @CERTIFICATE_UPDATE_ENDPOINT = nil
 
@@ -157,8 +156,6 @@ module MaintenanceModule
           if !@URL_TLD.end_with?(".com")
             @URL_TLD.concat(".com")  # Ensure URL_TLD is backwards-compatible
           end
-        elsif line =~ /^FQDN/
-          @FQDN = line.sub("FQDN=","").strip
         elsif line =~ /^LOG_FACILITY/
           @LOG_FACILITY = line.sub("LOG_FACILITY=","").strip
         elsif line =~ /^CERTIFICATE_UPDATE_ENDPOINT/
@@ -330,8 +327,8 @@ module MaintenanceModule
       if @load_config_success != 0
         log_error("Error loading configuration from #{@omsadmin_conf_path}")
         return 1
-      elsif @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @URL_TLD.nil? or @FQDN.nil? or
-          @WORKSPACE_ID.empty? or @AGENT_GUID.empty? or @URL_TLD.empty? or @FQDN.empty?
+      elsif @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @URL_TLD.nil? or
+          @WORKSPACE_ID.empty? or @AGENT_GUID.empty? or @URL_TLD.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
         return 1
       elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
@@ -342,7 +339,7 @@ module MaintenanceModule
       # Generate the request body
       begin
         body_hb_xml = AgentTopologyRequestHandler.new.handle_request(@os_info, @omsadmin_conf_path,
-            @FQDN, @AGENT_GUID, get_cert_server(@cert_path), @pid_path, telemetry=true)
+            @AGENT_GUID, get_cert_server(@cert_path), @pid_path, telemetry=true)
         if !xml_contains_telemetry(body_hb_xml)
           log_debug("No Telemetry data was appended to the heartbeat request")
         end

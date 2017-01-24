@@ -120,10 +120,20 @@ def obj_to_hash(obj)
   return hash
 end
 
+def evaluate_fqdn()
+  hostname = `hostname`
+  domainname = `hostname -d 2> /dev/null`
+
+  if !domainname.nil? and !domainname.empty?
+    return "#{hostname}.#{domainname}"
+  end
+  return hostname
+end
+
 class AgentTopologyRequestHandler < StrongTypedClass
-  def handle_request(os_info, conf_omsadmin, fqdn, entity_type_id, auth_cert, pid_file, telemetry)
+  def handle_request(os_info, conf_omsadmin, entity_type_id, auth_cert, pid_file, telemetry)
     topology_request = AgentTopologyRequest.new
-    topology_request.FullyQualfiedDomainName = fqdn
+    topology_request.FullyQualfiedDomainName = evaluate_fqdn()
     topology_request.EntityTypeId = entity_type_id
     topology_request.AuthenticationCertificate = auth_cert
 
@@ -171,7 +181,7 @@ if __FILE__ == $0
   end.parse!  
 
   topology_request_xml = AgentTopologyRequestHandler.new.handle_request(ARGV[1], ARGV[2],
-      ARGV[3], ARGV[4], ARGV[5], ARGV[6], options[:telemetry])
+      ARGV[3], ARGV[4], ARGV[5], options[:telemetry])
 
   path = ARGV[0]
   File.open(path, 'a') do |f|

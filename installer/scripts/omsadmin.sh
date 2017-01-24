@@ -148,7 +148,6 @@ save_config()
     echo AZURE_RESOURCE_ID=$AZURE_RESOURCE_ID >> $CONF_OMSADMIN
     echo OMSCLOUD_ID=$OMSCLOUD_ID | tr -d ' ' >> $CONF_OMSADMIN
     echo UUID=$UUID | tr -d ' ' >> $CONF_OMSADMIN
-    echo FQDN=$FQDN >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
 }
 
@@ -286,18 +285,6 @@ parse_args()
     fi
 }
 
-set_FQDN()
-{
-    local hostname=`hostname`
-    local domainname=`hostname -d 2> /dev/null`
-
-    if [ -n "$domainname" ]; then
-        FQDN="$hostname.$domainname"
-    else
-        FQDN="$hostname"
-    fi
-}
-
 create_proxy_conf()
 {
     local conf_proxy_content=$1
@@ -372,10 +359,9 @@ onboard()
 
     REQ_DATE=`date +%Y-%m-%dT%T.%N%:z`
     CERT_SERVER=`cat $FILE_CRT | awk 'NR>2 { print line } { line = $0 }'`
-    set_FQDN
 
     # append telemetry to $BODY_ONBOARD
-    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$FQDN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"` 
+    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"` 
     [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding. "
 
     cat /dev/null > "$SHARED_KEY_FILE"
