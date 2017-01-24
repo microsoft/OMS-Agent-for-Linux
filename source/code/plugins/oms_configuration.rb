@@ -37,6 +37,11 @@ module OMS
       end
 
       def get_proxy_config(proxy_conf_path)
+        old_proxy_conf_path = '/etc/opt/microsoft/omsagent/conf/proxy.conf'
+        if !File.exist?(proxy_conf_path) and File.exist?(old_proxy_conf_path)
+          proxy_conf_path = old_proxy_conf_path
+        end
+
         begin
           proxy_config = parse_proxy_config(File.read(proxy_conf_path))
         rescue SystemCallError # Error::ENOENT
