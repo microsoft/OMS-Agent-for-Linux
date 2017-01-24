@@ -344,6 +344,11 @@ EOF
     $tempFile 1> /dev/null 2> /dev/null
     [ $? -eq 0 ] && hasCtypes=0
     rm $tempFile
+
+    # Do an alternative check for unavailable /tmp permissions
+    python -c 'import ctypes'
+    [ $? -eq 0 ] && hasCtypes=0
+
     return $hasCtypes
 }
 
