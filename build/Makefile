@@ -116,6 +116,9 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: tests test omstest unittest systemtest systemtestrb systemtestsh
 
 all : $(SCX_INTERMEDIATE_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) kit
+        # After a successful make, undo the Ruby patches for sequential builds from old branches
+	@echo "Cleaning patched Ruby files..."
+	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
 
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
