@@ -64,6 +64,64 @@ module NPMDConfig
     class AgentConfigCreator
         public
 
+        # Variables for tracking errors
+        @@agent_ip_drops = 0
+        @@agent_drops = 0
+        @@network_subnet_drops = 0
+        @@network_drops = 0
+        @@rule_subnetpair_drops = 0
+        @@rule_drops = 0
+
+        # Strings utilized in drop summary
+        DROP_IPS        = "Agent IPs"
+        DROP_AGENTS     = "Agents"
+        DROP_SUBNETS    = "Network subnets"
+        DROP_NETWORKS   = "Networks"
+        DROP_SUBNETPAIRS= "Rule subnetpairs"
+        DROP_RULES      = "Rules"
+
+        # Reset error checking
+        def self.resetErrorCheck
+            @@agent_ip_drops = 0
+            @@agent_drops = 0
+            @@network_subnet_drops = 0
+            @@network_drops = 0
+            @@rule_subnetpair_drops = 0
+            @@rule_drops = 0
+        end
+
+        # Generating the error string
+        def self.getErrorSummary
+            _agentIpDrops=""
+            _agentDrops=""
+            _networkSNDrops=""
+            _networkDrops=""
+            _ruleSNPairDrops=""
+            _ruleDrops=""
+
+            if @@agent_ip_drops != 0
+                _agentIpDrops = "#{DROP_IPS}=#{@@agent_ip_drops}"
+            end
+            if @@agent_drops != 0
+                _agentDrops= "#{DROP_AGENTS}=#{@@agent_drops}"
+            end
+            if @@network_subnet_drops != 0
+                _networkSNDrops = "#{DROP_SUBNETS}=#{@@network_subnet_drops}"
+            end
+            if @@network_drops != 0
+                _networkDrops = "#{DROP_NETWORKS}=#{@@network_drops}"
+            end
+            if @@rule_subnetpair_drops != 0
+                _ruleSNPairDrops = "#{DROP_SUBNETPAIRS}=#{@@rule_subnetpair_drops}"
+            end
+            if @@rule_drops != 0
+                _ruleDrops = "#{DROP_RULES}=#{@@rule_drops}"
+            end
+            _str =  _agentIpDrops + " " + _agentDrops + " " +
+                    _networkSNDrops + " " + _networkDrops + " " +
+                    _ruleSNPairDrops + " " + _ruleDrops
+        end
+
         # Only accessible method
         def self.createXmlFromUIConfigHash(configHash)
             begin
@@ -126,12 +184,17 @@ module NPMDConfig
                     _subnetMask = maskHash[ip["SubnetName"]]
                     if _subnetMask.nil?
                         Logger::logWarn "Did not find subnet mask for subnet name #{ip["SubnetName"]} in hash", 2*Logger::loop
+                        @@agent_ip_drops += 1
                     else
                         _ipConfig.add_attribute("Mask", maskHash[ip["SubnetName"]])
                         _agent.elements << _ipConfig
                     end
                 end
-                _agents.elements << _agent
+                if _agent.elements.empty?
+                    @@agent_drops += 1
+                else
+                    _agents.elements << _agent
+                end
             end
             _agents
         end
@@ -145,6 +208,7 @@ module NPMDConfig
                     _subnetId = subnetIdHash[sn]
                     if _subnetId.nil?
                         Logger::logWarn "Did not find subnet id for subnet name #{sn} in hash", 2*Logger::loop
+                        @@network_subnet_drops += 1
                     else
                         _snConfig = REXML::Element.new("Subnet")
                         _snConfig.add_attribute("ID", subnetIdHash[sn])
@@ -153,7 +217,11 @@ module NPMDConfig
                         _network.elements << _snConfig
                     end
                 end
-                _networks.elements << _network
+                if _network.elements.empty?
+                    @@network_drops += 1
+                else
+                    _networks.elements << _network
+                end
             end
             _networks
         end
@@ -169,12 +237,20 @@ module NPMDConfig
                 if a["DS"] != "*" and a["DS"] != ""
                     _dSubnetId = subnetIdHash[a["DS"].to_s]
                 end
-                _snPair = REXML::Element.new("SubnetPair")
-                _snPair.add_attribute("SourceSubnet", _sSubnetId)
-                _snPair.add_attribute("SourceNetwork", a["SN"])
-                _snPair.add_attribute("DestSubnet", _dSubnetId)
-                _snPair.add_attribute("DestNetwork", a["DN"])
-                _xmlElement.elements << _snPair
+                if _sSubnetId.nil?
+                    Logger::logWarn "Did not find subnet id for source subnet name #{a["SS"].to_s} in hash", 2*Logger::loop
+                    @@rule_subnetpair_drops += 1
+                elsif _dSubnetId.nil?
+                    Logger::logWarn "Did not find subnet id for destination subnet name #{a["DS"].to_s} in hash", 2*Logger::loop
+                    @@rule_subnetpair_drops += 1
+                else
+                    _snPair = REXML::Element.new("SubnetPair")
+                    _snPair.add_attribute("SourceSubnet", _sSubnetId)
+                    _snPair.add_attribute("SourceNetwork", a["SN"])
+                    _snPair.add_attribute("DestSubnet", _dSubnetId)
+                    _snPair.add_attribute("DestNetwork", a["DN"])
+                    _xmlElement.elements << _snPair
+                end
             end
             _xmlElement
         end
@@ -186,15 +262,20 @@ module NPMDConfig
                 _rule.add_attribute("Name", x["Name"])
                 _rule.add_attribute("Description", "")
                 _rule.add_attribute("Protocol", x["Protocol"])
-                _alertConfig = REXML::Element.new("AlertConfiguration")
-                _alertConfig.add_element("Loss", {"Threshold" => x["LossThreshold"] })
-                _alertConfig.add_element("Latency", {"Threshold" => x["LatencyThreshold"]})
                 _netTestMtx = createActOnElements(x["Rules"], subnetIdHash, "NetworkTestMatrix")
-                _exceptions = createActOnElements(x["Exceptions"], subnetIdHash, "Exceptions")
-                _rule.elements << _alertConfig
-                _rule.elements << _netTestMtx
-                _rule.elements << _exceptions
-                _rules.elements << _rule
+                if _netTestMtx.elements.empty?
+                    Logger::logWarn "Skipping rule #{x["Name"]} as network test matrix is empty", Logger::loop
+                    @@rule_drops += 1
+                else
+                    _alertConfig = REXML::Element.new("AlertConfiguration")
+                    _alertConfig.add_element("Loss", {"Threshold" => x["LossThreshold"] })
+                    _alertConfig.add_element("Latency", {"Threshold" => x["LatencyThreshold"]})
+                    _exceptions = createActOnElements(x["Exceptions"], subnetIdHash, "Exceptions")
+                    _rule.elements << _alertConfig
+                    _rule.elements << _netTestMtx
+                    _rule.elements << _exceptions
+                    _rules.elements << _rule
+                end
             end
             _rules
         end
@@ -339,7 +420,10 @@ module NPMDConfig
     # Only function needed to be called from this module
     def self.GetAgentConfigFromUIConfig(uiXml)
         _uiHash = UIConfigParser.parse(uiXml)
+        AgentConfigCreator.resetErrorCheck()
         _agentXml = AgentConfigCreator.createXmlFromUIConfigHash(_uiHash)
+        _errorStr = AgentConfigCreator.getErrorSummary()
+        return _agentXml, _errorStr
     end
 end
 

@@ -517,10 +517,14 @@ module Fluent
                         end
 
                         # Transform the UI XML configuration to agent configuration
-                        _agentConfig = NPMDConfig::GetAgentConfigFromUIConfig(_uiXml)
+                        _agentConfig, _errorSummary = NPMDConfig::GetAgentConfigFromUIConfig(_uiXml)
                         if _agentConfig.nil? or _agentConfig == ""
                             Logger::logWarn "Agent configuration transformation returned empty"
                             return
+                        end
+
+                        if _errorSummary.strip != ""
+                            log_error "Configuration drops: #{_errorSummary}"
                         end
 
                         @npmdClientSock.puts _agentConfig
