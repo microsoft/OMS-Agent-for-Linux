@@ -11,7 +11,7 @@ With this feature, you'll be able to:
 This is a Public Preview Product. 
 
 ### Supported Linux Operating Systems and Docker:
-* Docker 1.10 thru 1.12.1
+* Docker 1.11 thru 1.13
 
 And one of follow OS (x64): 
 * Ubuntu 14.04 LTS, 15.10, 16.04 LTS
