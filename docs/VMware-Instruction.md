@@ -9,7 +9,7 @@
  - Provide alerting based on the log search queries  
   
 #### Supported VMware ESXi Host:  
-  vSphere ESXi Host 5.5, 6.0 
+  vSphere ESXi Host 5.5, 6.0, 6.5
    
 #### How do I set up the VMware Monitoring Solution?  
    First, you will need to create a Linux OS VM to receive all syslog from the ESXi Hosts. The OMS Linux Agent will be the collecting point for all ESXi Host syslog. You can have multiple ESXi Hosts forwarding logs to a single linux server as you see in the diagram below.  
