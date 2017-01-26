@@ -65,6 +65,8 @@ module Fluent
 
         NPMD_CONN_CONFIRM = "NPMDAgent Connected!"
 
+        NPM_DIAG          = "NPMDiagLnx"
+
         STOP_SIGNAL       = "SIGKILL"
 
         CMD_ENUMERATE_PROCESSES_PREFIX = "ps aux | grep "
@@ -153,14 +155,14 @@ module Fluent
                 _json = JSON.parse(text)
                 _json
             rescue JSON::ParserError => e
-                Logger::logInfo "Json parsing failed for #{text} because of #{e}", Logger::resc
+                Logger::logInfo "Json parsing failed for #{text[0..200]} because of #{e}", Logger::resc
                 nil
             end
         end
 
         def log_error(msg, depth=0)
             Logger::logError(msg, depth + 1)
-            package_and_send_error_log(msg)
+            package_and_send_diag_log(msg)
         end
 
         def kill_all_agent_instances
@@ -182,10 +184,10 @@ module Fluent
                         # Process already stopped
                     rescue Errno::EPERM
                         # Trying to kill someone else's process?
-                        package_and_send_error_log("No perm to kill process with info:#{line}: our uid:#{Process.uid}")
+                        log_error "No perm to kill process with info:#{line}: our uid:#{Process.uid}"
                     rescue ArgumentError
                         # Could not get info on username
-                        package_and_send_error_log("Could not process username from info:#{line}: our uid:#{Process.uid}")
+                        log_error "Could not process username from info:#{line}: our uid:#{Process.uid}"
                     end
                 end
             end
@@ -207,27 +209,34 @@ module Fluent
                     _json = check_and_get_json(_line.chomp)
                     unless !_json.nil?
                         Logger::logWarn "Sent string to plugin is not a json string", Logger::loop
+                        log_error "String received not json: #{_line[0..100]}" if _line.bytesize > 50
                     else
                         unless _json.key?("DataItems") and !_json["DataItems"].nil? and _json["DataItems"] != ""
                             Logger::logWarn "No valid data items found in sent json #{_json}", Logger::loop
                         else
                             _uploadData = _json["DataItems"].reject {|x| x["SubType"] == "ErrorLog"}
-                            _errorLogs  = _json["DataItems"].select {|x| x["SubType"] == "ErrorLog"}
+                            _diagLogs   = _json["DataItems"].select {|x| x["SubType"] == "ErrorLog"}
+                            _validUploadDataItems = Array.new
+                            _batchTime = Time.now.utc.strftime("%Y-%m-%d %H:%M:%SZ")
                             _uploadData.each do |item|
+                                item["TimeGenerated"] = _batchTime
                                 if item.key?("SubType")
                                     # Append FQDN to path data
                                     if !@fqdn.nil? and item["SubType"] == "NetworkPath"
                                         @num_path_data += 1 unless @num_path_data.nil?
                                         item["Computer"] = @fqdn
-                                        # Append agent Guid to agent data
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    # Append agent Guid to agent data
                                     elsif !@agentId.nil? and item["SubType"] == "NetworkAgent"
                                         @num_agent_data += 1 unless @num_agent_data.nil?
                                         item["AgentId"] = @agentId
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
                                     end
                                 end
                             end
-                            emit_upload_data_dataitems(_uploadData) if !_uploadData.nil? and !_uploadData.empty?
-                            emit_error_log_dataitems(_errorLogs) if !_errorLogs.nil? and !_errorLogs.empty?
+                            _diagLogs.each { |d| d["SubType"] = NPM_DIAG}
+                            emit_upload_data_dataitems(_validUploadDataItems) if !_validUploadDataItems.nil? and !_validUploadDataItems.empty?
+                            emit_diag_log_dataitems(_diagLogs) if !_diagLogs.nil? and !_diagLogs.empty?
                         end
                     end
                 rescue StandardError => e
@@ -242,19 +251,49 @@ module Fluent
             end while !@npmdClientSock.nil?
         end
 
-        def package_and_send_error_log(msg)
-            _dataItems = Array.new
-            _h = Hash.new
-            _h["Message"] = msg
-            _dataItems << _h
-            emit_error_log_dataitems(_dataItems)
+        def is_valid_dataitem(item)
+            _itemType=""
+            if item["SubType"] == "NetworkAgent"
+                _itemType = NPMContract::DATAITEM_AGENT
+            elsif item["SubType"] == "NetworkPath"
+                _itemType = NPMContract::DATAITEM_PATH
+            elsif item["SubType"] == NPM_DIAG
+                _itemType = NPMContract::DATAITEM_DIAG
+            end
+
+            return false if _itemType.empty?
+
+            _res, _prob = NPMContract::IsValidDataitem(item, _itemType)
+
+            return true if _res == NPMContract::DATAITEM_VALID
+            if (_res == NPMContract::DATAITEM_ERR_INVALID_FIELDS)
+                Logger::logInfo "Invalid key in #{item["SubType"]} data: #{_prob}"
+            elsif (_res == NPMContract::DATAITEM_ERR_MISSING_FIELDS)
+                Logger::logInfo "Key #{_prob} absent in #{item["SubType"]} data"
+            elsif (_res == NPMContract::DATAITEM_ERR_INVALID_TYPE)
+                Logger::logInfo "Invalid itemtype #{_itemType}"
+            end
         end
 
-        def emit_error_log_dataitems(dataitems)
+        def make_diag_log_msg_hash(msg)
+            _h = Hash.new
+            _h["Message"] = msg
+            _h["SubType"] = NPM_DIAG
+            _h
+        end
+
+        def package_and_send_diag_log(msg)
+            _dataItems = Array.new
+            _dataItems << make_diag_log_msg_hash(msg)
+            emit_diag_log_dataitems(_dataItems)
+        end
+
+        def emit_diag_log_dataitems(dataitems)
+            _validItems = dataitems.select {|x| is_valid_dataitem(x)}
             _record = Hash.new
             _record["DataType"] = "HEALTH_ASSESSMENT_BLOB"
             _record["IPName"]   = "LogManagement"
-            _record["DataItems"] = dataitems
+            _record["DataItems"] = _validItems
             router.emit(@tag, Engine.now, _record)
         end
 
@@ -335,7 +374,7 @@ module Fluent
                 _ind = _req.index(":")
                 _msg = _req[_ind+1..-1]
                 unless _ind.nil? or _ind + 1 >= _req.length
-                    package_and_send_error_log(_msg)
+                    log_error "dsc:#{_msg}"
                 end
             else
                 log_error "Unknown command #{cmd} received from DSC resource provider"
@@ -373,14 +412,12 @@ module Fluent
                 _fileList = Dir["#{_globPrefix}*"]
                 _fileList.each do |x|
                     File.readlines(x).each do |line|
-                        _hMessage = Hash.new
-                        _hMessage["Message"] = "Previous Stderror:#{line}"
                         Logger::logInfo "Prev STDERR: #{line}", 2*Logger::loop
-                        _arr << _hMessage
+                        _arr << make_diag_log_msg_hash("Previous Stderror:#{line}")
                     end
                     File.unlink(x)
                 end
-                emit_error_log_dataitems(_arr) unless _arr.empty?
+                emit_diag_log_dataitems(_arr) unless _arr.empty?
             rescue => e
                 Logger::logInfo "Got error while uploading pending stderrors: #{e}"
             end
@@ -395,12 +432,11 @@ module Fluent
                     begin
                         if File.exist?(fileName)
                             File.readlines(fileName).each do |line|
-                                _hMessage = Hash.new
-                                _hMessage["Message"] = "PID:#{procId}:#{line}"
-                                Logger::logInfo "STDERR for #{_hMessage["Message"]}"
-                                _arr << _hMessage
+                                Logger::logInfo "STDERR for PID:#{procId}:#{line}"
+                                _arr << make_diag_log_msg_hash("STDERR PID:#{procId}:#{line}")
                             end
                             File.unlink(fileName)
+                            @npmdProcessId = nil if @npmdProcessId == procId
                         end
                     rescue => e
                         log_error "Got error while processing stderr files: #{e}"
@@ -408,7 +444,7 @@ module Fluent
                 end
                 @stderrFileNameHash.clear()
             end
-            emit_error_log_dataitems(_arr) unless _arr.empty?
+            emit_diag_log_dataitems(_arr) unless _arr.empty?
 
             # Checking if NPMD exited as planned
             if @npmdIntendedStop
@@ -540,6 +576,8 @@ module Fluent
                     _clientTriage = triage_conn(_client)
                     if _clientTriage == CONN_AGENT
                         Logger::logInfo "NPMD Agent connected"
+                        @npmdClientSock.close() unless @npmdClientSock.nil?
+                        Thread.kill(@npmdAgentReaderThread) if @npmdAgentReaderThread.is_a?(Thread)
                         @npmdClientSock = _client
                         @npmdAgentReaderThread = Thread.new{npmd_reader()}
                         send_config()

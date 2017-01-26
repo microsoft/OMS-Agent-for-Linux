@@ -639,6 +639,7 @@ cd $EXTRACT_DIR
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
     rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2> /dev/null 
+    rm -f "$ONBOARD_FILE" > /dev/null 2> /dev/null
     if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
         /opt/microsoft/omsagent/bin/uninstall $installMode
     else

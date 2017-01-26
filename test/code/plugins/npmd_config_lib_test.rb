@@ -141,4 +141,71 @@ class NPMDConfigUT < Test::Unit::TestCase
     def test_case_11
         validate_test_case(@test_desc11, @test_input_ui_config11, @hash_output_ui_config11, @string_agent_config11)
     end
+
+    # Contract test cases
+    def test_contract_01_path_data
+        # Checking for valid path data case
+        _validPathDataStr='{"SourceNetwork":"abcd", "SourceNetworkNodeInterface":"abcd", "SourceSubNetwork":"abcd", "DestinationNetwork":"abcd", "DestinationNetworkNodeInterface":"abcd", "DestinationSubNetwork":"abcd", "RuleName":"abcd", "TimeSinceActive":"abcd", "LossThreshold":"abcd", "LatencyThreshold":"abcd", "LossThresholdMode":"abcd", "LatencyThresholdMode":"abcd", "SubType":"NetworkPath", "HighLatency":"abcd", "MedianLatency":"abcd", "LowLatency":"abcd", "LatencyHealthState":"abcd","Loss":"abcd", "LossHealthState":"abcd", "Path":"abcd", "Computer":"abcd", "TimeGenerated":"abcd"}'
+        _validPathData = JSON.parse(_validPathDataStr)
+        _res, _prob = NPMContract::IsValidDataitem(_validPathData, NPMContract::DATAITEM_PATH)
+        assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid path data sent but validation returned invalid")
+
+        # Checking for missing fields case
+        _missingFieldsStr='{"SourceNetwork":"abcd", "SourceNetworkNodeInterface":"abcd", "SourceSubNetwork":"abcd", "DestinationNetworkNodeInterface":"abcd", "DestinationSubNetwork":"abcd", "RuleName":"abcd", "TimeSinceActive":"abcd", "LossThreshold":"abcd", "LatencyThreshold":"abcd", "LossThresholdMode":"abcd", "LatencyThresholdMode":"abcd", "SubType":"NetworkPath", "HighLatency":"abcd", "MedianLatency":"abcd", "LowLatency":"abcd", "LatencyHealthState":"abcd","Loss":"abcd", "LossHealthState":"abcd", "Path":"abcd", "Computer":"abcd", "TimeGenerated":"abcd"}'
+        _missingFields = JSON.parse(_missingFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_missingFields, NPMContract::DATAITEM_PATH)
+        assert_equal(NPMContract::DATAITEM_ERR_MISSING_FIELDS, _res, "Path Data with missing fields sent but validation did not give correct error")
+        assert_equal("DestinationNetwork", _prob, "Path data missing field was not properly triaged")
+
+        # Checking for invalid fields case
+        _invalidFieldsStr='{"SourceNetwork":"abcd", "SourceNetworkNodeInterface":"abcd", "SourceSubNetwork":"abcd", "DestinationNetwork":"abcd", "DestinationNetworkNodeInterface":"abcd", "DestinationSubNetwork":"abcd", "RuleName":"abcd", "TimeSinceActive":"abcd", "LossThreshold":"abcd", "LatencyThreshold":"abcd", "LossThresholdMode":"abcd", "LatencyThresholdMode":"abcd", "SubType":"NetworkPath", "HighLatency":"abcd", "MedianLatency":"abcd", "LowLatency":"abcd", "LatencyHealthState":"abcd","Loss":"abcd", "LossHealthEState":"abcd", "Path":"abcd", "Computer":"abcd", "TimeGenerated":"abcd"}'
+        _invalidFields = JSON.parse(_invalidFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_invalidFields, NPMContract::DATAITEM_PATH)
+        assert_equal(NPMContract::DATAITEM_ERR_INVALID_FIELDS, _res, "Path Data with invalid fields sent but validation did not give correct error")
+        assert_equal("LossHealthEState", _prob, "Path data invalid field was not properly triaged")
+    end
+
+    def test_contract_02_agent_data
+        # Checking for valid agent data case
+        _validAgentDataStr='{"AgentFqdn":"abcd", "AgentIP":"abcd", "AgentCapability":"abcd", "SubnetId":"abcd", "PrefixLength":"abcd", "AddressType":"abcd", "SubType":"NetworkAgent", "AgentId":"abcd", "TimeGenerated":"abcd"}'
+        _validAgentData = JSON.parse(_validAgentDataStr)
+        _res, _prob = NPMContract::IsValidDataitem(_validAgentData, NPMContract::DATAITEM_AGENT)
+        assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid agent data sent but validation returned invalid")
+
+        # Checking for missing fields case
+        _missingFieldsStr='{"AgentFqdn":"abcd", "AgentIP":"abcd", "AgentCapability":"abcd", "PrefixLength":"abcd", "AddressType":"abcd", "SubType":"NetworkAgent", "AgentId":"abcd", "TimeGenerated":"abcd"}'
+        _missingFields = JSON.parse(_missingFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_missingFields, NPMContract::DATAITEM_AGENT)
+        assert_equal(NPMContract::DATAITEM_ERR_MISSING_FIELDS, _res, "Agent data with missing fields sent but validation did not give correct error")
+        assert_equal("SubnetId", _prob, "Agent data missing field was not properly triaged")
+
+        # Checking for invalid fields case
+        _invalidFieldsStr='{"AgentFqdn":"abcd", "AgentIP":"abcd", "AgentCapability":"abcd", "SubnetId":"abcd", "PrefixLength":"abcd", "AddressZType":"abcd", "SubType":"NetworkAgent", "AgentId":"abcd", "TimeGenerated":"abcd"}'
+        _invalidFields = JSON.parse(_invalidFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_invalidFields, NPMContract::DATAITEM_AGENT)
+        assert_equal(NPMContract::DATAITEM_ERR_INVALID_FIELDS, _res, "agent data with invalid fields sent but validation did not give correct error")
+        assert_equal("AddressZType", _prob, "Agent data invalid field was not properly triaged")
+    end
+
+    def test_contract_03_diag_data
+        # Checking for valid diag data case
+        _validDiagDataStr='{"Message":"This is a test diagnostics log message", "SubType":"NPMDiagLnx"}'
+        _validDiagData = JSON.parse(_validDiagDataStr)
+        _res, _prob = NPMContract::IsValidDataitem(_validDiagData, NPMContract::DATAITEM_DIAG)
+        assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid diag data sent but validation returned invalid")
+
+        # Checking for missing fields case
+        _missingFieldsStr='{"SubType":"NPMDiagLnx"}'
+        _missingFields = JSON.parse(_missingFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_missingFields, NPMContract::DATAITEM_DIAG)
+        assert_equal(NPMContract::DATAITEM_ERR_MISSING_FIELDS, _res, "Diag data with missing fields sent but validation did not give correct error")
+        assert_equal("Message", _prob, "Diag data missing field was not properly triaged")
+
+        # Checking for invalid fields case
+        _invalidFieldsStr='{"MesSage":"This is a test diagnostics log message", "SubType":"NPMDiagLnx"}'
+        _invalidFields = JSON.parse(_invalidFieldsStr)
+        _res, _prob = NPMContract::IsValidDataitem(_invalidFields, NPMContract::DATAITEM_DIAG)
+        assert_equal(NPMContract::DATAITEM_ERR_INVALID_FIELDS, _res, "diag data with invalid fields sent but validation did not give correct error")
+        assert_equal("MesSage", _prob, "Diag data invalid field was not properly triaged")
+    end
 end

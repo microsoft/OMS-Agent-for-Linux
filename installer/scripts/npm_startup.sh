@@ -40,41 +40,27 @@ fi
 su - omsagent -c "echo $'chmod 755 \$1\nsetcap cap_net_raw=ep \$1' > $scriptPath"
 chmod 755 $scriptPath
 
-# Add firewalld TCP rule on CentOS 7 or RHEL 7
+# Check if firewalld is present and running, open up destination port
 tcp_port=8084
-release_file=/etc/os-release
-str_centOS7="CentOS Linux 7"
-str_rhel7="Red Hat Enterprise Linux Server 7.0"
-require_notify=1
-if [ -f $release_file ];
-then
-        pretty_name=`cat $release_file | grep PRETTY_NAME=`
-        if [ "${pretty_name#*$str_centOS7}" != "$pretty_name" -o "${pretty_name#*$str_rhel7}" != "$pretty_name" ];
-        then
-                echo "Checking firewalld"
-                if [ -f /usr/bin/firewall-cmd ];
-                then
-                        echo "Checking to see if firewall port $tcp_port can be opened"
-                        firewalld_state=`firewall-cmd --state`
-                        if [ "$firewalld_state" == "running" ];
-                        then
-                                res_open_port=`firewall-cmd --zone=public --add-port=$tcp_port/tcp --permanent`
-                                echo "Opening of port $tcp_port: " $res_open_port
-                                res_reloading_firewalld=`firewall-cmd --reload`
-                                echo "Reloading firewall rules: " $res_reloading_firewalld
-                                require_notify=0
-                        else
-                            echo "Firewalld is not running!"
-                        fi
-                else
-                        echo "Firewalld found absent!"
-                fi
-        fi
+require_notify=true
+echo "Checking if firewalld is present"
+if [ -f /usr/bin/firewall-cmd ]; then
+    echo "Firewalld present, checking state"
+    firewalld_state=`firewall-cmd --state`
+    if [ "$firewalld_state" == "running" ]; then
+        echo "Firewalld is running, now opening port $tcp_port"
+        res_open_port=`firewall-cmd --zone=public --add-port=$tcp_port/tcp --permanent`
+        echo "Opening of port $tcp_port: " $res_open_port
+        res_reloading_firewalld=`firewall-cmd --reload`
+        echo "Reloading firewall rules: " $res_reloading_firewalld
+        require_notify=false
+    else
+        echo "Firewalld is not running!"
+    fi
 else
-        echo "File $release_file not found!"
+    echo "Firewalld absent!"
 fi
 
-if [ $require_notify -eq 1 ];
-then
+if $require_notify; then
     echo "Please configure your firewall (if running), to allow connections for destination port $tcp_port over TCP for NPM solution to run"
 fi

@@ -173,14 +173,14 @@ proxyconf="https://proxyuser:proxypassword@proxyserver01:8080"
 sudo echo $proxyconf >>/etc/opt/microsoft/omsagent/proxy.conf
 sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf
 sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf
-sudo /opt/microsoft/omsagent/bin/service_control restart
+sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
 ```
 
 **Removing the proxy configuration**
 To remove a previously defined proxy configuration and revert to direct connectivity, remove the proxy.conf file:
 ```
 sudo rm /etc/opt/microsoft/omsagent/proxy.conf
-sudo /opt/microsoft/omsagent/bin/service_control restart
+sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
 ```
 
 # Onboarding with Operations Management Suite
@@ -246,7 +246,7 @@ sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -X
 ```
 
 # Manage omsagent Daemon
-From 1.3.0-1, we will register omsagent daemon for each onboarded workspace. The daemon name is omsagent-<workspace-id>
+From 1.3.0-1, we will register omsagent daemon for each onboarded workspace. The daemon name is omsagent-\<workspace-id>
 You can use /opt/microsoft/omsagent/bin/service_control command to operate the daemon.
 
 ```
@@ -311,7 +311,7 @@ To define a default user account for the MySQL server on localhost:
 ```
 sudo su omsagent -c '/opt/microsoft/mysql-cimprov/bin/mycimprovauth default 127.0.0.1 <username> <password>'
 
-sudo /opt/omi/bin/service_control restart
+sudo /opt/omi/bin/service_control restart [<workspace id>]
 ```
 Alternatively, you can specify the required MySQL credentials in a file, by creating the file: `/var/opt/microsoft/mysql-cimprov/auth/omsagent/mysql-auth`. For more information on managing MySQL credentials for monitoring through the mysql-auth file, see **Appendix C** of this document.
 
@@ -413,7 +413,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 *	Restart the omsagent and syslog daemons:
 
 	```
-	sudo /opt/microsoft/omsagent/bin/service_control restart
+	sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
 	sudo service rsyslog restart
 	```
 *	Confirm that no errors are reported in the omsagent log:
@@ -621,7 +621,7 @@ Example seperate configuration file `exec-json.conf` for /etc/opt/microsoft/omsa
 </match>
 ```
 
-Once complete restart the OMS Agent for Linux service `sudo service omsagent restart` or `sudo systemctl restart omsagent` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
+Once complete, restart the OMS Agent for Linux service: `sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
 
 **Example:**The following custom tag `tag oms.api.tomcat` shows up as `Type=tomcat_CL` in Log Analytics
 
@@ -667,7 +667,7 @@ sudo usermod -a -G nagios omsagent
 *	Restart the omsagent daemon
 
 ```
-sudo service omsagent restart
+sudo sh /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
 ```
 ### Zabbix Alerts
 To collect alerts from a Zabbix server, you'll perform similiar steps to those for Nagios above, except you'll need to specify a user and password in *clear text*. This is not ideal, but we recommend that you create the user and grant permissions to monitor onlu.

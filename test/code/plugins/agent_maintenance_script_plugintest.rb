@@ -25,7 +25,6 @@ class MaintenanceUnitTest < Test::Unit::TestCase
                         "AZURE_RESOURCE_ID=\n" \
                         "OMSCLOUD_ID=7783-7084-3265-9085-8269-3286-77\n" \
                         "UUID=274E8EF9-2B6F-8A45-801B-AAEE62710796\n" \
-                        "FQDN=fakefqdn.domain.net\n"
 
   VALID_HEARTBEAT_RESP = "<?xml version=\"1.0\" encoding=\"utf-8\"?><LinuxAgentTopologyResponse "\
                          "queryInterval=\"PT1H\" id=\"628a6594-a618-4da4-a989-bcd9a322d403\" "\

@@ -72,9 +72,9 @@ fi
 # Download, install, and onboard OMSAgent for Linux, depending on architecture of machine
 if [ $(uname -m) = 'x86_64' ]; then
     # x64 architecture
-    wget ${GITHUB_RELEASE}${BUNDLE_X64} && sudo sh ./${BUNDLE_X64} ${bundleParameters}
+    wget -O ${BUNDLE_X64} ${GITHUB_RELEASE}${BUNDLE_X64} && sudo sh ./${BUNDLE_X64} ${bundleParameters}
 else
     # x86 architecture
-    wget ${GITHUB_RELEASE}${BUNDLE_X86} && sudo sh ./${BUNDLE_X86} ${bundleParameters}
+    wget -O ${BUNDLE_X86} ${GITHUB_RELEASE}${BUNDLE_X86} && sudo sh ./${BUNDLE_X86} ${bundleParameters}
 fi
 

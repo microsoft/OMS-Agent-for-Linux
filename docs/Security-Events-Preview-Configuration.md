@@ -58,7 +58,7 @@ Collection of the following 3rd party security log types is supported:
 
 
 6. Restart the OMS Agent:  
-```sudo service omsagent restart``` or ```systemctl restart omsagent```
+```sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]```
 
 7. Confirm that there are no errors in the OMS Agent log:  
 ```tail /var/opt/microsoft/omsagent/log/omsagent.log```
