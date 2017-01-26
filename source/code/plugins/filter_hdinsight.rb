@@ -11,14 +11,15 @@ module Fluent
     BASE_DIR = File.dirname(File.expand_path('..', __FILE__))
     RUBY_DIR = BASE_DIR + '/ruby/bin/ruby '
     SCRIPT = BASE_DIR + '/bin/hdinsightmanifestreader.rb '
-	
-	attr_accessor :command
+
+    attr_accessor :command
 
     def configure(conf)
       super
       @hostname = OMS::Common.get_hostname or "Unknown host"
       @command = "sudo " << RUBY_DIR << SCRIPT
       @clustername = ""
+      @clustertype = ""
     end
 
     def start
@@ -26,9 +27,11 @@ module Fluent
       Open3.popen3(@command) {|stdin, stdout, stderr, wait_thr|
           pid = wait_thr.pid
           stdin.close
-          @clustername = stdout.read
+          parsed = JSON.parse(stdout.read)
+          @clustername = parsed["cluster_name"]
+          @clustertype = parsed["cluster_type"]
           wait_thr.value
-      }	  
+      }
     end
 
     def shutdown
@@ -38,6 +41,7 @@ module Fluent
     def filter(tag, time, record)
       record["ClusterName"] = @clustername
       record["HostName"] = @hostname
+      record["ClusterType"] = @clustertype
       record
     end
   end
