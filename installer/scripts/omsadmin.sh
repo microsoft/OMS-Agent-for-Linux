@@ -752,6 +752,7 @@ copy_omsagent_d_conf()
     cp $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
     cp $SYSCONF_DIR/omsagent.d/oms_audits.xml $OMSAGENTD_DIR
+    cp $SYSCONF_DIR/omsagent.d/container.conf $OMSAGENTD_DIR 2>/dev/null
 
     update_path $OMSAGENTD_DIR/monitor.conf
     update_path $OMSAGENTD_DIR/heartbeat.conf
