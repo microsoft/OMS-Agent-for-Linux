@@ -95,7 +95,7 @@ module Fluent
             @agent_restart_count = 0
             @last_npmd_start = nil
             start_npmd()
-            @watch_dog_thread = Thread.new(&method(:watch_dog_wait_for_pet))
+            @watch_dog_thread = nil
             @watch_dog_sync = Mutex.new
             @watch_dog_last_pet = Time.new
         end
@@ -106,7 +106,7 @@ module Fluent
             kill_all_agent_instances()
             @npmdClientSock.close() unless @npmdClientSock.nil?
             @npmdClientSock = nil
-            Thread.kill(@watch_dog_thread)
+            Thread.kill(@watch_dog_thread) if @watch_dog_thread.is_a?(Thread)
             Thread.kill(@server_thread)
             File.unlink(@location_unix_endpoint) if File.exist?@location_unix_endpoint
             File.unlink(@location_agent_binary) if File.exist?@location_agent_binary and (!@do_purge.nil? and @do_purge)
@@ -532,6 +532,9 @@ module Fluent
                         @num_config_sent += 1 unless @num_config_sent.nil?
                         Logger::logInfo "Configuration file sent to npmd_agent"
 
+                        # Start the watch dog thread after first config
+                        @watch_dog_thread = Thread.new(&method(:watch_dog_wait_for_pet)) if @watch_dog_thread.nil?
+
                     else
                         Logger::logWarn "NPMD client socket not connected yet!"
                     end
@@ -595,6 +598,12 @@ module Fluent
 
         def watch_dog_wait_for_pet
             _sleepInterval = WATCHDOG_PET_INTERVAL_SECS
+
+            # Pet right after first agent configuration is sent
+            @watch_dog_sync.synchronize do
+                @watch_dog_last_pet = Time.now
+            end
+
             loop do
                 sleep(_sleepInterval)
                 _diffTime = Time.now
