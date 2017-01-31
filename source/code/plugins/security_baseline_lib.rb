@@ -99,7 +99,8 @@ module OMS
                         "InformationalFailedRules" => informational_failed_rules,
                         "PercentageOfPassedRules" => percentage_of_passed_rules,
                         "AssessmentId" => assessment_id,
-                        "OSName" => "Linux"
+                        "OSName" => "Linux",
+                        "BaselineType" => "Linux"
                     }
                 ] 
             }
@@ -119,7 +120,9 @@ module OMS
                 "AssessmentId" => assessment_id,
                 "OSName" => "Linux",
                 "RuleType" => "Command",
-                "RuleId" => asm_baseline_result["ruleId"]
+                "RuleId" => asm_baseline_result["ruleId"],
+                "BaselineType" => "Linux",
+                "ActualResult" => asm_baseline_result["error_text"]
             }
             return oms
         end # transform_asm_2_oms
