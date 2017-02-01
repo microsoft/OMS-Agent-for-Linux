@@ -25,7 +25,7 @@ If none of these steps work for you the following channels for help are also ava
 
  File | Path 
  ---- | ----- 
- OMS Agent for Linux Log File | `/var/opt/microsoft/omsagent/log/omsagent.log `
+ OMS Agent for Linux Log File | `/var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log `
  OMS Agent Configuration Log File | `/var/opt/microsoft/omsconfig/omsconfig.log`
  
 ## Important Configuration Files
@@ -33,8 +33,8 @@ If none of these steps work for you the following channels for help are also ava
  Catergory | File Location
  ----- | -----
  Syslog | `/etc/syslog-ng/syslog-ng.conf` or `/etc/rsyslog.conf` or `/etc/rsyslog.d/95-omsagent.conf`
- Performance, Nagios, Zabbix, OMS output and general agent | `/etc/opt/microsoft/omsagent/conf/omsagent.conf`
- Additional configurations | `/etc/opt/microsoft/omsagent/conf.d/*.conf`
+ Performance, Nagios, Zabbix, OMS output and general agent | `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`
+ Additional configurations | `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/*.conf`
  
  **Note:** Editing configuration files for performance counters & syslog is overwritten if Portal Configuration is enabled. Disable configuration in the OMS Portal (all nodes) or for single nodes run the following:
  
@@ -42,7 +42,7 @@ If none of these steps work for you the following channels for help are also ava
  
 ### Enable Debug Logging
 #### OMS output plugin debug
- FluentD allows for plugin specific logging levels allowing you to specify different log levels for inputs and outputs. To specify a different log level for OMS output edit the general agent configuration at `/etc/opt/microsoft/omsagent/conf/omsagent.conf`:
+ FluentD allows for plugin specific logging levels allowing you to specify different log levels for inputs and outputs. To specify a different log level for OMS output edit the general agent configuration at `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`:
  
  In the OMS output plugin, near the bottom of the configuration file, change the `log_level` property from `info` to `debug`
  
@@ -53,7 +53,7 @@ If none of these steps work for you the following channels for help are also ava
   num_threads 5
   buffer_chunk_limit 5m
   buffer_type file
-  buffer_path /var/opt/microsoft/omsagent/state/out_oms*.buffer
+  buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms*.buffer
   buffer_queue_limit 10
   flush_interval 20s
   retry_limit 10
@@ -73,7 +73,7 @@ Success sending oms.syslog.authpriv.info x 1 in 0.91s
 #### Verbose output
 Instead of using the OMS output plugin you can also output Data Items directly to `stdout` which is visible in the OMS Agent for Linux log file.
 
-In the OMS general agent configuration file at `/etc/opt/microsoft/omsagent/conf/omsagent.conf`:
+In the OMS general agent configuration file at `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`:
 
 Comment out the OMS output plugin by adding a `#` in front of each line
 ```
@@ -83,7 +83,7 @@ Comment out the OMS output plugin by adding a `#` in front of each line
 #  num_threads 5
 #  buffer_chunk_limit 5m
 #  buffer_type file
-#  buffer_path /var/opt/microsoft/omsagent/state/out_oms*.buffer
+#  buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms*.buffer
 #  buffer_queue_limit 10
 #  flush_interval 20s
 #  retry_limit 10
@@ -151,7 +151,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 
 #### Resolutions
 * Add omsagent user to read from Nagios file [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#nagios-alerts)
-* In the OMS Agent for Linux general configuration file at `/etc/opt/microsoft/omsagent/conf/omsagent.conf` ensure that **both** the Nagios source and filter are uncommented
+* In the OMS Agent for Linux general configuration file at `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf` ensure that **both** the Nagios source and filter are uncommented
 ```
 <source>
   type tail
@@ -172,7 +172,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * OMS Agent for Linux data is backed up
 
 #### Resolutions
-* Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/conf/omsadmin.conf`
+* Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
 * If using a proxy, check proxy troubleshooting steps aboce
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart [<workspace id>]`.
@@ -209,7 +209,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * Known Issue with Race Condition fixed in OMS Agent for Linux version 1.1.0-217
 
 ####Resolutions
-* Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/conf/omsadmin.conf`
+* Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
 * In the OMS Portal under Settings ensure that the following checkbox is checked ![](pictures/CustomLogLinuxEnabled.png?raw=true)
 
@@ -225,4 +225,4 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
  * Grant universal read access to the required file `sudo chmod -R ugo+rw <FILE DIRECTORY>`
 
 * There is a known issue with a Race Condition in OMS Agent for Linux version <1.1.0-217. After updating to the latest agent run the following command to get the latest version of the output plugin
- * `sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/conf/omsagent.conf`
+ * `sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`

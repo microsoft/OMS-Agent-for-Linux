@@ -12,7 +12,7 @@
 4. Place the following configuration file on the OMS Agent machine:  
 	* [security_events.conf](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/installer/conf/omsagent.d/security_events.conf)  
 	_Fluentd configuration file to enable collection and parsing of Cisco events_  
-	Destination path on Agent machine: ```/etc/opt/microsoft/omsagent/conf/omsagent.d/```  
+	Destination path on Agent machine: ```/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/```  
 
   
 5. Configure Cisco ASA event forwarding to the OMS Agent  
@@ -46,7 +46,7 @@
 
 
 8. Confirm that there are no errors in the OMS Agent log:  
-```tail /var/opt/microsoft/omsagent/log/omsagent.log```
+```tail /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log```
 
 9. The events will appear in OMS under the **CommonSecurityLog** type.  
 Log search query: ```Type=CommonSecurityLog```

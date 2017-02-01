@@ -36,7 +36,7 @@ A.6 There can be multiple reasons.
 	```netstat -a | grep 1514```
 
 	- You should see the port 1514/tcp but if you do not, check whether the omsagent is installed correctly. If you do not see it, there is high chance that the syslog port is not open on the VM.
-		- Check ```/etc/opt/microsoft/omsagent/conf/omsagent.d/vmware_esxi.conf``` file is available.
+		- Check ```/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/vmware_esxi.conf``` file is available.
 		- Make sure proper user/group setting is done.
 
 		```-rw-r--r-- 1 omsagent omiusers 677 Sep 20 16:46 vmware_esxi.conf```
