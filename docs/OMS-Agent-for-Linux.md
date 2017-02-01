@@ -332,7 +332,7 @@ sudo /opt/microsoft/apache-cimprov/bin/apache_config.sh -u
 Syslog events and performance counters to collect can be specified in configuration files on the Linux computers. *If you opt to configure data collection through editing of the agent configuration files, you should disable the centralized configuration or add custom configurations to the `omsagent.d/` directory.*  Instructions are provided below to configure data collection in the agent’s configuration files as well as to disable central configuration for all OMS agents for Linux, or individual computers. 
 
 ###omsagent.d
-The directory `/etc/opt/microsoft/omsagent/conf/omsagent.d` is an *include* path for omsagent configuration files. Any `*.conf` files in this directory will be included in the configuration for omsagent. The files must be readable by the omsagent user, and will not be modified by centralized configuration options. This allows specific customizations to be added on the Linux machine, while still using centralized configuration. 
+The directory `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d` is an *include* path for omsagent configuration files. Any `*.conf` files in this directory will be included in the configuration for omsagent. The files must be readable by the omsagent user, and will not be modified by centralized configuration options. This allows specific customizations to be added on the Linux machine, while still using centralized configuration. 
 
 ### Disabling central configuration
 #### Disabling central configuration for all Linux computers
@@ -395,7 +395,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 **To switch from UDP to TCP for syslog:**
 *	Disable centralized configuration:
 	`sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable`
-*	Edit `/etc/opt/microsoft/omsagent/conf/omsagent.d/syslog.conf`.  Locate the `<source>` element with: `type syslog`. Set the protocol_type from `udp` to `tcp`. 
+*	Edit `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/syslog.conf`.  Locate the `<source>` element with: `type syslog`. Set the protocol_type from `udp` to `tcp`. 
 
 	```
 	<source>
@@ -419,7 +419,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 *	Confirm that no errors are reported in the omsagent log:
 	
 	```
-	tail /var/opt/microsoft/omsagent/log/omsagent.log
+	tail /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log
 	```
 
 *Note: using TCP with rsyslog may require changes to your selinux policy*
@@ -439,7 +439,7 @@ If you are using selinux, the semanage tool can be used to allow TCP traffic for
 **Note:** ports 0-1024 are privileged, and require special permissions. As the OMS Agent for Linux runs as the `omsagent` user trying to allocate a source port of 0 to 1024 results in agent startup failure
 
 ### Performance metrics
-Performance metrics to collect are controlled by the configuration in `/etc/opt/microsoft/omsagent/conf/omsagent.conf`. The appendix to this document details available classes and metrics in this release of the agent.
+Performance metrics to collect are controlled by the configuration in `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`. The appendix to this document details available classes and metrics in this release of the agent.
 
 Each Object (or category) of performance metrics to collect should be defined in the configuration file as a single `<source>` element. The syntax follows the pattern:
 ```
@@ -579,7 +579,7 @@ Custom JSON Data sources can be routed through the OMS Agent for Linux allowing 
 **OMS Agent for Linux v1.1.0-217+ is required for Custom JSON Data**
 
 #### Setup
-To bring any JSON data into OMS, the setup required is adding `oms.api.` before a FluentD tag in an input plugin. Additionally, the following output plugin configuration should be added to the main configuration in  `/etc/opt/microsoft/omsagent/conf/omsagent.conf` or as a seperate configuration file placed in `/etc/opt/microsoft/omsagent/conf/omsagent.d/`
+To bring any JSON data into OMS, the setup required is adding `oms.api.` before a FluentD tag in an input plugin. Additionally, the following output plugin configuration should be added to the main configuration in  `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf` or as a seperate configuration file placed in `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/`
 
 output plugin for Custom JSON Data
 ```
@@ -589,7 +589,7 @@ output plugin for Custom JSON Data
 
   buffer_chunk_limit 5m
   buffer_type file
-  buffer_path /var/opt/microsoft/omsagent/state/out_oms_api*.buffer
+  buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms_api*.buffer
   buffer_queue_limit 10
   flush_interval 20s
   retry_limit 10
@@ -597,7 +597,7 @@ output plugin for Custom JSON Data
 </match>
 ```
 
-Example seperate configuration file `exec-json.conf` for /etc/opt/microsoft/omsagent/conf/omsagent.d/ with FluentD plugin `exec` and output through Custom JSON output plugin from above.
+Example separate configuration file `exec-json.conf` for /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/ with FluentD plugin `exec` and output through Custom JSON output plugin from above.
 ```
 <source>
   type exec
@@ -613,7 +613,7 @@ Example seperate configuration file `exec-json.conf` for /etc/opt/microsoft/omsa
 
   buffer_chunk_limit 5m
   buffer_type file
-  buffer_path /var/opt/microsoft/omsagent/state/out_oms_api_httpresponse*.buffer
+  buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms_api_httpresponse*.buffer
   buffer_queue_limit 10
   flush_interval 20s
   retry_limit 10
@@ -647,7 +647,7 @@ To collect alerts from a Nagios server, the following configuration changes must
 ```
 sudo usermod -a -G nagios omsagent
 ```
-*	Modify the `omsagent.conf` configuration file (`/etc/opt/microsoft/omsagent/conf/omsagent.conf`). Ensure the following entries are present and not commented out:
+*	Modify the `omsagent.conf` configuration file (`/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`). Ensure the following entries are present and not commented out:
 
 
 ```
@@ -672,7 +672,7 @@ sudo sh /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
 ### Zabbix Alerts
 To collect alerts from a Zabbix server, you'll perform similiar steps to those for Nagios above, except you'll need to specify a user and password in *clear text*. This is not ideal, but we recommend that you create the user and grant permissions to monitor onlu.
 
-An example section of the `omsagent.conf` configuration file `/etc/opt/microsoft/omsagent/conf/omsagent.conf` for Zabbix resembles the following:
+An example section of the `omsagent.conf` configuration file `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf` for Zabbix resembles the following:
 
 ```
 <source>
@@ -686,7 +686,7 @@ An example section of the `omsagent.conf` configuration file `/etc/opt/microsoft
 ```
 # Agent Logs
 The logs for the Operations Management Suite Agent for Linux can be found at: 
-`/var/opt/microsoft/omsagent/log/`
+`/var/opt/microsoft/omsagent/<workspace id>/log/`
 The logs for the omsconfig (agent configuration) program can be found at: 
 `/var/opt/microsoft/omsconfig/log/`
 Logs for the OMI and SCX components (which provide performance metrics data) can be found at:
@@ -694,11 +694,11 @@ Logs for the OMI and SCX components (which provide performance metrics data) can
 
 ##Log Rotation Configuration##
 The log rotate configuration for omsagent can be found at:
-`/etc/logrotate.d/omsagent`
+`/etc/logrotate.d/omsagent-<workspace id>`
 
 The default settings are 
 ```
-/var/opt/microsoft/omsagent/log/omsagent.log {
+/var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log {
     rotate 5
     missingok
     notifempty

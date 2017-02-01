@@ -4,12 +4,17 @@
 
 2. Download and Install [OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux) on the machine. 
 
-3. Configure MySQL to generate [slow](http://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html), [error](http://dev.mysql.com/doc/refman/5.7/en/error-log.html), and [general](http://dev.mysql.com/doc/refman/5.7/en/query-log.html) logs.
+3. You can get the workspace ID for your machine from the OMS portal after it has onboarded successfully.
 
-4. Verify and update the MySQL log file path in the configuration file `/etc/opt/microsoft/omsagent/conf/omsagent.d/mysql.conf`  
+   Go to Settings -> Connected Sources -> Linux Servers
+   ![OMSPortalWorkspaceID](pictures/OMSPortalWorkspaceID.PNG?raw=true)
+
+4. Configure MySQL to generate [slow](http://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html), [error](http://dev.mysql.com/doc/refman/5.7/en/error-log.html), and [general](http://dev.mysql.com/doc/refman/5.7/en/query-log.html) logs.
+
+5. Verify and update the MySQL log file path in the configuration file `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/mysql.conf`  
 If `mysql.conf` is not present in the above location, move it:  
-`sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/`  
-`sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/conf/omsagent.d/mysql.conf`
+`sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/`  
+`sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/mysql.conf`
 
   ```config
   # MySQL Workload
@@ -46,15 +51,15 @@ If `mysql.conf` is not present in the above location, move it:
   </source>
   ```
 
-5. Restart the MySQL daemon:
+6. Restart the MySQL daemon:
 `sudo service mysql restart` or `/etc/init.d/mysqld restart`
 
-6. Restart the OMS agent:
+7. Restart the OMS agent:
 `sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]`
 
 
-7. Confirm that there are no errors in the OMS Agent log:  
-`tail /var/opt/microsoft/omsagent/log/omsagent.log`
+8. Confirm that there are no errors in the OMS Agent log:  
+`tail /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log`
 
 Go to OMS Log Analytics and see whether you can find any search results
 ![MySQLSearchView](pictures/MySQLSearchView.PNG?raw=true)
