@@ -183,12 +183,7 @@ module MaintenanceModule
     # Extract proxy setting information from proxy configuration file
     def get_proxy_info
       proxy = {}
-
-      if file_exists_nonempty(@proxy_path)
-        proxy = OMS::Configuration.get_proxy_config(@proxy_path)
-        log_info("Using proxy settings from #{@proxy_path}")
-      end
-
+      proxy = OMS::Configuration.get_proxy_config(@proxy_path)
       return proxy
     end
 

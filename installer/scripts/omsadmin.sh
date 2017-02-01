@@ -30,6 +30,7 @@ CONF_OMSAGENT=$CONF_DIR/omsagent.conf
 
 # Omsagent proxy configuration
 CONF_PROXY=$ETC_DIR/proxy.conf
+OLD_CONF_PROXY=$DF_CONF_DIR/proxy.conf
 
 # File with OS information for telemetry
 OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
@@ -251,6 +252,7 @@ parse_args()
             ;;
         M)
             MIGRATE_OLD_WS=1
+            MIGRATE_OLD_PROXY_CONF=1
             ;;
         m)
             MULTI_HOMING_MARKER=$OPTARG
@@ -295,6 +297,20 @@ create_proxy_conf()
     log_info "Created proxy configuration: $CONF_PROXY"
 }
 
+copy_proxy_conf_from_old()
+{
+    # Expected behavior is to use new proxy location first, then fallback to
+    # the old location, then assume no proxy is configured
+    if [ -r "$CONF_PROXY" -o ! -r "$OLD_CONF_PROXY" ]; then
+        return
+    fi
+
+    local old_conf_proxy_content=""
+    old_conf_proxy_content=`cat $OLD_CONF_PROXY`
+    log_info "Moving proxy configuration from file $OLD_CONF_PROXY to $CONF_PROXY..."
+    create_proxy_conf "$old_conf_proxy_content"
+}
+
 set_proxy_setting()
 {
     if [ -n "$PROXY" ]; then
@@ -303,6 +319,7 @@ set_proxy_setting()
         return
     fi
     local conf_proxy_content=""
+    [ -r "$OLD_CONF_PROXY" ] && copy_proxy_conf_from_old
     [ -r "$CONF_PROXY" ] && conf_proxy_content=`cat $CONF_PROXY`
     if [ -n "$conf_proxy_content" ]; then
         PROXY_SETTING="--proxy $conf_proxy_content"
@@ -861,6 +878,10 @@ main()
 
     if [ "$MIGRATE_OLD_WS" = "1" ]; then
         migrate_old_workspace || clean_exit 1
+    fi
+
+    if [ "$MIGRATE_OLD_PROXY_CONF" = "1" ]; then
+        copy_proxy_conf_from_old || clean_exit 1
     fi
 
     if [ "$REMOVE" = "1" ]; then
