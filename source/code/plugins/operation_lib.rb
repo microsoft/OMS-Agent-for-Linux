@@ -53,6 +53,20 @@ module OperationModule
       end
       return {}
     end
+
+    def filter_auditd_plugin(record,time)
+      if record.is_a?(Hash) && !record.empty? && record.has_key?("message")
+        dataitem = {}
+        dataitem["Timestamp"] = OMS::Common.format_time(time)
+        dataitem["OperationStatus"] = "Error"
+        dataitem["Computer"] = OMS::Common.get_hostname or "Unknown host"
+        dataitem["Detail"] = record["message"]
+        dataitem["Category"] = "OMS Auditd Plugin issue"
+        dataitem["Solution"] = "Security"
+        return dataitem
+      end
+      return {}
+    end
  
     def filter_and_wrap(tag, record, time)
       tag_type = tag.match(/[^\.]*$/) 
@@ -61,6 +75,8 @@ module OperationModule
         data_item = filter(record, time)
       when "dsc" 
         data_item = filter_generic(record, time)
+      when "auditd_plugin"
+        data_item = filter_auditd_plugin(record, time)
       end
 
       if (data_item != nil and data_item.size > 0)

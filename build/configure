@@ -5,6 +5,7 @@ base_dir=`(cd ..; pwd -P)`
 scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
 scxpal_dir=`(cd ../../pal; pwd -P)`
 scxcim_dir=`(cd ../../opsmgr; pwd -P)`
+auoms_dir=`(cd ../../auoms; pwd -P)`
 
 enable_debug=""
 enable_debug_flag=0
@@ -29,6 +30,11 @@ fi
 
 if [ ! -d "$scxcim_dir" ]; then
     echo "SCX directory ($scxcim_dir) does not exist" >& 2
+    exit 1
+fi
+
+if [ ! -d "$auoms_dir" ]; then
+    echo "AUOMS directory ($auoms_dir) does not exist" >& 2
     exit 1
 fi
 
@@ -228,6 +234,7 @@ apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_
 set -e
 
 scx_configure_quals="${enable_debug} ${enable_ulinux} --disable-listener"
+auoms_configure_quals="${enable_debug} ${enable_ulinux}"
 
 if [ "$ULINUX" -eq 1 -a "$opensource_distro" -eq 1 ]; then
     echo "*** ULINUX not permitted for open source distributions; ULINUX disabled ***" >& 2
@@ -488,6 +495,10 @@ fi
 # Fix permissions in case they aren't executable - and then configure SCX
 chmod ug+x ${scxcim_dir}/build/configure
 (cd ${scxcim_dir}/build && ./configure ${scx_configure_quals})
+
+# Fix permissions in case they aren't executable - and then configure AUOMS
+chmod ug+x ${auoms_dir}/build/configure
+(cd ${auoms_dir}/build && ./configure ${auoms_configure_quals})
 
 # Display some information for our own configuration
 if [ $NOOPTIMIZE -eq 1 ]; then
