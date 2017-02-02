@@ -9,6 +9,7 @@ OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 SCX_DIR := $(shell cd ../../opsmgr; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
+AUOMS_DIR := $(shell cd ../../auoms; pwd -P)
 
 PF_POSIX := 1
 include $(BASE_DIR)/build/config.mak
@@ -21,6 +22,7 @@ endif
 
 SCX_INTERMEDIATE_DIR := $(SCX_DIR)/intermediate/$(BUILD_CONFIGURATION)
 DSC_TARGET_DIR := $(DSC_DIR)/release
+AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
@@ -115,7 +117,7 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb systemtestsh
 
-all : $(SCX_INTERMEDIATE_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) kit
+all : $(SCX_INTERMEDIATE_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
@@ -157,7 +159,13 @@ clean-scx : clean
 	@$(ECHO) "!!!!! PLEASE RE-RUN THE ./configure SCRIPT !!!!!"
 	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-distclean : clean clean-ruby clean-dsc clean-scx
+clean-auoms : clean
+	-make -C $(AUOMS_DIR)/build distclean
+	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@$(ECHO) "!!!!! PLEASE RE-RUN THE ./configure SCRIPT !!!!!"
+	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+distclean : clean clean-ruby clean-dsc clean-scx clean-auoms
 	-$(RMDIR) $(OMI_ROOT)/output*
 
 	cd $(BASE_DIR)/source/ext/fluentd; git checkout -- lib/fluent/env.rb
@@ -194,6 +202,12 @@ ifeq ($(ULINUX),1)
 	$(MAKE) -C $(DSC_DIR) dsckit100
 	cd $(OMI_ROOT); $(RMDIR) output
 endif
+
+#--------------------------------------------------------------------------------
+# Build AUOMS project
+
+$(AUOMS_TARGET_DIR)/auoms-bundle-test.sh : 
+	$(MAKE) -C $(AUOMS_DIR)/build all
 
 #--------------------------------------------------------------------------------
 # Build the version of Ruby that we test with
@@ -290,7 +304,7 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PAC
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX_DEB).tar "DPKG"
 
 
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
 	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
 
@@ -333,8 +347,15 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(BASE_DIR)/installer/oss-kits; $(COPY) $(OMS_OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
 	chmod +x $(INTERMEDIATE_DIR)/oss-kits/*.sh
 
+	# Pick up other bundled packages
+	$(RMDIR) $(INTERMEDIATE_DIR)/bundles
+	$(MKPATH) $(INTERMEDIATE_DIR)/bundles
+	cd $(AUOMS_TARGET_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+	$(COPY) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
+	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
+
 	# Build the tar file containing both .rpm and .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/* bundles/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm 
@@ -514,7 +535,6 @@ unittest : $(RUBY_TESTING_DIR)
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
 		RUBY_DEST_DIR=$(RUBY_TESTING_DIR)
-
 
 systemtest: systemtestrb systemtestsh
 
