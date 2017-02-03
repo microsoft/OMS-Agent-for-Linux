@@ -157,12 +157,6 @@ chown -R omsagent:omiusers /var/opt/microsoft/omsagent
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
     /opt/microsoft/omsagent/bin/omsadmin.sh
-
-    # Copy collectd conf files only if collectd_marker.conf exists
-    if [ -f /etc/collectd_marker.conf ]; then
-        /opt/microsoft/omsagent/bin/omsadmin.sh -c
-        rm /etc/collectd_marker.conf
-    fi
 fi
 
 %Postuninstall_10
