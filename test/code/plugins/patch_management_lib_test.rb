@@ -434,10 +434,10 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     
     logContent = 
     [
-      "Commandline: aptdaemon role='role-install-packages' sender=':1.93\'",
-      "Install: cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic), gnome-session:amd64 (3.18.1.2-1ubuntu1.16.04.2, automatic)",
-      "Upgrade: gnome-settings-daemon-schemas:amd64 (3.18.2-0ubuntu3, 3.18.2-0ubuntu3.1), gnome-session-common:amd64 (3.18.1.2-1ubuntu1.16.04.1)",
-      "Requested-By: shujun (1000)",
+      "Commandline: apt-get -y --only-upgrade true install linux-cloud-tools-virtual",                                                       
+      "Requested-By: omsagent (999)",
+      "Install: linux-cloud-tools-4.4.0-59:amd64 (4.4.0-59.80, automatic), linux-cloud-tools-4.4.0-59-generic:amd64 (4.4.0-59.80, automatic)",
+      "Upgrade: linux-cloud-tools-virtual:amd64 (4.4.0.47.50, 4.4.0.59.62)",
       "End-Date: " + fakeEndDate
     ].join("\n");
     
@@ -453,31 +453,59 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     
     result = @linuxUpdatesInstance.process_apt_update_run(record, 'tag', 'HostName', Time.now)
     assert(result != nil)
-    assert_equal(4, result['DataItems'].size)
+    assert_equal(3, result['DataItems'].size)
     assert_equal("HostName", result['DataItems'][0]["Computer"])
     assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
-    assert_equal('cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)', result['DataItems'][0]["UpdateTitle"])
+    assert_equal('linux-cloud-tools-4.4.0-59', result['DataItems'][0]["PackageName"])
     assert_equal(fakeEndDate, result['DataItems'][0]["EndTime"])
     assert_equal(fakeStartDate, result['DataItems'][0]["StartTime"])
   end
   
   def test_filter_yum_updaterun_progress
-    record =
-        {
-            'update-action-date' => 'Nov 03 20:20:30',
-            'update-action' => 'updated',
-            'package-name' => 'libXft-2.3.2-1.el6.x86$-1.28-12.el6.x86_64'
-        }
 
+    # Package name may come as two possible formats 
+    records =
+    [
+      {
+        'update-action-date' => 'Nov 03 20:20:30',
+        'update-action' => 'updated',
+        'package-name' => ' chrony-2.1.1-4.el7_3.x86_64' #starts with package name. and no dash in the middle
+      },
+      {
+        'update-action-date' => 'Jan 19 21:02:49',
+        'update-action' => 'updated',
+        'package-name' => '32:bind-utils-9.9.4-38.el7_3.1.x86_64' # starts with 'digits:'
+      },
+      {
+        'update-action-date' => 'Jan 19 21:02:49',
+        'update-action' => 'updated',
+        'package-name' => ' sssd-client-1.14.0-43.el7_3.11.x86_64' # starts with package name and has dash in the middle:
+      }
+    ]
+    
     @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
 
-    result = @linuxUpdatesInstance.process_yum_update_run(record, 'tag', 'HostName', Time.now)
+    result = @linuxUpdatesInstance.process_yum_update_run(records[0], 'tag', 'HostName', Time.now)
     assert(result != nil)
     assert_equal(1, result['DataItems'].size)
     assert_equal("HostName", result['DataItems'][0]["Computer"])
     assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
-    assert_equal('libXft-2.3.2-1.el6.x86$-1.28-12.el6.x86_64', result['DataItems'][0]["UpdateTitle"])
+    assert_equal('chrony', result['DataItems'][0]["PackageName"])
     assert_equal('Succeeded', result['DataItems'][0]["Status"])
+
+
+    @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
+    result = @linuxUpdatesInstance.process_yum_update_run(records[1], 'tag', 'HostName', Time.now)
+    assert(result != nil)
+    assert_equal('bind-utils', result['DataItems'][0]["PackageName"])
+    assert_equal('Succeeded', result['DataItems'][0]["Status"])
+
+    @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
+    result = @linuxUpdatesInstance.process_yum_update_run(records[2], 'tag', 'HostName', Time.now)
+    assert(result != nil)
+    assert_equal('sssd-client', result['DataItems'][0]["PackageName"])
+    assert_equal('Succeeded', result['DataItems'][0]["Status"])
+
   end
   
   def test_filter_yum_updaterun_progress_error_record
@@ -495,7 +523,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal(1, result['DataItems'].size)
     assert_equal("HostName", result['DataItems'][0]["Computer"])
     assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
-    assert_equal('openldap-2.4.40-9.el7_2.x86_64', result['DataItems'][0]["UpdateTitle"])
+    assert_equal('openldap', result['DataItems'][0]["PackageName"])
     assert_equal('Failed', result['DataItems'][0]["Status"])
   end
   

@@ -293,7 +293,7 @@ class LinuxUpdates
             # "OSType": "Linux",
             # "UpdateId": "8579fbee-d418-43e7-ac67-5fcc0b11cbb7",
             # "UpdateRunName": "LinuxUpdateRun",
-            # "UpdateTitle": "Security Update for git-1.0.0.0",
+            # "PackageName": "vim-common",
             # "Status": "Succeeded",
             # "Computer": "LinuxXenial",
             # "StartTime": "2016-10-21 04:25:51Z",
@@ -310,13 +310,13 @@ class LinuxUpdates
         packages_installed = updateRunJson.key?("Install") ? updateRunJson["Install"] : nil
         if !packages_installed.nil?
             list_of_packages_installed = packages_installed.split("),")
-            list_of_packages_installed = list_of_packages_installed.map! {|x| x + ")" }
+            list_of_packages_installed = list_of_packages_installed.map! {|x| x.split(':')[0] }
         end
 
         packages_upgraded = updateRunJson.key?("Upgrade") ? updateRunJson["Upgrade"] : nil
         if !packages_upgraded.nil?
             list_of_packages_upgraded = packages_upgraded.split("),")
-            list_of_packages_upgraded = list_of_packages_upgraded.map! {|x| x + ")" }
+            list_of_packages_upgraded = list_of_packages_upgraded.map! {|x| x.split(':')[0] }
         end
 
         update_run = []
@@ -331,7 +331,8 @@ class LinuxUpdates
                 title = i.strip!
                 start_time = updateRunJson["Start-Date"].strip!
                 end_time = updateRunJson["End-Date"].strip!
-                ret["UpdateTitle"] = (title.nil?)?i : title
+                ret["UpdateTitle"] = ""
+                ret["PackageName"] = (title.nil?) ? i : title
                 ret["UpdateId"] = SecureRandom.uuid
                 ret["Status"] = status
                 ret["StartTime"] = (start_time.nil?) ? updateRunJson["Start-Date"] : start_time
@@ -356,7 +357,8 @@ class LinuxUpdates
                 title = i.strip!
                 start_time = updateRunJson["Start-Date"].strip!
                 end_time = updateRunJson["End-Date"].strip!
-                ret["UpdateTitle"] = (title.nil?)?i : title
+                ret["UpdateTitle"] = ""
+                ret["PackageName"] = (title.nil?) ? i : title
                 ret["UpdateId"] = SecureRandom.uuid
                 ret["Status"] = status
                 ret["StartTime"] = (start_time.nil?) ? updateRunJson["Start-Date"] : start_time
@@ -411,10 +413,22 @@ class LinuxUpdates
 		@log.debug "LinuxUpdatesProgress: Parsing a record of type #{tag}"
 		update_run = []
 		update_run_record = {}
+
+        # 3 possible formats of package name:
+        # a: ' libXft-2.3.2-1.el6.x86$-1.28-12.el6.x86_64' -- starts with whitespace and package name. and no dash in the middle
+        # b: '32:bind-utils-9.9.4-38.el7_3.1.x86_64' -- starts with 'digits:'
+        # c: ' sssd-client-1.14.0-43.el7_3.11.x86_64' -- starts with whitespace and package name and has dash in the middle:
+        package_name_sections = record["package-name"].lstrip.split(/-\d/)
+        package_name = nil;
+        if !package_name_sections.nil? && package_name_sections.length > 0
+            package_name = package_name_sections[0][/[\A\d:+]*(\S*)/, 1]
+        end
+        
 		update_run_record["Computer"] = host
 		update_run_record["OSType"] = "Linux"
 		update_run_record["UpdateRunName"] = getUpdateRunName()
-		update_run_record["UpdateTitle"] = record["package-name"]
+		update_run_record["UpdateTitle"] = ""
+        update_run_record["PackageName"] = (package_name.nil?) ? record["package_name"] : package_name
 		update_run_record["UpdateId"] = SecureRandom.uuid
 		update_run_record["TimeStamp"] = OMS::Common.format_time(time)
 		update_run_record["Tag"] = tag

@@ -77,6 +77,9 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
 /opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root
 
+/opt/microsoft/omsagent/plugin/auditd_plugin_lib.rb;                    source/code/plugins/auditd_plugin_lib.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/filter_auditd_plugin.rb;                 source/code/plugins/filter_auditd_plugin.rb;           744; root; root
+
 /opt/microsoft/omsagent/plugin/security_lib.rb;                         source/code/plugins/security_lib.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/filter_syslog_security.rb;               source/code/plugins/filter_syslog_security.rb;         744; root; root
 /opt/microsoft/omsagent/plugin/filter_changetracking.rb;                source/code/plugins/filter_changetracking.rb;          744; root; root

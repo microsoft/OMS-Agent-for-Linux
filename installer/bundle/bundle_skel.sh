@@ -649,6 +649,12 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
         echo "---------- WARNING WARNING WARNING ----------"
         echo
 
+        # If bundled auoms is installed, then remove it
+        check_if_pkg_is_installed auoms
+        if [ $? -eq 0 ]; then
+            pkg_rm auoms
+        fi
+
         pkg_rm omsconfig
         pkg_rm omsagent
 
@@ -672,6 +678,12 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             fi
         else
             echo "--- MDSD detected; not removing SCX or OMI packages ---"
+        fi
+
+        # If bundled auoms is installed, then remove it
+        check_if_pkg_is_installed auoms
+        if [ $? -eq 0 ]; then
+            pkg_rm auoms
         fi
 
         if [ "$installMode" = "P" ]; then
@@ -700,6 +712,11 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             check_if_pkg_is_installed omi
             if [ $? -ne 0 ]; then
                 rm -rf /etc/opt/omi /opt/omi /var/opt/omi
+            fi
+
+            check_if_pkg_is_installed auoms
+            if [ $? -ne 0 ]; then
+                rm -rf /etc/opt/microsoft/auoms /opt/microsoft/auoms /var/opt/microsoft/auoms
             fi
 
             rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
@@ -817,6 +834,21 @@ case "$installMode" in
                     [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
                 fi
             done
+            for i in bundles/*-bundle-test.sh; do
+                # If filespec didn't expand, break out of loop
+                [ ! -f $i ] && break
+
+                # It's possible we have a test file without bundle; if so, ignore it
+                BUNDLE=`basename $i -bundle-test.sh`
+                [ ! -f bundles/${BUNDLE}-*universal.*.sh ] && continue
+
+                ./$i
+                if [ $? -eq 0 ]; then
+                    ./bundles/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
+                    TEMP_STATUS=$?
+                    [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+                fi
+            done
         else
             echo "The omi or scx package is already installed. Please run the" >&2
             echo "installer with --upgrade (instead of --install) to continue." >&2
@@ -881,6 +913,21 @@ case "$installMode" in
             ./$i
             if [ $? -eq 0 ]; then
                 ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies
+                TEMP_STATUS=$?
+                [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+            fi
+        done
+        for i in bundles/*-bundle-test.sh; do
+            # If filespec didn't expand, break out of loop
+            [ ! -f $i ] && break
+
+            # It's possible we have a test file without bundle; if so, ignore it
+            BUNDLE=`basename $i -bundle-test.sh`
+            [ ! -f bundles/${BUNDLE}-*universal.*.sh ] && continue
+
+            ./$i
+            if [ $? -eq 0 ]; then
+                ./bundles/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
             fi
