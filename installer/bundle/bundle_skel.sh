@@ -57,7 +57,6 @@ usage()
     echo "  --version                  Version of this shell bundle."
     echo "  --version-check            Check versions already installed to see if upgradable."
     echo "  --debug                    use shell debug mode."
-    echo "  --collectd                 Enable collectd."
     echo
     echo "  -w id, --id id             Use workspace ID <id> for automatic onboarding."
     echo "  -s key, --shared key       Use <key> as the shared key for automatic onboarding."
@@ -550,16 +549,6 @@ do
             echo "SCRIPT:          $SCRIPT" >&2
             echo >&2
             set -x
-            shift 1
-            ;;
-
-        --collectd)
-            if [ -f /etc/collectd.conf -o -f /etc/collectd/collectd.conf ]; then
-                touch /etc/collectd_marker.conf
-            else
-                echo "collectd.conf does not exist. Please make sure collectd is installed properly"
-                cleanup_and_exit 1
-            fi
             shift 1
             ;;
 

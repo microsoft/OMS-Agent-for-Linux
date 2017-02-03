@@ -123,7 +123,6 @@ Options:
   --version              Version of this shell bundle.
   --version-check        Check versions already installed to see if upgradable.
   --debug                use shell debug mode.
-  --collectd             Enable collectd.
   
   -w id, --id id         Use workspace ID <id> for automatic onboarding.
   -s key, --shared key   Use <key> as the shared key for automatic onboarding.
@@ -547,16 +546,33 @@ The OMS Agent for Linux also listens on port 26000 for CollectD metrics and then
 </filter>
 ```
 
-#### Setup
+#### Steps for setup
+1. To route CollectD data to the OMS Agent for Linux, `oms.conf` needs to be added to CollectD's configuration directory. 
+The destination of this file depends on the Linux flavor of your machine.
 
-##### Installation Option
-During installation the option `--collectd` can be used to automatically place the CollectD configuration for versions 5.5+ in `/etc/collectd/conf.d/`, and enable the OMS Agent for Linux filter.
+    If your CollectD config directory is located in `/etc/collectd.d/`:
+    ```
+    sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd.d/oms.conf
+    ```
+    If your CollectD config directory is located in `/etc/collectd/collectd.conf.d/`:
+    ```
+    sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf /etc/collectd/collectd.conf.d/oms.conf
+    ```
+    **Note:** For CollectD versions before 5.5 you will have to modify the tags in `oms.conf` as shown above.
 
-##### Post-Install Option
-If OMS Agent for Linux is already installed you can run the following command: `/opt/microsoft/omsagent/bin/omsadmin.sh -c` to automatically place the CollectD configuration in `/etc/collectd/conf.d/`, and enable the OMS Agent for Linux filter.
-
-
-**Note:** If CollectD is not installed in a default path or is version < 5.5 then these options should not be used, and the files should be placed manually in CollectD configuration directory. **Additionally, CollectD must be restarted after installation**
+2. Copy `collectd.conf` to the desired workspace's omsagent configuration directory.
+    ```
+    sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/
+    sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/collectd.conf
+    ```
+3. Restart CollectD:
+    ```
+    sudo service collectd restart
+    ```
+4. Restart the OMS Agent: 
+    ```
+    sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+    ```
 
 ##### CollectD metrics to OMS Log Analytics schema conversion
 To maintain a familiar model between infrastructure metrics already collected by OMS Agent for Linux and the new metrics collected by CollectD the following schema mapping is used:

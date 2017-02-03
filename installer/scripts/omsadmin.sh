@@ -17,7 +17,6 @@ TMP_DIR=$DF_TMP_DIR
 CERT_DIR=$DF_CERT_DIR
 CONF_DIR=$DF_CONF_DIR
 SYSCONF_DIR=$ETC_DIR/sysconf
-COLLECTD_DIR=/etc/collectd/collectd.conf.d
 
 # Optional file with initial onboarding credentials
 FILE_ONBOARD=/etc/omsagent-onboard.conf
@@ -106,9 +105,6 @@ usage()
     echo
     echo "Define proxy settings ('-u' will prompt for password):"
     echo "$basename [-u user] -p host[:port]"
-    echo
-    echo "Enable collectd:"
-    echo "$basename -c"
     echo
     echo "Azure resource ID:"
     echo "$basename -a <Azure resource ID>"
@@ -206,7 +202,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:clx:XMm:" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XMm:" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -235,10 +231,6 @@ parse_args()
             ;;
         a)
             AZURE_RESOURCE_ID=$OPTARG
-            ;;
-        c) 
-            COLLECTD=1
-            echo "Setting up collectd for OMS..."
             ;;
         l)
             LIST_WORKSPACES=1
@@ -499,20 +491,6 @@ onboard()
     fi
 
     return 0
-}
-
-collectd()
-{
-    if [ -d "$COLLECTD_DIR" ]; then
-        cp $SYSCONF_DIR/omsagent.d/oms.conf $COLLECTD_DIR/oms.conf
-        cp $SYSCONF_DIR/omsagent.d/collectd.conf $CONF_DIR/omsagent.d/collectd.conf
-        chown $AGENT_USER:$AGENT_GROUP $CONF_DIR/omsagent.d/collectd.conf
-        $SERVICE_CONTROL restart 
-    else
-        echo "$COLLECTD_DIR - directory does not exist. Please make sure collectd is installed properly"
-        return 1
-    fi
-    echo "...Done"
 }
 
 remove_workspace()
@@ -892,10 +870,6 @@ main()
         remove_all || clean_exit 1
     fi
 
-    if [ "$COLLECTD" = "1" ]; then
-        collectd || clean_exit 1
-    fi
-	
     # If we reach this point, onboarding was successful, we can remove the
     # onboard conf to prevent accidentally re-onboarding 
     [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
