@@ -224,6 +224,10 @@ apply_patch ${base_dir}/source/ext/patches/ruby/clear_options.patch ${base_dir}/
 # Upgrading to a version higher than Ruby 2.3 may already include this patch
 apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_dir}/source/ext/ruby/ext/openssl/extconf.rb
 
+# This patch is borrowed from FluentD 0.12.32 to resolve in_exec plugin failing repeatedly with command or parsing failing
+# Updating FluentD to version 0.12.32 or later may already include this patch
+apply_patch ${base_dir}/source/ext/patches/fluentd/in_exec.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_exec.rb
+
 # No errors allowed from this point forward
 set -e
 
