@@ -1,0 +1,15 @@
+--- in_exec_old.rb	2017-02-08 11:08:11.000000000 -0800
++++ in_exec.rb	2017-02-08 11:11:22.000000000 -0800
+@@ -140,10 +140,11 @@
+           io = IO.popen(@command, "r")
+           @parser.call(io)
+           Process.waitpid(io.pid)
+-          sleep @run_interval
+         rescue
+           log.error "exec failed to run or shutdown child process", error: $!.to_s, error_class: $!.class.to_s
+           log.warn_backtrace $!.backtrace
++        ensure
++          sleep @run_interval
+         end
+       end
+     end
