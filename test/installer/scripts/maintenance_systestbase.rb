@@ -36,6 +36,13 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     }
   end
 
+  def check_proxy_server_working
+    output = `curl --proxy #{TEST_PROXY_SETTING} example.com 2>/dev/null`
+    return_code = $?.to_i
+    assert_equal(0, return_code)
+    assert_match(/Example Domain/, output)
+  end
+
   def prep_omsadmin
     # Setup test onboarding script and folder
     @omsadmin_test_dir = `#{@prep_omsadmin} #{@base_dir} #{@ruby_test_dir}`.strip()
@@ -58,6 +65,7 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     assert(@omsadmin_test_dir, "No test directory setup")
     File.write(@proxy_conf, proxy_setting)
     assert(File.file?(@proxy_conf), "Proxy conf file missing!")
+    check_proxy_server_working
   end
 
   def do_onboard(workspace_id, shared_key, should_succeed = true)
