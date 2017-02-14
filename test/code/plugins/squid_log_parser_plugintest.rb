@@ -3,19 +3,15 @@ require 'fluent/test/parser_test'
 require_relative '../../../source/code/plugins/squidlogparser.rb '
 require_relative 'omstestlib'
 
-class squidlogParserTest < Test::Unit::TestCase
+class SquidLogParserTest < Test::Unit::TestCase
 
   CONFIG = %[
-
     format SquidLogParser
-
   ]
 
 
   def create_driver
-
     Fluent::Test::ParserTestDriver.new(Fluent::TextParser::SquidLogParser.new).configure(CONFIG)
-
   end
 
 
