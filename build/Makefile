@@ -34,6 +34,10 @@ PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
 TARGET_DIR := $(BASE_DIR)/target/$(BUILD_CONFIGURATION)
 
+SEPOLICY_SRC_DIR=$(BASE_DIR)/installer/selinux
+SEPOLICY_DIR=$(INTERMEDIATE_DIR)/selinux
+SEPOLICY_DIR_EL6=$(INTERMEDIATE_DIR)/selinux.el6
+
 ifeq ($(ULINUX),1)
 # Doesn't matter what version of SSL/Ruby we use to compile or link the OMI plugin
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/098/ruby
@@ -117,11 +121,13 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb systemtestsh
 
-all : $(SCX_INTERMEDIATE_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
+all : $(SCX_INTERMEDIATE_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
 
+sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp 
+  
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
 
@@ -201,6 +207,34 @@ ifeq ($(ULINUX),1)
 	$(MAKE) -C $(DSC_DIR) dsc100
 	$(MAKE) -C $(DSC_DIR) dsckit100
 	cd $(OMI_ROOT); $(RMDIR) output
+endif
+
+#--------------------------------------------------------------------------------
+# Build SELinux policy modules for omsagent-logrotate
+
+ifeq ($(ULINUX),1)
+$(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp : $(SEPOLICY_SRC_DIR)/omsagent-logrotate.el6.te $(SEPOLICY_SRC_DIR)/omsagent-logrotate.fc
+	@echo "========================= Building EL6 selinux policy module for omsagent-logrotate"
+	$(MKPATH) $(SEPOLICY_DIR_EL6)
+	$(COPY) $(SEPOLICY_SRC_DIR)/omsagent-logrotate.el6.te $(SEPOLICY_DIR_EL6)/omsagent-logrotate.te
+	$(COPY) $(SEPOLICY_SRC_DIR)/omsagent-logrotate.fc $(SEPOLICY_DIR_EL6)
+	cd $(SEPOLICY_DIR_EL6); make -f /usr/share/selinux/devel/Makefile
+
+$(SEPOLICY_DIR)/omsagent-logrotate.pp : $(SEPOLICY_SRC_DIR)/omsagent-logrotate.te $(SEPOLICY_SRC_DIR)/omsagent-logrotate.fc
+	@echo "========================= Building selinux policy module for omsagent-logrotate"
+	$(MKPATH) $(SEPOLICY_DIR)
+	$(COPY) $(SEPOLICY_SRC_DIR)/omsagent-logrotate.te $(SEPOLICY_SRC_DIR)/omsagent-logrotate.fc $(SEPOLICY_DIR)
+	cd $(SEPOLICY_DIR); make -f /usr/share/selinux/devel/Makefile
+else
+$(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp : $(SEPOLICY_SRC_DIR)/omsagent-logrotate.el6.te $(SEPOLICY_SRC_DIR)/omsagent-logrotate.fc
+	@echo "========================= Building EL6 selinux policy module"
+	$(MKPATH) $(SEPOLICY_DIR_EL6)
+	touch $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp
+
+$(SEPOLICY_DIR)/omsagent-logrotate.pp : $(SEPOLICY_SRC_DIR)/omsagent-logrotate.te $(SEPOLICY_SRC_DIR)/omsagent-logrotate.fc
+	@echo "========================= Building selinux policy module"
+	$(MKPATH) $(SEPOLICY_DIR)
+	touch $(SEPOLICY_DIR)/omsagent-logrotate.pp
 endif
 
 #--------------------------------------------------------------------------------

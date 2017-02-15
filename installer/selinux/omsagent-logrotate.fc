@@ -1,0 +1,1 @@
+/var/opt/microsoft/omsagent/[^/]*/log(/.*)?         system_u:object_r:var_log_t:s0

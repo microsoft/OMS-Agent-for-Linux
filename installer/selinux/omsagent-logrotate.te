@@ -1,0 +1,13 @@
+module omsagent-logrotate 1.0;
+
+require {
+        type user_tmp_t;
+        type var_log_t;
+        type logrotate_t;
+        class file { getattr write };
+}
+
+#============= logrotate_t ==============
+allow logrotate_t user_tmp_t:file write;
+allow logrotate_t var_log_t:file getattr;
+
