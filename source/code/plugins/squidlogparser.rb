@@ -1,4 +1,7 @@
-# Develpped by Alessandro Cardoso
+# Linux Squid Proxy Log Monitoring Solution for Operations Management Suite
+# Developed by Alessandro Cardoso, v 1.0, Feb 2017
+# Microsoft Enterprise Services Delivery
+# Asia Pacific, Greater China, India & Japan 
 # 
 # Library for Squid to allow capture Squid statistics
 #
