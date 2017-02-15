@@ -39,13 +39,6 @@ class OmsadminTest < MaintenanceSystemTestBase
     assert_equal("proxy_host:8080", proxy_setting, "Did not find the expected setting in the proxy conf file.")
   end
 
-  def test_proxy_server_working
-    output = `curl --proxy #{TEST_PROXY_SETTING} example.com 2>/dev/null`
-    return_code = $?.to_i
-    assert_equal(0, return_code)
-    assert_match(/Example Domain/, output)
-  end
-
   def test_onboard_proxy_sucess
     prep_proxy(TEST_PROXY_SETTING)
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)

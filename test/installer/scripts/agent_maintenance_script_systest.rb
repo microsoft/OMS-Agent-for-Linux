@@ -59,7 +59,6 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
 
   def setup
     super
-    prep_proxy(TEST_PROXY_SETTING)
     onboarded_output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_no_match(/(e|E)rror/, onboarded_output, "Unexpected error onboarding for maintenance tests")
     # Onboarded valid data
@@ -143,6 +142,23 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
     assert_no_match(/DSC_ENDPOINT=\n/, final_omsadmin_conf, "DSC_ENDPOINT was not updated in omsadmin.conf")
   end
 
+  def test_heartbeat_valid_with_proxy
+    prep_proxy(TEST_PROXY_SETTING)
+    valid_omsadmin_conf = File.read(@omsadmin_conf_path)
+    remove_existing_cert_update_endpoint = valid_omsadmin_conf.sub(/^CERTIFICATE_UPDATE_ENDPOINT=.*\n/,
+        "CERTIFICATE_UPDATE_ENDPOINT=\n")
+    remove_existing_dsc_endpoint = remove_existing_cert_update_endpoint.sub(/^DSC_ENDPOINT=.*\n/,
+        "DSC_ENDPOINT=\n")
+    File.write(@test_omsadmin_conf.path, remove_existing_dsc_endpoint)
+    m = get_new_maintenance_obj(@test_omsadmin_conf.path)
+    assert_equal(0, m.heartbeat, "Heartbeat failed with valid data and valid proxy")
+    final_omsadmin_conf = File.read(@test_omsadmin_conf.path)
+    assert_no_match(/CERTIFICATE_UPDATE_ENDPOINT=\n/, final_omsadmin_conf,
+        "CERTIFICATE_UPDATE_ENDPOINT was not updated in omsadmin.conf")
+    assert_no_match(/DSC_ENDPOINT=\n/, final_omsadmin_conf, "DSC_ENDPOINT was not updated in omsadmin.conf with valid proxy")
+  end
+
+
   def test_renew_certs_nonexistent_config
     m = get_new_maintenance_obj("/etc/nonexistentomsadmin.conf")
     assert_equal(1, m.renew_certs, "Renew certs succeeded with nonexistent config")
@@ -181,10 +197,23 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
         "Renew certs should pass since onboard should fill in CERTIFICATE_UPDATE_ENDPOINT")
   end
 
+  def test_renew_certs_valid_no_prior_heartbeat_with_proxy
+    prep_proxy(TEST_PROXY_SETTING)
+    m = get_new_maintenance_obj
+    assert_equal(0, m.renew_certs,
+        "Renew certs should pass since onboard should fill in CERTIFICATE_UPDATE_ENDPOINT with valid proxy")
+  end
+
   def test_renew_certs_valid_with_heartbeat
     m = get_new_maintenance_obj
     assert_equal(0, m.heartbeat, "Heartbeat failed with valid data")
     assert_equal(0, m.renew_certs, "Renew certs failed with valid data and valid heartbeat")
   end
 
+  def test_renew_certs_valid_with_heartbeat_with_proxy
+    prep_proxy(TEST_PROXY_SETTING)
+    m = get_new_maintenance_obj
+    assert_equal(0, m.heartbeat, "Heartbeat failed with valid data and valid proxy")
+    assert_equal(0, m.renew_certs, "Renew certs failed with valid data and valid heartbeat and valid proxy")
+  end
 end
