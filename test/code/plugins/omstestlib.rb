@@ -10,8 +10,10 @@ module OMS
     def clear
       @logs = []
     end
-
-    def trace(message)
+    
+    #Making message optional here because a Fluentd call was throwing ArgumentError
+    # $log.trace { "registered #{name} plugin '#{type}'" } (fluentd-0.12.24/lib/fluent/plugin.rb:122)
+    def trace(message="")
       @logs << message
     end
     
