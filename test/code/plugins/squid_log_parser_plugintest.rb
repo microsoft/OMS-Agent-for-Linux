@@ -2,22 +2,15 @@
 ## Created by Alessandro Cardoso
 ## 
 
-
-#require 'fluent'
-#require 'fluent/parser'
-require 'test/unit'
+require 'fluent/test'
+require 'fluent/test/parser_test'
 require_relative '../../../source/code/plugins/squidlogparser.rb'
-
-class SquidLogParserTestRuntimeError < SquidLogParser      #Fluent::SquidLogParser
-  def log_error(text)
-    raise text
-  end #def
-end #class
+require_relative 'omstestlib'
 
 class SquidLogParserTest < Test::Unit::TestCase
    class << self
      def startup
-        @@squidlog = Fluent::SquidLogParser.new(SquidLogParserTestRuntimeError.new)
+        @@squidlog = Fluent::SquidLogParser.new()
      end #def
 
      def shutdown
