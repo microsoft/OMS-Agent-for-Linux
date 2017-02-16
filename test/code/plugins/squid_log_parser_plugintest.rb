@@ -3,12 +3,12 @@
 ## 
 
 
-require 'fluent'
-require 'fluent/parser'
+#require 'fluent'
+#require 'fluent/parser'
 require 'test/unit'
 require_relative '../../../source/code/plugins/squidlogparser.rb'
 
-class SquidLogParserTestRuntimeError < Fluent::SquidLogParser
+class SquidLogParserTestRuntimeError < SquidLogParser      #Fluent::SquidLogParser
   def log_error(text)
     raise text
   end #def
