@@ -6,7 +6,7 @@ require 'fluent/test'
 require 'fluent/test/parser_test'
 require_relative '../../../source/code/plugins/squidlogparser.rb'
 require_relative 'omstestlib'
- 
+
 class SquidLogParserTest < Test::Unit::TestCase
    class << self
      def startup
