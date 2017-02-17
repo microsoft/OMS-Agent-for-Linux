@@ -34,6 +34,9 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsof
 # Enable nxOMSAuditdResource
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSAuditdPlugin.sh
 
+#Enable shutdown for update management
+omsagent ALL=(ALL) NOPASSWD: /sbin/shutdown -r *
+
 #run update management commands
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get dist-upgrade *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get update
