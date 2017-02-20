@@ -39,7 +39,7 @@ require 'socket'
       end
       
       assert_equal(d.emits.length, 2)
-      assert_equal(d.emits[1][2], {"HostName"=>"#{Socket.gethostname}", "CustomEvents"=>[{"CustomMessage"=>"TestDesc", "EventID"=>"0001", "TimeGenerated"=>"#{d.emits[1][1]}"}]})
+      assert_equal(d.emits[1][2], {"CustomEvents"=>[{"CustomMessage"=>"TestDesc", "EventID"=>"0001", "TimeGenerated"=>"#{d.emits[1][1]}"}]})
       assert_equal(d.emits[0][2], {"message"=>"Insertion of doc1", "status"=>"succeeded"})
     end
     

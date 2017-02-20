@@ -42,8 +42,8 @@ require 'socket'
       end
       
       assert_equal(d.emits.length, 3)
-      assert_equal(d.emits[0][2], {"HostName"=>"#{Socket.gethostname}", "CustomEvents"=>[{"CustomMessage"=>"TestDesc1", "EventID"=>"0001", "TimeGenerated"=>"#{d.emits[0][1]}"}]})
-      assert_equal(d.emits[2][2], {"HostName"=>"#{Socket.gethostname}", "CustomEvents"=>[{"CustomMessage"=>"TestDesc2", "EventID"=>"0002", "TimeGenerated"=>"#{d.emits[2][1]}"}]})
+      assert_equal(d.emits[0][2], {"CustomEvents"=>[{"CustomMessage"=>"TestDesc1", "EventID"=>"0001", "TimeGenerated"=>"#{d.emits[0][1]}"}]})
+      assert_equal(d.emits[2][2], {"CustomEvents"=>[{"CustomMessage"=>"TestDesc2", "EventID"=>"0002", "TimeGenerated"=>"#{d.emits[2][1]}"}]})
       assert_equal(d.emits[1][2], {"message"=>"WrongRegex"})
     end
     

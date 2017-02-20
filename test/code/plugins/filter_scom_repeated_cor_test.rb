@@ -2,7 +2,7 @@ require 'fluent/test'
 require_relative '../../../source/code/plugins/filter_scom_repeated_cor'
 require 'socket'
 
-  class SCOMCorMatchTest < Test::Unit::TestCase
+  class SCOMRepeatedCorTest < Test::Unit::TestCase
     
     def setup
       Fluent::Test.setup
@@ -16,7 +16,7 @@ require 'socket'
       event_id 0001
       event_desc TestDesc
       time_interval 5
-      num_occurences 3
+      num_occurrences 3
     ]
     
     def create_driver(conf=CONFIG)
@@ -28,7 +28,7 @@ require 'socket'
       assert_equal(d.instance.expression, Regexp.compile('Authentication Failed'))
       assert_equal(d.instance.key, 'message')
       assert_equal(d.instance.time_interval, 5)
-      assert_equal(d.instance.num_occurences, 3)
+      assert_equal(d.instance.num_occurrences, 3)
     end
     
     def test_filter
@@ -43,7 +43,7 @@ require 'socket'
       assert_equal(d.emits.length, 3)
       assert_equal(d.emits[0][2], {"message"=>"Authentication Failed"})
       assert_equal(d.emits[1][2], {"message"=>"Authentication Failed"})
-      assert_equal(d.emits[2][2], {"HostName"=>"#{Socket.gethostname}", "CustomEvents"=>[{"CustomMessage"=>"TestDesc", "EventID"=>"0001", "TimeGenerated"=>"#{d.emits[2][1]}"}]})
+      assert_equal(d.emits[2][2], {"CustomEvents"=>[{"CustomMessage"=>"TestDesc", "EventID"=>"0001", "TimeGenerated"=>"#{d.emits[2][1]}"}]})
     end
     
   end

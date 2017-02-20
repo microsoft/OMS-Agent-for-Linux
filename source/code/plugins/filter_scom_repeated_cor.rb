@@ -7,7 +7,7 @@ module Fluent
     desc 'regex that needs to match'    
     config_param :regexp1, :string, :default => nil
     desc 'Number of times the  regex should match'
-    config_param :num_occurences, :integer, :default => 0
+    config_param :num_occurrences, :integer, :default => 0
     desc 'time interval in which the match should occur'
     config_param :time_interval, :integer, :default => 0
     desc 'event number to be sent to SCOM'
@@ -18,7 +18,7 @@ module Fluent
     attr_reader :expression
     attr_reader :key
     attr_reader :time_interval
-    attr_reader :num_occurences
+    attr_reader :num_occurrences
         
     def initialize()
       super
@@ -35,7 +35,7 @@ module Fluent
       raise ConfigError, "Configuration does not contain an expression" unless @regexp1
       raise ConfigError, "Configuration does not have corresponding event ID" unless @event_id
       raise ConfigError, "Configuration does not have a time interval" unless (@time_interval > 0)
-      raise ConfigError, "Configuration must give a value greater than 0 for num_occurences" unless (@num_occurences > 0)
+      raise ConfigError, "Configuration must give a value greater than 0 for num_occurrences" unless (@num_occurrences > 0)
       @key, exp = @regexp1.split(/ /,2)
       raise ConfigError, "regexp1 does not contain 2 parameters" unless exp
       @expression = Regexp.compile(exp)
@@ -66,7 +66,7 @@ module Fluent
         @counter += 1
       end # if
       # Check if expected number of occurences reached
-      if @counter == @num_occurences
+      if @counter == @num_occurrences
         # Reset state and counter. Form SCOM event.
         flip_state()
         reset_counter()

@@ -18,7 +18,6 @@ module SCOM
   end
 
   class Common
-    require 'socket'
     require_relative 'scom_configuration'
     require_relative 'omslog'
         
@@ -29,16 +28,14 @@ module SCOM
           "TimeGenerated"=>time.to_s,
       }
       scom_event = {
-          "HostName"=>Socket.gethostname,
           "CustomEvents"=>[scom_record]
       }
       scom_event
     end
         
     def self.create_request(path, record, extra_headers=nil, serializer=method(:parse_json_record_encoding))
-      headers = extra_headers.nil? ? {} : extra_headers
       req = Net::HTTP::Post.new(path)
-      json_msg = serializer.call(add_monitoring_id(record))
+      json_msg = serializer.call(add_scom_data(record))
       if json_msg.nil?
         return nil
       end
@@ -47,8 +44,9 @@ module SCOM
       return req
     end
 
-    def self.add_monitoring_id(record)
+    def self.add_scom_data(record)
       record["MonitoringId"]=SCOM::Configuration.monitoring_id
+      record["HostName"]=SCOM::Configuration.fqdn
       event = {
           "events"=>record
       }

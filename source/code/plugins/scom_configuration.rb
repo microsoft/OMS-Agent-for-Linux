@@ -6,6 +6,7 @@ module SCOM
         
     require_relative 'oms_configuration'
     require_relative 'omslog'
+    require_relative 'oms_common'
         
     @@configuration_loaded = false
     @@scom_conf_path = '/etc/opt/microsoft/omsagent/scom/conf/omsadmin.conf'
@@ -19,7 +20,8 @@ module SCOM
     @@scom_event_endpoint = nil
     @@scom_perf_endpoint = nil
     
-    @@monitoring_id = nil    
+    @@monitoring_id = nil
+    @@fqdn = nil    
       
     def self.load_scom_configuration
       return true if @@configuration_loaded
@@ -59,11 +61,15 @@ module SCOM
         OMS::Log.error_once("Failed to read certificate or key from #{@@cert_path} #{@@key_path}")
         return false
       end # begin
+       
+      @@fqdn = OMS::Common.get_fully_qualified_domain_name
+      if(!@@fqdn)
+        return false
+      end # if
               
       @@configuration_loaded = true
       return true
-
-    end
+    end # method load_configuration
     
     def self.get_value_from_conf(key)
       lines = IO.readlines(@@scom_conf_path).select{ |line| line.start_with?(key)}
@@ -94,6 +100,10 @@ module SCOM
 
     def self.scom_perf_endpoint
       @@scom_perf_endpoint
+    end
+    
+    def self.fqdn
+      @@fqdn
     end
 
   end # class Configuration
