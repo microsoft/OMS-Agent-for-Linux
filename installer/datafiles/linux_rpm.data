@@ -40,8 +40,8 @@ if [ -e /usr/sbin/semodule ]; then
         exit 0
     fi
 
-    echo "  Labeling omsagent log files ..."
-    /sbin/restorecon -R -v /var/opt/microsoft/omsagent/*/log
+    # Labeling omsagent log files 
+    /sbin/restorecon -R /var/opt/microsoft/omsagent/*/log > /dev/null 2>&1
 fi
 
 %Postuninstall_5
@@ -49,6 +49,5 @@ if [ -e /usr/sbin/semodule ]; then
     if [ ! -z "$(/usr/sbin/semodule -l | grep omsagent-logrotate)" ]; then
         echo "Removing selinux policy module for omsagent-logrotate ..."
         /usr/sbin/semodule -r omsagent-logrotate
-        /sbin/restorecon -R -v /var/opt/microsoft/omsagent/*/log
     fi
 fi
