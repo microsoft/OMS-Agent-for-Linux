@@ -176,6 +176,10 @@ else
         cat ${{SYSCONF_DIR}}/logrotate.conf | sed "s/%WORKSPACE_ID%/$PRIMARY_WSID/g" > /etc/logrotate.d/omsagent-$PRIMARY_WSID
     fi
 fi
+# Set up a cron job to logrotate all omsagent-$WORKSPACE_ID every 5 minutes
+if [ ! -f /etc/cron.d/omsagent ]; then
+    echo "*/5 * * * * root /usr/sbin/logrotate -f /etc/logrotate.d/omsagent* >/dev/null 2>&1" > /etc/cron.d/omsagent
+fi
 
 %Postuninstall_10
 # Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
@@ -200,6 +204,7 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
 
    # Clean up logrotate
    rm -f /etc/logrotate.d/omsagent*
+   rm -f /etc/cron.d/omsagent
 fi
 
 %Preinstall_0
