@@ -860,11 +860,11 @@ configure_logrotate()
         cat $SYSCONF_DIR/logrotate.conf | sed "s/%WORKSPACE_ID%/$WORKSPACE_ID/g" > /etc/logrotate.d/omsagent-$WORKSPACE_ID
     fi
 
-    # Load selinux policy module for logrotate for secondary workspace if selinux is present
+    # Label omsagent log files according to selinux policy module for logrotate if selinux is present
     SEPKG_DIR_OMSAGENT=/usr/share/selinux/packages/omsagent-logrotate
-    if [ -n "$MULTI_HOMING_MARKER" -a -e /usr/sbin/semodule -a -d "$SEPKG_DIR_OMSAGENT" ]; then
-        echo "  Labeling omsagent log file for workspace $WORKSPACE_ID ..."
-        /sbin/restorecon -R -v $VAR_DIR/*/log
+    if [ -e /usr/sbin/semodule -a -d "$SEPKG_DIR_OMSAGENT" ]; then
+        # Label omsagent log file for this $WORKSPACE_ID 
+        /sbin/restorecon -R $VAR_DIR/*/log > /dev/null 2>&1
     fi
 }
 
