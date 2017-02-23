@@ -22,13 +22,23 @@ class LinuxUpdatesTest < Test::Unit::TestCase
 
     @available_updates_xml_str_with_nil_build_date = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxAvailableUpdatesResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;dpkg&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1.18.4ubuntu1.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;amd64&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Repository&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu:15.04/xenial-updates&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;BuildDate&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
 
+    @empty_available_updates_xml = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
+
     @inventoryPath = File.join(File.dirname(__FILE__), 'InventoryWithUpdates.xml')
     LinuxUpdates.prev_hash = nil
 
     @linuxUpdatesInstance = LinuxUpdates.new(OMS::MockLog.new, "/tmp/schedule_run.id")
     @fakeUpdateRunName = "Fake_Update_Run_Name"
     @fakeAgentId ="Fake_Agent_ID"
-    
+    @myExpectedHeartbeatItem = {
+                    "CollectionName" => "HeartbeatData_0.0.UpdateManagement.0_Heartbeat",
+                    "Installed" => false,
+                    "UpdateState"=>"NotNeeded",
+                    "Architecture"=>"all",
+                    "PackageName" => "UpdateManagementHeartbeat",
+                    "PackageVersion" => nil,
+                    "Repository" => nil
+                }
     @myExpectedHash = {
         "DataType" => "LINUX_UPDATES_SNAPSHOT_BLOB",
         "IPName" => "Updates",
@@ -234,7 +244,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
 
-    @myExpectedHash["DataItems"][0]["Collections"] = [{
+    @myExpectedHash["DataItems"][0]["Collections"] = [
+               @myExpectedHeartbeatItem,
+                {
                 "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                 "Installed" => true,
                 "UpdateState"=>"NotNeeded",
@@ -257,17 +269,19 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
  
-    @myExpectedHash["DataItems"][0]["Collections"] = [{
-        "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
-        "Installed" => true,
-        "UpdateState"=>"NotNeeded",
-        "Architecture"=>"all",
-        "PackageName" => "autotools-dev",
-        "PackageVersion" => "20150820.1",
-        "Repository" => nil,
-        "Size" => "151",
-        "Timestamp" => "2016-07-11T02:02:16.000Z"
-    }]
+    @myExpectedHash["DataItems"][0]["Collections"] = [
+                @myExpectedHeartbeatItem,
+                {
+                    "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
+                    "Installed" => true,
+                    "UpdateState"=>"NotNeeded",
+                    "Architecture"=>"all",
+                    "PackageName" => "autotools-dev",
+                    "PackageVersion" => "20150820.1",
+                    "Repository" => nil,
+                    "Size" => "151",
+                    "Timestamp" => "2016-07-11T02:02:16.000Z"
+                }]   
 
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
     wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str_with_installed_on_date, "HostName", expectedTime, 
@@ -280,7 +294,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
   
-    @myExpectedHash["DataItems"][0]["Collections"] = [{
+    @myExpectedHash["DataItems"][0]["Collections"] = [
+                @myExpectedHeartbeatItem,      
+                {
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
                     "UpdateState"=>"NotNeeded",
@@ -302,7 +318,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
 
-    @myExpectedHash["DataItems"][0]["Collections"] = [{
+    @myExpectedHash["DataItems"][0]["Collections"] = [
+             @myExpectedHeartbeatItem,
+               {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "UpdateState"=>"Needed",
@@ -329,7 +347,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
   def test_available_updates_transform_and_wrap_with_build_date
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
     
-    @myExpectedHash["DataItems"][0]["Collections"] = [{
+    @myExpectedHash["DataItems"][0]["Collections"] = [      
+                @myExpectedHeartbeatItem,
+                {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "UpdateState"=>"Needed",
@@ -344,9 +364,25 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     expectedOSVersion = "15.04"
     expectedOSFullName = "Ubuntu 15.04"
     @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
-    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName
+    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName    
 
     wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@available_updates_xml_str_with_build_date, "HostName", expectedTime,
+                                                   86400, "Ubuntu", expectedOSFullName,
+                                                  expectedOSVersion, "Ubuntu_15.04")
+    assert_equal(@myExpectedHash, wrappedHash)
+  end
+
+  def test_empty_available_updates_transform_and_wrap_with
+    @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
+
+    @myExpectedHash["DataItems"][0]["Collections"] = [@myExpectedHeartbeatItem]
+    expectedTime = Time.utc(2016,3,15,19,2,38.5776)
+    expectedOSVersion = "15.04"
+    expectedOSFullName = "Ubuntu 15.04"
+    @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
+    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName
+
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@empty_available_updates_xml, "HostName", expectedTime,
                                                    86400, "Ubuntu", expectedOSFullName,
                                                   expectedOSVersion, "Ubuntu_15.04")
     assert_equal(@myExpectedHash, wrappedHash)
@@ -355,7 +391,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
   def test_available_updates_transform_and_wrap_with_nil_build_date
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
 
-    @myExpectedHash["DataItems"][0]["Collections"] = [{
+    @myExpectedHash["DataItems"][0]["Collections"] = [
+               @myExpectedHeartbeatItem,      
+                {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "UpdateState"=>"Needed",
@@ -386,7 +424,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     finish = Time.now
     time_spent = finish - start
     # Test that duplicates are removed as well. The test data has 605 installedpackages and 20 available updates with some duplicates.
-    assert_equal(618, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of instances (Combined - Installed and Available).")
+    assert_equal(619, wrappedHash["DataItems"][0]["Collections"].size, "Got the wrong number of instances (Combined - Installed and Available).")
     if time_spent > 5.0
       warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete. The current time set is 5s")
     end
