@@ -180,6 +180,19 @@ class LinuxUpdates
         ret
     end
 
+    def availableHeartbeatItem()        
+        ret = {}
+        ret["CollectionName"] = "HeartbeatData" + @@delimiter + 
+                                "0.0.UpdateManagement.0"+ @@delimiter + "Heartbeat"
+        ret["PackageName"] = "UpdateManagementHeartbeat"
+        ret["Architecture"] = "all"
+        ret["PackageVersion"] = nil
+        ret["Repository"] = nil
+        ret["Installed"] = false
+        ret["UpdateState"] = "NotNeeded"        
+        ret
+    end
+
     def installedPackageXMLtoHash(packageXML, os_short_name)
         packageHash = instanceXMLtoHash(packageXML)
         ret = {}
@@ -256,9 +269,12 @@ class LinuxUpdates
 
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
         installedPackages = removeDuplicateCollectionNames(installedPackages)
-        availableUpdates = removeDuplicateCollectionNames(availableUpdates)       
-        
-        collections = []
+        availableUpdates = removeDuplicateCollectionNames(availableUpdates)
+        #Today the agent doesn't send any data if the machine is not missing any available updates. 
+        #This leads to uncertainty whether the machine is really up to date or it is not sending data eventhough updates are missing. 
+        #with this change,the agent will send heartbeat item whether the machine is missing updates or not.     
+        heartbeatItem = availableHeartbeatItem()
+        collections = [heartbeatItem]
         
         if (installedPackages.size > 0)
             collections += installedPackages
