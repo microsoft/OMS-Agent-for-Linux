@@ -2,7 +2,7 @@
 SHELL_HEADER:            '#!/bin/sh'
 OMSHOME:                 '/opt/microsoft/omsagent'
 CONF_DIR:                '/etc/opt/microsoft/omsagent/conf'
-
+SYSCONF_DIR:             '/etc/opt/microsoft/omsagent/sysconf'
 SHORT_NAME:              'omsagent'
 SHORT_NAME_PREFIX:       'MSFT'
 LONG_NAME:               'Microsoft Operations Management Suite for UNIX/Linux agent'
@@ -168,6 +168,17 @@ chown -R omsagent:omiusers /var/opt/microsoft/omsagent
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
     /opt/microsoft/omsagent/bin/omsadmin.sh
+else
+    # Create a logrotate conf file for the Primary workspace if it does not already exist
+    # This is needed when upgrading from old omsagent to multi-homing enabled version
+    PRIMARY_WSID=`grep WORKSPACE_ID ${{CONF_DIR}}/omsadmin.conf | cut -d= -f2` > /dev/null 2>&1
+    if [ "$PRIMARY_WSID" -a ! -f /etc/logrotate.d/omsagent-$PRIMARY_WSID ]; then
+        cat ${{SYSCONF_DIR}}/logrotate.conf | sed "s/%WORKSPACE_ID%/$PRIMARY_WSID/g" > /etc/logrotate.d/omsagent-$PRIMARY_WSID
+    fi
+fi
+# Set up a cron job to logrotate all omsagent-$WORKSPACE_ID every 5 minutes
+if [ ! -f /etc/cron.d/omsagent ]; then
+    echo "*/5 * * * * root /usr/sbin/logrotate -f /etc/logrotate.d/omsagent* >/dev/null 2>&1" > /etc/cron.d/omsagent
 fi
 
 %Postuninstall_10
@@ -190,6 +201,10 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
    rm -rf /etc/opt/microsoft/omsagent 2> /dev/null
    rmdir /etc/opt/microsoft 2> /dev/null
    rmdir /etc/opt 2> /dev/null
+
+   # Clean up logrotate
+   rm -f /etc/logrotate.d/omsagent*
+   rm -f /etc/cron.d/omsagent
 fi
 
 %Preinstall_0
