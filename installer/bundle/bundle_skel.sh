@@ -295,7 +295,7 @@ pkg_upd_list() {
 
 get_arch()
 {
-    if [ $(uname -m) = 'x86_64' ]; then
+    if [ $(getconf LONG_BIT) = 64 ]; then
         echo "x64"
     else
         echo "x86"
@@ -304,15 +304,15 @@ get_arch()
 
 compare_arch()
 {
-    #check if the user is trying to install the correct bundle (x64 vs. x86) 
+    #check if the user is trying to install the correct bundle (x64 vs. x86)
     echo "Checking host architecture ..."
-    AR=$(get_arch)
+    HOST_ARCH=$(get_arch)
     
     case $OMS_PKG in
-        *"$AR") 
+        *"$HOST_ARCH") 
             ;;
         *)         
-            echo "Cannot install $OMS_PKG on ${AR} platform"
+            echo "Cannot install $OMS_PKG on ${HOST_ARCH} platform"
             cleanup_and_exit 1
             ;;
     esac
