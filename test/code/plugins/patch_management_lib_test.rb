@@ -495,6 +495,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal("HostName", result['DataItems'][0]["Computer"])
     assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
     assert_equal('linux-cloud-tools-4.4.0-59', result['DataItems'][0]["PackageName"])
+    assert_equal(result['DataItems'][0]["PackageName"], result['DataItems'][0]["UpdateTitle"])
     assert_equal(fakeEndDate, result['DataItems'][0]["EndTime"])
     assert_equal(fakeStartDate, result['DataItems'][0]["StartTime"])
   end
@@ -529,6 +530,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal("HostName", result['DataItems'][0]["Computer"])
     assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
     assert_equal('chrony', result['DataItems'][0]["PackageName"])
+    assert_equal(result['DataItems'][0]["PackageName"], result['DataItems'][0]["UpdateTitle"])
     assert_equal('Succeeded', result['DataItems'][0]["Status"])
 
 
@@ -536,12 +538,14 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     result = @linuxUpdatesInstance.process_yum_update_run(records[1], 'tag', 'HostName', Time.now)
     assert(result != nil)
     assert_equal('bind-utils', result['DataItems'][0]["PackageName"])
+    assert_equal(result['DataItems'][0]["PackageName"], result['DataItems'][0]["UpdateTitle"])
     assert_equal('Succeeded', result['DataItems'][0]["Status"])
 
     @linuxUpdatesInstance.expects(:getUpdateRunName).returns(@fakeUpdateRunName)
     result = @linuxUpdatesInstance.process_yum_update_run(records[2], 'tag', 'HostName', Time.now)
     assert(result != nil)
     assert_equal('sssd-client', result['DataItems'][0]["PackageName"])
+    assert_equal(result['DataItems'][0]["PackageName"], result['DataItems'][0]["UpdateTitle"])
     assert_equal('Succeeded', result['DataItems'][0]["Status"])
 
   end
@@ -562,14 +566,15 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal("HostName", result['DataItems'][0]["Computer"])
     assert_equal(@fakeUpdateRunName, result['DataItems'][0]["UpdateRunName"])
     assert_equal('openldap', result['DataItems'][0]["PackageName"])
+    assert_equal(result['DataItems'][0]["PackageName"], result['DataItems'][0]["UpdateTitle"])
     assert_equal('Failed', result['DataItems'][0]["Status"])
   end
   
   def test_get_yum_update_status
   	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Installed"), "Succeeded")
-	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Updated"), "Succeeded")
-	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Erased"), "Succeeded")
-	assert_equal(@linuxUpdatesInstance.get_yum_update_status("Error"), "Failed")
-	assert_equal(@linuxUpdatesInstance.get_yum_update_status("installed"), "Succeeded")
+	  assert_equal(@linuxUpdatesInstance.get_yum_update_status("Updated"), "Succeeded")
+	  assert_equal(@linuxUpdatesInstance.get_yum_update_status("Erased"), "Succeeded")
+	  assert_equal(@linuxUpdatesInstance.get_yum_update_status("Error"), "Failed")
+	  assert_equal(@linuxUpdatesInstance.get_yum_update_status("installed"), "Succeeded")
   end  
 end
