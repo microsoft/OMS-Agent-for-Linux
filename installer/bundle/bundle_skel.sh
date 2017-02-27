@@ -30,6 +30,9 @@ OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
 OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
+# Minimum versions of dependency packages
+OMI_MIN_VERSION="1.0.8.6"
+SCX_MIN_VERSION="1.6.2.129"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -96,62 +99,85 @@ cleanup_and_exit()
     fi
 }
 
-check_version_installable() {
+first_version_lower_than_second() {
     # POSIX Semantic Version <= Test
-    # Exit code 0 is true (i.e. installable).
-    # Exit code non-zero means existing version is >= version to install.
+    # Exit code 0 means VersionA < VersionB
+    # Exit code non-zero means VersionA >= VersionB
     #
     # Parameter:
-    #   Installed: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
-    #   Available: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
+    #   VersionA: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
+    #   VersionB: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
 
     if [ $# -ne 2 ]; then
-        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_version_installable" >&2
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to first_version_lower_than_second" >&2
         cleanup_and_exit 1
     fi
 
     # Current version installed
-    local INS_MAJOR=`echo $1 | cut -d. -f1`
-    local INS_MINOR=`echo $1 | cut -d. -f2`
-    local INS_PATCH=`echo $1 | cut -d. -f3`
-    local INS_BUILD=`echo $1 | cut -d. -f4`
+    local A_MAJOR=`echo $1 | cut -d. -f1`
+    local A_MINOR=`echo $1 | cut -d. -f2`
+    local A_PATCH=`echo $1 | cut -d. -f3`
+    local A_BUILD=`echo $1 | cut -d. -f4`
 
     # Available version number
-    local AVA_MAJOR=`echo $2 | cut -d. -f1`
-    local AVA_MINOR=`echo $2 | cut -d. -f2`
-    local AVA_PATCH=`echo $2 | cut -d. -f3`
-    local AVA_BUILD=`echo $2 | cut -d. -f4`
+    local B_MAJOR=`echo $2 | cut -d. -f1`
+    local B_MINOR=`echo $2 | cut -d. -f2`
+    local B_PATCH=`echo $2 | cut -d. -f3`
+    local B_BUILD=`echo $2 | cut -d. -f4`
 
     # Check bounds on MAJOR
-    if [ $INS_MAJOR -lt $AVA_MAJOR ]; then
+    if [ $A_MAJOR -lt $B_MAJOR ]; then
         return 0
-    elif [ $INS_MAJOR -gt $AVA_MAJOR ]; then
+    elif [ $A_MAJOR -gt $B_MAJOR ]; then
         return 1
     fi
 
     # MAJOR matched, so check bounds on MINOR
-    if [ $INS_MINOR -lt $AVA_MINOR ]; then
+    if [ $A_MINOR -lt $B_MINOR ]; then
         return 0
-    elif [ $INS_MINOR -gt $AVA_MINOR ]; then
+    elif [ $A_MINOR -gt $B_MINOR ]; then
         return 1
     fi
 
     # MINOR matched, so check bounds on PATCH
-    if [ $INS_PATCH -lt $AVA_PATCH ]; then
+    if [ $A_PATCH -lt $B_PATCH ]; then
         return 0
-    elif [ $INS_PATCH -gt $AVA_PATCH ]; then
+    elif [ $A_PATCH -gt $B_PATCH ]; then
         return 1
     fi
 
     # PATCH matched, so check bounds on BUILD
-    if [ $INS_BUILD -lt $AVA_BUILD ]; then
+    if [ $A_BUILD -lt $B_BUILD ]; then
         return 0
-    elif [ $INS_BUILD -gt $AVA_BUILD ]; then
+    elif [ $A_BUILD -gt $B_BUILD ]; then
         return 1
     fi
 
-    # Version available is idential to installed version, so don't install
+    # VersionA is idential to VersionB
     return 1
+}
+
+check_version_depending_on_force() {
+    # Exit code 0 indicates that the package should be installed
+    # Exit code non-zero means existing version is acceptable:
+    #   Either --force is NOT being used and the existing version >= install
+    #   or --force is being used and the existing version >= minimum version
+    #
+    # Parameter:
+    #   Installed: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
+    #   Available: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
+    #   Minimum: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
+
+    if [ $# -ne 3 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_version_depending_on_force" >&2
+        cleanup_and_exit 1
+    fi
+
+    if [ -z "${forceFlag}" ]; then
+        first_version_lower_than_second $1 $2
+    else
+        first_version_lower_than_second $1 $3
+    fi
 }
 
 getVersionNumber()
@@ -268,7 +294,7 @@ pkg_rm() {
 
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed
-# $3 - Okay to upgrade the package? (Optional)
+# $3 - 0 if okay to upgrade the package (Optional)
 pkg_upd_list() {
     pkg_filename=$1
     pkg_name=$2
@@ -276,11 +302,13 @@ pkg_upd_list() {
 
     echo "----- Checking package: $2 ($1) -----"
 
-    if [ -z "${forceFlag}" -a -n "$3" ]; then
-        if [ $3 -ne 0 ]; then
+    if [ -n "$3" -a $3 -ne 0 ]; then
+        if [ -z "${forceFlag}" ]; then
             echo "Skipping package since existing version >= version available"
-            return 0
+        else
+            echo "Skipping package since existing version >= minimum version and --force was used"
         fi
+        return 0
     fi
 
     ulinux_detect_openssl_version
@@ -366,22 +394,26 @@ getInstalledVersion()
     fi
 }
 
+# If the --force parameter is used, this will only return true when the
+#   installed version < minimum required version
 shouldInstall_omi()
 {
     local versionInstalled=`getInstalledVersion omi`
     [ "$versionInstalled" = "None" ] && return 0
     local versionAvailable=`getVersionNumber $OMI_PKG omi-`
 
-    check_version_installable $versionInstalled $versionAvailable
+    check_version_depending_on_force $versionInstalled $versionAvailable $OMI_MIN_VERSION
 }
 
+# If the --force parameter is used, this will only return true when the
+#   installed version < minimum required version
 shouldInstall_scx()
 {
     local versionInstalled=`getInstalledVersion scx`
     [ "$versionInstalled" = "None" ] && return 0
     local versionAvailable=`getVersionNumber $SCX_PKG scx-cimprov-`
 
-    check_version_installable $versionInstalled $versionAvailable
+    check_version_depending_on_force $versionInstalled $versionAvailable $SCX_MIN_VERSION
 }
 
 shouldInstall_omsagent()
@@ -390,7 +422,7 @@ shouldInstall_omsagent()
     [ "$versionInstalled" = "None" ] && return 0
     local versionAvailable=`getVersionNumber $OMS_PKG omsagent-`
 
-    check_version_installable $versionInstalled $versionAvailable
+    first_version_lower_than_second $versionInstalled $versionAvailable
 }
 
 shouldInstall_omsconfig()
@@ -401,7 +433,7 @@ shouldInstall_omsconfig()
         [ "$versionInstalled" = "None" ] && return 0
         local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
 
-        check_version_installable $versionInstalled $versionAvailable
+        first_version_lower_than_second $versionInstalled $versionAvailable
     else
         return 1
     fi
