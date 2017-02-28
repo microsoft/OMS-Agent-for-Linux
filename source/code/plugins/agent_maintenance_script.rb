@@ -398,8 +398,8 @@ module MaintenanceModule
       # Set safe certificate permissions before to prevent timing attacks
       key_file = File.new(@key_path, "w")
       cert_file = File.new(@cert_path, "w")
-      File.chmod(0600, @key_path)
-      File.chmod(0600, @cert_path)
+      File.chmod(0640, @key_path)
+      File.chmod(0640, @cert_path)
       chown_omsagent([@key_path, @cert_path])
 
       begin
