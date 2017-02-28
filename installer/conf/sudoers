@@ -31,6 +31,14 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsof
 #run hdinsightmanifestreader.rb
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb
 
+# Enable nxAutomationWorker scenarios
+Defaults:nxautomation !requiretty
+Defaults:nxautomation lecture = never
+nxautomation ALL=(ALL) NOPASSWD: ALL
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/python /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/main.py *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/python /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/omsutil.py *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/pkill -u nxautomation *
+
 #run update management commands
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get dist-upgrade *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/apt-get update

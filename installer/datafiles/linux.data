@@ -74,6 +74,24 @@ fi
 # Ensure omsagent is in the omiusers group, but leave omsagent as a group
 /usr/sbin/usermod -g omiusers omsagent 1> /dev/null 2> /dev/null
 
+# Add the 'nxautomation' group if it does not already exist
+# (Can't use useradd with -U since that doesn't exist on older systems)
+egrep -q "^nxautomation:" /etc/group
+if [ $? -ne 0 ]; then
+    echo "Creating nxautomation group ..."
+    groupadd -r nxautomation
+fi
+
+# Add the 'nxautomation' service account if it does not already exist
+egrep -q "^nxautomation:" /etc/passwd
+if [ $? -ne 0 ]; then
+    echo "Creating nxautomation service account ..."
+    useradd -r -c "nxOMSAutomation" -d /var/opt/microsoft/omsagent/run -g nxautomation -s /bin/bash nxautomation
+fi
+
+# Ensure nxautomation is in the nxautomation group (primary), omsagent group (secondary) and omiusers group (secondary)
+/usr/sbin/usermod -g nxautomation -a -G omsagent -G omiusers nxautomation 1> /dev/null 2> /dev/null
+
 %Postinstall_500
 #include Sudoer_Functions
 
@@ -94,6 +112,12 @@ else
 fi
 
 chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
+
+# Set group read permission on OMS cert and key files used by the primary workspace
+OMS_CERTS_DIR="/etc/opt/microsoft/omsagent/certs"
+if [ -d "$OMS_CERTS_DIR" ]; then
+    chmod -R 750 "$OMS_CERTS_DIR"
+fi
 
 %Postinstall_600
 ${{OMS_SERVICE}} start
@@ -117,12 +141,19 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
     # Unconfigure sudo if it's already configured
     RemoveSudoersSupport
 
-    # Remove the service account
+    # Remove the service accounts
+    echo "Deleting nxautomation service account ..."
+    userdel nxautomation 2> /dev/null
     echo "Deleting omsagent service account ..."
     userdel omsagent 2> /dev/null
 
     if [ $? -eq 0 ]; then
-        # Depending on system settings, the group may not have been deleted
+        # Depending on system settings, the groups may not have been deleted
+        egrep -q "^nxautomation:" /etc/group
+        if [ $? -eq 0 ]; then
+            echo "Deleting nxautomation group ..."
+            groupdel nxautomation
+        fi
         egrep -q "^omsagent:" /etc/group
         if [ $? -eq 0 ]; then
             echo "Deleting omsagent group ..."
