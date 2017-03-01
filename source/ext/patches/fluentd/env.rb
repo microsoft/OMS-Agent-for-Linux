@@ -19,6 +19,6 @@ module Fluent
   DEFAULT_PLUGIN_DIR = ENV['FLUENT_PLUGIN'] || '/opt/microsoft/omsagent/plugin'
   DEFAULT_SOCKET_PATH = ENV['FLUENT_SOCKET'] || '/var/opt/microsoft/omsagent/run/omsagent.sock'
   DEFAULT_LISTEN_PORT = 25224
-  DEFAULT_FILE_PERMISSION = 0644
+  DEFAULT_FILE_PERMISSION = 0640
   DEFAULT_DIR_PERMISSION = 0755
 end
