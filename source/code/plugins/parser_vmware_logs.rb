@@ -62,6 +62,26 @@ module Fluent
                 record['DataCenter'] = details['DataCenter']
               end
 
+              # Regex for VM state, power on and off
+              details = nil
+              if record['SyslogMessage'].match(/.*VM_STATE_POWERING_ON.*/)
+                record['Operation'] = 'Power On'
+                details = record['SyslogMessage'].match(/(.*\/.*\/.*\/.*\/(?<VMName>.*)\/.*)user=(?<UserName>\S*)\].*$/)
+              elsif record['SyslogMessage'].match(/.*VM_STATE_POWERING_OFF.*/)
+                record['Operation'] = 'Power Off'
+                details = record['SyslogMessage'].match(/(.*\/.*\/.*\/.*\/(?<VMName>.*)\/.*)user=(?<UserName>\S*)\].*$/)
+              end
+
+              if !details.nil?
+                record['UserName'] = details['UserName']
+                vmName = details['VMName'].rpartition('_')
+                if !vmName.first.empty?
+                  record['VMName']= vmName.first
+                else
+                  record['VMName']= vmName.last		
+                end
+              end
+
               # Regex for Storage Latency. Example string: I/O latency increased from average value of 1343 microseconds to 28022 microseconds.
               if ['latency', 'average value', 'microseconds'].all? { |s| record['SyslogMessage'].include? s }
                 record['StorageLatency'] = record['SyslogMessage'].match(/to\s[0-9]+\smicroseconds/).to_s.split(' ')[1].to_i
