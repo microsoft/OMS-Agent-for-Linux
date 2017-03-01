@@ -347,8 +347,8 @@ class LinuxUpdates
                 title = i.strip!
                 start_time = updateRunJson["Start-Date"].strip!
                 end_time = updateRunJson["End-Date"].strip!
-                ret["UpdateTitle"] = ""
                 ret["PackageName"] = (title.nil?) ? i : title
+                ret["UpdateTitle"] = ret["PackageName"]
                 ret["UpdateId"] = SecureRandom.uuid
                 ret["Status"] = status
                 ret["StartTime"] = (start_time.nil?) ? updateRunJson["Start-Date"] : start_time
@@ -373,8 +373,8 @@ class LinuxUpdates
                 title = i.strip!
                 start_time = updateRunJson["Start-Date"].strip!
                 end_time = updateRunJson["End-Date"].strip!
-                ret["UpdateTitle"] = ""
                 ret["PackageName"] = (title.nil?) ? i : title
+                ret["UpdateTitle"] = ret["PackageName"]
                 ret["UpdateId"] = SecureRandom.uuid
                 ret["Status"] = status
                 ret["StartTime"] = (start_time.nil?) ? updateRunJson["Start-Date"] : start_time
@@ -443,9 +443,9 @@ class LinuxUpdates
 		update_run_record["Computer"] = host
 		update_run_record["OSType"] = "Linux"
 		update_run_record["UpdateRunName"] = getUpdateRunName()
-		update_run_record["UpdateTitle"] = ""
-        update_run_record["PackageName"] = (package_name.nil?) ? record["package_name"] : package_name
-		update_run_record["UpdateId"] = SecureRandom.uuid
+		update_run_record["PackageName"] = (package_name.nil?) ? record["package_name"] : package_name
+		update_run_record["UpdateTitle"]  = update_run_record["PackageName"]
+        update_run_record["UpdateId"] = SecureRandom.uuid
 		update_run_record["TimeStamp"] = OMS::Common.format_time(time)
 		update_run_record["Tag"] = tag
 		
