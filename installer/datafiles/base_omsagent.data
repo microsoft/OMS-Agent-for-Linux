@@ -167,7 +167,7 @@ else
 fi
 # Set up a cron job to logrotate all omsagent-$WORKSPACE_ID every 5 minutes
 if [ ! -f /etc/cron.d/omsagent ]; then
-    echo "*/5 * * * * root /usr/sbin/logrotate -f /etc/logrotate.d/omsagent* >/dev/null 2>&1" > /etc/cron.d/omsagent
+    echo "*/5 * * * * root /usr/sbin/logrotate /etc/logrotate.d/omsagent* >/dev/null 2>&1" > /etc/cron.d/omsagent
 fi
 
 %Postuninstall_10
