@@ -1,5 +1,5 @@
---- in_exec_old.rb	2017-02-08 11:08:11.000000000 -0800
-+++ in_exec.rb	2017-02-08 11:11:22.000000000 -0800
+--- ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb	2017-03-02 15:44:49.000000000 -0800
++++ ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb.new	2017-03-02 15:49:09.000000000 -0800
 @@ -140,10 +140,11 @@
            io = IO.popen(@command, "r")
            @parser.call(io)
