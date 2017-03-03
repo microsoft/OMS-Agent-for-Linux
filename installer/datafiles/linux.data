@@ -119,6 +119,13 @@ if [ -d "$OMS_CERTS_DIR" ]; then
     chmod -R 750 "$OMS_CERTS_DIR"
 fi
 
+%Postinstall_590
+# Remove version file of NPM if present
+NPM_VERSION_FILE=/var/opt/microsoft/omsagent/state/npm_version
+if [ -f $NPM_VERSION_FILE ]; then
+    rm -f $NPM_VERSION_FILE
+fi
+
 %Postinstall_600
 ${{OMS_SERVICE}} start
 
