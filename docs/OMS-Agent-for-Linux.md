@@ -134,6 +134,7 @@ Options:
   -a id, --azure-resource id Use Azure Resource ID <id>.
   -m marker, --multi-homing-marker marker
                          Onboard as a multi-homing(Non-Primary) workspace.
+                         The marker can be any string that does not contain whitespace.
 
   -? | --help            shows this usage text.
 ```
@@ -206,18 +207,18 @@ SHARED_KEY=<Shared Key>
 
 ## Onboard a secondary workspace
 From 1.3.0-1, OMSAgent supports to onboard the agent to multiple workspaces.
-Run the omsadmin.sh command supplying the workspace id and key for your workspace, and -m to indicate secondary workspace:
+Run the omsadmin.sh command supplying the workspace id and key for your workspace, and -m to indicate a secondary workspace. The multi-homing marker is used to identify this workspace when you [list all workspaces](#list-all-workspaces). The marker can be any string that does not contain whitespace:
 ```
 cd /opt/microsoft/omsagent/bin
 sudo ./omsadmin.sh -w <workspace id> -s <shared key> -m <multi-homing marker>
 ```
-NOTE: Secondary workspace is currently unable to pull the configuration from OMS service. We are working on it.
+NOTE: Any secondary workspace is currently unable to pull the configuration from OMS service. We are working on it.
 
 ## Onboard a secondary workspace using a file
 Reference [Onboarding using a file](#onboarding-using-a-file)
 Add the following line into /etc/omsagent-onboard.conf
 ```
-MULTI_HOMING_MARKER=<any string, e.g. MySecondaryWS>
+MULTI_HOMING_MARKER=<any string without whitespace, e.g. MySecondaryWS>
 ```
 
 # Manage Workspaces
