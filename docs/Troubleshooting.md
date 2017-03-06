@@ -175,7 +175,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
 * If using a proxy, check proxy troubleshooting steps aboce
-* In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart [<workspace id>]`.
+* In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`.
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
 
 ### My portal side configuration for (Syslog/Linux Performance Counter) is not being applied
