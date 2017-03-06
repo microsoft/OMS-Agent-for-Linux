@@ -14,7 +14,7 @@ This is a Public Preview Product.
 * Docker 1.11 thru 1.13 
 * Docker CE and EE v17.03
 
-And one of follow OS (x64): 
+And one of following OS (x64): 
 * Ubuntu 14.04 LTS, 16.04 LTS
 * Amazon Linux 2016.09
 * openSUSE 13.2
