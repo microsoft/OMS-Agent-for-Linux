@@ -8,13 +8,6 @@
 - [Onboarding with Operations Management Suite](#onboarding-with-operations-management-suite)
   - [Onboarding using the command line](#onboarding-using-the-command-line)
   - [Onboarding using a file](#onboarding-using-a-file)	
-  - [Onboard a secondary workspace](#onboard-a-secondary-workspace)
-  - [Onboard a secondary workspace using a file](#onboard-a-secondary-workspace-using-a-file)
-- [Manage Workspaces](#manage-workspaces)
-  - [List all workspaces](#list-all-workspaces)
-  - [Remove a workspace](#remove-a-workspace)
-  - [Remove all workspaces](#remove-all-workspaces)
-- [Manage omsagent Daemon](#manage-omsagent-daemon)
 - [Viewing Linux Data](#viewing-linux-data)
 - [Configuring Data Collection](#configuring-data-collection)
 	- [Configuring Syslog collection from the OMS portal](#configuring-syslog-collection-from-the-oms-portal)
@@ -81,32 +74,27 @@ The OMS agent for Linux is provided in a self-extracting and installable shell s
 
 **To install and onboard directly:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -w <workspace id> -s <shared key>
 ```
 
 **To install and onboard directly using an HTTP proxy:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
 ```
 
 **To install and onboard to a workspace in FairFax:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -d opinsights.azure.us
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -d opinsights.azure.us
 ```
 
 **To install the agent packages and onboard at a later time:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade
-```
-
-**To install and onboard to a non-primary workspace:**
-```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -m <multi-homing marker>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade
 ```
 
 **To extract the agent packages from the bundle without installing:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --extract
+sudo sh ./omsagent-*.universal.x64.sh --extract
 ```
 
 **All bundle operations:**
@@ -132,8 +120,6 @@ Options:
   -p conf, --proxy conf  Use <conf> as the proxy configuration.
                          ex: -p [protocol://][user:password@]proxyhost[:port]
   -a id, --azure-resource id Use Azure Resource ID <id>.
-  -m marker, --multi-homing-marker marker
-                         Onboard as a multi-homing(Non-Primary) workspace.
 
   -? | --help            shows this usage text.
 ```
@@ -162,7 +148,7 @@ The proxy server can be specified during installation or directly in a file (at 
 The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use. 
 
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
 ```
 
 **Define the proxy configuration in a file **
@@ -172,14 +158,14 @@ proxyconf="https://proxyuser:proxypassword@proxyserver01:8080"
 sudo echo $proxyconf >>/etc/opt/microsoft/omsagent/proxy.conf
 sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf
 sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf
-sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **Removing the proxy configuration**
 To remove a previously defined proxy configuration and revert to direct connectivity, remove the proxy.conf file:
 ```
 sudo rm /etc/opt/microsoft/omsagent/proxy.conf
-sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 # Onboarding with Operations Management Suite
@@ -204,56 +190,6 @@ SHARED_KEY=<Shared Key>
 `sudo /opt/microsoft/omsagent/bin/omsadmin.sh`
 4.	The file will be deleted on successful onboarding
 
-## Onboard a secondary workspace
-From 1.3.0-1, OMSAgent supports to onboard the agent to multiple workspaces.
-Run the omsadmin.sh command supplying the workspace id and key for your workspace, and -m to indicate secondary workspace:
-```
-cd /opt/microsoft/omsagent/bin
-sudo ./omsadmin.sh -w <workspace id> -s <shared key> -m <multi-homing marker>
-```
-NOTE: Secondary workspace is currently unable to pull the configuration from OMS service. We are working on it.
-
-## Onboard a secondary workspace using a file
-Reference [Onboarding using a file](#onboarding-using-a-file)
-Add the following line into /etc/omsagent-onboard.conf
-```
-MULTI_HOMING_MARKER=<any string, e.g. MySecondaryWS>
-```
-
-# Manage Workspaces
-From 1.3.0-1, OMSAgent supports onboarding to multiple workspaces. Here are the commands for workspace management:
-
-## List all workspaces
-```
-sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -l
-```
-
-Sample result for an agent onboarded to 2 workspaces:
-```
-Primary Workspace: 000c7bcd-28d2-453a-84bd-8523e396f600    Success(OMSAgent Registered)
-Workspace(MySecondaryWS): ffffb0c0-7fac-4159-987c-000271282eff    Success(OMSAgent Registered)
-```
-
-## Remove a workspace
-```
-sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -x <workspace id>
-```
-
-## Remove all workspaces
-```
-sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -X
-```
-
-# Manage omsagent Daemon
-From 1.3.0-1, we will register omsagent daemon for each onboarded workspace. The daemon name is omsagent-\<workspace-id>
-You can use /opt/microsoft/omsagent/bin/service_control command to operate the daemon.
-
-```
-sudo sh /opt/microsoft/omsagent/bin/service_control start|stop|restart|enable|disable [<workspace id>]
-```
-
-The workspace id is an optional parameter. If it is specified, it will only operate on the workspace-specific daemon.
-Otherwise, it will operate on all the daemons.
 
 # Viewing Linux Data
 ## Viewing Syslog events
@@ -310,7 +246,7 @@ To define a default user account for the MySQL server on localhost:
 ```
 sudo su omsagent -c '/opt/microsoft/mysql-cimprov/bin/mycimprovauth default 127.0.0.1 <username> <password>'
 
-sudo /opt/omi/bin/service_control restart [<workspace id>]
+sudo /opt/omi/bin/service_control restart
 ```
 Alternatively, you can specify the required MySQL credentials in a file, by creating the file: `/var/opt/microsoft/mysql-cimprov/auth/omsagent/mysql-auth`. For more information on managing MySQL credentials for monitoring through the mysql-auth file, see **Appendix C** of this document.
 
@@ -412,7 +348,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 *	Restart the omsagent and syslog daemons:
 
 	```
-	sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+	sudo /opt/microsoft/omsagent/bin/service_control restart
 	sudo service rsyslog restart
 	```
 *	Confirm that no errors are reported in the omsagent log:
@@ -571,7 +507,7 @@ The destination of this file depends on the Linux flavor of your machine.
     ```
 4. Restart the OMS Agent: 
     ```
-    sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+    sudo /opt/microsoft/omsagent/bin/service_control restart
     ```
 
 ##### CollectD metrics to OMS Log Analytics schema conversion
@@ -637,7 +573,7 @@ Example separate configuration file `exec-json.conf` for /etc/opt/microsoft/omsa
 </match>
 ```
 
-Once complete, restart the OMS Agent for Linux service: `sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
+Once complete, restart the OMS Agent for Linux service: `sudo /opt/microsoft/omsagent/bin/service_control restart` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
 
 **Example:**The following custom tag `tag oms.api.tomcat` shows up as `Type=tomcat_CL` in Log Analytics
 
@@ -683,7 +619,7 @@ sudo usermod -a -G nagios omsagent
 *	Restart the omsagent daemon
 
 ```
-sudo sh /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+sudo sh /opt/microsoft/omsagent/bin/service_control restart
 ```
 ### Zabbix Alerts
 To collect alerts from a Zabbix server, you'll perform similiar steps to those for Nagios above, except you'll need to specify a user and password in *clear text*. This is not ideal, but we recommend that you create the user and grant permissions to monitor onlu.
