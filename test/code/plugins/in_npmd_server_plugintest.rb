@@ -1,6 +1,7 @@
 require 'fluent/test'
 require_relative '../../../source/code/plugins/in_npmd_server'
 require 'socket'
+require 'securerandom'
 
 class Logger
     def self.logToStdOut(msg, depth=0)
@@ -45,6 +46,7 @@ class NPMDServerTest < Test::Unit::TestCase
     TEST_ERROR_LOG_BINARY_DUPLICATE = "Found both x64 and x32 staging binaries"
     TEST_ERROR_LOG_STDERROR = "NPMDTest wrote this error log"
     TEST_ERROR_LOG_INVALID_USER = "Invalid user:"
+    TEST_ERROR_LOG_CAP_NOT_SUPPORTED = "Distro has no support for filesystem capabilities"
 
     def setup
         Fluent::Test.setup
@@ -79,6 +81,7 @@ class NPMDServerTest < Test::Unit::TestCase
         _d.instance.num_config_sent = 0
         _d.instance.is_purged = false
         _d.instance.omsagentUID = Process.euid
+        _d.instance.do_capability_check = false
         _d
     end
 
@@ -901,6 +904,139 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 11
         assert_equal(false, found_invalid_user_log, "Invalid user log should not be present when sent via omsagent user")
+    end
+
+    # Test15: Delete binary but not version files and send log if setcap not supported
+    # Sequence:
+    # 1. Create npm_version files in local directory with different directory structure
+    # 2. Update do_capability_check to true and set the verion file prefix
+    # 3. Override the capabilties supported function to say false
+    # 4. Register run post condition to basically wait for a while
+    # 5. Run the driver
+    # 6. Assert that fake binary file is absent
+    # 7. Assert that npm_version file in single workspace scenario is present
+    # 8. Assert that all npm_version files are present in multiple workspace cases
+    # 9. Assert that error log pertaining to absence of filesystem capabilities is emitted
+    def test_case_15_no_cap_support_delete_binary_not_version_files
+        # Step 1
+        singleWorkspaceDir = "#{TMP_DIR}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
+        singleWorkspaceVersionFile = "#{singleWorkspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"
+        FileUtils.mkdir_p(singleWorkspaceDir)
+        FileUtils.touch(singleWorkspaceVersionFile)
+        (1..10).each do
+            workspaceDir = "#{TMP_DIR}/#{SecureRandom.uuid}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
+            FileUtils.mkdir_p(workspaceDir)
+            FileUtils.touch("#{workspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}")
+        end
+
+        # Step 2
+        d = create_driver
+        d.instance.do_capability_check = true
+        d.instance.npmd_version_dir_prefix = TMP_DIR
+
+        # Step 3
+        d.instance.define_singleton_method(:is_filesystem_capabilities_supported) do
+            false
+        end
+
+        # Step 4
+        d.register_run_post_condition {
+            sleep (100 * ONE_MSEC)
+        }
+
+        # Step 5
+        d.run
+
+        # Step 6
+        assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Error the fake binary should be absent as distro doesn't support capabilities")
+
+        # Step 7
+        assert_equal(true, File.exist?(singleWorkspaceVersionFile), "Error the default npm_version file should be present")
+
+        # Step 8
+        workspaceDirs = Dir.glob("#{TMP_DIR}/**/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}")
+        workspaceDirs.each do |x|
+            assert_equal(true, File.exist?("#{x}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"), "Error all version files should persist")
+        end
+
+        # Step 9
+        emits = d.emits
+        error_logs = nil
+        assert(emits.length > 0, "At least some data should have been emitted by now")
+        emits.each do |x|
+            if x.last.key?("DataItems")
+                x.last["DataItems"].each do |z|
+                    if z.key?("Message")
+                        error_logs ||= []
+                        error_logs << z
+                    end
+                end
+            end
+        end
+        assert(!error_logs.nil?, "There should have been at least some error logs")
+        assert(error_logs.is_a?(Array), "Error logs should be an array")
+        assert(error_logs.length > 0, "There should be at least some error logs")
+        found_cap_not_supported_log = false
+        error_logs.each do |x|
+            if x.key?("Message") and x["Message"].include?(TEST_ERROR_LOG_CAP_NOT_SUPPORTED)
+                found_cap_not_supported_log = true
+                break
+            end
+        end
+        assert_equal(true, found_cap_not_supported_log, "Error should have seen filesystem capability not supported distro log")
+    end
+
+    # Test16: Delete version files and binary if capability is not to binary
+    # Sequence:
+    # 1. Create npm_version files in local directory with different directory structure
+    # 2. Update do_capability_check to true and set the verion file prefix
+    # 3. Override the capabilties supported function to say true
+    # 4. Override the get capability string to mention no cap_net_raw found
+    # 5. Run the driver
+    # 6. Assert that fake binary file is absent
+    # 7. Assert that npm_version file in single workspace scenario is absent
+    # 8. Assert that no npm_version files are present in multiple workspace cases
+    def test_case_16_delete_binary_version_files_if_no_cap_set
+        # Step 1
+        singleWorkspaceDir = "#{TMP_DIR}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
+        singleWorkspaceVersionFile = "#{singleWorkspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"
+        FileUtils.mkdir_p(singleWorkspaceDir)
+        FileUtils.touch(singleWorkspaceVersionFile)
+        (1..10).each do
+            workspaceDir = "#{TMP_DIR}/#{SecureRandom.uuid}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
+            FileUtils.mkdir_p(workspaceDir)
+            FileUtils.touch("#{workspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}")
+        end
+
+        # Step 2
+        d = create_driver
+        d.instance.do_capability_check = true
+        d.instance.npmd_version_dir_prefix = TMP_DIR
+
+        # Step 3
+        d.instance.define_singleton_method(:is_filesystem_capabilities_supported) do
+            true
+        end
+
+        # Step 4
+        d.instance.define_singleton_method(:get_capability_str) do |loc|
+            ""
+        end
+
+        # Step 5
+        d.run
+
+        # Step 6
+        assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Error the fake binary should be absent as distro doesn't support capabilities")
+
+        # Step 7
+        assert_equal(false, File.exist?(singleWorkspaceVersionFile), "Error the default npm_version file should be absent")
+
+        # Step 8
+        workspaceDirs = Dir.glob("#{TMP_DIR}/**/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}")
+        workspaceDirs.each do |x|
+            assert_equal(false, File.exist?("#{x}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"), "Error all version files should have been deleted")
+        end
     end
 
 end
