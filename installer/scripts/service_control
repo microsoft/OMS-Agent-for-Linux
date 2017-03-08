@@ -35,7 +35,7 @@ setup_variables()
         if [ -f $ETC_DIR/$1/conf/omsadmin.conf ]; then
             . "$ETC_DIR/$1/conf/omsadmin.conf"
         else
-            echo "Warning: Specified workspace $1 doesn't exist"
+            echo "Warning: Specified workspace $1 does not exist on the machine. Check the correctness of the workspace ID and that onboarding succeeded."
             exit 0
         fi
     fi
