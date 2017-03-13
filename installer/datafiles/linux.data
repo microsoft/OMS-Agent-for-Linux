@@ -92,7 +92,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Ensure nxautomation is in the nxautomation group (primary), omsagent group (secondary) and omiusers group (secondary)
-/usr/sbin/usermod -g nxautomation -a -G omsagent -G omiusers nxautomation 1> /dev/null 2> /dev/null
+/usr/sbin/usermod -g nxautomation -a -G omsagent,omiusers nxautomation 1> /dev/null 2> /dev/null
 
 %Postinstall_500
 #include Sudoer_Functions
