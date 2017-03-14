@@ -49,7 +49,6 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
 /opt/microsoft/omsagent/bin/uninstall;                                  installer/scripts/uninstall.sh;                        755; root; root
 /opt/microsoft/omsagent/bin/configure_syslog.sh;                        installer/scripts/configure_syslog.sh;                 755; root; root
-/opt/microsoft/omsagent/bin/tailfilereader.rb;                          installer/scripts/tailfilereader.rb;                   744; root; root
 /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb;                 installer/scripts/hdinsightmanifestreader.rb;          744; root; root
 /opt/microsoft/omsagent/bin/regenerate_scom_cert.sh;                    installer/scripts/regenerate_scom_cert.sh;             755; root; root
 
@@ -73,7 +72,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/out_oms_blob.rb;                         source/code/plugins/out_oms_blob.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/out_oms_api.rb;                          source/code/plugins/out_oms_api.rb;                    744; root; root
 /opt/microsoft/omsagent/plugin/in_sudo_tail.rb;                         source/code/plugins/in_sudo_tail.rb;                   744; root; root
-
+/opt/microsoft/omsagent/plugin/tailfilereader.rb;                       source/code/plugins/tailfilereader.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/filter_security_baseline.rb;             source/code/plugins/filter_security_baseline.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
 /opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root

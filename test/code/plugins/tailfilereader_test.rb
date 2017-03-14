@@ -1,5 +1,5 @@
 require 'test/unit'
-require_relative '../../../installer/scripts/tailfilereader.rb'
+require_relative '../../../source/code/plugins/tailfilereader.rb'
 require 'stringio'
 
 class TailFileReaderTest < Test::Unit::TestCase
