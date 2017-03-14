@@ -75,4 +75,15 @@ omsagent ALL=(ALL) NOPASSWD: /bin/yum -y upgrade *
 omsagent ALL=(ALL) NOPASSWD: /bin/yum upgrade *
 omsagent ALL=(ALL) NOPASSWD: /bin/yum update *
 
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper refresh
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper list-updates
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper update
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper update *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper --non-interactive update
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper --non-interactive update *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper --non-interactive update --dry-run
+
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/tail *
+omsagent ALL=(ALL) NOPASSWD: /bin/tail *
+
 # End sudo configuration for omsagent
