@@ -21,9 +21,8 @@ class LinuxUpdates
     SCHEDULE_NAME_VARIABLE = "SCHEDULE_NAME"
     APT_GET_START_DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    def initialize(log, updateRunFile)
+    def initialize(log)
         @log = log
-        @CURRENT_UPDATE_RUN_FILE = updateRunFile
      end
 
     def getAgentId()
@@ -50,25 +49,6 @@ class LinuxUpdates
         end
 
         return @@os_details
-    end
-
-     def getUpdateRunName()
-        ret = {}
-
-        if File.exist?(@CURRENT_UPDATE_RUN_FILE) # If file exists
-            File.open(@CURRENT_UPDATE_RUN_FILE, "r") do |f| # Open file
-                f.each_line do |line|       # Split each line and
-                    line.split(/\r?\n/). reject{ |l| 
-                        !l.include? "=" }. map! {|s| 
-                            s.split("=")}. map! {|key, value| 
-                                ret[key] = value
-                        }
-                    end
-                end
-        else
-            @log.debug "Could not find the file #{CURRENT_UPDATE_RUN_NAME_FILE}"
-        end
-        return ret[SCHEDULE_NAME_VARIABLE]
     end
 
     # This temporary fix is for version management for cache lookup.                        
@@ -302,181 +282,5 @@ class LinuxUpdates
                                         availableUpdates x #{availableUpdates.size}"
           return wrapper
     end
-
-    def updateRunProgressJSONtoHash(updateRunJson, host, time)
-        # Sample Record
-            # "Timestamp": "2016-10-21T04:30:13.2145776Z",
-            # "OSType": "Linux",
-            # "UpdateId": "8579fbee-d418-43e7-ac67-5fcc0b11cbb7",
-            # "UpdateRunName": "LinuxUpdateRun",
-            # "PackageName": "vim-common",
-            # "Status": "Succeeded",
-            # "Computer": "LinuxXenial",
-            # "StartTime": "2016-10-21 04:25:51Z",
-            # "EndTime": "2016-10-21 04:30:02Z"
-
-        update_run_name = getUpdateRunName()
-
-        if updateRunJson.key?("Error")
-            status = "Failed"
-        else
-            status = "Succeeded"
-        end
-
-        packages_installed = updateRunJson.key?("Install") ? updateRunJson["Install"] : nil
-        if !packages_installed.nil?
-            list_of_packages_installed = packages_installed.split("),")
-            list_of_packages_installed = list_of_packages_installed.map! {|x| x.split(':')[0] }
-        end
-
-        packages_upgraded = updateRunJson.key?("Upgrade") ? updateRunJson["Upgrade"] : nil
-        if !packages_upgraded.nil?
-            list_of_packages_upgraded = packages_upgraded.split("),")
-            list_of_packages_upgraded = list_of_packages_upgraded.map! {|x| x.split(':')[0] }
-        end
-
-        update_run = []
-
-        if !list_of_packages_installed.nil?
-            for i in list_of_packages_installed;
-                ret = {}
-                ret["Computer"] = host
-                ret["OSType"] = "Linux"
-                ret["UpdateRunName"] = update_run_name
-
-                title = i.strip!
-                start_time = updateRunJson["Start-Date"].strip!
-                end_time = updateRunJson["End-Date"].strip!
-                ret["PackageName"] = (title.nil?) ? i : title
-                ret["UpdateTitle"] = ret["PackageName"]
-                ret["UpdateId"] = SecureRandom.uuid
-                ret["Status"] = status
-                ret["StartTime"] = (start_time.nil?) ? updateRunJson["Start-Date"] : start_time
-                ret["EndTime"] = (end_time.nil?) ? updateRunJson["End-Date"] : end_time
-                if (Integer(updateRunJson["Start-Date"]) rescue false)
-                    ret["TimeStamp"] = OMS::Common.format_time(updateRunJson["Start-Date"].strftime(APT_GET_START_DATE_TIME_FORMAT))
-                else
-                    ret["TimeStamp"] = OMS::Common.format_time(time)
-                end
-                update_run << ret
-            end
-        end
-
-        if !list_of_packages_upgraded.nil?
-            for i in list_of_packages_upgraded;
-                ret = {}
-                
-                ret["Computer"] = host
-                ret["OSType"] = "Linux"
-                ret["UpdateRunName"] = update_run_name
-                
-                title = i.strip!
-                start_time = updateRunJson["Start-Date"].strip!
-                end_time = updateRunJson["End-Date"].strip!
-                ret["PackageName"] = (title.nil?) ? i : title
-                ret["UpdateTitle"] = ret["PackageName"]
-                ret["UpdateId"] = SecureRandom.uuid
-                ret["Status"] = status
-                ret["StartTime"] = (start_time.nil?) ? updateRunJson["Start-Date"] : start_time
-                ret["EndTime"] = (end_time.nil?) ? updateRunJson["End-Date"] : end_time
-                if (Integer(updateRunJson["Start-Date"]) rescue false)
-                    ret["TimeStamp"] = OMS::Common.format_time(updateRunJson["Start-Date"].strftime(APT_GET_START_DATE_TIME_FORMAT))
-                else
-                    ret["TimeStamp"] = OMS::Common.format_time(time)
-                end
-                update_run << ret
-            end
-        end
-        # FYI This currently does not handle Purge/Remove cases. Eventually, handle all the cases
-        # Purge: {"Start-Date"=>"2016-06-28  21:04:57", "Timezone"=>"UTC", "Tag"=>"update_progress", "ProcessedTime"=>"2016-09-29T22:43:25.000Z", "Commandline"=>" apt-get purge python", "Requested-By"=>" varad (1000)", "Purge"=>" python:amd64 (2.7.11-1), python-pkg-resources:amd64 (20.7.0-1), python-all:amd64 (2.7.11-1), python-dev:amd64 (2.7.11-1), python-setuptools:amd64 (20.7.0-1), python-wheel:amd64 (0.29.0-1), python-pip:amd64 (8.1.1-2ubuntu0.1), python-all-dev:amd64 (2.7.11-1)", "End-Date"=>" 2016-06-28  21:05:01"}
-        # Remove: {"Start-Date"=>"2016-06-28  21:05:13", "Timezone"=>"UTC", "Tag"=>"update_progress", "ProcessedTime"=>"2016-09-29T22:43:25.000Z", "Commandline"=>" apt autoremove", "Requested-By"=>" varad (1000)", "Remove"=>" python2.7-dev:amd64 (2.7.11-7ubuntu1), libexpat1-dev:amd64 (2.1.0-7ubuntu0.16.04.2), python2.7-minimal:amd64 (2.7.11-7ubuntu1), libpython-all-dev:amd64 (2.7.11-1), libpython2.7:amd64 (2.7.11-7ubuntu1), python2.7:amd64 (2.7.11-7ubuntu1), libpython2.7-dev:amd64 (2.7.11-7ubuntu1), libpython-stdlib:amd64 (2.7.11-1), libpython-dev:amd64 (2.7.11-1), libpython2.7-minimal:amd64 (2.7.11-7ubuntu1), libpython2.7-stdlib:amd64 (2.7.11-7ubuntu1), python-pip-whl:amd64 (8.1.1-2ubuntu0.1), python-minimal:amd64 (2.7.11-1)", "End-Date"=>" 2016-06-28  21:05:20"}
-        return update_run
-    end
-
-    def populate_package_updated_record(record, status, kbid)
-        return ret
-    end
-    
-    def process_apt_update_run(record, tag, host, time)
-        processedJson = {}
-        processedJson ["Start-Date"] = record['start-date']
-        processedJson ["Timezone"] = OMS::Common.get_current_timezone()
-        processedJson ["Tag"] = tag
-        processedJson ["ProcessedTime"] = OMS::Common.format_time(time)
-        processed_string = record["apt-logs"].split("\n")
-        processed_string[0] = "Commandline: " + processed_string[0]
-        processed_string.each { |x| 
-            x2 = x.split(":", 2)
-            processedJson [x2[0]] = x2[1]
-        }
-        if processedJson.key?("Requested-By")
-            @log.debug "LinuxUpdatesProgress: Parsing a record of type #{tag}"
-            list_of_updates = updateRunProgressJSONtoHash(processedJson , host, time)
-            wrapper = {
-                "DataType"=>"UPDATES_RUN_PROGRESS_BLOB",
-                "IPName"=>"Updates",
-                "DataItems"=> list_of_updates
-            }
-            @log.debug "LinuxRunUpdates updatesDone: #{list_of_updates.size}"
-            return wrapper
-        else
-            @log.debug "LinuxUpdatesProgress: Found an unattended update"
-            return {}
-        end
-    end
 	
-    def process_yum_record(record, tag, host, time)
-		@log.debug "LinuxUpdatesProgress: Parsing a record of type #{tag}"
-		update_run = []
-		update_run_record = {}
-
-        # 3 possible formats of package name:
-        # a: ' libXft-2.3.2-1.el6.x86$-1.28-12.el6.x86_64' -- starts with whitespace and package name. and no dash in the middle
-        # b: '32:bind-utils-9.9.4-38.el7_3.1.x86_64' -- starts with 'digits:'
-        # c: ' sssd-client-1.14.0-43.el7_3.11.x86_64' -- starts with whitespace and package name and has dash in the middle:
-        package_name_sections = record["package-name"].lstrip.split(/-\d/)
-        package_name = nil;
-        if !package_name_sections.nil? && package_name_sections.length > 0
-            package_name = package_name_sections[0][/[\A\d:+]*(\S*)/, 1]
-        end
-        
-		update_run_record["Computer"] = host
-		update_run_record["OSType"] = "Linux"
-		update_run_record["UpdateRunName"] = getUpdateRunName()
-		update_run_record["PackageName"] = (package_name.nil?) ? record["package_name"] : package_name
-		update_run_record["UpdateTitle"]  = update_run_record["PackageName"]
-        update_run_record["UpdateId"] = SecureRandom.uuid
-		update_run_record["TimeStamp"] = OMS::Common.format_time(time)
-		update_run_record["Tag"] = tag
-		
-		#commenting the time as the date is not start date and seems to be package available date in yum log.		
-		#update_run_record ["StartTime"] = DateTime.parse(record["update-action-date"]).strftime(APT_GET_START_DATE_TIME_FORMAT)
-		update_run_record ["Status"] = get_yum_update_status(record["update-action"])
-
-		update_run << update_run_record
-		return update_run
-    end
-   
-	def get_yum_update_status(update_action)
-		if (update_action =~ /Updated/i || update_action =~ /Installed/i || update_action =~ /Erased/i)
-			return "Succeeded"
-		else
-			return "Failed"
-		end		
-	end
-	
-    def get_update_run_progress_blob(list_of_updates)
-		@log.debug "creating blob for yum record"
-		wrapper = {
-			"DataType" => "UPDATES_RUN_PROGRESS_BLOB",
-			"IPName" => "Updates",
-			"DataItems" => list_of_updates
-		}
-		return wrapper
-	end
-  
-    def process_yum_update_run(record, tag, host, time)
-		list_of_updates = process_yum_record(record, tag, host, time)
-		return get_update_run_progress_blob(list_of_updates)
-	end
 end

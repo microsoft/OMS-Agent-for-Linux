@@ -28,6 +28,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/heartbeat.conf;          installer/conf/omsagent.d/heartbeat.conf;              644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management.conf;      installer/conf/omsagent.d/patch_management.conf;          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management_inventory.mof;  installer/conf/omsagent.d/patch_management_inventory.mof;        644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/update_management.conf;  installer/conf/omsagent.d/update_management.conf;          644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/syslog.conf;             installer/conf/omsagent.d/syslog.conf;                 644; root; root
@@ -93,7 +94,6 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/heartbeat_lib.rb;                        source/code/plugins/heartbeat_lib.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/filter_patch_management.rb;              source/code/plugins/filter_patch_management.rb;        744; root; root
 /opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
-/opt/microsoft/omsagent/plugin/filter_linux_update_run_progress.rb;     source/code/plugins/filter_linux_update_run_progress.rb;           744; root; root
 
 /opt/microsoft/omsagent/plugin/filter_flatten.rb;                       source/code/plugins/filter_flatten.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/flattenjson_lib.rb;                      source/code/plugins/flattenjson_lib.rb;                744; root; root
