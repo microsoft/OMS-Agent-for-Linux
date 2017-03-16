@@ -352,6 +352,21 @@ onboard_scom()
     configure_logrotate
 }
 
+onboard_lad()
+{
+    echo "Onboarding LAD"
+    create_workspace_directories "LAD"
+
+    touch $CONF_DIR/omsagent.conf
+    echo "@include omsagent.d/*" > $CONF_DIR/omsagent.conf
+    chown_omsagent $CONF_DIR/*
+    make_dir $CONF_DIR/omsagent.d
+    #Always register LAD as secondary Workspace
+    echo "LAD Workspace" > $CONF_DIR/.multihoming_marker
+    save_config
+    configure_logrotate
+}
+
 onboard()
 {
     if [ $VERBOSE -eq 1 ]; then
@@ -362,6 +377,11 @@ onboard()
 
     if [ "$WORKSPACE_ID" = "scom" ]; then
         onboard_scom
+        clean_exit $?
+    fi
+
+    if [ "$WORKSPACE_ID" = "LAD" ]; then
+        onboard_lad
         clean_exit $?
     fi
 
