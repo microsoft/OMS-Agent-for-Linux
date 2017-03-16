@@ -18,6 +18,7 @@ module OMS
     @@OmsCloudId = nil
     @@AzureResourceId = nil
     @@UUID = nil
+    @@GetTelemetryODSEndpoint = nil
  
     class << self
       
@@ -94,6 +95,8 @@ module OMS
           @@GetBlobODSEndpoint.path = '/ContainerService.svc/GetBlobUploadUri'
           @@NotifyBlobODSEndpoint = @@ODSEndpoint.clone
           @@NotifyBlobODSEndpoint.path = '/ContainerService.svc/PostBlobUploadNotification'
+          @@GetTelemetryODSEndpoint = @@ODSEndpoint.clone
+          @@GetTelemetryODSEndpoint.path = '/DiagnosticsDataService.svc/PostDataItems'
         rescue => e
           Log.error_once("Error parsing endpoint url. #{e}")
           return false
@@ -163,6 +166,10 @@ module OMS
       def notify_blob_ods_endpoint
         @@NotifyBlobODSEndpoint
       end # getter notify_blob_ods_endpoint
+
+      def get_telemetry_ods_endpoint
+        @@GetTelemetryODSEndpoint
+      end # getter get_diagnstics_ods_endpoint
 
       def azure_resource_id
         @@AzureResourceId
