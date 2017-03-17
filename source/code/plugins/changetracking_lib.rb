@@ -39,6 +39,7 @@ class ChangeTracking
     def self.serviceXMLtoHash(serviceXML)
         serviceHash = instanceXMLtoHash(serviceXML)
         serviceHash["CollectionName"] = serviceHash["Name"]
+        serviceHash["Inventorychecksum"] = Digest::SHA256.hexdigest(serviceHash.to_json)
         serviceHash
     end
 
@@ -52,6 +53,7 @@ class ChangeTracking
         ret["Publisher"] = packageHash["Publisher"]
         ret["Size"] = packageHash["Size"]
         ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
+        ret["Inventorychecksum"] = Digest::SHA256.hexdigest(packageHash.to_json)
         ret
     end
 
@@ -67,6 +69,7 @@ class ChangeTracking
         ret["Contents"] = fileInventoryHash["Contents"]
         ret["DateModified"] = OMS::Common.format_time_str(fileInventoryHash["ModifiedDate"])
         ret["DateCreated"] = OMS::Common.format_time_str(fileInventoryHash["CreatedDate"])
+        ret["Inventorychecksum"] = Digest::SHA256.hexdigest(fileInventoryHash.to_json)
         ret
     end
 
@@ -135,6 +138,34 @@ class ChangeTracking
 
         return ret
     end
+
+    def self.computechecksum(inventory_hash)
+        inventory = {}
+        inventoryChecksum = {}
+
+        if inventory_hash.has_key?("packages")
+           inventory = inventory_hash["packages"]
+        end
+
+        if inventory_hash.has_key?("services")
+           inventory = inventory_hash["services"]
+        end
+
+        if inventory_hash.has_key?("fileInventories")
+           inventory = inventory_hash["fileInventories"]
+        end
+
+        inventoryChecksum =  inventory.map { |inventory_item| extractchecksum(inventory_item) }
+        return inventoryChecksum
+    end
+
+    def self.extractchecksum(inventory_item)
+        checksum = {}
+        checksum["CollectionName"] = inventory_item["CollectionName"]
+        checksum["Inventorychecksum"] = inventory_item["Inventorychecksum"]
+        inventory_item.delete("Inventorychecksum")
+        return checksum
+    end 
 
     def self.wrap (inventory_hash, host, time)
         timestamp = OMS::Common.format_time(time)

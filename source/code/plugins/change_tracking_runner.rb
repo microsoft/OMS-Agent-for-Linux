@@ -35,8 +35,9 @@ class ChangeTrackingRunner
 
 			#Transform the XML to HashMap
 			transformed_hash_map = ChangeTracking.transform(xml_string, @@log)
+                        checksum_hash_map = ChangeTracking.computechecksum(transformed_hash_map)
 			output = ChangeTracking.wrap(transformed_hash_map, @hostname, time)
-			hash = Digest::SHA256.hexdigest(output.to_json)
+			hash = checksum_hash_map.to_json
 
 			previousSnapshot = getHash()
 
