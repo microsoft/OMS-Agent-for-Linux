@@ -594,6 +594,10 @@ remove_all()
         WORKSPACE_ID=${ws_id}
         remove_workspace
     done
+
+    # Remove LAD workspace
+    WORKSPACE_ID="LAD"
+    remove_workspace
 }
 
 show_workspace_status()
