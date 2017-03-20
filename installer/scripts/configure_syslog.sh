@@ -199,6 +199,19 @@ PurgeSyslog() {
     fi
 }
 
+RestartSyslog() {
+    if [ -f ${OLD_RSYSLOG_DEST} -a -d ${RSYSLOG_D} ]; then
+        RestartService rsyslog
+    elif [ -f ${OLD_RSYSLOG_DEST} ]; then
+        RestartService rsyslog
+    elif [ -f ${SYSLOG_NG_DEST} ]; then
+        RestartService syslog-ng
+    else
+        echo "No supported syslog daemon found; unable to restart syslog monitoring."
+        return 1
+    fi
+}
+
 SetVariables() {
     WORKSPACE_ID=$1
     SYSLOG_PORT=$2
@@ -206,6 +219,11 @@ SetVariables() {
     if [ -z $WORKSPACE_ID -o -z $SYSLOG_PORT ]; then
         echo "WORKSPACE_ID and SYSLOG_PORT are required" 1>&2
         exit 1
+    fi
+
+    if [ "$WORKSPACE_ID" = "LAD" ]; then
+        RSYSLOG_TEMP=/etc/opt/microsoft/omsagent/sysconf/rsyslog-lad.conf
+        SYSLOG_NG_TEMP=/etc/opt/microsoft/omsagent/sysconf/syslog-ng-lad.conf
     fi
 }
 
@@ -223,8 +241,13 @@ case "$1" in
     purge)
         PurgeSyslog || exit 1
         ;;
+
+    restart)
+        RestartSyslog || exit 1
+        ;;
+
     *)
-        echo "Unknow parameter : $1" 1>&2
+        echo "Unknown parameter : $1" 1>&2
         exit 1
         ;;
 esac
