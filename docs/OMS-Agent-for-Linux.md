@@ -1,4 +1,5 @@
-#Contents
+# Contents
+
 - [Getting Started](getting-started)
   - [The OMS Agent for Linux](#the-oms-agent-for-linux)
 	- [Package Requirements](#package-requirements)
@@ -33,7 +34,7 @@
 	- [Appendix B: Database Permissions Required for MySQL Performance Counters](#appendix-b-database-permissions-required-for-mysql-performance-counters)	
 	- [Appendix C: Managing MySQL monitoring credentials in the authentication file](#appendix-c-managing-mysql-monitoring-credentials-in-the-authentication-file)
 
-#Getting Started
+# Getting Started
 
 ## The OMS Agent for Linux
 The Operations Management Suite Agent for Linux comprises multiple packages. The release file contains the following packages, available by running the shell bundle with `--extract`:

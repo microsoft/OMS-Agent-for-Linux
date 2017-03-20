@@ -11,21 +11,30 @@ With this feature, you'll be able to:
 This is a Public Preview Product. 
 
 ### Supported Linux Operating Systems and Docker:
-* Docker 1.11 thru 1.13
+* Docker 1.11 thru 1.13 
+* Docker CE and EE v17.03
 
 And one of follow OS (x64): 
-* Ubuntu 14.04 LTS, 15.10, 16.04 LTS
-* Amazon Linux 2016.03
+* Ubuntu 14.04 LTS, 16.04 LTS
+* Amazon Linux 2016.09
 * openSUSE 13.2
-* CentOS 7
-* RHEL 7.2
+* openSUSE LEAP 42.2
+* CentOS 7.2, 7.3
+* RHEL 7.2, 7.3
 * SUSE Linux Enterprise Server 12
+
+- ACS Mesosphere DC/OS 1.7.3, 1.8.8
+- ACS Kubernetes 1.4.5
 
 ## Release Note
 Update Information is [here.](https://github.com/Microsoft/OMS-docker/blob/keikoacs/ReleaseNote.md)
 
 ## Setting up
 As a pre-requisite, docker must be running prior to this OMS Linux Agent installation. If you have installed before running docker, please re-install OMS Agent. For more information about docker, please go to https://www.docker.com/.
+
+This set up is not for ACS Mesosphere DC/OS or ACS Kubernetes. 
+- For Mesosphere DC/OS, please see [here.](ACSDCOSHowTo.md)
+- For Kubernetes, please see [here.](https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms). yaml file for the daemon-set is [here.](https://github.com/Microsoft/OMS-docker/tree/master/Kubernetes)
 
 ## Upgrade 
 - If you are using the OMS Agent for Linux, please follow the instruction for the [OMS Agent for Linux.](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/README.md) 
