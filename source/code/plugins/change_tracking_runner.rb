@@ -33,29 +33,32 @@ class ChangeTrackingRunner
 			file = File.open(CHANGE_TRACKING_FILE, "rb")
 			xml_string = file.read; nil # To top the output to show up on STDOUT.
 
+			previousSnapshot = ChangeTracking.getHash(CHANGE_TRACKING_STATE_FILE)
+                        previousInventoryChecksum = {}
+                        if !previousSnapshot.nil?
+                          previousInventoryChecksum = JSON.parse(previousHash["PREV_HASH"])
+                        end
 			#Transform the XML to HashMap
 			transformed_hash_map = ChangeTracking.transform(xml_string, @@log)
-                        checksum_hash_map = ChangeTracking.computechecksum(transformed_hash_map)
-			output = ChangeTracking.wrap(transformed_hash_map, @hostname, time)
-			hash = checksum_hash_map.to_json
+                        currentInventoryChecksum = ChangeTracking.computechecksum(transformed_hash_map)
+                        checksum_filter = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
+                        filtered_transformed_hash_map = ChangeTracking.filterbychecksum(checksum_filter, transformed_hash_map)
 
-			previousSnapshot = getHash()
+			output = ChangeTracking.wrap(filtered_transformed_hash_map, @hostname, time)
+			hash = currentInventoryChecksum.to_json
 
 			# If there is a previous hash
 			if !previousSnapshot.nil?
 				# If you need to force send
 				if force_send_run_interval > 0 and 
 					Time.now.to_i - previousSnapshot[LAST_UPLOAD_TIME].to_i > force_send_run_interval
-					setHash(hash, Time.now)
-				# If the content changed.
-				elsif hash != previousSnapshot[PREV_HASH]
-					setHash(hash, Time.now)
+					ChangeTracking.setHash(hash, Time.now,CHANGE_TRACKING_STATE_FILE)
 				else
-					return {}
+					ChangeTracking.setHash(hash, Time.now, CHANGE_TRACKING_STATE_FILE)
 				end
 			else # Previous Hash did not exist. Write it
 				# and the return the output.
-				setHash(hash, Time.now)
+				ChangeTracking.setHash(hash, Time.now, CHANGE_TRACKING_STATE_FILE)
 			end
 			return output
 		else

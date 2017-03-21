@@ -8,6 +8,8 @@ require_relative 'oms_common'
 
 class ChangeTracking
 
+    PREV_HASH = "PREV_HASH"
+    LAST_UPLOAD_TIME = "LAST_UPLOAD_TIME"
     @@log =  Logger.new(STDERR) #nil
     @@log.formatter = proc do |severity, time, progname, msg|
         "#{severity} #{msg}\n"
@@ -155,17 +157,67 @@ class ChangeTracking
            inventory = inventory_hash["fileInventories"]
         end
 
-        inventoryChecksum =  inventory.map { |inventory_item| extractchecksum(inventory_item) }
+        inventory.each do |inventory_item| 
+           inventoryChecksum[inventory_item["CollectionName"]] = inventory_item["Inventorychecksum"]
+           inventory_item.delete("Inventorychecksum")
+        end
         return inventoryChecksum
     end
 
-    def self.extractchecksum(inventory_item)
-        checksum = {}
-        checksum["CollectionName"] = inventory_item["CollectionName"]
-        checksum["Inventorychecksum"] = inventory_item["Inventorychecksum"]
-        inventory_item.delete("Inventorychecksum")
-        return checksum
+    def self.comparechecksum(previous_inventory, current_inventory)
+        inventoryChecksum =  current_inventory.select { |key, value| lookupchecksum(key, value, previous_inventory) }
+        return inventoryChecksum 
     end 
+
+    def self.lookupchecksum(key, value, previous_inventory)
+        if previous_inventory.has_key?(key)
+           if value == previous_inventory[key]
+              return false
+           end
+        end 
+        return true 
+    end
+
+
+    def self.filterbychecksum(checksum_filter, inventory_hash)
+ 
+        inventory = {}
+
+        if inventory_hash.has_key?("packages")
+           inventory = inventory_hash["packages"]
+        end
+
+        if inventory_hash.has_key?("services")
+           inventory = inventory_hash["services"]
+        end
+
+        if inventory_hash.has_key?("fileInventories")
+           inventory = inventory_hash["fileInventories"]
+        end
+
+        filteredInventory = inventory.select {|inventory_item| filterchecksum(inventory_item["CollectionName"], checksum_filter)}
+
+        if inventory_hash.has_key?("packages")
+           inventory_hash["packages"] = filteredInventory
+        end
+
+        if inventory_hash.has_key?("services")
+           inventory_hash["services"] = filteredInventory
+        end
+
+        if inventory_hash.has_key?("fileInventories")
+           inventory_hash["fileInventories"] = filteredInventory
+        end
+
+        return inventory_hash
+    end
+
+    def self.filterchecksum(key, checksum_filter)
+        if checksum_filter.has_key?(key)
+	   return true
+        end
+        return false 
+    end
 
     def self.wrap (inventory_hash, host, time)
         timestamp = OMS::Common.format_time(time)
@@ -216,5 +268,37 @@ class ChangeTracking
         else
             return {} # Returning null.
         end
+    end
+
+    def self.getHash(file_path)
+                ret = {}
+                if File.exist?(file_path) # If file exists
+                        @@log.debug "Found the file {file_path}. Fetching the Hash"
+                File.open(file_path, "r") do |f| # Open file
+                        f.each_line do |line|
+                        line.split(/\r?\n/).reject{ |l|
+                                !l.include? "=" }.map { |s|
+                                s.split("=")}.map { |key, value|
+                                        ret[key] = value
+                                }
+                        end
+                        end
+                return ret
+            else
+                @@log.debug "Could not find the file #{file_path}"
+                return nil
+            end
+    end
+
+    def self.setHash(prev_hash, last_upload_time, file_path)
+                # File.write('/path/to/file', 'Some glorious content')
+                if File.exist?(file_path) # If file exists
+                        File.open(file_path, "w") do |f| # Open file
+                                f.puts "#{PREV_HASH}=#{prev_hash}"
+                                f.puts "#{LAST_UPLOAD_TIME}=#{last_upload_time}"
+                        end
+                else
+                        File.write(file_path, "#{PREV_HASH}=#{prev_hash}\n#{LAST_UPLOAD_TIME}=#{last_upload_time}")
+                end
     end
 end
