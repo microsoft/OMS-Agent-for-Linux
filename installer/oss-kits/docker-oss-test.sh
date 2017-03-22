@@ -4,8 +4,10 @@ if [ "$(uname -m)" == "x86_64" ]; then
     which docker 1> /dev/null 2> /dev/null
     if [ $? -eq 0 ]; then
         if [ -S "/var/run/docker.sock" ]; then
-            if [ "$( python -c "print int(\"$(docker version --format \'{{.Server.Version}}\')\".split('.')[1]) >= 8" 2>/dev/null)" == "True" ]; then
-                echo "  Docker found. Docker agent will be installed" 1>&2
+            if [ "$( python -c "print int(\"$(docker version --format {{.Server.Version}})\".split('.')[0]) >= 17" 2>/dev/null)" == "True" ]; then
+                echo "  Docker version greater or equal than 17.* found. Docker agent will be installed" 1>&2
+            elif [ "$( python -c "print int(\"$(docker version --format {{.Server.Version}})\".split('.')[1]) >= 11" 2>/dev/null)" == "True" ]; then
+                echo "  Docker version greater or equal than 1.11 found. Docker agent will be installed" 1>&2
             else
                 echo "  The installed version of Docker is not supported. Version 1.8 or greater is required. Docker agent will not be installed." 1>&2
                 exit 1
