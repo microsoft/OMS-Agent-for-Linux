@@ -21,24 +21,11 @@ module Tailscript
     attr_reader :paths
 
     def start
-      target_paths = readable(@paths)
-      start_watchers(target_paths) unless target_paths.empty?
+      start_watchers(@paths) unless @paths.empty?
     end
 
     def shutdown
       @pf_file.close if @pf_file
-    end
-
-    def readable(given_paths)
-      paths = []
-      given_paths.each { |path|
-        if !File.readable?(path)
-          @log.error "#{path} is unreadable. Cannot tail the file."
-        else
-          # When file is not created yet, Dir.glob returns an empty array. So just add when path is static.
-          paths << path
-        end
-      }
     end
 
     def setup_watcher(path, pe)

@@ -52,6 +52,8 @@ module Fluent
         attr_accessor :num_config_sent
         attr_accessor :is_purged
         attr_accessor :omsagentUID
+        attr_accessor :do_capability_check
+        attr_accessor :npmd_version_dir_prefix
 
         CMD_START         = "StartNPM"
         CMD_STOP          = "StopNPM"
@@ -79,12 +81,19 @@ module Fluent
         EXIT_RESTART_BACKOFF_TIMES_SECS = [60, 120, 300, 600, 1200, 2400]
         EXIT_RESTART_BACKOFF_THRES_SECS = 900
 
+        NPMD_AGENT_CAPABILITY = "cap_net_raw+ep"
+        NPMD_VERSION_FILE_DIR = "state"
+        NPMD_VERSION_FILE_NAME = "npm_version"
+
         def start
             @binary_presence_test_string = "npmd_agent" if @binary_presence_test_string.nil?
             @binary_invocation_cmd = @location_agent_binary if @binary_invocation_cmd.nil?
+            @npmd_version_dir_prefix = "/var/opt/microsoft/omsagent" if @npmd_version_dir_prefix.nil?
             kill_all_agent_instances()
             upload_pending_stderrors()
             check_and_update_binaries()
+            @do_capability_check = true unless !@do_capability_check
+            check_agent_capability() unless !@do_capability_check
             setup_endpoint()
             @fqdn = get_fqdn()
             check_and_get_guid()
@@ -94,7 +103,7 @@ module Fluent
             @stop_sync = Mutex.new
             @agent_restart_count = 0
             @last_npmd_start = nil
-            start_npmd()
+            start_npmd() if File.exist?(@location_agent_binary)
             @watch_dog_thread = nil
             @watch_dog_sync = Mutex.new
             @watch_dog_last_pet = Time.new
@@ -332,6 +341,57 @@ module Fluent
 
             File.unlink(_x32BinPath) if File.exist?(_x32BinPath)
             File.unlink(_x64BinPath) if File.exist?(_x64BinPath)
+        end
+
+        def is_filesystem_capabilities_supported
+            _isGetCap = `whereis getcap`
+            _isGetCap.chomp!
+            if _isGetCap == "getcap:"
+                false
+            else
+                true
+            end
+        end
+
+        def get_capability_str(loc)
+            _getCapResult = `getcap #{@location_agent_binary}`
+        end
+
+        def check_agent_capability
+            _deleteVersionFiles = false
+            _deleteBinary = false
+            _isCapSupported = is_filesystem_capabilities_supported()
+
+            if !_isCapSupported
+                _deleteBinary = true
+                log_error "Distro has no support for filesystem capabilities"
+            elsif !File.exist?(@location_agent_binary)
+                _deleteVersionFiles = true
+            else
+                _getCapResult = get_capability_str(@location_agent_binary)
+                if !_getCapResult.include?(NPMD_AGENT_CAPABILITY)
+                    _deleteBinary = true
+                    _deleteVersionFiles = true
+                end
+            end
+
+            if _deleteVersionFiles
+                # Single/First workspace scenario
+                _fileLocPostFix = "#{NPMD_VERSION_FILE_DIR}/#{NPMD_VERSION_FILE_NAME}"
+                _loc = "#{@npmd_version_dir_prefix}/#{_fileLocPostFix}"
+                File.unlink(_loc) if File.exist?(_loc)
+                # Multiple workspace scenario
+                _stateDirs = Dir.glob("#{@npmd_version_dir_prefix}/**/#{NPMD_VERSION_FILE_DIR}")
+                _stateDirs.each do |d|
+                    _loc = "#{d}/#{NPMD_VERSION_FILE_NAME}"
+                    File.unlink(_loc) if File.exist?(_loc)
+                end
+            end
+
+            if _deleteBinary and File.exist?(@location_agent_binary)
+                File.unlink(@location_agent_binary)
+            end
+
         end
 
         def check_and_get_guid

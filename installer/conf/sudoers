@@ -26,7 +26,10 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/bin/service_control
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/docker inspect *
 
 #run tailfilereader.rb
-omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/bin/tailfilereader.rb *
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/plugin/tailfilereader.rb *
+
+#Enable check for if file exists and is readable
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/test -r *
 
 #run hdinsightmanifestreader.rb
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb
@@ -74,5 +77,16 @@ omsagent ALL=(ALL) NOPASSWD: /bin/yum -y update *
 omsagent ALL=(ALL) NOPASSWD: /bin/yum -y upgrade *
 omsagent ALL=(ALL) NOPASSWD: /bin/yum upgrade *
 omsagent ALL=(ALL) NOPASSWD: /bin/yum update *
+
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper refresh
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper list-updates
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper update
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper update *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper --non-interactive update
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper --non-interactive update *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/zypper --non-interactive update --dry-run
+
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/tail *
+omsagent ALL=(ALL) NOPASSWD: /bin/tail *
 
 # End sudo configuration for omsagent

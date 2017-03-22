@@ -31,7 +31,7 @@ module Fluent
     def filter(tag, time, record)
       xml_string = record['xml']
       @log.debug "LinuxUpdates : Filtering xml size=#{xml_string.size}"
-      linuxUpdates = LinuxUpdates.new(@log, nil)
+      linuxUpdates = LinuxUpdates.new(@log)
       return linuxUpdates.transform_and_wrap(xml_string, @hostname, time)
     end # filter
   end # class

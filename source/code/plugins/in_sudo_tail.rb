@@ -38,7 +38,7 @@ module Fluent
 
     BASE_DIR = File.dirname(File.expand_path('..', __FILE__))
     RUBY_DIR = BASE_DIR + '/ruby/bin/ruby '
-    TAILSCRIPT = BASE_DIR + '/bin/tailfilereader.rb '
+    TAILSCRIPT = BASE_DIR + '/plugin/tailfilereader.rb '
 
     def configure(conf)
       super
@@ -99,6 +99,15 @@ module Fluent
       $log.info "#{line}" if line.start_with?('INFO')
     end
  
+    def readable_path(path)
+      if system("sudo test -r #{path}")
+        OMS::Log.info_once("Following tail of #{path}")
+        return path
+      else
+        OMS::Log.warn_once("#{path} is not readable. Cannot tail the file.")
+      end
+    end
+
     def set_system_command
       @paths = @path.split(',').map {|path| path.strip }
       date = Time.now
@@ -107,12 +116,10 @@ module Fluent
         path = date.strftime(path)
         if path.include?('*')
           Dir.glob(path).select { |p|
-            paths += p + " "
-            OMS::Log.info_once("Following tail of #{p}")
+            paths += readable_path(p) + " "
           }
         else
-          paths += path + " "
-          OMS::Log.info_once("Following tail of #{path}")
+          paths += readable_path(path) + " "
         end
       }
       @command = "sudo " << RUBY_DIR << TAILSCRIPT << paths <<  " -p #{@pos_file}"
