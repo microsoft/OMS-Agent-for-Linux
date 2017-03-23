@@ -34,10 +34,9 @@ OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 # These symbols will get replaced during the bundle creation process.
 
 TAR_FILE=<TAR_FILE>
-OMI_PKG=<OMI_PKG>
 OMS_PKG=<OMS_PKG>
 DSC_PKG=<DSC_PKG>
-SCX_PKG=<SCX_PKG>
+SCX_INSTALLER=<SCX_INSTALLER>
 INSTALL_TYPE=<INSTALL_TYPE>
 SCRIPT_LEN=<SCRIPT_LEN>
 SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>
@@ -366,24 +365,6 @@ getInstalledVersion()
     fi
 }
 
-shouldInstall_omi()
-{
-    local versionInstalled=`getInstalledVersion omi`
-    [ "$versionInstalled" = "None" ] && return 0
-    local versionAvailable=`getVersionNumber $OMI_PKG omi-`
-
-    check_version_installable $versionInstalled $versionAvailable
-}
-
-shouldInstall_scx()
-{
-    local versionInstalled=`getInstalledVersion scx`
-    [ "$versionInstalled" = "None" ] && return 0
-    local versionAvailable=`getVersionNumber $SCX_PKG scx-cimprov-`
-
-    check_version_installable $versionInstalled $versionAvailable
-}
-
 shouldInstall_omsagent()
 {
     local versionInstalled=`getInstalledVersion omsagent`
@@ -500,17 +481,8 @@ do
         --version-check)
             printf '%-15s%-15s%-15s%-15s\n\n' Package Installed Available Install?
 
-            # omi
-            versionInstalled=`getInstalledVersion omi`
-            versionAvailable=`getVersionNumber $OMI_PKG omi-`
-            if shouldInstall_omi; then shouldInstall="Yes"; else shouldInstall="No"; fi
-            printf '%-15s%-15s%-15s%-15s\n' omi $versionInstalled $versionAvailable $shouldInstall
-
-            # scx
-            versionInstalled=`getInstalledVersion scx`
-            versionAvailable=`getVersionNumber $SCX_PKG scx-cimprov-`
-            if shouldInstall_scx; then shouldInstall="Yes"; else shouldInstall="No"; fi
-            printf '%-15s%-15s%-15s%-15s\n' scx $versionInstalled $versionAvailable $shouldInstall
+            # scx (and omi)
+            ./bundles/$SCX_INSTALLER --version-check
 
             # OMS agent itself
             versionInstalled=`getInstalledVersion omsagent`
@@ -545,9 +517,10 @@ do
             echo "" >&2
             echo "SCRIPT_INDIRECT: $SCRIPT_INDIRECT" >&2
             echo "SCRIPT_DIR:      $SCRIPT_DIR" >&2
-            echo "EXTRACT DIR:     $EXTRACT_DIR" >&2
+            echo "EXTRACT_DIR:     $EXTRACT_DIR" >&2
             echo "SCRIPT:          $SCRIPT" >&2
             echo >&2
+            debugMode=true
             set -x
             shift 1
             ;;
@@ -643,7 +616,13 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
 
         # If MDSD is installed and we're just removing (not purging), leave SCX
 
-        if [ ! -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd -o "$installMode" = "P" ]; then
+        MDSD_INSTALLED=1
+        check_if_pkg_is_installed azsec-mdsd
+        if [ $? -eq 0 -o -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd ]; then
+            MDSD_INSTALLED=0
+        fi
+
+        if [ $MDSD_INSTALLED -ne 0 -o "$installMode" = "P" ]; then
             if [ -f /opt/microsoft/scx/bin/uninstall ]; then
                 /opt/microsoft/scx/bin/uninstall $installMode
             else
@@ -767,13 +746,19 @@ case "$installMode" in
         if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
             echo "Installing OMS agent ..."
 
-            pkg_add_list $OMI_PKG omi
-            pkg_add_list $SCX_PKG scx
             pkg_add_list $OMS_PKG omsagent
 
             python_ctypes_installed
             if [ $? -eq 0 ]; then
                 pkg_add_list $DSC_PKG omsconfig
+            fi
+
+            # Install SCX (and OMI)
+            [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+            [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
+            ./bundles/${SCX_INSTALLER} --install $FORCE $DEBUG
+            if [ "$?" -ne 0 ]; then
+                cleanup_and_exit 1
             fi
 
             # Now actually install of the "queued" packages
@@ -816,12 +801,6 @@ case "$installMode" in
     U)
         echo "Updating OMS agent ..."
 
-        shouldInstall_omi
-        pkg_upd_list $OMI_PKG omi $?
-
-        shouldInstall_scx
-        pkg_upd_list $SCX_PKG scx $?
-
         shouldInstall_omsagent
         pkg_upd_list $OMS_PKG omsagent $?
 
@@ -829,6 +808,14 @@ case "$installMode" in
         if [ $? -eq 0 ]; then
             shouldInstall_omsconfig
             pkg_upd_list $DSC_PKG omsconfig $?
+        fi
+
+        # Install SCX (and OMI)
+        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+        [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
+        ./bundles/${SCX_INSTALLER} --upgrade $FORCE $DEBUG
+        if [ "$?" -ne 0 ]; then
+            cleanup_and_exit 1
         fi
 
         # Now actually install of the "queued" packages

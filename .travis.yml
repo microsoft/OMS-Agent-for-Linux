@@ -7,8 +7,8 @@ git:
 
 before_install:
   - sudo apt-get update -qq
-  # Pre-reqs for building omsagent
-  - sudo apt-get install -qq pkg-config make ruby bison g++ rpm librpm-dev libpam0g-dev libssl-dev libmysqlclient-dev
+  # Pre-reqs for building omsagent and omi
+  - sudo apt-get install -qq pkg-config make ruby bison g++ rpm librpm-dev libpam0g-dev libssl-dev libmysqlclient-dev libkrb5-dev
   - rvm use system                 # Use system ruby (v1.9.3p484) instead of ruby provided by rvm
   - sed -i 's/--no-ri//' ~/.gemrc  # ri data from installed gems is required for our build
 
