@@ -89,11 +89,12 @@ fi
 
 INTERMEDIATE_DIR=`(cd $INTERMEDIATE; pwd -P)`
 
+cd $INTERMEDIATE/bundles
+SCX_INSTALLER=`ls scx-*.sh | tail -1`
+
 # Switch to one of the output directories to avoid directory prefixes
 cd $INTERMEDIATE/098
 
-SCX_PACKAGE=`ls scx-*.rpm | sed 's/.rpm$//' | tail -1`
-OMI_PACKAGE=`ls omi-*.rpm | sed 's/.rpm$//' | tail -1`
 OMS_PACKAGE=`ls omsagent-*.rpm | sed 's/.rpm$//' | tail -1`
 DSC_PACKAGE=`ls omsconfig-*.rpm | sed 's/.rpm$//' | tail -1`
 
@@ -138,10 +139,9 @@ fi
 # Edit the bundle file for hard-coded values
 sed -i "s/TAR_FILE=<TAR_FILE>/TAR_FILE=$TAR_FILE/" $BUNDLE_FILE
 
-sed -i "s/OMI_PKG=<OMI_PKG>/OMI_PKG=$OMI_PACKAGE/" $BUNDLE_FILE
 sed -i "s/OMS_PKG=<OMS_PKG>/OMS_PKG=$OMS_PACKAGE/" $BUNDLE_FILE
 sed -i "s/DSC_PKG=<DSC_PKG>/DSC_PKG=$DSC_PACKAGE/" $BUNDLE_FILE
-sed -i "s/SCX_PKG=<SCX_PKG>/SCX_PKG=$SCX_PACKAGE/" $BUNDLE_FILE
+sed -i "s/SCX_INSTALLER=<SCX_INSTALLER>/SCX_INSTALLER=$SCX_INSTALLER/" $BUNDLE_FILE
 sed -i "s/INSTALL_TYPE=<INSTALL_TYPE>/INSTALL_TYPE=$INSTALL_TYPE/" $BUNDLE_FILE
 
 SCRIPT_LEN=`wc -l < $BUNDLE_FILE | sed 's/ //g'`

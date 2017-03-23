@@ -63,7 +63,12 @@ pkg_rm omsagent
 
 # If MDSD is installed and we're just removing (not purging), leave SCX
 
-if [ ! -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd -o "$installMode" = "P" ]; then
+MDSD_INSTALLED=1
+check_if_pkg_is_installed azsec-mdsd
+if [ $? -eq 0 -o -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd ]; then
+    MDSD_INSTALLED=0
+fi
+if [ $MDSD_INSTALLED -ne 0 -o "$installMode" = "P" ]; then
     if [ -f /opt/microsoft/scx/bin/uninstall ]; then
 	/opt/microsoft/scx/bin/uninstall $installMode
     else
