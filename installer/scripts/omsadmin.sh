@@ -813,6 +813,9 @@ copy_omsagent_d_conf()
 
     update_path $OMSAGENTD_DIR/monitor.conf
     update_path $OMSAGENTD_DIR/heartbeat.conf
+    if [ -f $OMSAGENTD_DIR/container.conf ] ; then
+        update_path $OMSAGENTD_DIR/container.conf
+    fi
 
     chown_omsagent $OMSAGENTD_DIR/*
 }
