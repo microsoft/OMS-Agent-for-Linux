@@ -1,6 +1,6 @@
 ## How to add a new gem to omsagent bundle installer
 
-######To add a new Ruby gem into OMSAgent bundle if you have the .gem file on your local machine, you need to follow these steps:
+###### To add a new Ruby gem into OMSAgent bundle if you have the .gem file on your local machine, you need to follow these steps:
 
 Let us take mysql_2.0.gem  as an example. First, you will need to update the private build on your local machine with the new gem:
 * Setup a private build system on your local machine. Configure the build with --enable-ulinux. And build the bundle.
@@ -18,7 +18,7 @@ Let us take mysql_2.0.gem  as an example. First, you will need to update the pri
 Now, perform another make to build the omsagent bundle with all the changes. 
 Then , install the bundle and validate the ruby folder under /opt/microsoft/omsagent/ruby has all the new changes.
   
-######To add a new Ruby gem into OMSAgent bundle if you DO NOT have the .gem file on you local machine, you need to follow these steps:
+###### To add a new Ruby gem into OMSAgent bundle if you DO NOT have the .gem file on you local machine, you need to follow these steps:
 
 Let us take mysql2 as an example. First, you will need to get the mysql_2.0.gem , and update the private branch:
 * Install OMS agent on your local machine.

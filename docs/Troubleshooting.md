@@ -208,7 +208,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
  * `[DATETIME] [error]: file not accessible by omsagent.`
 * Known Issue with Race Condition fixed in OMS Agent for Linux version 1.1.0-217
 
-####Resolutions
+#### Resolutions
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
 * In the OMS Portal under Settings ensure that the following checkbox is checked ![](pictures/CustomLogLinuxEnabled.png?raw=true)
