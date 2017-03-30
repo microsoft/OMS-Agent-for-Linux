@@ -263,6 +263,9 @@ pkg_rm() {
     else
         rpm --erase ${1}
     fi
+    if [ $? -ne 0 ]; then
+        echo "----- Ignore previous errors for package: $1 -----"
+    fi
 }
 
 # $1 - The filename of the package to be installed
