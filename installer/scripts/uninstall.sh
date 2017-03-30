@@ -41,6 +41,9 @@ pkg_rm() {
     else
         rpm --erase ${1}
     fi
+    if [ $? -ne 0 ]; then
+        echo "----- Ignore previous errors for package: $1 -----"
+    fi	
 }
 
 # $1 - The name of the package to check as to whether it's installed
