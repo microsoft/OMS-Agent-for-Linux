@@ -1,4 +1,5 @@
-#Contents
+# Contents
+
 - [Getting Started](getting-started)
   - [The OMS Agent for Linux](#the-oms-agent-for-linux)
 	- [Package Requirements](#package-requirements)
@@ -8,13 +9,6 @@
 - [Onboarding with Operations Management Suite](#onboarding-with-operations-management-suite)
   - [Onboarding using the command line](#onboarding-using-the-command-line)
   - [Onboarding using a file](#onboarding-using-a-file)	
-  - [Onboard a secondary workspace](#onboard-a-secondary-workspace)
-  - [Onboard a secondary workspace using a file](#onboard-a-secondary-workspace-using-a-file)
-- [Manage Workspaces](#manage-workspaces)
-  - [List all workspaces](#list-all-workspaces)
-  - [Remove a workspace](#remove-a-workspace)
-  - [Remove all workspaces](#remove-all-workspaces)
-- [Manage omsagent Daemon](#manage-omsagent-daemon)
 - [Viewing Linux Data](#viewing-linux-data)
 - [Configuring Data Collection](#configuring-data-collection)
 	- [Configuring Syslog collection from the OMS portal](#configuring-syslog-collection-from-the-oms-portal)
@@ -33,7 +27,7 @@
 	- [Appendix B: Database Permissions Required for MySQL Performance Counters](#appendix-b-database-permissions-required-for-mysql-performance-counters)	
 	- [Appendix C: Managing MySQL monitoring credentials in the authentication file](#appendix-c-managing-mysql-monitoring-credentials-in-the-authentication-file)
 
-#Getting Started
+# Getting Started
 
 ## The OMS Agent for Linux
 The Operations Management Suite Agent for Linux comprises multiple packages. The release file contains the following packages, available by running the shell bundle with `--extract`:
@@ -81,32 +75,27 @@ The OMS agent for Linux is provided in a self-extracting and installable shell s
 
 **To install and onboard directly:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -w <workspace id> -s <shared key>
 ```
 
 **To install and onboard directly using an HTTP proxy:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
 ```
 
 **To install and onboard to a workspace in FairFax:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -d opinsights.azure.us
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -d opinsights.azure.us
 ```
 
 **To install the agent packages and onboard at a later time:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade
-```
-
-**To install and onboard to a non-primary workspace:**
-```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -w <workspace id> -s <shared key> -m <multi-homing marker>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade
 ```
 
 **To extract the agent packages from the bundle without installing:**
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --extract
+sudo sh ./omsagent-*.universal.x64.sh --extract
 ```
 
 **All bundle operations:**
@@ -132,13 +121,11 @@ Options:
   -p conf, --proxy conf  Use <conf> as the proxy configuration.
                          ex: -p [protocol://][user:password@]proxyhost[:port]
   -a id, --azure-resource id Use Azure Resource ID <id>.
-  -m marker, --multi-homing-marker marker
-                         Onboard as a multi-homing(Non-Primary) workspace.
 
   -? | --help            shows this usage text.
 ```
 
-##Configuring the agent for use with an HTTP proxy server
+## Configuring the agent for use with an HTTP proxy server
 Communication between the agent and OMS services can use an HTTP or HTTPS proxy server. Both anonymous and basic authentication (username/password) proxies are supported. 
 
 **Proxy Configuration**
@@ -162,7 +149,7 @@ The proxy server can be specified during installation or directly in a file (at 
 The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use. 
 
 ```
-sudo sh ./omsagent-1.3.0-1.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
 ```
 
 **Define the proxy configuration in a file **
@@ -172,14 +159,14 @@ proxyconf="https://proxyuser:proxypassword@proxyserver01:8080"
 sudo echo $proxyconf >>/etc/opt/microsoft/omsagent/proxy.conf
 sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf
 sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf
-sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **Removing the proxy configuration**
 To remove a previously defined proxy configuration and revert to direct connectivity, remove the proxy.conf file:
 ```
 sudo rm /etc/opt/microsoft/omsagent/proxy.conf
-sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 # Onboarding with Operations Management Suite
@@ -204,56 +191,6 @@ SHARED_KEY=<Shared Key>
 `sudo /opt/microsoft/omsagent/bin/omsadmin.sh`
 4.	The file will be deleted on successful onboarding
 
-## Onboard a secondary workspace
-From 1.3.0-1, OMSAgent supports to onboard the agent to multiple workspaces.
-Run the omsadmin.sh command supplying the workspace id and key for your workspace, and -m to indicate secondary workspace:
-```
-cd /opt/microsoft/omsagent/bin
-sudo ./omsadmin.sh -w <workspace id> -s <shared key> -m <multi-homing marker>
-```
-NOTE: Secondary workspace is currently unable to pull the configuration from OMS service. We are working on it.
-
-## Onboard a secondary workspace using a file
-Reference [Onboarding using a file](#onboarding-using-a-file)
-Add the following line into /etc/omsagent-onboard.conf
-```
-MULTI_HOMING_MARKER=<any string, e.g. MySecondaryWS>
-```
-
-# Manage Workspaces
-From 1.3.0-1, OMSAgent supports onboarding to multiple workspaces. Here are the commands for workspace management:
-
-## List all workspaces
-```
-sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -l
-```
-
-Sample result for an agent onboarded to 2 workspaces:
-```
-Primary Workspace: 000c7bcd-28d2-453a-84bd-8523e396f600    Success(OMSAgent Registered)
-Workspace(MySecondaryWS): ffffb0c0-7fac-4159-987c-000271282eff    Success(OMSAgent Registered)
-```
-
-## Remove a workspace
-```
-sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -x <workspace id>
-```
-
-## Remove all workspaces
-```
-sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -X
-```
-
-# Manage omsagent Daemon
-From 1.3.0-1, we will register omsagent daemon for each onboarded workspace. The daemon name is omsagent-\<workspace-id>
-You can use /opt/microsoft/omsagent/bin/service_control command to operate the daemon.
-
-```
-sudo sh /opt/microsoft/omsagent/bin/service_control start|stop|restart|enable|disable [<workspace id>]
-```
-
-The workspace id is an optional parameter. If it is specified, it will only operate on the workspace-specific daemon.
-Otherwise, it will operate on all the daemons.
 
 # Viewing Linux Data
 ## Viewing Syslog events
@@ -310,7 +247,7 @@ To define a default user account for the MySQL server on localhost:
 ```
 sudo su omsagent -c '/opt/microsoft/mysql-cimprov/bin/mycimprovauth default 127.0.0.1 <username> <password>'
 
-sudo /opt/omi/bin/service_control restart [<workspace id>]
+sudo /opt/omi/bin/service_control restart
 ```
 Alternatively, you can specify the required MySQL credentials in a file, by creating the file: `/var/opt/microsoft/mysql-cimprov/auth/omsagent/mysql-auth`. For more information on managing MySQL credentials for monitoring through the mysql-auth file, see **Appendix C** of this document.
 
@@ -330,7 +267,7 @@ sudo /opt/microsoft/apache-cimprov/bin/apache_config.sh -u
 ## Configuring Collected Data on the Linux Computer
 Syslog events and performance counters to collect can be specified in configuration files on the Linux computers. *If you opt to configure data collection through editing of the agent configuration files, you should disable the centralized configuration or add custom configurations to the `omsagent.d/` directory.*  Instructions are provided below to configure data collection in the agent’s configuration files as well as to disable central configuration for all OMS agents for Linux, or individual computers. 
 
-###omsagent.d
+### omsagent.d
 The directory `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d` is an *include* path for omsagent configuration files. Any `*.conf` files in this directory will be included in the configuration for omsagent. The files must be readable by the omsagent user, and will not be modified by centralized configuration options. This allows specific customizations to be added on the Linux machine, while still using centralized configuration. 
 
 ### Disabling central configuration
@@ -388,7 +325,7 @@ destination warning_oms { tcp("127.0.0.1" port(25224)); };
 log { source(src); filter(f_warning_oms); destination(warning_oms); };
 ```
 
-###Enabling high volume syslog event collection
+### Enabling high volume syslog event collection
 By default, the OMS Agent for Linux receives events from the syslog daemon over UDP. In cases where a Linux machine is expected to collect a high volume of syslog events, such as when a Linux agent is receiving events from other devices, the configuration should be modified to use TCP transport between the syslog daemon and OMS agent. 
  
 **To switch from UDP to TCP for syslog:**
@@ -412,7 +349,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 *	Restart the omsagent and syslog daemons:
 
 	```
-	sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+	sudo /opt/microsoft/omsagent/bin/service_control restart
 	sudo service rsyslog restart
 	```
 *	Confirm that no errors are reported in the omsagent log:
@@ -571,7 +508,7 @@ The destination of this file depends on the Linux flavor of your machine.
     ```
 4. Restart the OMS Agent: 
     ```
-    sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+    sudo /opt/microsoft/omsagent/bin/service_control restart
     ```
 
 ##### CollectD metrics to OMS Log Analytics schema conversion
@@ -637,7 +574,7 @@ Example separate configuration file `exec-json.conf` for /etc/opt/microsoft/omsa
 </match>
 ```
 
-Once complete, restart the OMS Agent for Linux service: `sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
+Once complete, restart the OMS Agent for Linux service: `sudo /opt/microsoft/omsagent/bin/service_control restart` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
 
 **Example:**The following custom tag `tag oms.api.tomcat` shows up as `Type=tomcat_CL` in Log Analytics
 
@@ -683,7 +620,7 @@ sudo usermod -a -G nagios omsagent
 *	Restart the omsagent daemon
 
 ```
-sudo sh /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]
+sudo sh /opt/microsoft/omsagent/bin/service_control restart
 ```
 ### Zabbix Alerts
 To collect alerts from a Zabbix server, you'll perform similiar steps to those for Nagios above, except you'll need to specify a user and password in *clear text*. This is not ideal, but we recommend that you create the user and grant permissions to monitor onlu.
@@ -708,7 +645,7 @@ The logs for the omsconfig (agent configuration) program can be found at:
 Logs for the OMI and SCX components (which provide performance metrics data) can be found at:
 `/var/opt/omi/log/ and /var/opt/microsoft/scx/log`
 
-##Log Rotation Configuration##
+## Log Rotation Configuration
 The log rotate configuration for omsagent can be found at:
 `/etc/logrotate.d/omsagent-<workspace id>`
 
@@ -754,7 +691,7 @@ The Operations Management Suite Agent for Linux shares agent binaries with the S
 `sudo /opt/omi/bin/service_control restart`
 
 # Known Limitations
-* ##Azure Diagnostics
+* ## Azure Diagnostics
 For Linux virtual machines running in Azure, additional steps may be required to allow data collection by Azure Diagnostics and Operations Management Suite. **Version 2.2** of the Diagnostics Extension for Linux is required for compatibility with the OMS Agent for Linux. 
 
 	For more information on installing and configuring the Diagnostic Extension for Linux, see [this article](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-diagnostic-extension/#use-the-azure-cli-command-to-enable-linux-diagnostic-extension).
@@ -780,10 +717,10 @@ For Linux virtual machines running in Azure, additional steps may be required to
 	}
 	```	
 
-* ##Sysklog is not supported
+* ## Sysklog is not supported
 Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog. For more information on replacing sysklog with rsyslog, see: http://wiki.rsyslog.com/index.php/Rsyslog_on_CentOS_success_story#Install_the_newly_built_rsyslog_RPM
 
-#Appendices
+# Appendices
 
 ## Appendix: Available Performance Metrics
  **Object Name** 	| **Counter Name** 	
@@ -871,7 +808,7 @@ System | Users
 
 *Note: For Network Statistics the calculation is from start of the omiagent process
  
-##Appendix B: Database Permissions Required for MySQL Performance Counters
+## Appendix B: Database Permissions Required for MySQL Performance Counters
 *Note: To grant permissions to a MySQL monitoring user the granting user must have the ‘GRANT option’ privilege as well as the privilege being granted. *
 
 In order for the MySQL User to return performance data the user will need access to the following queries
@@ -887,7 +824,7 @@ GRANT SELECT ON information_schema.* TO ‘monuser’@’localhost’;
 GRANT SELECT ON mysql.* TO ‘monuser’@’localhost’;
 ```
 
-##Appendix C: Managing MySQL monitoring credentials in the authentication file
+## Appendix C: Managing MySQL monitoring credentials in the authentication file
 
 **Configuring the MySQL OMI Provider**
 The MySQL OMI provider requires a preconfigured MySQL user and installed MySQL client libraries in order to query the performance/health information from the MySQL instance.

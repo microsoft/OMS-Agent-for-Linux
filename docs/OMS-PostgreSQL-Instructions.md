@@ -26,7 +26,7 @@
 `sudo service postgresql restart` or `/etc/init.d/postgresql restart`
 
 6. Restart the OMS agent:
-`sudo sh /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]`
+`sudo sh /opt/microsoft/omsagent/bin/service_control restart`
 
 7. Confirm that there are no errors in the OMS Agent log:
 `tail /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log`
