@@ -1,8 +1,8 @@
 ### What is the OMS shell bundle?  The OMS agent for Linux is provided
 in a shell script bundle which is essentially a shell script to which
 a binary payload is appended. This payload is a tar file that is
-created by copying the appropriate .deb and .rpm files collected from
-the specified version of omi, dsc and scx, as well as the oss-kits.
+created by copying the appropriate .sh, .deb, and .rpm files collected from
+the specified version of dsc and scx (including omi), as well as the oss-kits.
 
 ### How is it built?
 [create_bundle.sh](../installer/bundle/create_bundle.sh)
@@ -18,7 +18,7 @@ blank for an all-inclusive bundle
 This script edits the bundle file i.e.
 [bundle_skel.sh](../installer/bundle/bundle_skel.sh)
 and enters hard-coded values for the variables: TAR_FILE, &nbsp;
-OMI_PKG, &nbsp; OMS_PKG,  &nbsp;DSC_PKG,  &nbsp;SCX_PKG,
+OMS_PKG,  &nbsp;DSC_PKG,  &nbsp;SCX_INSTALLER,
 &nbsp;SCRIPT_LEN,  &nbsp;SCRIPT_LEN_PLUS_ONE  &nbsp;and &nbsp;
 INSTALL_TYPE. After these values are in place, the script creates the
 bundle in the target directory.

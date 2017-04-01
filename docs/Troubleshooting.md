@@ -208,7 +208,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
  * `[DATETIME] [error]: file not accessible by omsagent.`
 * Known Issue with Race Condition fixed in OMS Agent for Linux version 1.1.0-217
 
-####Resolutions
+#### Resolutions
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
 * In the OMS Portal under Settings ensure that the following checkbox is checked ![](pictures/CustomLogLinuxEnabled.png?raw=true)
@@ -222,7 +222,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 **Background:** Instead of the OMS Agent for Linux user running as a privileged user, `root` - The OMS Agent for Linux runs as the `omsagent` user. In most cases explicit permission must be granted to this user in order for certain files to be read.
 * To grant permission to `omsagent` user run the following commands
  * Add the `omsagent` user to specific group `sudo usermod -a -G <GROUPNAME> <USERNAME>`
- * Grant universal read access to the required file `sudo chmod -R ugo+rw <FILE DIRECTORY>`
+ * Grant universal read access to the required file `sudo chmod -R ugo+rx <FILE DIRECTORY>`
 
 * There is a known issue with a Race Condition in OMS Agent for Linux version <1.1.0-217. After updating to the latest agent run the following command to get the latest version of the output plugin
  * `sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`

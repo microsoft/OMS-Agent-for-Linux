@@ -594,6 +594,10 @@ remove_all()
         WORKSPACE_ID=${ws_id}
         remove_workspace
     done
+
+    # Remove LAD workspace
+    WORKSPACE_ID="LAD"
+    remove_workspace
 }
 
 show_workspace_status()
@@ -809,6 +813,9 @@ copy_omsagent_d_conf()
 
     update_path $OMSAGENTD_DIR/monitor.conf
     update_path $OMSAGENTD_DIR/heartbeat.conf
+    if [ -f $OMSAGENTD_DIR/container.conf ] ; then
+        update_path $OMSAGENTD_DIR/container.conf
+    fi
 
     chown_omsagent $OMSAGENTD_DIR/*
 }

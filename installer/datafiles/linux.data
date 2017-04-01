@@ -10,7 +10,9 @@ CONF_SYSLOG:  '/opt/microsoft/omsagent/bin/configure_syslog.sh'
 
 %Files
 /etc/opt/microsoft/omsagent/sysconf/rsyslog.conf;                       installer/conf/rsyslog.conf;                           644; root; root
+/etc/opt/microsoft/omsagent/sysconf/rsyslog-lad.conf;                   installer/conf/rsyslog-lad.conf;                       644; root; root
 /etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf;                     installer/conf/syslog-ng.conf;                         644; root; root
+/etc/opt/microsoft/omsagent/sysconf/syslog-ng-lad.conf;                 installer/conf/syslog-ng-lad.conf;                     644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux;                    installer/scripts/omsagent.ulinux;                     755; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    644; root; root
