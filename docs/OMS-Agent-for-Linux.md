@@ -80,6 +80,8 @@ sudo sh ./omsagent-*.universal.x64.sh --upgrade -w <workspace id> -s <shared key
 **To install and onboard directly using an HTTP proxy:**
 ```
 sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo cp /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **To install and onboard to a workspace in FairFax:**
@@ -149,22 +151,25 @@ The `-p` or `--proxy` argument to the omsagent installation bundle specifies the
 
 ```
 sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo cp /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **Define the proxy configuration in a file **
-The proxy configuration is set in the file: `/etc/opt/microsoft/omsagent/proxy.conf` This file can be directly created or edited, but must be readable by the omsagent user. For example:
+The proxy configuration is set in the file: `/etc/opt/microsoft/omsagent/proxy.conf` and also read from a second file: `/etc/opt/microsoft/omsagent/conf/proxy.conf` These file can be directly created or edited, but must be readable by the omsagent user. For example:
 ```
 proxyconf="https://proxyuser:proxypassword@proxyserver01:8080"
 sudo echo $proxyconf >>/etc/opt/microsoft/omsagent/proxy.conf
-sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf
-sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf
+sudo cp /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
 sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **Removing the proxy configuration**
 To remove a previously defined proxy configuration and revert to direct connectivity, remove the proxy.conf file:
 ```
-sudo rm /etc/opt/microsoft/omsagent/proxy.conf
+sudo rm /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
 sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
