@@ -343,15 +343,6 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	@echo "========================= Performing Building .tar file"
 
-	# Note: We take care to only copy the latest version of OMI if there are multiple versions
-	$(RM) $(INTERMEDIATE_DIR)/098/omi-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omi-*.{rpm,deb}
-
-	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
-
-	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
-	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
-
 	# Gather the DSC bits that we need
 	$(RM) $(INTERMEDIATE_DIR)/098/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb}
 
