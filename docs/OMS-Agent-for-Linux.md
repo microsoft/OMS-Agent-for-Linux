@@ -81,6 +81,8 @@ sudo sh ./omsagent-*.universal.x64.sh --upgrade -w <workspace id> -s <shared key
 **To install and onboard directly using an HTTP proxy:**
 ```
 sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo cp /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **To install and onboard to a workspace in FairFax:**
@@ -150,22 +152,25 @@ The `-p` or `--proxy` argument to the omsagent installation bundle specifies the
 
 ```
 sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+sudo cp /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
-**Define the proxy configuration in a file **
-The proxy configuration is set in the file: `/etc/opt/microsoft/omsagent/proxy.conf` This file can be directly created or edited, but must be readable by the omsagent user. For example:
+**Define the proxy configuration in a file**
+The proxy configuration is set in these files: `/etc/opt/microsoft/omsagent/proxy.conf` and `/etc/opt/microsoft/omsagent/conf/proxy.conf` These files can be directly created or edited, but must be readable by the omsagent user. Both files must be updated should the proxy configuration change. For example:
 ```
 proxyconf="https://proxyuser:proxypassword@proxyserver01:8080"
 sudo echo $proxyconf >>/etc/opt/microsoft/omsagent/proxy.conf
-sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf
-sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf
+sudo cp /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
+sudo chmod 600 /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
 sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
 **Removing the proxy configuration**
 To remove a previously defined proxy configuration and revert to direct connectivity, remove the proxy.conf file:
 ```
-sudo rm /etc/opt/microsoft/omsagent/proxy.conf
+sudo rm /etc/opt/microsoft/omsagent/proxy.conf /etc/opt/microsoft/omsagent/conf/proxy.conf
 sudo /opt/microsoft/omsagent/bin/service_control restart
 ```
 
@@ -362,7 +367,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 If you are using selinux, the semanage tool can be used to allow TCP traffic for the port 25224:
 `sudo semanage port -a -t syslogd_port_t -p tcp 25224`
 
-*		If you would like the omsagent to continue to use UDP for local syslog events but listen for remote syslog events with TCP, you can add another `<source>` element to the file using an alternate **port**:
+*If you would like the omsagent to continue to use UDP for local syslog events but listen for remote syslog events with TCP, you can add another `<source>` element to the file using an alternate **port**:
 ```
 <source>
 	  type syslog
@@ -576,7 +581,7 @@ Example separate configuration file `exec-json.conf` for /etc/opt/microsoft/omsa
 
 Once complete, restart the OMS Agent for Linux service: `sudo /opt/microsoft/omsagent/bin/service_control restart` and the data shows up in Log Analytics under `Type=<FLUENTD_TAG>_CL`.
 
-**Example:**The following custom tag `tag oms.api.tomcat` shows up as `Type=tomcat_CL` in Log Analytics
+**Example:** The following custom tag `tag oms.api.tomcat` shows up as `Type=tomcat_CL` in Log Analytics
 
 **Note:** Nested JSON data sources are supported, but are indexed based off of parent field. The following JSON data
 ```
@@ -696,26 +701,26 @@ For Linux virtual machines running in Azure, additional steps may be required to
 
 	For more information on installing and configuring the Diagnostic Extension for Linux, see [this article](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-diagnostic-extension/#use-the-azure-cli-command-to-enable-linux-diagnostic-extension).
 
-	**Upgrading the Linux Diagnostics Extension from 2.0 to 2.2**
-	**Azure CLI **
-	*ASM:*
-	```
-	azure vm extension set -u <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.0
-	azure vm extension set <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.2 --private-config-path PrivateConfig.json
-	```
-	*ARM:*
-	```
-	azure vm extension set -u <resource-group> <vm-name> Microsoft.Insights.VMDiagnosticsSettings Microsoft.OSTCExtensions 2.0
-	azure vm extension set <resource-group> <vm-name> LinuxDiagnostic Microsoft.OSTCExtensions 2.2 --private-config-path PrivateConfig.json
-	```
+**Upgrading the Linux Diagnostics Extension from 2.0 to 2.2**
+**Azure CLI **
+*ASM:*
+```
+azure vm extension set -u <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.0
+azure vm extension set <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.2 --private-config-path PrivateConfig.json
+```
+*ARM:*
+```
+azure vm extension set -u <resource-group> <vm-name> Microsoft.Insights.VMDiagnosticsSettings Microsoft.OSTCExtensions 2.0
+azure vm extension set <resource-group> <vm-name> LinuxDiagnostic Microsoft.OSTCExtensions 2.2 --private-config-path PrivateConfig.json
+```
 
-	*Note: These command examples reference a file named PrivateConfig.json. The format of that file should be:*
-	```
-	{
+*Note: These command examples reference a file named PrivateConfig.json. The format of that file should be:*
+```
+{
     "storageAccountName":"the storage account to receive data",
     "storageAccountKey":"the key of the account"
-	}
-	```	
+}
+```	
 
 * ## Sysklog is not supported
 Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog. For more information on replacing sysklog with rsyslog, see: http://wiki.rsyslog.com/index.php/Rsyslog_on_CentOS_success_story#Install_the_newly_built_rsyslog_RPM
