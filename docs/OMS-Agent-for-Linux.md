@@ -137,13 +137,18 @@ The proxy configuration value has the following syntax:
 Property|Description
 -|-
 Protocol|http or https
-user|Optional username for proxy authentication
-password|Optional password for proxy authentication
+user|User for proxy authentication; can be placeholder text
+password|Password for proxy authentication; can be placeholder text
 proxyhost|Address or FQDN of the proxy server
-port|Optional port number for the proxy server
+port|Port number for the proxy server
 
 For example:
 http://user01:password@proxy01.contoso.com:8080
+
+*Note: Although you do not have any user/password set for the proxy, you will still need to add a pseudo user/password. This can be any username or password. (In the future release, these pseudo settings will not be mandatory.)*
+
+For example: 
+http://pseudouser01:pseudopassword@proxy01.contoso.com:8080
 
 The proxy server can be specified during installation or directly in a file (at any point). 
 
