@@ -44,8 +44,8 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 ### [Zabbix alert collection](docs/OMS-Agent-for-Linux.md#viewing-zabbix-alerts)
 ### [CollectD Metrics Collection](docs/OMS-Agent-for-Linux.md#collectd-metrics)
 ### [Custom JSON Data](docs/OMS-Agent-for-Linux.md#custom-json-data-sources)
-### [VMware Monitoring] (docs/VMware-Instruction.md)
-## [Full documentation](docs/OMS-Agent-for-Linux.md)
+### [VMware Monitoring](docs/VMware-Instruction.md)
+### [Full documentation](docs/OMS-Agent-for-Linux.md)
 
 ## [Troubleshooting Guide](docs/Troubleshooting.md)
 

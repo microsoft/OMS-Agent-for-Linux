@@ -27,14 +27,15 @@ And one of following OS (x64):
 - ACS Kubernetes 1.4.5
 
 ## Release Note
-Update Information is [here.](https://github.com/Microsoft/OMS-docker/blob/keikoacs/ReleaseNote.md)
+Update Information is [here.](https://github.com/Microsoft/OMS-docker/blob/master/ReleaseNote.md)
 
 ## Setting up
 As a pre-requisite, docker must be running prior to this OMS Linux Agent installation. If you have installed before running docker, please re-install OMS Agent. For more information about docker, please go to https://www.docker.com/.
 
 This set up is not for ACS Mesosphere DC/OS or ACS Kubernetes. 
-- For Mesosphere DC/OS, please see [here.](ACSDCOSHowTo.md)
-- For Kubernetes, please see [here.](https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms). yaml file for the daemon-set is [here.](https://github.com/Microsoft/OMS-docker/tree/master/Kubernetes)
+
+- For Mesosphere DC/OS, please see [here.](https://docs.microsoft.com/en-us/azure/container-service/container-service-monitoring-oms)
+- For Kubernetes, please see [here.](https://docs.microsoft.com/en-us/azure/container-service/container-service-kubernetes-oms) yaml file for the daemon-set is [here.](https://github.com/Microsoft/OMS-docker/tree/master/Kubernetes)
 
 ## Upgrade 
 - If you are using the OMS Agent for Linux, please follow the instruction for the [OMS Agent for Linux.](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/README.md) 
