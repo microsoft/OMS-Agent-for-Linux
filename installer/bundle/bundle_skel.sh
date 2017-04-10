@@ -41,6 +41,27 @@ INSTALL_TYPE=<INSTALL_TYPE>
 SCRIPT_LEN=<SCRIPT_LEN>
 SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>
 
+# Error codes and categories:
+
+# User configuration/parameters:
+INVALID_OPTION_PROVIDED=2
+NO_OPTION_PROVIDED=3
+INVALID_PACKAGE_TYPE=4
+RUN_AS_ROOT=5
+INVALID_PACKAGE_ARCH=6
+# Accompanying packages issues:
+SCX_INSTALL_FAILED=20
+SCX_KITS_INSTALL_FAILED=21
+BUNDLED_INSTALL_FAILED=22
+USE_UPGRADE=23
+# Internal errors:
+INTERNAL_ERROR=30
+# Package pre-requisites fail
+UNSUPPORTED_OPENSSL=60
+INSTALL_PYTHON_CTYPES=61
+INSTALL_TAR=62
+INSTALL_SED=63
+
 usage()
 {
     echo "usage: $1 [OPTIONS]"
@@ -89,6 +110,7 @@ cleanup_and_exit()
     fi
 
     if [ -n "$1" ]; then
+        echo "Shell bundle exiting with code $1"
         exit $1
     else
         exit 0
@@ -106,7 +128,7 @@ check_version_installable() {
 
     if [ $# -ne 2 ]; then
         echo "INTERNAL ERROR: Incorrect number of parameters passed to check_version_installable" >&2
-        cleanup_and_exit 1
+        cleanup_and_exit $INTERNAL_ERROR
     fi
 
     # Current version installed
@@ -163,7 +185,7 @@ getVersionNumber()
 
     if [ $# -ne 2 ]; then
         echo "INTERNAL ERROR: Incorrect number of parameters passed to getVersionNumber" >&2
-        cleanup_and_exit 1
+        cleanup_and_exit $INTERNAL_ERROR
     fi
 
     echo $1 | sed -e "s/$2//" -e 's/\.universal\..*//' -e 's/\.x64.*//' -e 's/\.x86.*//' -e 's/-/./'
@@ -173,7 +195,7 @@ verifyNoInstallationOption()
 {
     if [ -n "${installMode}" ]; then
         echo "$0: Conflicting qualifiers, exiting" >&2
-        cleanup_and_exit 1
+        cleanup_and_exit $INVALID_OPTION_PROVIDED
     fi
 
     return;
@@ -182,13 +204,13 @@ verifyNoInstallationOption()
 verifyPrivileges() {
     # Parameter: desired operation (for meaningful output)
     if [ -z "$1" ]; then
-        echo "verifyPrivileges missing required parameter (operation)" 1>& 2
-        exit 1
+        echo "INTERNAL ERROR: verifyPrivileges missing required parameter (operation)" 1>& 2
+        exit $INTERNAL_ERROR
     fi
 
     if [ `id -u` -ne 0 ]; then
         echo "Must have root privileges to be able to perform $1 operation" 1>& 2
-        exit 1
+        exit $RUN_AS_ROOT
     fi
 }
 
@@ -206,7 +228,7 @@ ulinux_detect_openssl_version() {
         echo "Error: This system does not have a supported version of OpenSSL installed."
         echo "This system's OpenSSL version: $OPENSSL_SYSTEM_VERSION_FULL"
         echo "Supported versions: 0.9.8*, 1.0.*"
-        cleanup_and_exit 60
+        cleanup_and_exit $UNSUPPORTED_OPENSSL
     fi
 }
 
@@ -315,7 +337,7 @@ compare_arch()
             ;;
         *)         
             echo "Cannot install $OMS_PKG on ${HOST_ARCH} platform"
-            cleanup_and_exit 1
+            cleanup_and_exit $INVALID_PACKAGE_ARCH
             ;;
     esac
 }
@@ -327,7 +349,7 @@ compare_install_type()
     if [ ! -z "$INSTALL_TYPE" ]; then
         if [ $INSTALLER != $INSTALL_TYPE ]; then
            echo "This kit is intended for ${INSTALL_TYPE} systems and cannot install on ${INSTALLER} systems"
-           cleanup_and_exit 1
+           cleanup_and_exit $INVALID_PACKAGE_TYPE
         fi
     fi
 }
@@ -546,14 +568,14 @@ do
          *)
             echo "Unknown argument: '$1'" >&2
             echo "Use -h or --help for usage" >&2
-            cleanup_and_exit 1
+            cleanup_and_exit $INVALID_OPTION_PROVIDED
             ;;
     esac
 done
 
 if [ -z "${installMode}" ]; then
     echo "$0: No options specified, specify --help for help" >&2
-    cleanup_and_exit 3
+    cleanup_and_exit $NO_OPTION_PROVIDED
 fi
 
 ONBOARD_ERROR=0
@@ -563,7 +585,7 @@ ONBOARD_ERROR=0
 
 if [ "$ONBOARD_ERROR" -ne 0 ]; then
     echo "Must specify both workspace ID (--id) and key (--shared) to onboard" 1>& 2
-    exit 1
+    exit $INVALID_OPTION_PROVIDED
 fi
 
 if [ -n "$onboardID" -a -n "$onboardKey" ]; then
@@ -721,10 +743,20 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
             echo "install the Python ctypes library or package (python-ctypes). If you wish," >&2
             echo "you can run this shell bundle with --force; in this case, we will install" >&2
             echo "omsagent, but omsconfig (DSC configuration) will not be available." >&2
-            cleanup_and_exit 1
+            cleanup_and_exit $INSTALL_PYTHON_CTYPES
         else
             echo "Python ctypes library not found, will continue without installing omsconfig."
         fi
+    fi
+    check_if_pkg_is_installed tar
+    if [ $? -ne 0 ]; then
+        echo "tar was not found, installation cannot continue. Please install tar."
+        cleanup_and_exit $INSTALL_TAR
+    fi
+    check_if_pkg_is_installed sed
+    if [ $? -ne 0 ]; then
+        echo "sed was not found, installation cannot continue. Please install sed."
+        cleanup_and_exit $INSTALL_SED
     fi
 fi
 
@@ -736,7 +768,12 @@ echo "Extracting..."
 
 tail -n +${SCRIPT_LEN_PLUS_ONE} "${SCRIPT}" | tar xzf -
 STATUS=$?
-if [ ${STATUS} -ne 0 ]
+if [ ${STATUS} -eq 127 ]
+then
+    echo "Failed: could not extract the install bundle. Exit code: 127"
+    echo "Please make sure that tar is installed."
+    cleanup_and_exit $INSTALL_TAR
+elif [ ${STATUS} -ne 0 ]
 then
     echo "Failed: could not extract the install bundle."
     cleanup_and_exit ${STATUS}
@@ -777,8 +814,10 @@ case "$installMode" in
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
             [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
             ./bundles/${SCX_INSTALLER} --install $FORCE $DEBUG
-            if [ "$?" -ne 0 ]; then
-                cleanup_and_exit 1
+            TEMP_STATUS=$?
+            if [ $TEMP_STATUS -ne 0 ]; then
+                echo "$SCX_INSTALLER package failed to install and exited with status $TEMP_STATUS"
+                cleanup_and_exit $SCX_INSTALL_FAILED
             fi
 
             # Now actually install of the "queued" packages
@@ -808,7 +847,10 @@ case "$installMode" in
                 if [ $? -eq 0 ]; then
                     ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
-                    [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+                    if [ $TEMP_STATUS -ne 0 ]; then
+                        echo "$OSS_BUNDLE provider package failed to install and exited with status $TEMP_STATUS"
+                        BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
+                    fi
                 fi
             done
             for i in bundles/*-bundle-test.sh; do
@@ -823,13 +865,16 @@ case "$installMode" in
                 if [ $? -eq 0 ]; then
                     ./bundles/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
-                    [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+                    if [ $TEMP_STATUS -ne 0 ]; then
+                        echo "$BUNDLE package failed to install and exited with status $TEMP_STATUS"
+                        BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
+                    fi
                 fi
             done
         else
             echo "The omi or scx package is already installed. Please run the" >&2
             echo "installer with --upgrade (instead of --install) to continue." >&2
-            KIT_STATUS=1
+            KIT_STATUS=$USE_UPGRADE
         fi
         ;;
 
@@ -849,8 +894,10 @@ case "$installMode" in
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
         ./bundles/${SCX_INSTALLER} --upgrade $FORCE $DEBUG
-        if [ "$?" -ne 0 ]; then
-            cleanup_and_exit 1
+        TEMP_STATUS=$?
+        if [ $TEMP_STATUS -ne 0 ]; then
+            echo "$SCX_INSTALLER package failed to upgrade and exited with status $TEMP_STATUS"
+            cleanup_and_exit $SCX_INSTALL_FAILED
         fi
 
         # Now actually install of the "queued" packages
@@ -893,7 +940,10 @@ case "$installMode" in
             if [ $? -eq 0 ]; then
                 ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
-                [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+                if [ $TEMP_STATUS -ne 0 ]; then
+                    echo "$OSS_BUNDLE provider package failed to upgrade and exited with status $TEMP_STATUS"
+                    BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
+                fi
             fi
         done
         for i in bundles/*-bundle-test.sh; do
@@ -908,7 +958,10 @@ case "$installMode" in
             if [ $? -eq 0 ]; then
                 ./bundles/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
-                [ $TEMP_STATUS -ne 0 ] && BUNDLE_EXIT_STATUS="$TEMP_STATUS"
+                if [ $TEMP_STATUS -ne 0 ]; then
+                    echo "$BUNDLE package failed to upgrade and exited with status $TEMP_STATUS"
+                    BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
+                fi
             fi
         done
         ;;
@@ -920,8 +973,10 @@ esac
 
 # Remove temporary files (now part of cleanup_and_exit) and exit
 
-if [ "$KIT_STATUS" -ne 0 -o "$BUNDLE_EXIT_STATUS" -ne 0 ]; then
-    cleanup_and_exit 1
+if [ "$KIT_STATUS" -ne 0 ]; then
+    cleanup_and_exit ${KIT_STATUS}
+elif [ "$BUNDLE_EXIT_STATUS" -ne 0 ]; then
+    cleanup_and_exit ${BUNDLE_EXIT_STATUS}
 else
     cleanup_and_exit 0
 fi

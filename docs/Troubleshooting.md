@@ -9,9 +9,10 @@ If none of these steps work for you the following channels for help are also ava
 # Table of Contents
 - [Important Log Locations](#important-log-locations)
 - [Important Configuration Files](#important-configuration-files)
+- [Installation Error Codes](#installation-error-codes)
 - [Enable Debug Logging](#enable-debug-logging)
- - [OMS output plugin debug](#oms-output-plugin-debug)
- - [Verbose output](#verbose-output)
+- [OMS output plugin debug](#oms-output-plugin-debug)
+- [Verbose output](#verbose-output)
 - [My forwarded Syslog messages are not showing up!](#my-forwarded-syslog-messages-are-not-showing-up)
 - [I'm unable to connect through my proxy to OMS](#im-unable-to-connect-through-my-proxy-to-oms)
 - [I'm getting a 403 when I'm trying to onboard!](#im-getting-a-403-when-im-trying-to-onboard)
@@ -30,7 +31,7 @@ If none of these steps work for you the following channels for help are also ava
  
 ## Important Configuration Files
 
- Catergory | File Location
+ Category | File Location
  ----- | -----
  Syslog | `/etc/syslog-ng/syslog-ng.conf` or `/etc/rsyslog.conf` or `/etc/rsyslog.d/95-omsagent.conf`
  Performance, Nagios, Zabbix, OMS output and general agent | `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`
@@ -40,6 +41,25 @@ If none of these steps work for you the following channels for help are also ava
  
  `sudo su omsagent -c /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable`
  
+## Installation Error Codes
+
+| Error Code | Meaning |
+| --- | --- |
+| 2 | Invalid option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
+| 3 | No option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
+| 4 | Invalid package type; `omsagent-*rpm*.sh` packages can only be installed on RPM-based systems, and `omsagent-*deb*.sh` packages can only be installed on Debian-based systems; We recommend that you use the universal installer from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
+| 5 | The shell bundle must be executed as root; Run your command using `sudo` |
+| 6 | Invalid package architecture; `omsagent-*x64.sh` packages can only be installed on 64-bit systems, and `omsagent-*x86.sh` packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
+| 20 | Installation of SCX/OMI failed; Look through the command output for the root failure |
+| 21 | Installation of SCX/Provider kits failed; Look through the command output for the root failure |
+| 22 | Installation of bundled package failed; Look through the command output for the root failure |
+| 23 | SCX or OMI package already installed; Use `--upgrade` instead of `--install` to install the shell bundle |
+| 30 | Internal bundle error; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
+| 60 | Unsupported version of OpenSSL; Install a version of OpenSSL meeting our [package requirements](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#package-requirements) |
+| 61 | Missing Python ctypes library; Install the Python ctypes library or package (python-ctypes) |
+| 62 | Missing tar program; Install tar |
+| 63 | Missing sed program; Install sed |
+
 ### Enable Debug Logging
 #### OMS output plugin debug
  FluentD allows for plugin specific logging levels allowing you to specify different log levels for inputs and outputs. To specify a different log level for OMS output edit the general agent configuration at `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`:
@@ -198,7 +218,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
    * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration. 
 
 
-### I'm not seeing my Linux Custom Log Data in the OMS Potal
+### I'm Not Seeing My Custom Log Data in the OMS Portal
 #### Probable Causes
 * Onboarding to OMS Service failed
 * The setting "Apply the following configuration to my Linux Servers" has not been check marked
