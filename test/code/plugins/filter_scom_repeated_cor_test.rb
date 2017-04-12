@@ -28,7 +28,7 @@ require 'socket'
       assert_equal(d.instance.expression, Regexp.compile('Authentication Failed'))
       assert_equal(d.instance.key, 'message')
       assert_equal(d.instance.time_interval, 5)
-      assert_equal(d.instance.num_occurrences, 3)
+      assert_equal(d.instance.instance_variable_get(:@num_occurrences), 3)
     end
     
     def test_filter

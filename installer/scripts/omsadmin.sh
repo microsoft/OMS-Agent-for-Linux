@@ -85,6 +85,7 @@ MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
+OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
 
 usage()
 {
@@ -325,6 +326,34 @@ set_proxy_setting()
     fi
 }
 
+is_scom_port_open()
+{
+    OIFS=$IFS
+# Ignore formatting. It was required for IFS to take new line on both bash and sh
+IFS='
+'
+    for line in `cat $OMI_CONF_FILE | grep httpsport`
+    do
+        echo $line | grep -E '^[ ]*httpsport[ ]*=.*$' > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+        continue
+        fi
+        IFS=$OIFS
+        # 1st line starting with <optional-spaces>httpsport<optional-spaces>=
+        # Replace = and , with space.
+        # e.g httpsport=0,1270 should become httpsport 0 1270
+        m_line=`echo $line | sed "s/[=,]/ /g"`
+        # Do a exact word match for port 1270.
+        # This ensures cases like 11270 does not match 
+        echo $m_line | grep -w 1270 > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo "Port 1270 already open"
+            return 0
+        fi
+        return 1
+    done
+}
+
 onboard_scom()
 {
     echo "Onboarding SCOM"
@@ -353,6 +382,16 @@ onboard_scom()
     #Always register SCOM as secondary Workspace
     echo "SCOM Workspace" > $CONF_DIR/.multihoming_marker
     configure_logrotate
+
+    #Open port 1270 if not already open
+    is_scom_port_open
+    if [ $? -eq 1 ]; then
+        echo "Opening port 1270"
+        /opt/omi/bin/omiconfigeditor httpsport -a 1270 < /etc/opt/omi/conf/omiserver.conf > /etc/opt/omi/conf/omiserver.conf_temp
+        mv /etc/opt/omi/conf/omiserver.conf_temp /etc/opt/omi/conf/omiserver.conf
+        # Restart OMI
+        /opt/omi/bin/service_control restart
+    fi
 }
 
 onboard_lad()
@@ -608,6 +647,13 @@ remove_all()
     # Remove LAD workspace
     WORKSPACE_ID="LAD"
     remove_workspace
+
+    # remove scom workspace
+    ls -l $ETC_DIR | grep -w scom > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        WORKSPACE_ID="scom"
+        remove_workspace
+    fi
 }
 
 show_workspace_status()
@@ -639,6 +685,16 @@ show_workspace_status()
     else
         echo "Workspace${mh_marker}: ${ws_id}    Status: ${status}"
     fi
+}
+
+list_scom_workspace()
+{
+    ls -1 $ETC_DIR | grep -w scom > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        show_workspace_status $ETC_DIR/scom/conf scom 0
+        return 1
+    fi
+    return 0
 }
 
 list_workspaces()
@@ -684,6 +740,11 @@ list_workspaces()
             found_ws=1
             show_workspace_status $ETC_DIR/${ws_id}/conf ${ws_id} 0
         done
+    fi
+    # check scom workspace
+    list_scom_workspace
+    if [ $found_ws -eq 0 ]; then
+        found_ws=$?
     fi
 
     if [ $found_ws -eq 0 ]; then

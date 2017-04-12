@@ -74,6 +74,7 @@ usage()
     echo "  --restart-deps             Reconfigure and restart dependent service(s)."
     echo "  --source-references        Show source code reference hashes."
     echo "  --upgrade                  Upgrade the package in the system."
+    echo "  --enable-opsmgr            Enable port 1270 for usage with opsmgr."
     echo "  --version                  Version of this shell bundle."
     echo "  --version-check            Check versions already installed to see if upgradable."
     echo "  --debug                    use shell debug mode."
@@ -613,6 +614,11 @@ do
             shift 2
             ;;
 
+        --enable-opsmgr)
+            enableOMFlag=true
+            shift 1
+            ;;
+
         -\? | -h | --help)
             usage `basename $0` >&2
             cleanup_and_exit 0
@@ -883,7 +889,8 @@ case "$installMode" in
             # Install SCX (and OMI)
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
             [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
-            ./bundles/${SCX_INSTALLER} --install $FORCE $DEBUG
+            [ -n "${enableOMFlag}" ] && ENABLE_OM="--enable-opsmgr" || ENABLE_OM=""
+            ./bundles/${SCX_INSTALLER} --install $FORCE $DEBUG $ENABLE_OM
             TEMP_STATUS=$?
             if [ $TEMP_STATUS -ne 0 ]; then
                 echo "$SCX_INSTALLER package failed to install and exited with status $TEMP_STATUS"
@@ -963,7 +970,8 @@ case "$installMode" in
         # Install SCX (and OMI)
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
-        ./bundles/${SCX_INSTALLER} --upgrade $FORCE $DEBUG
+        [ -n "${enableOMFlag}" ] && ENABLE_OM="--enable-opsmgr" || ENABLE_OM=""
+        ./bundles/${SCX_INSTALLER} --upgrade $FORCE $DEBUG $ENABLE_OM
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
             echo "$SCX_INSTALLER package failed to upgrade and exited with status $TEMP_STATUS"
