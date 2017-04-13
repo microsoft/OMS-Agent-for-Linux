@@ -7,8 +7,8 @@ git:
 
 before_install:
   - sudo apt-get update -qq
-  # Pre-reqs for building omsagent
-  - sudo apt-get install -qq pkg-config make ruby bison g++ rpm librpm-dev libpam0g-dev libssl-dev libmysqlclient-dev
+  # Pre-reqs for building omsagent and omi
+  - sudo apt-get install -qq pkg-config make ruby bison g++ rpm librpm-dev libpam0g-dev libssl-dev libmysqlclient-dev libkrb5-dev
   # Pre-reqs for building auoms
   - sudo apt-get install cmake libboost-dev libboost-test-dev libaudit-dev libauparse-dev unzip
   - sudo groupadd omiusers
@@ -24,7 +24,7 @@ install:
   - cd Microsoft/Build-OMS-Agent-for-Linux
   # change url from ssh to https for submodules, travis-ci cannot download a submodule that isn’t on a public url
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules 
-  - git submodule update --init --recursive dsc omi opsmgr opsmgr-kits pal auoms
+  - git submodule update --init --recursive dsc omi opsmgr-kits pal auoms scxcore-kits
   - git clone https://github.com/Microsoft/OMS-Agent-for-Linux.git omsagent 
   - cd omsagent
   # change url from ssh to https for submodules ruby and fluentd

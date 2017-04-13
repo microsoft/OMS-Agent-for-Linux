@@ -352,6 +352,21 @@ onboard_scom()
     configure_logrotate
 }
 
+onboard_lad()
+{
+    echo "Onboarding LAD"
+    create_workspace_directories "LAD"
+
+    touch $CONF_DIR/omsagent.conf
+    echo "@include omsagent.d/*" > $CONF_DIR/omsagent.conf
+    chown_omsagent $CONF_DIR/*
+    make_dir $CONF_DIR/omsagent.d
+    #Always register LAD as secondary Workspace
+    echo "LAD Workspace" > $CONF_DIR/.multihoming_marker
+    save_config
+    configure_logrotate
+}
+
 onboard()
 {
     if [ $VERBOSE -eq 1 ]; then
@@ -362,6 +377,11 @@ onboard()
 
     if [ "$WORKSPACE_ID" = "scom" ]; then
         onboard_scom
+        clean_exit $?
+    fi
+
+    if [ "$WORKSPACE_ID" = "LAD" ]; then
+        onboard_lad
         clean_exit $?
     fi
 
@@ -574,6 +594,10 @@ remove_all()
         WORKSPACE_ID=${ws_id}
         remove_workspace
     done
+
+    # Remove LAD workspace
+    WORKSPACE_ID="LAD"
+    remove_workspace
 }
 
 show_workspace_status()
@@ -789,6 +813,9 @@ copy_omsagent_d_conf()
 
     update_path $OMSAGENTD_DIR/monitor.conf
     update_path $OMSAGENTD_DIR/heartbeat.conf
+    if [ -f $OMSAGENTD_DIR/container.conf ] ; then
+        update_path $OMSAGENTD_DIR/container.conf
+    fi
 
     chown_omsagent $OMSAGENTD_DIR/*
 }

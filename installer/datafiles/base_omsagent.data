@@ -28,6 +28,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/heartbeat.conf;          installer/conf/omsagent.d/heartbeat.conf;              644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management.conf;      installer/conf/omsagent.d/patch_management.conf;          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management_inventory.mof;  installer/conf/omsagent.d/patch_management_inventory.mof;        644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/update_management.conf;  installer/conf/omsagent.d/update_management.conf;          644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/syslog.conf;             installer/conf/omsagent.d/syslog.conf;                 644; root; root
@@ -49,7 +50,6 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
 /opt/microsoft/omsagent/bin/uninstall;                                  installer/scripts/uninstall.sh;                        755; root; root
 /opt/microsoft/omsagent/bin/configure_syslog.sh;                        installer/scripts/configure_syslog.sh;                 755; root; root
-/opt/microsoft/omsagent/bin/tailfilereader.rb;                          installer/scripts/tailfilereader.rb;                   744; root; root
 /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb;                 installer/scripts/hdinsightmanifestreader.rb;          744; root; root
 /opt/microsoft/omsagent/bin/regenerate_scom_cert.sh;                    installer/scripts/regenerate_scom_cert.sh;             755; root; root
 
@@ -73,7 +73,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/out_oms_blob.rb;                         source/code/plugins/out_oms_blob.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/out_oms_api.rb;                          source/code/plugins/out_oms_api.rb;                    744; root; root
 /opt/microsoft/omsagent/plugin/in_sudo_tail.rb;                         source/code/plugins/in_sudo_tail.rb;                   744; root; root
-
+/opt/microsoft/omsagent/plugin/tailfilereader.rb;                       source/code/plugins/tailfilereader.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/filter_security_baseline.rb;             source/code/plugins/filter_security_baseline.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
 /opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root
@@ -93,7 +93,6 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/heartbeat_lib.rb;                        source/code/plugins/heartbeat_lib.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/filter_patch_management.rb;              source/code/plugins/filter_patch_management.rb;        744; root; root
 /opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
-/opt/microsoft/omsagent/plugin/filter_linux_update_run_progress.rb;     source/code/plugins/filter_linux_update_run_progress.rb;           744; root; root
 
 /opt/microsoft/omsagent/plugin/filter_flatten.rb;                       source/code/plugins/filter_flatten.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/flattenjson_lib.rb;                      source/code/plugins/flattenjson_lib.rb;                744; root; root

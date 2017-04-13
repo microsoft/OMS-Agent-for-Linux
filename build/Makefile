@@ -6,8 +6,8 @@
 SHELL=/bin/bash
 BASE_DIR := $(subst /build,,$(CURDIR))
 OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
+SCX_CORE_KITS := $(shell cd ../../scxcore-kits; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
-SCX_DIR := $(shell cd ../../opsmgr; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
 AUOMS_DIR := $(shell cd ../../auoms; pwd -P)
 
@@ -20,7 +20,6 @@ ifndef ENABLE_DEBUG
 $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
-SCX_INTERMEDIATE_DIR := $(SCX_DIR)/intermediate/$(BUILD_CONFIGURATION)
 DSC_TARGET_DIR := $(DSC_DIR)/release
 AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
 
@@ -46,6 +45,8 @@ else
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
 OMI_LIBRARY_DIR := $(OMI_ROOT)/output/lib
 endif
+
+OMI_LIBRARY_LIB_BASE := $(OMI_LIBRARY_DIR)/libbase.a
 
 # Version of Ruby for test purposes only
 RUBY_TESTING_DIR := $(shell echo "$(RUBY_CONFIGURE_QUALS_TESTINS)" | cut -d= -f2)
@@ -88,11 +89,9 @@ endif
 
 ifeq ($(ULINUX),1)
   ifeq ($(PF_ARCH),x86)
-    OSS_KITS := $(shell cd $(SCX_DIR)/../opsmgr-kits; ls *-oss-test.sh *.i686.sh)
     # OMS OSS directory doesn't include any 32-bit kits, so don't look for *.i686.sh ...
     OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh)
   else ifeq ($(PF_ARCH),x64)
-    OSS_KITS := $(shell cd $(SCX_DIR)/../opsmgr-kits; ls *-oss-test.sh *.x86_64.sh)
     OMS_OSS_KITS := $(shell cd $(BASE_DIR)/installer/oss-kits; ls *-oss-test.sh *.x86_64.sh)
   endif
 endif
@@ -121,7 +120,7 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb systemtestsh
 
-all : $(SCX_INTERMEDIATE_DIR) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
+all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
@@ -159,19 +158,13 @@ clean-dsc : clean
 	-$(RMDIR) $(DSC_DIR)/config.mak $(DSC_DIR)/intermediate $(DSC_DIR)/output $(DSC_DIR)/release
 	-$(RM) $(DSC_DIR)/omi-1.0.8
 
-clean-scx : clean
-	-make -C $(SCX_DIR)/build distclean
-	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@$(ECHO) "!!!!! PLEASE RE-RUN THE ./configure SCRIPT !!!!!"
-	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-
 clean-auoms : clean
 	-make -C $(AUOMS_DIR)/build distclean
 	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@$(ECHO) "!!!!! PLEASE RE-RUN THE ./configure SCRIPT !!!!!"
 	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-distclean : clean clean-ruby clean-dsc clean-scx clean-auoms
+distclean : clean clean-ruby clean-dsc clean-auoms
 	-$(RMDIR) $(OMI_ROOT)/output*
 
 	cd $(BASE_DIR)/source/ext/fluentd; git checkout -- lib/fluent/env.rb lib/fluent/plugin/in_exec.rb
@@ -184,18 +177,24 @@ clean-status :
 	@$(ECHO) "========================= Performing make clean"
 
 #--------------------------------------------------------------------------------
-# Build SCX project (special mode to only build the provider itself if ulinux)
+# Build OMI project (configured for the OMS project)
 
-$(SCX_INTERMEDIATE_DIR) : 
-	$(MAKE) -C $(SCX_DIR)/build all
+$(OMI_LIBRARY_LIB_BASE) :
+	@$(ECHO) "========================= Performing Building OMI Project"
+ifeq ($(ULINUX),1)
+	cd $(OMI_ROOT); ./configure --enable-microsoft --enable-ulinux
+else
+	cd $(OMI_ROOT); ./configure --enable-microsoft
+endif
+	$(MAKE) -C $(OMI_ROOT) all
 
 #--------------------------------------------------------------------------------
 # Build DSC project (configured for the OMS project)
 #
-# Note: This expects that SCX (and thus OMI) is already built! Take care of your
+# Note: This expects that OMI is already built! Take care of your
 # ordering on the 'all' target!
 
-$(DSC_TARGET_DIR) :
+$(DSC_TARGET_DIR) : $(OMI_LIBRARY_LIB_BASE)
 ifeq ($(ULINUX),1)
 	@$(ECHO) "========================= Performing Building DSC Project"
 	cd $(DSC_DIR); ./configure --oms
@@ -344,25 +343,6 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	@echo "========================= Performing Building .tar file"
 
-	# Note: We take care to only copy the latest version of OMI if there are multiple versions
-	$(RM) $(INTERMEDIATE_DIR)/098/omi-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omi-*.{rpm,deb}
-
-	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(OMI_ROOT)/output_openssl_0.9.8/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
-
-	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
-	cd $(OMI_ROOT)/output_openssl_1.0.0/release; $(COPY) `ls omi-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
-
-	# Gather the SCX bits that we need
-	# Note: We take care to only copy the latest version if there are multiple versions
-	$(RM) $(INTERMEDIATE_DIR)/098/scx-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/scx-*.{rpm,deb}
-
-	cd $(SCX_INTERMEDIATE_DIR)/098; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(SCX_INTERMEDIATE_DIR)/098; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
-
-	cd $(SCX_INTERMEDIATE_DIR)/100; $(COPY) `ls scx-*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
-	cd $(SCX_INTERMEDIATE_DIR)/100; $(COPY) `ls scx-*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
-
 	# Gather the DSC bits that we need
 	$(RM) $(INTERMEDIATE_DIR)/098/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb}
 
@@ -377,7 +357,6 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Pick up the OSS (Open Source) providers
 	$(RMDIR) $(INTERMEDIATE_DIR)/oss-kits
 	$(MKPATH) $(INTERMEDIATE_DIR)/oss-kits
-	cd $(SCX_DIR)/../opsmgr-kits; $(COPY) $(OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
 	cd $(BASE_DIR)/installer/oss-kits; $(COPY) $(OMS_OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
 	chmod +x $(INTERMEDIATE_DIR)/oss-kits/*.sh
 
@@ -386,6 +365,11 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	$(MKPATH) $(INTERMEDIATE_DIR)/bundles
 	cd $(AUOMS_TARGET_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
 	$(COPY) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
+
+	# Gather the SCX bits that we need
+	# Note: We take care to only copy the latest version if there are multiple versions
+	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+
 	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
@@ -599,4 +583,3 @@ endif
 omstest : unittest systemtest
 
 test : omstest
-	$(MAKE) -C $(SCX_DIR)/build test

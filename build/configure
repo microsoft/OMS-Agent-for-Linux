@@ -4,7 +4,6 @@ home_dir=`(cd ~/; pwd -P)`
 base_dir=`(cd ..; pwd -P)`
 scxomi_dir=`(cd ../../omi/Unix; pwd -P)`
 scxpal_dir=`(cd ../../pal; pwd -P)`
-scxcim_dir=`(cd ../../opsmgr; pwd -P)`
 auoms_dir=`(cd ../../auoms; pwd -P)`
 
 enable_debug=""
@@ -25,11 +24,6 @@ fi
 
 if [ ! -d "$scxpal_dir" ]; then
     echo "PAL directory ($scxpal_dir) does not exist" >& 2
-    exit 1
-fi
-
-if [ ! -d "$scxcim_dir" ]; then
-    echo "SCX directory ($scxcim_dir) does not exist" >& 2
     exit 1
 fi
 
@@ -237,7 +231,6 @@ apply_patch ${base_dir}/source/ext/patches/fluentd/in_exec.patch ${base_dir}/sou
 # No errors allowed from this point forward
 set -e
 
-scx_configure_quals="${enable_debug} ${enable_ulinux} --disable-listener"
 auoms_configure_quals="${enable_debug} ${enable_ulinux}"
 
 if [ "$ULINUX" -eq 1 -a "$opensource_distro" -eq 1 ]; then
@@ -495,10 +488,6 @@ if [ "$ULINUX" = "1" ]; then
     echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
 fi
-
-# Fix permissions in case they aren't executable - and then configure SCX
-chmod ug+x ${scxcim_dir}/build/configure
-(cd ${scxcim_dir}/build && ./configure ${scx_configure_quals})
 
 # Fix permissions in case they aren't executable - and then configure AUOMS
 chmod ug+x ${auoms_dir}/build/configure
