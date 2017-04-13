@@ -5,6 +5,9 @@ set -e
 VAR_DIR=/var/opt/microsoft/omsagent
 ETC_DIR=/etc/opt/microsoft/omsagent
 
+NPM_DIR=$VAR_DIR/npm_state
+NPM_CONF_FILE_SUFFIX=conf/omsagent.d/npmd.conf
+
 DF_TMP_DIR=$VAR_DIR/tmp
 DF_RUN_DIR=$VAR_DIR/run
 DF_STATE_DIR=$VAR_DIR/state
@@ -574,6 +577,11 @@ remove_workspace()
 
     /opt/microsoft/omsagent/bin/configure_syslog.sh unconfigure $WORKSPACE_ID ${port}
 
+    if [ -f "$NPM_CONF_WS" -a -d "$NPM_DIR" ]; then
+        log_info "Removing NPM state directory in $WORKSPACE_ID removal"
+        rm -rf $NPM_DIR > /dev/null 2>&1
+    fi
+
     rm -rf "$VAR_DIR_WS" "$ETC_DIR_WS" > /dev/null 2>&1
 
     rm -f /etc/logrotate.d/omsagent-$WORKSPACE_ID > /dev/null 2>&1
@@ -745,6 +753,8 @@ setup_workspace_variables()
     LOG_DIR=$VAR_DIR_WS/log
     CERT_DIR=$ETC_DIR_WS/certs
     CONF_DIR=$ETC_DIR_WS/conf
+
+    NPM_CONF_WS=$ETC_DIR/$1/$NPM_CONF_FILE_SUFFIX
 }
 
 create_workspace_directories()

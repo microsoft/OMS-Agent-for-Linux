@@ -1,7 +1,6 @@
 require 'fluent/test'
 require_relative '../../../source/code/plugins/in_npmd_server'
 require 'socket'
-require 'securerandom'
 
 class Logger
     def self.logToStdOut(msg, depth=0)
@@ -17,6 +16,8 @@ end
 class NPMDServerTest < Test::Unit::TestCase
 
     TMP_DIR = "tmp_npmd_test"
+    FAKE_ADMIN_CONF_LOCATION = "#{TMP_DIR}/omsadmin.conf"
+    FAKE_ADMIN_CONF_FILE_DATA = 'AGENT_GUID=abcde_test_guid'
     FAKE_BINARY_BASENAME = "fake_npmd_binary.rb"
     FAKE_BINARY_FILENAME = File.dirname(__FILE__) + "/#{FAKE_BINARY_BASENAME}"
     RUBY_BINARY_LOCATION = "ruby"
@@ -55,6 +56,9 @@ class NPMDServerTest < Test::Unit::TestCase
         f = File.new(TEST_CONTROL_DATA_FILE, "w")
         f.write(CONTROL_DATA)
         f.close
+        f = File.new(FAKE_ADMIN_CONF_LOCATION, "w")
+        f.write(FAKE_ADMIN_CONF_FILE_DATA)
+        f.close
     end
 
     def teardown
@@ -65,10 +69,10 @@ class NPMDServerTest < Test::Unit::TestCase
 
     CONFIG = %[
         type npmd
+        omsadmin_conf_path     #{FAKE_ADMIN_CONF_LOCATION}
         location_unix_endpoint #{FAKE_UNIX_ENDPOINT}
         location_control_data  #{TEST_CONTROL_DATA_FILE}
         location_agent_binary  #{FAKE_BINARY_LOCATION}
-        location_uuid_file     #{FAKE_UUID_LOCATION}
         tag oms.mock.npmd
     ]
 
@@ -378,78 +382,6 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 6
         assert_equal(false, File.exist?(FAKE_UUID_LOCATION), "File #{FAKE_UUID_LOCATION} should have been deleted")
-    end
-
-    # Test07: Check if UUID creation is working
-    # Sequence:
-    # 1. Delete the uuid file if exists
-    # 2. Run the driver without post condition
-    # 3. Assert uuid file exists and is not empty
-    def test_case_07_verify_uuid_creation
-        # Step 1
-        File.unlink(FAKE_UUID_LOCATION) if File.exist?(FAKE_UUID_LOCATION)
-
-        # Step 2
-        d = create_driver
-        d.run
-
-        # Step 3
-        assert_equal(true, File.exist?(FAKE_UUID_LOCATION), "UUID file should have been recreated")
-    end
-
-    # Test08: Check that UUID is recreated post start after purge
-    # Sequence:
-    # 1. Create UUID file with new value
-    # 2. Register run post condition as:
-    #   (a) Wait for npmdClientSock to be non nil
-    #   (b) Send purge command
-    #   (c) Wait for is_purged to be true
-    # 3. Run the driver
-    # 4. Assert that uuid file does not exist
-    # 5. Run driver without post condition
-    # 6. Assert that uuid file exists
-    # 7. Assert that uuid value has changed
-    def test_case_08_verify_uuid_recreation_post_purge
-        # Step 1
-        f = File.new(FAKE_UUID_LOCATION, "w")
-        f.write(FAKE_AGENT_ID)
-        f.close
-
-        # Step 2
-        d = create_driver
-        d.register_run_post_condition {
-            (1..ONE_MIN_IN_MSEC).each do
-                sleep(ONE_MSEC) if d.instance.npmdClientSock.nil?
-            end
-            assert(!d.instance.npmdClientSock.nil?, "NPMD client socket should be non nil")
-
-            d.instance.process_dsc_command(CMD_PURGE_NPMD)
-
-            (1..ONE_MIN_IN_MSEC).each do
-                sleep(ONE_MSEC) unless d.instance.is_purged
-            end
-            assert(d.instance.is_purged, "NPMD client socket should be nil")
-            true
-        }
-
-        # Step 3
-        d.run
-
-        # Step 4
-        assert_equal(false, File.exist?(FAKE_UUID_LOCATION), "UUID file should not be present after purge")
-
-        # Step 5
-        d1 = create_driver
-        d1.run
-
-        # Step 6
-        assert_equal(true, File.exist?(FAKE_UUID_LOCATION), "UUID file should be recreated post start")
-
-        # Step 7
-        f1 = File.new(FAKE_UUID_LOCATION, "r")
-        uuid = f1.read()
-        f1.close
-        assert(uuid != FAKE_AGENT_ID, "UUID should have changed from #{FAKE_AGENT_ID}")
     end
 
     # Test09: Check that binary not found is handled properly
@@ -908,31 +840,25 @@ class NPMDServerTest < Test::Unit::TestCase
 
     # Test15: Delete binary but not version files and send log if setcap not supported
     # Sequence:
-    # 1. Create npm_version files in local directory with different directory structure
+    # 1. Create npm_version file in local npm_state directory
     # 2. Update do_capability_check to true and set the verion file prefix
     # 3. Override the capabilties supported function to say false
     # 4. Register run post condition to basically wait for a while
     # 5. Run the driver
     # 6. Assert that fake binary file is absent
-    # 7. Assert that npm_version file in single workspace scenario is present
-    # 8. Assert that all npm_version files are present in multiple workspace cases
-    # 9. Assert that error log pertaining to absence of filesystem capabilities is emitted
+    # 7. Assert that npm_version file is present
+    # 8. Assert that error log pertaining to absence of filesystem capabilities is emitted
     def test_case_15_no_cap_support_delete_binary_not_version_files
         # Step 1
-        singleWorkspaceDir = "#{TMP_DIR}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
-        singleWorkspaceVersionFile = "#{singleWorkspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"
-        FileUtils.mkdir_p(singleWorkspaceDir)
-        FileUtils.touch(singleWorkspaceVersionFile)
-        (1..10).each do
-            workspaceDir = "#{TMP_DIR}/#{SecureRandom.uuid}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
-            FileUtils.mkdir_p(workspaceDir)
-            FileUtils.touch("#{workspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}")
-        end
+        npmStateDir = "#{TMP_DIR}/#{Fluent::NPM::NPMD_STATE_DIR}"
+        npmdVersionFile = "#{npmStateDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"
+        FileUtils.mkdir_p(npmStateDir)
+        FileUtils.touch(npmdVersionFile)
 
         # Step 2
         d = create_driver
         d.instance.do_capability_check = true
-        d.instance.npmd_version_dir_prefix = TMP_DIR
+        d.instance.npmd_state_dir = npmStateDir
 
         # Step 3
         d.instance.define_singleton_method(:is_filesystem_capabilities_supported) do
@@ -951,15 +877,9 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Error the fake binary should be absent as distro doesn't support capabilities")
 
         # Step 7
-        assert_equal(true, File.exist?(singleWorkspaceVersionFile), "Error the default npm_version file should be present")
+        assert_equal(true, File.exist?(npmdVersionFile), "Error the default npm_version file should be present")
 
         # Step 8
-        workspaceDirs = Dir.glob("#{TMP_DIR}/**/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}")
-        workspaceDirs.each do |x|
-            assert_equal(true, File.exist?("#{x}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"), "Error all version files should persist")
-        end
-
-        # Step 9
         emits = d.emits
         error_logs = nil
         assert(emits.length > 0, "At least some data should have been emitted by now")
@@ -988,30 +908,24 @@ class NPMDServerTest < Test::Unit::TestCase
 
     # Test16: Delete version files and binary if capability is not to binary
     # Sequence:
-    # 1. Create npm_version files in local directory with different directory structure
+    # 1. Create npm_version file in local npm_state directory
     # 2. Update do_capability_check to true and set the verion file prefix
     # 3. Override the capabilties supported function to say true
     # 4. Override the get capability string to mention no cap_net_raw found
     # 5. Run the driver
     # 6. Assert that fake binary file is absent
-    # 7. Assert that npm_version file in single workspace scenario is absent
-    # 8. Assert that no npm_version files are present in multiple workspace cases
+    # 7. Assert that npm_version file is absent
     def test_case_16_delete_binary_version_files_if_no_cap_set
         # Step 1
-        singleWorkspaceDir = "#{TMP_DIR}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
-        singleWorkspaceVersionFile = "#{singleWorkspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"
-        FileUtils.mkdir_p(singleWorkspaceDir)
-        FileUtils.touch(singleWorkspaceVersionFile)
-        (1..10).each do
-            workspaceDir = "#{TMP_DIR}/#{SecureRandom.uuid}/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}"
-            FileUtils.mkdir_p(workspaceDir)
-            FileUtils.touch("#{workspaceDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}")
-        end
+        npmStateDir = "#{TMP_DIR}/#{Fluent::NPM::NPMD_STATE_DIR}"
+        npmdVersionFile = "#{npmStateDir}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"
+        FileUtils.mkdir_p(npmStateDir)
+        FileUtils.touch(npmdVersionFile)
 
         # Step 2
         d = create_driver
         d.instance.do_capability_check = true
-        d.instance.npmd_version_dir_prefix = TMP_DIR
+        d.instance.npmd_state_dir = npmStateDir
 
         # Step 3
         d.instance.define_singleton_method(:is_filesystem_capabilities_supported) do
@@ -1030,13 +944,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Error the fake binary should be absent as distro doesn't support capabilities")
 
         # Step 7
-        assert_equal(false, File.exist?(singleWorkspaceVersionFile), "Error the default npm_version file should be absent")
-
-        # Step 8
-        workspaceDirs = Dir.glob("#{TMP_DIR}/**/#{Fluent::NPM::NPMD_VERSION_FILE_DIR}")
-        workspaceDirs.each do |x|
-            assert_equal(false, File.exist?("#{x}/#{Fluent::NPM::NPMD_VERSION_FILE_NAME}"), "Error all version files should have been deleted")
-        end
+        assert_equal(false, File.exist?(npmdVersionFile), "Error the default npm_version file should be absent")
     end
 
 end

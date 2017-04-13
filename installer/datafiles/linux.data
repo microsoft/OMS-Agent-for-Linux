@@ -122,20 +122,11 @@ if [ -d "$OMS_CERTS_DIR" ]; then
 fi
 
 %Postinstall_590
-# Remove version file of NPM if present
-NPM_VERSION_FILE=npm_version
-VAR_OMSAGENT_DIR=/var/opt/microsoft/omsagent
-# Single workspace scenario
-if [ -f $VAR_OMSAGENT_DIR/state/$NPM_VERSION_FILE ]; then
-    rm -f $VAR_OMSAGENT_DIR/state/$NPM_VERSION_FILE
+# Remove NPM directory on purge
+NPM_STATE_DIR=/var/opt/microsoft/omsagent/npm_state
+if [ -d "$NPM_STATE_DIR" ]; then
+    rm -rf $NPM_STATE_DIR
 fi
-# Multiple workspace scenario
-for x in $VAR_OMSAGENT_DIR/*/state
-do
-    if [ -f $x/$NPM_VERSION_FILE ]; then
-        rm -f $x/$NPM_VERSION_FILE
-    fi
-done
 
 %Postinstall_600
 ${{OMS_SERVICE}} start
