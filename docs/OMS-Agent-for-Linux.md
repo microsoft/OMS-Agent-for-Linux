@@ -56,9 +56,9 @@ Glibc |	GNU C Library	| 2.5-12
 Openssl	| OpenSSL Libraries | 0.9.8e or 1.0
 Curl | cURL web client | 7.15.5
 Python-ctypes | | 
-PAM | Pluggable authentication Modules	 | 
+PAM | Pluggable Authentication Modules	 | 
 
-**Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog, 
+**Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog.
 
 
 ## Upgrade from a Previous Release
@@ -705,7 +705,7 @@ For Linux virtual machines running in Azure, additional steps may be required to
 	For more information on installing and configuring the Diagnostic Extension for Linux, see [this article](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-diagnostic-extension/#use-the-azure-cli-command-to-enable-linux-diagnostic-extension).
 
 **Upgrading the Linux Diagnostics Extension from 2.0 to 2.2**
-**Azure CLI **
+**Azure CLI**
 *ASM:*
 ```
 azure vm extension set -u <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.0
