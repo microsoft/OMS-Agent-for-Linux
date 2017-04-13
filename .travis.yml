@@ -24,7 +24,7 @@ install:
   - cd Microsoft/Build-OMS-Agent-for-Linux
   # change url from ssh to https for submodules, travis-ci cannot download a submodule that isn’t on a public url
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules 
-  - git submodule update --init --recursive dsc omi opsmgr opsmgr-kits pal auoms
+  - git submodule update --init --recursive dsc omi opsmgr-kits pal auoms scxcore-kits
   - git clone https://github.com/Microsoft/OMS-Agent-for-Linux.git omsagent 
   - cd omsagent
   # change url from ssh to https for submodules ruby and fluentd
