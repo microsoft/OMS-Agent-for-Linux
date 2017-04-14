@@ -343,7 +343,7 @@ onboard()
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
         # Keep the same agent GUID by loading it from the previous conf
         AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
-        log_info "Reusing previous agent GUID"
+        log_info "Reusing previous agent GUID $AGENT_GUID"
     else
         AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
         $RUBY $MAINTENANCE_TASKS_SCRIPT -c "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" -w "$WORKSPACE_ID" -a "$AGENT_GUID" $CURL_VERBOSE
@@ -356,6 +356,8 @@ onboard()
     if [ -z "$AGENT_GUID" ]; then
         log_error "AGENT_GUID should not be empty"
         return 1
+    else
+        log_info "Agent GUID is $AGENT_GUID"
     fi
 
     if [ "$VERBOSE" = "1" ]; then
