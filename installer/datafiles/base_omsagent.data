@@ -193,7 +193,8 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
     do
         echo "Deleting certs and conf directories for workspace $ws_id if empty..."
         rmdir /etc/opt/microsoft/omsagent/$ws_id/certs/ 2> /dev/null
-        rmdir /etc/opt/microsoft/omsagent/$ws_id/conf/ 2> /dev/null       
+        rmdir /etc/opt/microsoft/omsagent/$ws_id/conf/ 2> /dev/null
+        rm /opt/microsoft/omsagent/bin/omsagent-$ws_id 2> /dev/null		
     done
    
    # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
@@ -210,7 +211,8 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
    rmdir /etc/opt/microsoft/omsagent 2> /dev/null
    rmdir /etc/opt/microsoft 2> /dev/null
    rmdir /etc/opt 2> /dev/null
-
+   rmdir /opt/microsoft/omsagent/bin/ 2> /dev/null
+   rmdir /opt/microsoft/omsagent/ 2> /dev/null
    # Clean up logrotate
    rm -f /etc/logrotate.d/omsagent*
    rm -f /etc/cron.d/omsagent
