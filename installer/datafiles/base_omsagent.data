@@ -210,8 +210,8 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
    rm -f /etc/opt/microsoft/omsagent/sysconf/installinfo.txt*
    rmdir /etc/opt/microsoft/omsagent/sysconf 2> /dev/null
    # Clean up symbolic links if multi-workspace scenario
-   rm /etc/opt/microsoft/omsagent/certs/ 2> /dev/null
-   rm /etc/opt/microsoft/omsagent/conf/ 2> /dev/null
+   rm /etc/opt/microsoft/omsagent/certs 2> /dev/null
+   rm /etc/opt/microsoft/omsagent/conf 2> /dev/null
    
    # Clean up directory tree if agent installed or upgraded without onboarding. No symbolic links.
    rmdir /etc/opt/microsoft/omsagent/certs/ 2> /dev/null
