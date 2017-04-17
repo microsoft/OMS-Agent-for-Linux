@@ -23,7 +23,14 @@ class OMIInput < Input
     def enumerate
         time = Time.now.to_f
         record_txt = @omi_interface.enumerate(@items)
-        record = JSON.parse record_txt
+        
+        begin
+            record = JSON.parse record_txt
+        rescue => e
+            $log.error "Unable to parse JSON from record: #{record_txt}"
+            $log.error "Error: #{e}"
+            record = []
+        end
 
         if record.length > 0
             router.emit(@tag, time, record)
