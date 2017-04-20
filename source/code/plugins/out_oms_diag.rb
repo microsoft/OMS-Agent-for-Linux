@@ -96,6 +96,7 @@ module Fluent
           else
             ipnameRecords[ipname] = [dataitem]
           end
+        end
       end
 
       # getting diag records out of aggregated dataitems for serialization

@@ -123,7 +123,7 @@ module OMS
            !dataitem[DI_KEY_LOGMESSAGE].is_a?(String) or
            !dataitem.key?(DI_KEY_IPNAME) or
            !dataitem[DI_KEY_IPNAME].is_a?(String) or
-           !dataitem.key?(DI_KEY_IPNAME) or
+           !dataitem.key?(DI_KEY_TIME) or
            !dataitem[DI_KEY_TIME].is_a?(String)
           return false
         end

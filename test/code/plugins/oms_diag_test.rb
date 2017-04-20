@@ -155,6 +155,8 @@ class OMSDiagUT < Test::Unit::TestCase
             if y == 1
                 dataitem.delete(OMS::Diag::DI_KEY_LOGMESSAGE)
             elsif y == 3
+                # note this is valid spurious here but without ipname
+                # write call of out_oms_diag will set it to default
                 dataitem.delete(OMS::Diag::DI_KEY_IPNAME)
             elsif y == 5
                 dataitem.delete(OMS::Diag::DI_KEY_TIME)
