@@ -116,8 +116,6 @@ module OMS
         record
       end
 
-      # Private methods
-
       # Method used to check if dataitem is valid
       def IsValidDataItem?(dataitem)
         if !dataitem.is_a?(Hash) or
