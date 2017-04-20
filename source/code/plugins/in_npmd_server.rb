@@ -121,6 +121,10 @@ module Fluent
             # Stopping the npmd_agent
             stop_npmd()
 
+            # Set the npmd client socket as nil as npmd_reader might not do so in time
+            @npmdClientSock.close() if !@npmdClientSock.nil?
+            @npmdClientSock = nil
+
             # Stop server
             stop_server()
 
