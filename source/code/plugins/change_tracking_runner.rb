@@ -14,6 +14,9 @@ class ChangeTrackingRunner
 	PREV_HASH = "PREV_HASH"
 	LAST_UPLOAD_TIME = "LAST_UPLOAD_TIME"
 
+        @@storageaccount = ARGV[1]
+        @@storageaccesstoken = ARGV[2]
+
 	@@log =  Logger.new(STDERR) #nil
 	@@log.formatter = proc do |severity, time, progname, msg|
 	        "#{severity} #{msg}\n"
@@ -22,7 +25,7 @@ class ChangeTrackingRunner
 	def self.transform_and_wrap()
 		if File.exist?(CHANGE_TRACKING_FILE)
 			@@log.debug ("Found the change tracking inventory file.")
-
+                        ChangeTracking.initialize(@@storageaccount, @@storageaccesstoken)
 			# Get the parameters ready.
 			time = Time.now
 			force_send_run_interval_hours = 24
@@ -67,37 +70,6 @@ class ChangeTrackingRunner
 		end 
 	end
 
-	def self.getHash()
-		ret = {}
-		if File.exist?(CHANGE_TRACKING_STATE_FILE) # If file exists
-			@@log.debug "Found the file {CHANGE_TRACKING_STATE_FILE}. Fetching the Hash"
-	        File.open(CHANGE_TRACKING_STATE_FILE, "r") do |f| # Open file
-	        	f.each_line do |line|
-	            	line.split(/\r?\n/).reject{ |l|  
-	                	!l.include? "=" }.map { |s|  
-	                    	s.split("=")}.map { |key, value| 
-	                    		ret[key] = value 
-	                    	}
-	        	end
-			end
-	        return ret
-	    else
-	    	@@log.debug "Could not find the file #{CHANGE_TRACKING_STATE_FILE}"
-	        return nil
-	    end
-	end
-
-	def self.setHash(prev_hash, last_upload_time)
-		# File.write('/path/to/file', 'Some glorious content')
-		if File.exist?(CHANGE_TRACKING_STATE_FILE) # If file exists
-			File.open(CHANGE_TRACKING_STATE_FILE, "w") do |f| # Open file
-				f.puts "#{PREV_HASH}=#{prev_hash}"
-				f.puts "#{LAST_UPLOAD_TIME}=#{last_upload_time}"
-			end
-		else
-			File.write(CHANGE_TRACKING_STATE_FILE, "#{PREV_HASH}=#{prev_hash}\n#{LAST_UPLOAD_TIME}=#{last_upload_time}")
-		end
-	end
 end
 
 ret = ChangeTrackingRunner.transform_and_wrap()

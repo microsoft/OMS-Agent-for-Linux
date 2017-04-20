@@ -10,6 +10,9 @@ class ChangeTracking
 
     PREV_HASH = "PREV_HASH"
     LAST_UPLOAD_TIME = "LAST_UPLOAD_TIME"
+    @@storageaccount = nil 
+    @@storageaccesstoken = nil
+
     @@log =  Logger.new(STDERR) #nil
     @@log.formatter = proc do |severity, time, progname, msg|
         "#{severity} #{msg}\n"
@@ -24,6 +27,11 @@ class ChangeTracking
     @@prev_hash = ""
     def self.prev_hash= (value)
         @@prev_hash = value
+    end
+
+    def self.initialize(storageaccount, storageaccesstoken)
+        @@storageaccount = storageaccount
+        @@storageaccesstoken = storageaccesstoken
     end
 
     def self.instanceXMLtoHash(instanceXML)
@@ -206,7 +214,8 @@ class ChangeTracking
         end
 
         if inventory_hash.has_key?("fileInventories")
-           inventory_hash["fileInventories"] = filteredInventory
+           filteredInventoryWithBlob = filteredInventory.map {|inventory_item| addbloburi(inventory_item)}
+           inventory_hash["fileInventories"] = filteredInventoryWithBlob
         end
 
         return inventory_hash
@@ -217,6 +226,17 @@ class ChangeTracking
 	   return true
         end
         return false 
+    end
+
+    def self.addbloburi(inventory_item)
+        if !@@storageaccount.nil? and !@@storageaccesstoken.nil?
+           filePath = inventory_item["CollectionName"]
+           date = inventory_item["DateModified"]
+           fileName = File.basename(filePath) + date 
+           blobUrl = "https://" + @@storageaccount + ".blob.core.windows.net/changetrackingblob/" + fileName + "?" + @@storageaccesstoken 
+           inventory_item["FileContentBlobLink"] = blobUrl
+        end
+        return inventory_item
     end
 
     def self.wrap (inventory_hash, host, time)

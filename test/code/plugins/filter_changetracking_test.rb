@@ -296,6 +296,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
          "Contents"=>"",
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
          "DateModified"=>"2016-08-20T21:12:22.000Z",
+         "FileContentBlobLink"=>"https://storageaccount.blob.core.windows.net/changetrackingblob/yum.conf2017-04-20T19:49:21.282Z?storageaccesstoken",
          "FileSystemPath"=>"/etc/yum.conf",
          "Group"=>"root",
          "Mode"=>"644",
@@ -305,6 +306,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
          "Contents"=>"",
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
          "DateModified"=>"2016-08-20T21:12:22.000Z",
+         "FileContentBlobLink"=>"https://storageaccount.blob.core.windows.net/changetrackingblob/yum1.conf2017-04-20T19:49:21.282Z?storageaccesstoken",
          "FileSystemPath"=>"/etc/yum1.conf",
          "Group"=>"root",
          "Mode"=>"644",
@@ -317,6 +319,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     "IPName"=>"changetracking"}
 
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
+    ChangeTracking::initialize("storageaccount", "storageaccesstoken")
     transformedHash = ChangeTracking::transform(@fileInventory_xml_str1)
     inventoryChecksum = ChangeTracking::computechecksum(transformedHash)
     expectedInventoryChecksum = {"/etc/yum.conf"=>"0e084a89b6cce82c34eff883a0dd4deb0d510a1997e4a3e087c962a115369aea","/etc/yum1.conf"=>"a6ca05faace33d3d272c9c36e59872fadcd97b5d90038445970a063fe377d7d1"}
@@ -341,6 +344,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
          "Contents"=>"",
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
          "DateModified"=>"2016-08-20T21:12:22.000Z",
+         "FileContentBlobLink"=>"https://storageaccount.blob.core.windows.net/changetrackingblob/yum.conf2016-08-20T21:12:22.000Z?storageaccesstoken",
          "FileSystemPath"=>"/etc/yum.conf",
          "Group"=>"root",
          "Mode"=>"644",
