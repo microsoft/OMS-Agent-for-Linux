@@ -617,12 +617,16 @@ show_workspace_status()
     local is_primary=$3
     local status='Unknown'
 
-    if [ -f ${ws_conf_dir}/.service_registered ]; then
-        status='Success(OMSAgent Registered)'
+    # 1 if omsagent-ws_id is running, 0 otherwise
+    $SERVICE_CONTROL is-running $ws_id
+    if [ $? -eq 1 ]; then
+        status='Onboarded(OMSAgent Running)'
+    elif [ -f ${ws_conf_dir}/.service_registered ]; then
+        status='Warning(OMSAgent Registered, Not Running)'
     elif [ -f ${ws_conf_dir}/omsadmin.conf ]; then
-        status='Failure(OMSAgent Not Registered)'
+        status='Saved(OMSAgent Not Registered, Workspace Configuration Saved)'
     else
-        status='Failure(Agent Not Onboarded)'
+        status='Failure(Agent Not Onboarded, No Workspace Configuration Present)'
     fi
 
     local mh_marker=
@@ -631,9 +635,9 @@ show_workspace_status()
     fi
     
     if [ ${is_primary} -eq 1 ]; then
-        echo "Primary Workspace: ${ws_id}    ${status}"
+        echo "Primary Workspace: ${ws_id}    Status: ${status}"
     else
-        echo "Workspace${mh_marker}: ${ws_id}    ${status}"
+        echo "Workspace${mh_marker}: ${ws_id}    Status: ${status}"
     fi
 }
 
