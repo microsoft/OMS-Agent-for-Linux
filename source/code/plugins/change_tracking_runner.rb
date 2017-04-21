@@ -58,7 +58,7 @@ class ChangeTrackingRunner
 			end
 			return output
 		else
-			@@log.warn ("The ChangeTracking File does not exists. Make sure it is present at the correct")
+			@@log.info ("The change tracking inventory file does not exist and runner will be disabled.")
 			return {}
 		end 
 	end
