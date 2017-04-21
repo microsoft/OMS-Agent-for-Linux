@@ -1,12 +1,12 @@
 # This file is utilized for testing oms_diag.rb as part of oms_diag_test.rb
 
-require_relative '../../../source/code/plugins/oms_diag'
+require_relative '../../../source/code/plugins/oms_diag_lib'
 module Fluent
     class DiagTest < Input
         Fluent::Plugin.register_input('diagTest', self)
 
         def initialize
-            require_relative '../../../source/code/plugins/oms_diag'
+            require_relative '../../../source/code/plugins/oms_diag_lib'
         end
 
         LOG_TYPE_01 = 'LogSimple'
