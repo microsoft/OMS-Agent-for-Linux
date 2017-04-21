@@ -36,7 +36,7 @@ module Fluent
     end
 
     def handle_record(ipname, record)
-      @log.trace "Handling diag records for ipname : #{ipname}"
+      @log.trace "Handling diagnostic records for ipname : #{ipname}"
       req = OMS::Common.create_ods_request(OMS::Configuration.diagnostic_endpoint.path, record, @compress)
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.diagnostic_endpoint, @proxy_config)
@@ -48,26 +48,26 @@ module Fluent
         ends = Time.now
         time = ends - start
         count = record[OMS::Diag::RECORD_DATAITEMS].size
-        @log.debug "Success sending diag #{ipname} x #{count} in #{time.round(2)}s"
+        @log.debug "Success sending diagnotic logs #{ipname} x #{count} in #{time.round(2)}s"
         return true
       end
     rescue OMS::RetryRequestException => e
-      @log.info "Encountered retryable exception. Will retry sending diag data later."
-      @log.debug "Error with diag:'#{e}'"
+      @log.info "Encountered retryable exception. Will retry sending diagnostic data later."
+      @log.debug "Error with diagnostic log:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
       raise e.message
     rescue => e
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously
       # try and fail to resend it. (Infinite failure loop)
-      OMS::Log.error_once("Unexpecting exception, dropping diag data. Error:'#{e}'")
+      OMS::Log.error_once("Unexpecting exception, dropping diagnostic data. Error:'#{e}'")
     end
 
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
       if record != {}
-        @log.trace "Buffering diag #{tag}"
+        @log.trace "Buffering diagnostic log with tag #{tag}"
         retval = record.to_msgpack
         return retval
       else
