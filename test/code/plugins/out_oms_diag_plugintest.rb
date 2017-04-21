@@ -50,7 +50,7 @@ class OutOMSDiagPluginTest < Test::Unit::TestCase
         dataitem = Hash.new
         dataitem[OMS::Diag::DI_KEY_LOGMESSAGE] = log
         dataitem[OMS::Diag::DI_KEY_IPNAME] = ipname
-        dataitem[OMS::Diag::DI_KEY_TIME] = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%6NZ")
+        dataitem[OMS::Diag::DI_KEY_TIME] = OMS::Diag.GetCurrentFormattedTimeForDiagLogs()
         dataitem
     end
 

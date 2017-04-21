@@ -112,7 +112,7 @@ class OMSDiagUT < Test::Unit::TestCase
             dataitem = Hash.new
             dataitem[OMS::Diag::DI_KEY_LOGMESSAGE] = 'Just a test string'
             dataitem[OMS::Diag::DI_KEY_IPNAME] = OMS::Diag::DEFAULT_IPNAME
-            dataitem[OMS::Diag::DI_KEY_TIME] = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%6NZ")
+            dataitem[OMS::Diag::DI_KEY_TIME] = OMS::Diag::GetCurrentFormattedTimeForDiagLogs()
             # Randomly add a few optional properties
             if rand(100) % 2 == 0
                 (1..3).each do
@@ -150,7 +150,7 @@ class OMSDiagUT < Test::Unit::TestCase
             dataitem = Hash.new
             dataitem[OMS::Diag::DI_KEY_LOGMESSAGE] = 'Just a test string'
             dataitem[OMS::Diag::DI_KEY_IPNAME] = OMS::Diag::DEFAULT_IPNAME
-            dataitem[OMS::Diag::DI_KEY_TIME] = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%6NZ")
+            dataitem[OMS::Diag::DI_KEY_TIME] = OMS::Diag::GetCurrentFormattedTimeForDiagLogs()
             # Create few spurious cases
             if y == 1
                 dataitem.delete(OMS::Diag::DI_KEY_LOGMESSAGE)
@@ -202,7 +202,7 @@ class OMSDiagUT < Test::Unit::TestCase
             dataitem = Hash.new
             dataitem[OMS::Diag::DI_KEY_LOGMESSAGE] = 'Just a test string'
             dataitem[OMS::Diag::DI_KEY_IPNAME] = OMS::Diag::DEFAULT_IPNAME
-            dataitem[OMS::Diag::DI_KEY_TIME] = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%6NZ")
+            dataitem[OMS::Diag::DI_KEY_TIME] = OMS::Diag::GetCurrentFormattedTimeForDiagLogs()
             dataitems << dataitem
         end
 

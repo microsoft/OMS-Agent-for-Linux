@@ -28,9 +28,6 @@ module OMS
 
       # Method to be used by INPUT and FILTER plugins for logging
 
-      # Method:
-      # LogDiag(logMessage, tag=DEFAULT_TAG)
-      #
       # Description:
       # This is to be utilized for logging to the diagnostic
       # channel.
@@ -58,7 +55,7 @@ module OMS
         # Adding mandatory properties
         dataitem[DI_KEY_LOGMESSAGE] = logMessage
         dataitem[DI_KEY_IPNAME]     = ipname
-        dataitem[DI_KEY_TIME]       = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%6NZ")
+        dataitem[DI_KEY_TIME]       = GetCurrentFormattedTimeForDiagLogs()
 
         # Following are expected to be taken care of further processing of dataitem
         # by out_oms_diag
@@ -72,9 +69,6 @@ module OMS
 
       # Methods for OUTPUT Plugin (out_oms_diag)
 
-      # Method:
-      # ProcessDataItemsPostAggregation(dataitems, agentId)
-      #
       # Description:
       # This is utilized by out_oms_diag for altering certain properties
       # to the dataitems before serialization. This method will be
@@ -90,14 +84,11 @@ module OMS
         dataitems.delete_if{|x| !IsValidDataItem?(x)}
         for x in dataitems
           x.delete(DI_KEY_IPNAME)
-          x[DI_KEY_TYPE] = DI_TYPE_JSON
           x[DI_KEY_AGENTGUID] = agentId
+          x[DI_KEY_TYPE] = DI_TYPE_JSON
         end
       end
 
-      # Method:
-      # CreateDiagRecord(dataitems, ipname, optionalAttributes)
-      #
       # Description:
       # This is used to create diagnostic record set that is serialized
       # and sent to ODS over HTTPS.
@@ -128,6 +119,11 @@ module OMS
           return false
         end
         true
+      end
+
+      # Method used to get current time as per format of diagnostic logs
+      def GetCurrentFormattedTimeForDiagLogs()
+          Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%6NZ")
       end
 
     end # class << self
