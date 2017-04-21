@@ -19,8 +19,7 @@ module Fluent
     config_param :cert_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.crt'
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
     config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf'
-    # TODO: To make compress default to true once supported
-    config_param :compress, :bool, :default => false
+    config_param :compress, :bool, :default => true
 
     def configure(conf)
       super
