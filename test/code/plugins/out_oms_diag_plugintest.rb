@@ -1,6 +1,6 @@
 require 'fluent/test'
 require_relative '../../../source/code/plugins/oms_configuration'
-require_relative '../../../source/code/plugins/oms_diag'
+require_relative '../../../source/code/plugins/oms_diag_lib'
 require_relative '../../../source/code/plugins/out_oms_diag'
 
 class OutOMSDiagPluginTest < Test::Unit::TestCase

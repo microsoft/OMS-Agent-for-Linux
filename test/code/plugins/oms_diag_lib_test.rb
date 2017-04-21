@@ -2,7 +2,7 @@ require 'test/unit'
 require 'fluent/test'
 require 'securerandom'
 require_relative 'in_diag_tester'
-require_relative '../../../source/code/plugins/oms_diag'
+require_relative '../../../source/code/plugins/oms_diag_lib'
 
 class OMSDiagUT < Test::Unit::TestCase
 
