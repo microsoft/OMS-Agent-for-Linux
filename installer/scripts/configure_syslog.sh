@@ -137,7 +137,7 @@ ConfigureSyslog_ng() {
 }
 
 UnconfigureSyslog_ng() {
-    egrep -q "${WORKDPACE_ID}_oms" ${SYSLOG_NG_DEST}
+    egrep -q "${WORKSPACE_ID}_oms" ${SYSLOG_NG_DEST}
     if [ $? -eq 0 ]; then
         echo "Unconfiguring syslog-ng for OMS logging"
 
