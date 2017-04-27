@@ -117,6 +117,18 @@ cleanup_and_exit()
     fi
 }
 
+check_program_in_path() {
+    # Parameter: name of program to check
+    # Returns: 0 if program is in path, non-zero if not
+    if [ $# -ne 1 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_program_in_path" >&2
+        cleanup_and_exit $INTERNAL_ERROR
+    fi
+    local program=$1
+    which $program > /dev/null 2>&1
+    return $?
+}
+
 check_version_installable() {
     # POSIX Semantic Version <= Test
     # Exit code 0 is true (i.e. installable).
@@ -237,7 +249,7 @@ ulinux_detect_installer()
     INSTALLER=
 
     # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    which dpkg > /dev/null 2>&1
+    check_program_in_path dpkg
     if [ $? -eq 0 ]; then
         INSTALLER=DPKG
     else
@@ -356,10 +368,11 @@ compare_install_type()
 
 python_ctypes_installed() {
     # Check for Python ctypes library (required for omsconfig)
-
     hasCtypes=1
-    tempFile=`mktemp`
     echo "Checking for ctypes python module ..."
+
+    # Check #1: Attempt to create and execute a temporary file importing ctypes
+    tempFile=`mktemp`
 
     cat <<EOF > $tempFile
 #! /usr/bin/python
@@ -370,6 +383,11 @@ EOF
     $tempFile 1> /dev/null 2> /dev/null
     [ $? -eq 0 ] && hasCtypes=0
     rm $tempFile
+
+    # Check #2: Attempt to run python with the single import command
+    python -c "import ctypes" 1> /dev/null 2> /dev/null
+    [ $? -eq 0 ] && hasCtypes=0
+
     return $hasCtypes
 }
 
@@ -410,6 +428,41 @@ shouldInstall_omsconfig()
         check_version_installable $versionInstalled $versionAvailable
     else
         return 1
+    fi
+}
+
+install_extra_package()
+{
+    # Parameter: package name to install
+    #            possibilities: tar, sed
+    # Returns: 0 on success, 1 on failure
+    if [ $# -ne 1 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to install_extra_package" >&2
+        cleanup_and_exit $INTERNAL_ERROR
+    fi
+
+    local install_cmd=""
+    local package=$1
+
+    which zypper > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        install_cmd="zypper --non-interactive install"
+    fi
+    which yum > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        install_cmd="yum install -y"
+    fi
+    which apt-get > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        install_cmd="apt-get install -y"
+    fi
+
+    if [ -z "$install_cmd" ]; then
+        echo "No vendor found to install $package"
+        return 1
+    else
+        $install_cmd $package
+        return $?
     fi
 }
 
@@ -735,7 +788,8 @@ fi
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     compare_install_type
-    compare_arch 
+    compare_arch
+
     python_ctypes_installed
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
@@ -748,14 +802,28 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
             echo "Python ctypes library not found, will continue without installing omsconfig."
         fi
     fi
+
     check_if_pkg_is_installed tar
     if [ $? -ne 0 ]; then
-        echo "tar was not found, installation cannot continue. Please install tar."
+        echo "tar was not found, attempting to install tar..."
+        install_extra_package tar
+    fi
+    tar_package_installed=$?
+    check_program_in_path tar
+    if [ $? -ne 0 -a $tar_package_installed -ne 0 ]; then
+        echo "tar was not installed, installation cannot continue. Please install tar."
         cleanup_and_exit $INSTALL_TAR
     fi
+
     check_if_pkg_is_installed sed
     if [ $? -ne 0 ]; then
-        echo "sed was not found, installation cannot continue. Please install sed."
+        echo "sed was not found, attempting to install sed..."
+        install_extra_package sed
+    fi
+    sed_package_installed=$?
+    check_program_in_path sed
+    if [ $? -ne 0 -a $sed_package_installed -ne 0 ]; then
+        echo "sed was not installed, installation cannot continue. Please install sed."
         cleanup_and_exit $INSTALL_SED
     fi
 fi
