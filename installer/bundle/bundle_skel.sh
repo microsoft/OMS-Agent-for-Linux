@@ -636,12 +636,6 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
         echo "---------- WARNING WARNING WARNING ----------"
         echo
 
-        # If bundled auoms is installed, then remove it
-        check_if_pkg_is_installed auoms
-        if [ $? -eq 0 ]; then
-            pkg_rm auoms
-        fi
-
         pkg_rm omsconfig
         pkg_rm omsagent
 
@@ -673,12 +667,6 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             echo "--- MDSD detected; not removing SCX or OMI packages ---"
         fi
 
-        # If bundled auoms is installed, then remove it
-        check_if_pkg_is_installed auoms
-        if [ $? -eq 0 ]; then
-            pkg_rm auoms
-        fi
-
         if [ "$installMode" = "P" ]; then
             echo "Purging all files in cross-platform agent ..."
 
@@ -705,11 +693,6 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
             check_if_pkg_is_installed omi
             if [ $? -ne 0 ]; then
                 rm -rf /etc/opt/omi /opt/omi /var/opt/omi
-            fi
-
-            check_if_pkg_is_installed auoms
-            if [ $? -ne 0 ]; then
-                rm -rf /etc/opt/microsoft/auoms /opt/microsoft/auoms /var/opt/microsoft/auoms
             fi
 
             rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true

@@ -34,9 +34,6 @@ omsagent ALL=(ALL) NOPASSWD: /usr/bin/test -r *
 #run hdinsightmanifestreader.rb
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb
 
-# Enable nxOMSAuditdResource
-omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSAuditdPlugin.sh
-
 #Enable shutdown for update management
 omsagent ALL=(ALL) NOPASSWD: /sbin/shutdown -r *
 
