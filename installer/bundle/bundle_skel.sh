@@ -793,13 +793,15 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     python_ctypes_installed
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
-            echo "Python ctypes library was not found, installation cannot continue. Please" >&2
-            echo "install the Python ctypes library or package (python-ctypes). If you wish," >&2
-            echo "you can run this shell bundle with --force; in this case, we will install" >&2
-            echo "omsagent, but omsconfig (DSC configuration) will not be available." >&2
+            echo "Error: Python is not configured or Python does not support ctypes on this system, installation cannot continue." >&2
+            echo "Please install the ctypes package (python-ctypes)or upgrade Python to a newer version of python that comes with the ctypes module." >&2
+            echo "You can check if the ctypes module is installed by starting python and running the command: 'import ctypes'." >&2
+            echo "You can run this shell bundle with --force; in this case, we will install" >&2
+            echo "omsagent, but omsconfig (DSC configuration) will not be available and will need to be re-installed." >&2
             cleanup_and_exit $INSTALL_PYTHON_CTYPES
         else
-            echo "Python ctypes library not found, will continue without installing omsconfig."
+            echo "Python is not configured or it does not support ctypes on this system, please upgrade Python to a newer version that comes with the ctypes module and re-install omsconfig later."
+            echo "Installation will continue without installing omsconfig."
         fi
     fi
 
