@@ -49,18 +49,6 @@ module Fluent
     # Methods
     ####################################################################################################
 
-    # create a HTTP request to GET blob
-    # parameters:
-    #   uri: URI. blob URI
-    # returns:
-    #   HTTPRequest. blob GET request
-    def create_blob_get_request(uri)
-      headers = {}
-
-      req = Net::HTTP::Get.new(uri.request_uri, headers)
-      return req
-    end # create_blob_get_request
-
     # create a HTTP request to PUT blob
     # parameters:
     #   uri: URI. blob URI
@@ -105,15 +93,15 @@ module Fluent
         raise e.message, "Request-ID: #{request_id}"
     end # create_blob_put_request
 
-    # get the blob SAS URI from ODS
+    # get the blob JSON info from ODS
     # parameters
     #   container_type: string. ContainerType of the data
     #   data_type: string. DataTypeId of the data
     #   custom_data_type: string. CustomDataType of the CustomLog
     #   suffix: string. Suffix of the blob
     # returns:
-    #   URI. blob SAS URI
-    def get_blob_uri(container_type, data_type, custom_data_type, suffix)
+    #   Hash. JSON from blob ODS endpoint
+    def request_blob_json(container_type, data_type, custom_data_type, suffix)
       data_type_id = data_type
       if !custom_data_type.nil?
         data_type_id = "#{data_type}.#{custom_data_type}"
@@ -126,7 +114,8 @@ module Fluent
         "DataTypeId" => data_type_id,
         "ExpiryDuration" => blob_uri_expiry,
         "Suffix" => url_suffix,
-        "SkipScanningQueue" => true
+        "SkipScanningQueue" => true,
+        "SupportWriteOnlyBlob" => true
       }
 
       req = OMS::Common.create_ods_request(OMS::Configuration.get_blob_ods_endpoint.path, data, compress=false)
@@ -136,16 +125,42 @@ module Fluent
 
       # remove the BOM (Byte Order Marker)
       clean_body = body.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => "")
-      blob_uri_json = JSON.parse(clean_body)
-      return URI.parse( blob_uri_json["Uri"] )
-    end # get_blob_uri
+      return JSON.parse(clean_body)
+    end # request_blob_json
+
+    # get the blob SAS URI and committed blocks from ODS
+    # parameters
+    #   container_type: string. ContainerType of the data
+    #   data_type: string. DataTypeId of the data
+    #   custom_data_type: string. CustomDataType of the CustomLog
+    #   suffix: string. Suffix of the blob
+    # returns:
+    #   URI. blob SAS URI
+    #   string[]. a list of committed blocks
+    def get_blob_uri_and_committed_blocks(container_type, data_type, custom_data_type, suffix)
+      blob_json = request_blob_json(container_type, data_type, custom_data_type, suffix)
+
+      if blob_json.has_key?("Uri")
+        blob_uri = URI.parse(blob_json["Uri"])
+      else
+        @log.error "JSON from BLOB does not contain a URI"
+        blob_uri = nil
+      end
+      if blob_json.has_key?("CommittedBlockList") and !blob_json["CommittedBlockList"].nil?
+        blocks_committed = blob_json["CommittedBlockList"]
+      else
+        blocks_committed = []
+      end
+
+      return blob_uri, blocks_committed
+    end # get_blob_uri_and_committed_blocks
 
     # append data to the blob
     # parameters:
     #   uri: URI. blob URI
     #   msgs: string[]. messages
     #   file_path: string. file path
-    def append_blob(uri, msgs, file_path)
+    def append_blob(uri, msgs, file_path, blocks_committed)
       if msgs.size == 0
         return 0
       end
@@ -158,9 +173,6 @@ module Fluent
       if dataSize == 0
         return 0
       end
-
-      # get committed blocks
-      blocks_committed = get_committed_blocks(uri)
 
       # append blocks
       # if the msg is longer than 4MB (to be safe, we use 4,000,000), we should break it into multiple blocks
@@ -175,24 +187,6 @@ module Fluent
       commit_blocks(uri, blocks_committed, blocks_uncommitted, file_path)
       return dataSize
     end # append_blob
-
-    # get committed blocks from the blob
-    # parameters:
-    #   uri: URI. blob URI
-    # returns:
-    #   string[]. a list of committed blocks
-    def get_committed_blocks(uri)
-      blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
-      get_blocklist_req = create_blob_get_request(blocklist_uri)
-      http = OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
-      body = OMS::Common.start_request(get_blocklist_req, http, true)
-
-      blocks_committed = []
-      doc = REXML::Document.new body
-      doc.elements.each("BlockList/CommittedBlocks/Block/Name") { |element| blocks_committed << element.text }
-
-      return blocks_committed
-    end # get_committed_blocks
 
     # upload one block to the blob
     # parameters:
@@ -294,12 +288,12 @@ module Fluent
       end
 
       start = Time.now
-      blob_uri = get_blob_uri(container_type, data_type, custom_data_type, suffix)
+      blob_uri, blocks_committed = get_blob_uri_and_committed_blocks(container_type, data_type, custom_data_type, suffix)
       time = Time.now - start
-      @log.debug "Success getting the BLOB uri in #{time.round(3)}s"
+      @log.debug "Success getting the BLOB uri and committed block list in #{time.round(3)}s"
 
       start = Time.now
-      dataSize = append_blob(blob_uri, records, filePath)
+      dataSize = append_blob(blob_uri, records, filePath, blocks_committed)
       time = Time.now - start
       @log.debug "Success sending #{dataSize} bytes of data to BLOB #{time.round(3)}s"
 
