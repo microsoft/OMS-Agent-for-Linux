@@ -71,7 +71,7 @@ The OMS agent for Linux is provided in a self-extracting and installable shell s
 **Installing the agent**
 
 1. Transfer the appropriate bundle (x86 or x64) to your Linux computer, using scp/sftp.
-2. Install the bundle by using the `--install` or `--upgrade` argument. Note: use the `--upgrade` argument if any existing packages are installed, as would be the case if the system Center Operations Manager agent for Linux is already installed. To onboard to Operations Management Suite during installation, provide the `-w <WorkspaceID>` and `-s <Shared Key>` parameters.
+2. Install the bundle by using the `--install` or `--upgrade` argument. Note: must use the `--upgrade` argument if any dependent packages such as omi, scx, omsconfig or their older versions are installed, as would be the case if the system Center Operations Manager agent for Linux is already installed. To onboard to Operations Management Suite during installation, provide the `-w <WorkspaceID>` and `-s <Shared Key>` parameters.
 
 **To install and onboard directly:**
 ```

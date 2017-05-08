@@ -380,7 +380,7 @@ import ctypes
 EOF
 
     chmod u+x $tempFile
-    $tempFile 1> /dev/null 2> /dev/null
+    $tempFile 1> /dev/null
     [ $? -eq 0 ] && hasCtypes=0
     rm $tempFile
 
