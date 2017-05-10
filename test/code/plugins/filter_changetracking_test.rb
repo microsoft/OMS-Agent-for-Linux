@@ -13,6 +13,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     @packageinventoryPath = File.join(File.dirname(__FILE__), 'InventoryPackage.xml')
     @serviceinventoryPath = File.join(File.dirname(__FILE__), 'InventoryService.xml')
     @fileinventoryPath = File.join(File.dirname(__FILE__), 'InventoryFile.xml')
+    @fileinventoryHashPath = File.join(File.dirname(__FILE__), 'InventoryFileHash.hash')
+    @fileinventoryHashPath1 = File.join(File.dirname(__FILE__), 'InventoryFileHash1.hash')
     ChangeTracking.prev_hash = nil
   end
 
@@ -92,7 +94,9 @@ class ChangeTrackingTest < Test::Unit::TestCase
       "Path"=> "/etc/rc.d/init.d/iprdump",
       "Runlevels"=> "2, 3, 4, 5",
       "Enabled"=> "false",
-      "Controller"=> "init"
+      "Controller"=> "init",
+      "InventoryChecksum"=>
+      "6d53388bb96294678111ee5c81cde7ef32d7a3ecf6a320c65142516ee32a9967"
     }
     instanceXML = ChangeTracking::strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
@@ -155,6 +159,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
       "Publisher"=> "MicrosoftPublisher",
       "CurrentVersion"=> "1.1.0",
       "Timestamp"=> "2016-03-18T22:11:05.000Z",
+      "InventoryChecksum"=>
+      "17daf5f8849aa11a1afbe453e9cdf0ea2d9cb8a17488e3b9e0f54575e65497a8",
       "Architecture"=> "x86_64",
       "Size"=> "38487871"
     }
@@ -212,7 +218,9 @@ class ChangeTrackingTest < Test::Unit::TestCase
        "Mode"=>"644",
        "ModifiedDate"=>"20160820211222.000000+300",
        "Owner"=>"root",
-       "Type"=>"file"
+       "Type"=>"file",
+       "InventoryChecksum"=>
+       "582b43d1207278601322949c4449a13035184ec7b923586f94ea4b13cca7891d"
     }
     instanceXML = ChangeTracking::strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
@@ -238,7 +246,10 @@ class ChangeTrackingTest < Test::Unit::TestCase
        "IPName"=>"changetracking"}
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
     transformedHash = ChangeTracking::transform(@package_xml_str)
+    inventoryChecksum = ChangeTracking::computechecksum(transformedHash)
     wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
+    expectedInventoryChecksum = {"rsyslog"=>"4099458fbd53f8dc65880268c08d52c055b9a380a364d25b16e89f0a626636b0"} 
+    assert_equal(expectedInventoryChecksum, inventoryChecksum);
     assert_equal(expectedHash, wrappedHash)
   end
 
@@ -268,11 +279,17 @@ class ChangeTrackingTest < Test::Unit::TestCase
        "IPName"=>"changetracking"}
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
     transformedHash = ChangeTracking::transform(@service_xml_str)
+    inventoryChecksum = ChangeTracking::computechecksum(transformedHash)
     wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
+    expectedInventoryChecksum = {"omsagent"=>"69115cd1ae2598c3888618dbf3561f0331076264e10680a7f9bb7891f29f4895"} 
+    assert_equal(expectedInventoryChecksum, inventoryChecksum);
     assert_equal(expectedHash, wrappedHash)
   end
 
   def test_transform_and_wrap_file_inventory
+
+    @fileInventory_xml_str1 = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxFileInventoryResource&quot;&gt;&lt;PROPERTY NAME=&quot;Group&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;root&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Checksum&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1471727542&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;DestinationPath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;/etc/yum.conf&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Mode&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;644&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;CreatedDate&quot; TYPE=&quot;datetime&quot;&gt;&lt;VALUE&gt;20160820211222.000000+300&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Owner&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;root&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Type&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;file&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ModifiedDate&quot; TYPE=&quot;datetime&quot;&gt;&lt;VALUE&gt;20160820211222.000000+300&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Contents&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FileSize&quot; TYPE=&quot;uint64&quot;&gt;&lt;VALUE&gt;835&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxFileInventoryResource&quot;&gt;&lt;PROPERTY NAME=&quot;Group&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;root&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Checksum&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1471727542&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;DestinationPath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;/etc/yum1.conf&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Mode&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;644&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;CreatedDate&quot; TYPE=&quot;datetime&quot;&gt;&lt;VALUE&gt;20160820211222.000000+300&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Owner&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;root&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Type&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;file&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ModifiedDate&quot; TYPE=&quot;datetime&quot;&gt;&lt;VALUE&gt;20160820211222.000000+300&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Contents&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FileSize&quot; TYPE=&quot;uint64&quot;&gt;&lt;VALUE&gt;835&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
+
     expectedHash = {"DataItems"=>
     [{"Collections"=>
        [{"CollectionName"=>"/etc/yum.conf",
@@ -280,6 +297,15 @@ class ChangeTrackingTest < Test::Unit::TestCase
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
          "DateModified"=>"2016-08-20T21:12:22.000Z",
          "FileSystemPath"=>"/etc/yum.conf",
+         "Group"=>"root",
+         "Mode"=>"644",
+         "Owner"=>"root",
+         "Size"=>"835"},
+       {"CollectionName"=>"/etc/yum1.conf",
+         "Contents"=>"",
+         "DateCreated"=>"2016-08-20T21:12:22.000Z",
+         "DateModified"=>"2016-08-20T21:12:22.000Z",
+         "FileSystemPath"=>"/etc/yum1.conf",
          "Group"=>"root",
          "Mode"=>"644",
          "Owner"=>"root",
@@ -291,7 +317,52 @@ class ChangeTrackingTest < Test::Unit::TestCase
     "IPName"=>"changetracking"}
 
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    transformedHash = ChangeTracking::transform(@fileInventory_xml_str)
+    transformedHash = ChangeTracking::transform(@fileInventory_xml_str1)
+    inventoryChecksum = ChangeTracking::computechecksum(transformedHash)
+    expectedInventoryChecksum = {"/etc/yum.conf"=>"0e084a89b6cce82c34eff883a0dd4deb0d510a1997e4a3e087c962a115369aea","/etc/yum1.conf"=>"a6ca05faace33d3d272c9c36e59872fadcd97b5d90038445970a063fe377d7d1"}
+    assert_equal(expectedInventoryChecksum, inventoryChecksum);
+
+    previousInventoryChecksumExpected = {"/etc/yum.conf"=>"1e084a89b6cce82c34eff883a0dd4deb0d510a1997e4a3e087c962a115369aea","/etc/yum1.conf"=>"a6ca05faace33d3d272c9c36e59872fadcd97b5d90038445970a063fe377d7d1", "/etc/yum2.conf"=>"c6ca05faace33d3d272c9c36e59872fadcd97b5d90038445970a063fe377d7d1"}
+    hash = previousInventoryChecksumExpected.to_json
+    ChangeTracking.setHash(hash, Time.now, @fileinventoryHashPath)
+    previousHash = ChangeTracking.getHash(@fileinventoryHashPath)
+
+    previousInventoryChecksum = JSON.parse(previousHash["PREV_HASH"])
+    assert_equal(previousInventoryChecksumExpected, previousInventoryChecksum);
+
+
+    compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, inventoryChecksum)
+    ChangeTracking.setHash(compareChecksum, Time.now, @fileinventoryHashPath1)
+    
+
+    expectedHash = {"DataItems"=>
+  [{"Collections"=>
+     [{"CollectionName"=>"/etc/yum.conf",
+       "Contents"=>"",
+       "DateCreated"=>"2016-08-20T21:12:22.000Z",
+       "DateModified"=>"2016-08-20T21:12:22.000Z",
+       "FileContentBlobLink"=>" ",
+       "FileSystemPath"=>"/etc/yum.conf",
+       "Group"=>"root",
+       "Mode"=>"644",
+       "Owner"=>"root",
+       "Size"=>"835"},
+      {"CollectionName"=>"/etc/yum1.conf",
+       "Contents"=>"",
+       "DateCreated"=>"2016-08-20T21:12:22.000Z",
+       "DateModified"=>"2016-08-20T21:12:22.000Z",
+       "FileSystemPath"=>"/etc/yum1.conf",
+       "Group"=>"root",
+       "Mode"=>"644",
+       "Owner"=>"root",
+       "Size"=>"835"}],
+    "Computer"=>"HostName",
+    "ConfigChangeType"=>"Files",
+    "Timestamp"=>"2016-03-15T19:02:38.577Z"}],
+ "DataType"=>"CONFIG_CHANGE_BLOB",
+ "IPName"=>"changetracking"}
+
+    ChangeTracking.markchangedinventory(compareChecksum, transformedHash)
     wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
     assert_equal(expectedHash, wrappedHash, "#{wrappedHash}")
   end
