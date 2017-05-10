@@ -4,21 +4,21 @@
 Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
 
 ## Quick Install guide
-Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **connected sources** tab.
+Run the following command to download the omsagent, validate the checksum, and install+onboard the agent. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **Connected Sources** tab.
 ```
 $> wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
 ```
+The latest agent bundle can also be downloaded manually from our [Releases page](https://github.com/Microsoft/OMS-Agent-for-Linux/releases).
+
 ## Azure Install guide
 If you are an Azure customer, we have an Azure VM Extension that allows you to onboard with a couple of clicks.
-* [OMS Agent for Linux Azure VM Extension Documentation](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/VM-Extension.md)
+* [OMS Agent for Linux Azure VM Extension Documentation](docs/VM-Extension.md)
 * [Azure Video walkthrough](https://www.youtube.com/watch?v=mF1wtHPEzT0)
 
 ## [Full installation guide](docs/OMS-Agent-for-Linux.md#install-the-oms-agent-for-linux)
 
-### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
+## [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 
-## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent-201702-v1.3.1-15/omsagent-1.3.1-15.universal.x64.sh)
-## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent-201702-v1.3.1-15/omsagent-1.3.1-15.universal.x86.sh)
 ## Feedback
 
 We love feedback!  Whether it be good, bad or indifferent, it really helps us build a better product for you.  There are a few different routes to give feedback:
