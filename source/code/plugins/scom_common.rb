@@ -112,3 +112,60 @@ module SCOM
       
   end # class Common
 end # module SCOM
+
+module Fluent
+
+  class SCOMTimerFilterPlugin < Filter
+  
+    desc 'time interval before which regexp2 needs to match'
+    config_param :time_interval, :integer, :default => 0
+    desc 'event number to be sent to SCOM'
+    config_param :event_id, :string, :default => nil
+    desc 'event description to be sent to SCOM'
+    config_param :event_desc, :string, :default => nil
+  
+    def initialize()
+      super
+      @exp1_found = false
+      @timer = nil
+      @lock = Mutex.new
+    end
+    
+    def start
+      super
+    end
+    
+    def shutdown
+      super
+    end
+    
+    def configure(conf)
+      super
+      raise ConfigError, "Configuration does not have corresponding event ID" unless @event_id
+      raise ConfigError, "Configuration does not have a time interval" unless (@time_interval > 0)
+    end
+    
+    def flip_state()
+      @lock.synchronize {
+        @exp1_found = !@exp1_found
+      }
+    end
+    
+    def set_timer
+      flip_state()
+      @timer = Thread.new { sleep @time_interval; timer_expired() }
+    end
+    
+    def reset_timer
+      flip_state()
+      @timer.terminate()
+      @timer = nil
+    end
+    
+    def timer_expired()
+      $log.debug "Timer expired for event ID #{@event_id}"
+      flip_state()
+    end
+    
+  end # class SCOMTimerFilterPlugin
+end # module Fluent

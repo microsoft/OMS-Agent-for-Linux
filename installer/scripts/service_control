@@ -22,6 +22,9 @@ BIN_DIR=/opt/microsoft/omsagent/bin
 
 WORKSPACE_REGEX='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
+# Space seperated list of non oms workspaces
+NON_OMS_WS="scom"
+
 setup_variables()
 {
     if [ -z "$1" ]; then
@@ -321,6 +324,18 @@ disable_omsagent_service()
     rm -f $CONF_DIR/.service_registered
 }
 
+check_ws_and_invoke()
+{
+    for ws_id in $NON_OMS_WS
+    do
+        ls -1 $ETC_DIR | grep -w ${ws_id} > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            setup_variables ${ws_id}
+            $1
+        fi
+    done
+}
+
 start_all_omsagent()
 {
     for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
@@ -328,6 +343,8 @@ start_all_omsagent()
        setup_variables ${ws_id}
        start_omsagent
     done
+
+    check_ws_and_invoke start_omsagent
 }
 
 stop_all_omsagent()
@@ -337,6 +354,8 @@ stop_all_omsagent()
        setup_variables ${ws_id}
        stop_omsagent
     done
+
+    check_ws_and_invoke stop_omsagent
 }
 
 restart_all_omsagent()
@@ -346,6 +365,8 @@ restart_all_omsagent()
        setup_variables ${ws_id}
        restart_omsagent
     done
+
+    check_ws_and_invoke restart_omsagent
 }
 
 enable_all_omsagent_services()
@@ -355,6 +376,8 @@ enable_all_omsagent_services()
        setup_variables ${ws_id}
        enable_omsagent_service
     done
+
+    check_ws_and_invoke enable_omsagent_service
 }
 
 disable_all_omsagent_services()
@@ -364,6 +387,8 @@ disable_all_omsagent_services()
        setup_variables ${ws_id}
        disable_omsagent_service
     done
+
+    check_ws_and_invoke disable_omsagent_service
 }
 
 case "$1" in
