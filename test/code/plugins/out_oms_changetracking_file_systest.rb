@@ -102,7 +102,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     assert(output.handle_records(tag, record), "Failed to send change tracking updates data : '#{$log.logs}'")
     append_blob_log = output.get_append_blob_log()
     assert_not_nil(append_blob_log)
-    assert_equal(append_blob_log["/etc/yum.conf"],  "http://abc.blob.core.net/changetracking/CentOS5OMSBld/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z?xyz")
+    assert_equal(append_blob_log["/etc/yum.conf"],  "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z?xyz")
     assert_equal(append_blob_log["/etc/yum1.conf"], nil)
 
  
@@ -141,7 +141,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     collection = output.get_changed_files(record)
     assert_not_nil(collection, "changed files should not be nil")
     assert_not_nil(collection["/etc/yum.conf"])
-    assert_equal(collection["/etc/yum.conf"], "http://abc.blob.core.net/changetracking/CentOS5OMSBld/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z")
+    assert_equal(collection["/etc/yum.conf"], "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z")
     assert_equal(collection["/etc/yum1.conf"], nil)
 
     expected_changed_record = {"DataItems"=>
@@ -151,7 +151,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
        "DateCreated"=>"2016-08-20T18:12:22.000Z",
        "DateModified"=>"2016-08-20T18:12:22.000Z",
        "FileContentBlobLink"=>
-        "http://abc.blob.core.net/changetracking/CentOS5OMSBld/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z",
+        "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z",
        "FileSystemPath"=>"/etc/yum.conf",
        "Group"=>"root",
        "Mode"=>"644",
@@ -162,7 +162,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
        "DateCreated"=>"2016-08-20T18:12:22.000Z",
        "DateModified"=>"2016-08-20T18:12:22.000Z",
        "FileContentBlobLink"=>
-        "http://abc.blob.core.net/changetracking/CentOS5OMSBld/#{OMS::Configuration.agent_id}/yum1.conf2016-08-20T18:12:22.000Z",
+        "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum1.conf2016-08-20T18:12:22.000Z",
        "FileSystemPath"=>"/etc/yum1.conf",
        "Group"=>"root",
        "Mode"=>"644",
