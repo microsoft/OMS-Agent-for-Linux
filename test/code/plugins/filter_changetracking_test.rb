@@ -19,7 +19,16 @@ class ChangeTrackingTest < Test::Unit::TestCase
   end
 
   def teardown
-
+    begin
+      if File.exist?(@fileinventoryHashPath)
+         File.delete(@fileinventoryHashPath)
+      end
+      if File.exist?(@fileinventoryHashPath1)
+         File.delete(@fileinventoryHashPath1)
+      end
+    rescue Exception => e 
+      assert(false, "failed to delete the file : #{e.message}")
+    end
   end
 
   def test_strToXML
