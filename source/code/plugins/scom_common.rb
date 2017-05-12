@@ -66,7 +66,13 @@ module SCOM
     def self.create_secure_http(uri)
       http = Net::HTTP.new( uri.host, uri.port )
       http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      if SCOM::Configuration.enable_server_auth
+        OMS::Log.info_once("Enabling server certificate validation")
+        http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      else
+        OMS::Log.info_once("Disabling server certificate validation")
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end # if
       http.open_timeout = 30
       return http
     end

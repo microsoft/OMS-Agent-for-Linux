@@ -21,9 +21,10 @@ module SCOM
     @@scom_perf_endpoint = nil
     
     @@monitoring_id = nil
-    @@fqdn = nil    
+    @@fqdn = nil
+    @@enable_server_auth = false   
       
-    def self.load_scom_configuration
+    def self.load_scom_configuration(enable_server_auth)
       return true if @@configuration_loaded
       return false if !OMS::Configuration.test_onboard_file(@@scom_conf_path) or !OMS::Configuration.test_onboard_file(@@cert_path) or !OMS::Configuration.test_onboard_file(@@key_path) 
             
@@ -66,7 +67,9 @@ module SCOM
       if(!@@fqdn)
         return false
       end # if
-              
+      
+      @@enable_server_auth = enable_server_auth
+       
       @@configuration_loaded = true
       return true
     end # method load_configuration
@@ -104,6 +107,10 @@ module SCOM
     
     def self.fqdn
       @@fqdn
+    end
+
+    def self.enable_server_auth
+      @@enable_server_auth
     end
 
   end # class Configuration

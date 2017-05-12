@@ -14,6 +14,9 @@ module Fluent
       require_relative 'scom_common'
     end
 
+    desc 'Set this parameter to true to validate server certificate'
+    config_param :enable_server_auth, :bool, :default => false
+
     def configure(conf)
       super
     end
@@ -74,7 +77,7 @@ module Fluent
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)
       # Quick exit if we are missing something
-      if !SCOM::Configuration.load_scom_configuration()
+      if !SCOM::Configuration.load_scom_configuration(@enable_server_auth)
         raise SCOM::RetryRequestException, 'Missing configuration. Make sure to run discovery.'
       end
       @log.trace "Writing chunk"
