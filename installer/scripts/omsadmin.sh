@@ -743,8 +743,8 @@ list_workspaces()
     fi
     # check scom workspace
     list_scom_workspace
-    if [ $found_ws -eq 0 ]; then
-        found_ws=$?
+    if [ $? -eq 1 ]; then
+        found_ws=1
     fi
 
     if [ $found_ws -eq 0 ]; then
