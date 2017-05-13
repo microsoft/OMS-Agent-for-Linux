@@ -91,8 +91,9 @@ module Fluent
       datatypes = {}
       unmergable_records = []
       chunk.msgpack_each {|(tag, record)|
-        if record.has_key?('DataType') and record.has_key?('IPName')
-          key = "#{record['DataType']}.#{record['IPName']}".upcase
+        if record.has_key?('DataType')
+          ip = record.has_key?('IPName') ? record['IPName'] : "Unknown";
+          key = "#{record['DataType']}.#{ip}}".upcase
 
           if datatypes.has_key?(key)
             # Merge instances of the same datatype and ipname together
@@ -105,7 +106,7 @@ module Fluent
             end
           end
         else
-          @log.warn "Missing DataType or IPName field in record from tag '#{tag}'"
+          @log.warn "Missing DataType field in record from tag '#{tag}'"
         end
       }
 
