@@ -14,7 +14,6 @@ class MaintenanceUnitTest < Test::Unit::TestCase
                                       "int.com/ConfigurationService.Svc/RenewCertificate"
 
   VALID_OMSADMIN_CONF = "WORKSPACE_ID=#{VALID_WORKSPACE_ID}\n"\
-                        "AGENT_GUID=#{VALID_AGENT_GUID}\n"\
                         "LOG_FACILITY=local0\n"\
                         "CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n"\
                         "URL_TLD=int2.microsoftatlanta-int.com\n"\
@@ -41,6 +40,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
 
   def setup
     @omsadmin_conf_file = Tempfile.new("omsadmin_conf")
+    @agentid_file = Tempfile.new("agentid")
     @cert_file = Tempfile.new("oms_crt")
     @key_file = Tempfile.new("oms_key")
     @pid_file = Tempfile.new("omsagent_pid")  # doesn't need to have meaningful data for testing
@@ -52,6 +52,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
 
   def teardown
     @omsadmin_conf_file.unlink
+    @agentid_file.unlink
     @cert_file.unlink
     @key_file.unlink
     @pid_file.unlink
@@ -62,12 +63,18 @@ class MaintenanceUnitTest < Test::Unit::TestCase
 
   # Helper to create a new Maintenance class object to test
   def get_new_maintenance_obj(omsadmin_path = @omsadmin_conf_file.path,
-       cert_path = @cert_file.path, key_path = @key_file.path, pid_path = @pid_file.path,
-       proxy_path = @proxy_file.path, os_info_path = @os_info_file.path,
-       install_info_path = @install_info_file.path, log = @log, verbose = false)
+                              cert_path = @cert_file.path,
+                              key_path = @key_file.path,
+                              pid_path = @pid_file.path,
+                              proxy_path = @proxy_file.path,
+                              os_info_path = @os_info_file.path,
+                              install_info_path = @install_info_file.path,
+                              agentid_path = @agentid_file.path,
+                              log = @log,
+                              verbose = false)
 
     m = MaintenanceModule::Maintenance.new(omsadmin_path, cert_path, key_path, pid_path,
-         proxy_path, os_info_path, install_info_path, log, verbose)
+         proxy_path, os_info_path, install_info_path, agentid_path, log, verbose)
     m.suppress_stdout = true
     return m
   end
@@ -85,6 +92,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
 
   def test_load_config_return_code
     File.write(@omsadmin_conf_file.path, VALID_OMSADMIN_CONF)
+    File.write(@agentid_file.path, "#{VALID_AGENT_GUID}\n")
     m = get_new_maintenance_obj
     assert_equal(m.load_config_return_code, 0, "load_config failed with valid config")
   end

@@ -75,8 +75,8 @@ module OMS
           Hash[ matches.names.map{ |name| name.to_sym}.zip( matches.captures ) ]
       end
 
-      # load the configuration from the configuration file, cert, and key path
-      def load_configuration(conf_path, cert_path, key_path)
+      # load the configuration from the configuration files, cert, and key path
+      def load_configuration(conf_path, cert_path, key_path, agentid_path = "/etc/opt/microsoft/omsagent/agentid")
         return true if @@ConfigurationLoaded
         return false if !test_onboard_file(conf_path) or !test_onboard_file(cert_path) or !test_onboard_file(key_path)
 
@@ -118,19 +118,23 @@ module OMS
           return false
         end
 
-        agentid_lines = IO.readlines(conf_path).select{ |line| line.start_with?("AGENT_GUID")}
-        if agentid_lines.size == 0
-          OMS::Log.error_once("Could not find AGENT_GUID setting in #{conf_path}")
-          return false
-        elsif agentid_lines.size > 1
-          OMS::Log.warn_once("Found more than one AGENT_GUID setting in #{conf_path}, will use the first one.")
-        end
-
-        begin
-          @@AgentId = agentid_lines[0].split("=")[1].strip
-        rescue => e
-          OMS::Log.error_once("Error parsing agent id. #{e}")
-          return false
+        if File.exist?(agentid_path)
+          @@AgentId = File.read(agentid_path).strip
+        else
+          agentid_lines = IO.readlines(conf_path).select{ |line| line.start_with?("AGENT_GUID")}
+          if agentid_lines.size == 0
+            Log.error_once("Could not find AGENT_GUID setting in #{conf_path}")
+            return false
+          elsif agentid_lines.size > 1
+            Log.warn_once("Found more than one AGENT_GUID setting in #{conf_path}, will use the first one.")
+          end
+  
+          begin
+            @@AgentId = agentid_lines[0].split("=")[1].strip
+          rescue => e
+            OMS::Log.error_once("Error parsing agent id. #{e}")
+            return false
+          end
         end
 
         File.open(conf_path).each_line do |line|

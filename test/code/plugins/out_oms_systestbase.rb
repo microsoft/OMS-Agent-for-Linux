@@ -28,10 +28,10 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
 
   def prep_onboard
     # Make sure that we read test onboarding information from the environment varibles
-    assert(TEST_WORKSPACE_ID != nil, "TEST_WORKSPACE_ID should be set by the environment for this test to run.") 
+    assert(TEST_WORKSPACE_ID != nil, "TEST_WORKSPACE_ID should be set by the environment for this test to run.")
     assert(TEST_SHARED_KEY != nil, "TEST_SHARED_KEY should be set by the environment for this test to run.")
 
-    assert(TEST_WORKSPACE_ID.empty? == false, "TEST_WORKSPACE_ID should not be empty.") 
+    assert(TEST_WORKSPACE_ID.empty? == false, "TEST_WORKSPACE_ID should not be empty.")
     assert(TEST_SHARED_KEY.empty? == false, "TEST_SHARED_KEY should not be empty.")
 
     # Setup test onboarding script and folder
@@ -51,6 +51,7 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
     conf_path = "#{@omsadmin_test_dir_ws}/conf/omsadmin.conf"
     cert_path = "#{@omsadmin_test_dir_ws}/certs/oms.crt"
     key_path = "#{@omsadmin_test_dir_ws}/certs/oms.key"
+    agentid_path = @omsadmin_test_dir_ws.gsub(/\/[^\/]*$/, '') + '/agentid'
 
     conf = %[
       omsadmin_conf_path #{conf_path}
@@ -58,7 +59,7 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
       key_path #{key_path}
     ]
 
-    success = OMS::Configuration.load_configuration(conf_path, cert_path, key_path)
+    success = OMS::Configuration.load_configuration(conf_path, cert_path, key_path, agentid_path)
     assert_equal(true, success, "Configuration should be loaded")
 
     return conf

@@ -82,9 +82,15 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     return onboard_out
   end
 
+  def get_agentid_path(ws_dir)
+    omsagent_path = ws_dir.gsub(/\/[^\/]*$/, '')
+    agentid_path = omsagent_path + '/agentid'
+    return agentid_path
+  end
+
   def get_GUID(ws_dir = @omsadmin_test_dir_ws1)
-    conf = File.read("#{ws_dir}/conf/omsadmin.conf")
-    guid = conf[/AGENT_GUID=(.*)/, 1]
+    agentid_path = get_agentid_path(ws_dir)
+    guid = File.read(agentid_path).strip
     return guid
   end
 

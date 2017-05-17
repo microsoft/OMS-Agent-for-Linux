@@ -163,7 +163,7 @@ module OMS
       # Parameters:
       # @dataitems[mandatory]: Array of dataitems sent via LogDiag from
       # Input and Filter plugins
-      # @agentId[mandatory]: The omsagent guid parsed from omsadmin.conf
+      # @agentId[mandatory]: The omsagent guid parsed from OMS configuration
       def ProcessDataItemsPostAggregation(dataitems, agentId)
         # Remove all invalid dataitems
         dataitems.delete_if{|x| !IsValidDataItem?(x)}
