@@ -558,25 +558,9 @@ do
             ;;
 
         --version-check)
-            printf '%-15s%-15s%-15s%-15s\n\n' Package Installed Available Install?
-
-            # scx (and omi)
-            ./bundles/$SCX_INSTALLER --version-check
-
-            # OMS agent itself
-            versionInstalled=`getInstalledVersion omsagent`
-            versionAvailable=`getVersionNumber $OMS_PKG omsagent-`
-            if shouldInstall_omsagent; then shouldInstall="Yes"; else shouldInstall="No"; fi
-            printf '%-15s%-15s%-15s%-15s\n' omsagent $versionInstalled $versionAvailable $shouldInstall
-
-            # omsconfig
-            versionInstalled=`getInstalledVersion omsconfig`
-            versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
-            if ! pytyon_ctypes_installed 1> /dev/null 2> /dev/null; then ctypes_text=" (No ctypes)"; fi
-            if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No${ctypes_text}"; fi
-            printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
-
-            exit 0
+            checkVersionAndCleanUp=true
+            installMode=none
+            shift 1
             ;;
 
         --upgrade)
@@ -855,6 +839,25 @@ then
     cleanup_and_exit ${STATUS}
 fi
 
+if [ -n "${checkVersionAndCleanUp}" ]; then
+    # scx (and omi) (this will print out the header)
+    ./bundles/$SCX_INSTALLER --version-check
+
+    # OMS agent itself
+    versionInstalled=`getInstalledVersion omsagent`
+    versionAvailable=`getVersionNumber $OMS_PKG omsagent-`
+    if shouldInstall_omsagent; then shouldInstall="Yes"; else shouldInstall="No"; fi
+    printf '%-15s%-15s%-15s%-15s\n' omsagent $versionInstalled $versionAvailable $shouldInstall
+
+    # omsconfig
+    versionInstalled=`getInstalledVersion omsconfig`
+    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
+    if ! python_ctypes_installed > /dev/null 2>&1; then ctypes_text=" (No ctypes)"; fi
+    if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No${ctypes_text}"; fi
+    printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
+    cleanup_and_exit 0
+fi
+
 #
 # Do stuff after extracting the binary here, such as actually installing the package.
 #
@@ -1046,7 +1049,7 @@ case "$installMode" in
 
     *)
         echo "$0: Invalid setting of variable \$installMode, exiting" >&2
-        cleanup_and_exit 2
+        cleanup_and_exit $INTERNAL_ERROR
 esac
 
 # Remove temporary files (now part of cleanup_and_exit) and exit
