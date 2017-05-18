@@ -24,7 +24,90 @@ module OMS
     # Record constant values
     RECORD_MGID_VALUE = '{00000000-0000-0000-0000-000000000002}'
 
+    # Diagnostic logging support minimum version
+    DIAG_MIN_VERSION = "1.3.4-127"
+
     class << self
+
+      @@DiagSupported = nil
+      @@InstallInfoPath = "/etc/opt/microsoft/omsagent/sysconf/installinfo.txt"
+
+      # Method to check if diagnostic logging is supported
+      #
+      # Description:
+      # This would tell if current omsagent version supports
+      # diagnostic logging
+      #
+      # NOTE: If this returns false then logs will be rejected silently
+      def IsDiagSupported()
+        return @@DiagSupported unless @@DiagSupported.nil?
+
+        begin
+          # Read installinfo.txt
+          versionline = IO.readlines(@@InstallInfoPath)[0]
+
+          # Extract version number
+          versionnum = versionline.split()[0]
+
+          # Extract major and minor parts of version number
+          cur_major, cur_minor, cur_patch, cur_build = GetVersionParts(versionnum)
+
+          # Check validity of major and minor parts
+          if cur_major.nil? or
+              cur_minor.nil? or
+              cur_patch.nil? or
+              cur_build.nil?
+            @@DiagSupported = false
+            return @@DiagSupported
+          end
+
+          # Compare version number
+          tar_major, tar_minor, tar_patch, tar_build = GetVersionParts(DIAG_MIN_VERSION)
+
+          # Compare major parts
+          if @@DiagSupported.nil?
+            if cur_major.to_i > tar_major.to_i
+              @@DiagSupported = true
+            elsif cur_major.to_i < tar_major.to_i
+              @@DiagSupported = false
+            end
+          end
+
+          # Compare minor parts
+          if @@DiagSupported.nil?
+            if cur_minor.to_i > tar_minor.to_i
+              @@DiagSupported = true
+            elsif cur_minor.to_i < tar_minor.to_i
+              @@DiagSupported = false
+            end
+          end
+
+          # Compare patch parts
+          if @@DiagSupported.nil?
+            if cur_patch.to_i > tar_patch.to_i
+              @@DiagSupported = true
+            elsif cur_patch.to_i < tar_patch.to_i
+              @@DiagSupported = false
+            end
+          end
+
+          # Compare build parts
+          if @@DiagSupported.nil?
+            if cur_build.to_i > tar_build.to_i
+              @@DiagSupported = true
+            elsif cur_build.to_i < tar_build.to_i
+              @@DiagSupported = false
+            end
+          end
+
+        rescue
+          return false
+        end
+
+        # The version is DIAG_MIN_VERSION
+        @@DiagSupported = true if @@DiagSupported.nil?
+        return @@DiagSupported
+      end
 
       # Method to be used by INPUT and FILTER plugins for logging
 
@@ -43,6 +126,8 @@ module OMS
       #
       # NOTE: Certain mandatory properties to the dataitem are added by default
       def LogDiag(logMessage, tag=DEFAULT_TAG, ipname=DEFAULT_IPNAME, properties=nil)
+        return unless IsDiagSupported()
+
         # Process default values for tag and ipname if they are passed as nil
         tag ||= DEFAULT_TAG
         ipname ||= DEFAULT_IPNAME
@@ -124,6 +209,14 @@ module OMS
       # Method used to get current time as per format of diagnostic logs
       def GetCurrentFormattedTimeForDiagLogs()
           Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%6NZ")
+      end
+
+      # Method used to get major minor version parts as array of omsagent version
+      def GetVersionParts(versionStr)
+          version_vals = versionStr.split('-')
+          major, minor, patch = version_vals[0].split('.')
+          build = version_vals[1]
+          return major, minor, patch, build
       end
 
     end # class << self

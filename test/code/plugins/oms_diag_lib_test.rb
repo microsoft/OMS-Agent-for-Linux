@@ -6,13 +6,27 @@ require_relative '../../../source/code/plugins/oms_diag_lib'
 
 class OMSDiagUT < Test::Unit::TestCase
 
+    class OMS::Diag
+        @@InstallInfoPath = "test_version_file.txt"
+        class << self
+            def SetDiagSupported(val)
+                @@DiagSupported = val
+            end
+            def GetInstallInfoPath()
+                @@InstallInfoPath
+            end
+        end
+    end
+
     def setup
         Fluent::Test.setup
+        OMS::Diag.SetDiagSupported(true)
     end
 
     def teardown
         super
         Fluent::Engine.stop
+        File.unlink(OMS::Diag.GetInstallInfoPath()) if File.exist?(OMS::Diag.GetInstallInfoPath())
     end
 
     def create_driver
@@ -240,4 +254,95 @@ class OMSDiagUT < Test::Unit::TestCase
                      "#{OMS::Diag::RECORD_MGID} key should be equal to #{OMS::Diag::RECORD_MGID_VALUE}")
     end
 
+    # Test cases pertaining to version check
+
+    # Checking diagnostic support with lower omsagent version
+    def test_case_version_check_01
+        versions = ["1.3.4-126", "1.3.3-127", "1.2.4-127", "0.3.4-127", "1.2.2-123", "1.0.4-1"]
+
+        versions.each do |v|
+            # Setting up version file
+            File.open(OMS::Diag.GetInstallInfoPath(), 'w') do |file|
+                file.puts "#{v} xcwer23234 Release_Build"
+            end
+
+            # Forcing parsing of version file
+            OMS::Diag.SetDiagSupported(nil)
+
+            # Checking the diag is not enabled
+            assert_equal(false,
+                     OMS::Diag.IsDiagSupported(),
+                     "Diagnostic logging should not be supported for lower version #{v} than min version")
+        end
+    end
+
+    # Checking diagnostic support with min omsagent version
+    def test_case_version_check_02
+        # Setting up version file
+        File.open(OMS::Diag.GetInstallInfoPath(), 'w') do |file|
+            file.puts "#{OMS::Diag::DIAG_MIN_VERSION} xcwer23234 Release_Build"
+        end
+
+        # Forcing parsing of version file
+        OMS::Diag.SetDiagSupported(nil)
+
+        # Checking that diag is enabled
+        assert_equal(true,
+                     OMS::Diag.IsDiagSupported(),
+                     "Diagnostic logging should be supported for when version is min version")
+    end
+
+    # Checking diagnostic support with higher omsagent version
+    def test_case_version_check_03
+        versions = ["1.3.4-128", "1.3.5-127", "1.4.4-127", "2.3.4-127", "1.4.0-1", "1.3.5-0", "1.3.12-4"]
+
+        versions.each do |v|
+            # Setting up version file
+            File.open(OMS::Diag.GetInstallInfoPath(), 'w') do |file|
+                file.puts "#{v} xcwer23234 Release_Build"
+            end
+
+            # Forcing parsing of version file
+            OMS::Diag.SetDiagSupported(nil)
+
+            # Checking that diag is enabled
+            assert_equal(true,
+                     OMS::Diag.IsDiagSupported(),
+                     "Diagnostic logging should be supported for higher version #{v} than min version")
+        end
+    end
+
+    # Checking diagnostic support with invalid omsagent version string
+    def test_case_version_check_04
+        versions = ["1.3.4", "1.3-127", "1-127", "1.3.4-a127", "1.2.3.4-127"]
+
+        versions.each do |v|
+            # Setting up version file
+            File.open(OMS::Diag.GetInstallInfoPath(), 'w') do |file|
+                file.puts "#{v} xcwer23234 Release_Build"
+            end
+
+            # Forcing parsing of version file
+            OMS::Diag.SetDiagSupported(nil)
+
+            # Checking the diag is not enabled
+            assert_equal(false,
+                     OMS::Diag.IsDiagSupported(),
+                     "Diagnostic logging should not be supported for invalid version string #{v}")
+        end
+    end
+
+    # Checking diagnostic support with invalid file path
+    def test_case_version_check_05
+        # Remove any version file if existant
+        File.unlink(OMS::Diag.GetInstallInfoPath()) if File.exist?(OMS::Diag.GetInstallInfoPath())
+
+        # Forcing parsing of version file
+        OMS::Diag.SetDiagSupported(nil)
+
+        # Checking the diag is not enabled
+        assert_equal(false,
+                 OMS::Diag.IsDiagSupported(),
+                 "Diagnostic logging should not be supported as install info file does not exist")
+    end
 end
