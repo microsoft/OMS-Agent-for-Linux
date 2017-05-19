@@ -371,21 +371,8 @@ python_ctypes_installed() {
     # Check for Python ctypes library (required for omsconfig)
     hasCtypes=1
     echo "Checking for ctypes python module ..."
-
-    # Check #1: Attempt to create and execute a temporary file importing ctypes
-    tempFile=`mktemp`
-
-    cat <<EOF > $tempFile
-#! /usr/bin/python
-import ctypes
-EOF
-
-    chmod u+x $tempFile
-    $tempFile 1> /dev/null
-    [ $? -eq 0 ] && hasCtypes=0
-    rm $tempFile
-
-    # Check #2: Attempt to run python with the single import command
+	
+    # Attempt to run python with the single import command
     python -c "import ctypes" 1> /dev/null 2> /dev/null
     [ $? -eq 0 ] && hasCtypes=0
 
