@@ -80,6 +80,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/out_oms_diag.rb;                         source/code/plugins/out_oms_diag.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/oms_diag_lib.rb;                         source/code/plugins/oms_diag_lib.rb;                   744; root; root
 
+/opt/microsoft/omsagent/plugin/in_auoms.rb;                             source/code/plugins/in_auoms.rb;                       744; root; root
 /opt/microsoft/omsagent/plugin/auditd_plugin_lib.rb;                    source/code/plugins/auditd_plugin_lib.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/filter_auditd_plugin.rb;                 source/code/plugins/filter_auditd_plugin.rb;           744; root; root
 

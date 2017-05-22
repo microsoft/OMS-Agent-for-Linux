@@ -19,7 +19,7 @@ class AuditdPluginLibTest < Test::Unit::TestCase
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
     end
     
-    def test_missing_record_count_event
+    def test_missing_records_event
         record = {}
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
@@ -27,9 +27,9 @@ class AuditdPluginLibTest < Test::Unit::TestCase
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
     end
     
-    def test_invalid_record_count_event
+    def test_invalid_records_event
         record = {
-            "record-count" => -1
+            "records" => nil
         }
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
@@ -37,17 +37,15 @@ class AuditdPluginLibTest < Test::Unit::TestCase
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
 
         record = {
-            "record-count" => 0
+            "records" => "bad"
         }
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
 
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
-    end
-    
-    def test_missing_record_data_event
+
         record = {
-            "record-count" => 1
+            "records" => []
         }
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
@@ -57,9 +55,8 @@ class AuditdPluginLibTest < Test::Unit::TestCase
     
     def test_missing_timestamp_event
         record = {
-            "record-count" => 1,
             "SerialNumber" => 731250,
-            "record-data-0" => '{"Field1":"Value1"}'
+            "records" => [{"Field1"=>"Value1"}]
         }
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
@@ -69,9 +66,8 @@ class AuditdPluginLibTest < Test::Unit::TestCase
     
     def test_missing_serial_number_event
         record = {
-            "record-count" => 1,
             "Timestamp" => "1485983836.377",
-            "record-data-0" => '{"Field1":"Value1"}'
+            "records" => [{"Field1"=>"Value1"}]
         }
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
@@ -80,12 +76,11 @@ class AuditdPluginLibTest < Test::Unit::TestCase
     end
     
     def test_invalid_record_data_event
-        ['null','"str"','23','23.5','[1,2,3]','{}'].each do |json|
+        [nil,"str",23,23.5,[1,2,3],{}].each do |json|
             record = {
-                "record-count" => 1,
                 "Timestamp" => "1485983836.377",
                 "SerialNumber" => 731250,
-                "record-data-0" => json
+                "records" => [json]
             }
 
             audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
@@ -96,10 +91,9 @@ class AuditdPluginLibTest < Test::Unit::TestCase
     
     def test_one_record_event
         record = {
-            "record-count" => 1,
             "Timestamp" => "1485983836.377",
             "SerialNumber" => 731250,
-            "record-data-0" => '{"Field1":"Value1"}'
+            "records" => [{"Field1" => "Value1"}]
         }
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)
@@ -116,11 +110,9 @@ class AuditdPluginLibTest < Test::Unit::TestCase
     
     def test_multi_record_event
         record = {
-            "record-count" => 2,
             "Timestamp" => "1485983836.377",
             "SerialNumber" => 731250,
-            "record-data-0" => '{"Field1":"Value1"}',
-            "record-data-1" => '{"Field1":"Value2"}'
+            "records" => [{"Field1" => "Value1"},{"Field1" => "Value2"}]
         }
 
         audit_blob = @@auditd_plugin.transform_and_wrap(record, "test", nil)

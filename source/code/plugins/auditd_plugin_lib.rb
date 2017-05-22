@@ -10,49 +10,44 @@ module OMS
             @log = log
         end
 
-        def transform_and_wrap(record, hostname, time)
-            if record.nil?
+        def transform_and_wrap(event, hostname, time)
+            if event.nil?
                 @log.error "Transformation of Auditd Plugin input failed; Empty input"
                 return nil
             end
 
-            if !record.has_key?("record-count")
-                @log.error "Transformation of Auditd Plugin input failed; Missing field 'record-count'"
+            if !event.has_key?("records") or event["records"].nil?
+                @log.error "Transformation of Auditd Plugin input failed; Missing field 'records'"
                 return nil
             end
 
-            if record["record-count"] <= 0
-                @log.error "Transformation of Auditd Plugin input failed; Invalid 'record-count' value"
+            if !event["records"].is_a?(Array) or event["records"].size == 0
+                @log.error "Transformation of Auditd Plugin input failed; Invalid 'records' value"
                 return nil
             end
 
-            if !record.has_key?("Timestamp")
+            if !event.has_key?("Timestamp") or event["Timestamp"].nil?
                 @log.error "Transformation of Auditd Plugin input failed; Missing field 'Timestamp'"
                 return nil
             end
-            if !record.has_key?("SerialNumber")
+
+            if !event.has_key?("SerialNumber") or event["SerialNumber"].nil?
                 @log.error "Transformation of Auditd Plugin input failed; Missing field 'SerialNumber'"
                 return nil
             end
 
             records = []
 
-            for ridx in 1..record["record-count"]
-                rname = "record-data-"+(ridx-1).to_s
-                if !record.has_key?(rname)
-                    @log.error "Transformation of Auditd Plugin input failed; Missing field '" + rname + "'"
+            event["records"].each do |record|
+                if !record.is_a?(Hash) || record.empty?
+                    @log.error "Transformation of Auditd Plugin input failed; Invalid data in data record"
                     return nil
                 end
-                rdata = Yajl::Parser.parse(record[rname])
-                if !rdata.is_a?(Hash) || rdata.empty?
-                    @log.error "Transformation of Auditd Plugin input failed; Invalid data in data field '" + rname + "'"
-                    return nil
-                end
-                rdata["Timestamp"] = OMS::Common.format_time(record["Timestamp"].to_f)
-                rdata["AuditID"] = record["Timestamp"] + ":" + record["SerialNumber"].to_s
-                rdata["SerialNumber"] = record["SerialNumber"]
-                rdata["Computer"] = hostname
-                records.push(rdata)
+                record["Timestamp"] = OMS::Common.format_time(event["Timestamp"].to_f)
+                record["AuditID"] = event["Timestamp"] + ":" + event["SerialNumber"].to_s
+                record["SerialNumber"] = event["SerialNumber"]
+                record["Computer"] = hostname
+                records.push(record)
             end
 
             wrapper = {
