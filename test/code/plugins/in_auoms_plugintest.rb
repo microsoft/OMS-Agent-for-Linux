@@ -3,17 +3,17 @@ require 'fluent/test'
 require_relative '../../../source/code/plugins/in_auoms'
 
 class AuOMSInputTest < Test::Unit::TestCase
-  TMP_DIR = File.dirname(__FILE__) + "/../tmp/in_unix#{ENV['TEST_ENV_NUMBER']}"
+  TMP_PREFIX = "/tmp/in_auoms"
+  TMP_PATH = "/tmp/in_auoms#{ENV['TEST_ENV_NUMBER']}"
 
   def setup
     Fluent::Test.setup
-    FileUtils.rm_rf(TMP_DIR)
-    FileUtils.mkdir_p(TMP_DIR)
+    FileUtils.rm(Dir.glob("#{TMP_PREFIX}*"), :force => true)
   end
 
   CONFIG = %[
     tag test
-    path #{TMP_DIR}/unix
+    path #{TMP_PATH}
     backlog 1000
   ]
 
@@ -23,12 +23,12 @@ class AuOMSInputTest < Test::Unit::TestCase
 
   def test_configure
     d = create_driver
-    assert_equal "#{TMP_DIR}/unix", d.instance.path
+    assert_equal "#{TMP_PATH}", d.instance.path
     assert_equal 1000, d.instance.backlog
   end
 
   def connect
-    UNIXSocket.new("#{TMP_DIR}/unix")
+    UNIXSocket.new("#{TMP_PATH}")
   end
 
   def test_time
