@@ -59,6 +59,8 @@ If none of these steps work for you the following channels for help are also ava
 | 61 | Missing Python ctypes library; Install the Python ctypes library or package (python-ctypes) |
 | 62 | Missing tar program; Install tar |
 | 63 | Missing sed program; Install sed |
+| 64 | Missing curl program; Install curl |
+| 65 | Missing gpg program; Install gpg |
 
 ### Enable Debug Logging
 #### OMS output plugin debug

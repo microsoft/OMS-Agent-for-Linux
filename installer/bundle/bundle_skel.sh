@@ -61,6 +61,8 @@ UNSUPPORTED_OPENSSL=60
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
 INSTALL_SED=63
+INSTALL_CURL=64
+INSTALL_GPG=65
 
 usage()
 {
@@ -369,14 +371,31 @@ compare_install_type()
 
 python_ctypes_installed() {
     # Check for Python ctypes library (required for omsconfig)
-    hasCtypes=1
-    echo "Checking for ctypes python module ..."
+    hasCtypes=1    
 	
     # Attempt to run python with the single import command
     python -c "import ctypes" 1> /dev/null 2> /dev/null
     [ $? -eq 0 ] && hasCtypes=0
 
     return $hasCtypes
+}
+
+curl_installed() {
+    # Check for curl (required for omsconfig)
+    preReqCurl=1
+    which curl 1> /dev/null 2> /dev/null
+    [ $? -eq 0 ] && preReqCurl=0
+
+    return $preReqCurl
+}
+
+gpg_installed() {
+    # Check for gpg (required for omsconfig)
+    preReqGpg=1
+    which gpg 1> /dev/null 2> /dev/null
+    [ $? -eq 0 ] && preReqGpg=0
+
+    return $preReqGpg
 }
 
 getInstalledVersion()
@@ -407,13 +426,17 @@ shouldInstall_omsagent()
 
 shouldInstall_omsconfig()
 {
-    # Package omsconfig will never install without Python ctypes ...
+    # Package omsconfig will never install without Python ctypes and curl ...
     if python_ctypes_installed 1> /dev/null 2> /dev/null; then
-        local versionInstalled=`getInstalledVersion omsconfig`
-        [ "$versionInstalled" = "None" ] && return 0
-        local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
+        if curl_installed 1> /dev/null 2> /dev/null; then
+            local versionInstalled=`getInstalledVersion omsconfig`
+            [ "$versionInstalled" = "None" ] && return 0
+            local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
 
-        check_version_installable $versionInstalled $versionAvailable
+            check_version_installable $versionInstalled $versionAvailable
+        else
+            return 1
+        fi
     else
         return 1
     fi
@@ -773,8 +796,8 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
             echo "Error: Python is not configured or Python does not support ctypes on this system, installation cannot continue." >&2
             echo "Please install the ctypes package (python-ctypes)or upgrade Python to a newer version of python that comes with the ctypes module." >&2
             echo "You can check if the ctypes module is installed by starting python and running the command: 'import ctypes'." >&2
-            echo "You can run this shell bundle with --force; in this case, we will install" >&2
-            echo "omsagent, but omsconfig (DSC configuration) will not be available and will need to be re-installed." >&2
+            echo "You can run this shell bundle with --force; in this case, we will install omsagent," >&2
+            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed." >&2
             cleanup_and_exit $INSTALL_PYTHON_CTYPES
         else
             echo "Python is not configured or it does not support ctypes on this system, please upgrade Python to a newer version that comes with the ctypes module and re-install omsconfig later."
@@ -804,6 +827,23 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     if [ $? -ne 0 -a $sed_package_installed -ne 0 ]; then
         echo "sed was not installed, installation cannot continue. Please install sed."
         cleanup_and_exit $INSTALL_SED
+    fi
+    curl_installed
+    if [ $? -ne 0 ]; then
+        if [ -z "${forceFlag}" ]; then
+            echo "Error: curl is not installed, installation cannot continue."
+            echo "You can run this shell bundle with --force; in this case, we will install omsagent,"
+            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed."
+            cleanup_and_exit $INSTALL_CURL
+        else
+            echo "curl is not installed, please install curl and re-install omsconfig (DSC configuration) later."
+            echo "Installation will continue without installing omsconfig."
+        fi
+    fi
+    gpg_installed
+    if [ $? -ne 0 ]; then
+        echo "gpg is not installed, installation cannot continue."
+        cleanup_and_exit $INSTALL_GPG
     fi
 fi
 
@@ -838,9 +878,8 @@ if [ -n "${checkVersionAndCleanUp}" ]; then
 
     # omsconfig
     versionInstalled=`getInstalledVersion omsconfig`
-    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
-    if ! python_ctypes_installed > /dev/null 2>&1; then ctypes_text=" (No ctypes)"; fi
-    if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No${ctypes_text}"; fi
+    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`    
+    if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No"; fi
     printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
     cleanup_and_exit 0
 fi
@@ -871,10 +910,7 @@ case "$installMode" in
 
             pkg_add_list $OMS_PKG omsagent
 
-            python_ctypes_installed
-            if [ $? -eq 0 ]; then
-                pkg_add_list $DSC_PKG omsconfig
-            fi
+            if shouldInstall_omsconfig; then pkg_add_list $DSC_PKG omsconfig; fi
 
             # Install SCX (and OMI)
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
@@ -951,11 +987,8 @@ case "$installMode" in
         shouldInstall_omsagent
         pkg_upd_list $OMS_PKG omsagent $?
 
-        python_ctypes_installed
-        if [ $? -eq 0 ]; then
-            shouldInstall_omsconfig
-            pkg_upd_list $DSC_PKG omsconfig $?
-        fi
+        shouldInstall_omsconfig
+        pkg_upd_list $DSC_PKG omsconfig $?
 
         # Install SCX (and OMI)
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
