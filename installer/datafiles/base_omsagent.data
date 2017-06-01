@@ -162,7 +162,8 @@ WriteInstallInfo
 mkdir -m 755 /var/opt/microsoft/omsagent        2> /dev/null || true
 chown -R omsagent:omiusers /var/opt/microsoft/omsagent
 
-# Ditto for conf directory in /etc/opt/microsoft/omsagent/conf ...
+# Same for plugin directory:
+chown -R omsagent:root /opt/microsoft/omsagent/plugin
 
 %Postinstall_200
 /opt/microsoft/omsagent/bin/omsadmin.sh -M
