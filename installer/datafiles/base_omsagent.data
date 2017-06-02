@@ -208,6 +208,8 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
         echo "Deleting certs and conf directories for workspace $ws_id if empty..."
         rmdir /etc/opt/microsoft/omsagent/$ws_id/certs/ 2> /dev/null
         rmdir /etc/opt/microsoft/omsagent/$ws_id/conf/ 2> /dev/null
+        echo "Deleting omsadmin.conf for workspace $ws_id..."
+        rm -f /etc/opt/microsoft/omsagent/$ws_id/conf/omsadmin.conf
         rm /opt/microsoft/omsagent/bin/omsagent-$ws_id 2> /dev/null		
     done
    
