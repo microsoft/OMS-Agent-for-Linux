@@ -808,9 +808,10 @@ module OMS
       #   req: HTTPRequest. request
       #   secure_http: HTTP. HTTPS
       #   ignore404: bool. ignore the 404 error when it's true
+      #   return_entire_response: bool. If true, return the entire response object
       # returns:
-      #   string. body of the response
-      def start_request(req, secure_http, ignore404 = false)
+      #   string. body of the response (or the whole response if return_entire_response is true)
+      def start_request(req, secure_http, ignore404 = false, return_entire_response = false)
         # Tries to send the passed in request
         # Raises an exception if the request fails.
         # This exception should only be caught by the fluentd engine so that it retries sending this 
@@ -826,7 +827,11 @@ module OMS
           end
 
           if res.is_a?(Net::HTTPSuccess)
-            return res.body
+            if return_entire_response
+              return res
+            else
+              return res.body
+            end
           end
 
           if ignore404 and res.code == "404"
