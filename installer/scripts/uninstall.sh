@@ -68,9 +68,11 @@ pkg_rm omsagent
 
 MDSD_INSTALLED=1
 check_if_pkg_is_installed azsec-mdsd
-if [ $? -eq 0 -o -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd ]; then
-    MDSD_INSTALLED=0
-fi
+[ $? -eq 0 ] && MDSD_INSTALLED=0
+[ -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd ] && MDSD_INSTALLED=0
+[ -f /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/bin/mdsd ] && MDSD_INSTALLED=0
+[ -f /var/lib/waagent/Microsoft.Azure.Diagnostics.LinuxDiagnostic-*/bin/mdsd ] && MDSD_INSTALLED=0
+
 if [ $MDSD_INSTALLED -ne 0 -o "$installMode" = "P" ]; then
     if [ -f /opt/microsoft/scx/bin/uninstall ]; then
 	/opt/microsoft/scx/bin/uninstall $installMode
