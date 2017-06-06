@@ -1,6 +1,14 @@
 --- ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb	2017-03-02 15:44:49.000000000 -0800
 +++ ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb.new	2017-03-02 15:49:09.000000000 -0800
-@@ -13330,10 +140,11 @@
+@@ -133,17 +133,19 @@
+      @parser.call(@io)
++     Process.waitpid(@io.pid)
+    end
+
+    def run_periodic
+      sleep @run_interval
+      until @finished
+        begin
            io = IO.popen(@command, "r")
            @parser.call(io)
            Process.waitpid(io.pid)
