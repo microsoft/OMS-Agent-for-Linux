@@ -858,7 +858,10 @@ create_workspace_directories()
 make_dir()
 {
     if [ ! -d $1 ]; then
-        mkdir $1
+        mkdir -m 755 $1
+    else
+        echo "Directory $1 already exists."
+        chmod 755 $1
     fi
 
     chown_omsagent $1

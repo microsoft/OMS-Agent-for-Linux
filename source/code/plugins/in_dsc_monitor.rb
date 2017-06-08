@@ -1,6 +1,7 @@
 require 'fluent/input'
 require 'fluent/config/error'
 require 'yaml/store'
+require 'fileutils'
 
 module Fluent
   class DscMonitoringInput < Input
@@ -24,7 +25,12 @@ module Fluent
       @finished_check_status = false
       @thread_check_install = Thread.new(&method(:run_check_install))
       @thread_check_status = Thread.new(&method(:run_check_status))
-      @dsc_cache = YAML::Store.new(dsc_cache_file) #Creates the file if it doesn't exist; otherwise, the existing file will be read.
+      if !File.exists?(dsc_cache_file)
+        File.new(dsc_cache_file, "w", 0644)
+      else
+        File.chmod(0644, dsc_cache_file)
+      end
+      @dsc_cache = YAML::Store.new(dsc_cache_file) # The existing file will be read.
     end
 
     def check_install
