@@ -22,7 +22,7 @@ module OMS
     @@OSName = nil
     @@OSVersion = nil
     @@Hostname = nil
-    @@HostnameFilePath = '/var/opt/microsoft/omsagent/state/containerhostname'
+    @@HostnameFilePath = '/var/opt/microsoft/docker-cimprov/state/containerhostname'
     @@FQDN = nil
     @@InstalledDate = nil
     @@AgentVersion = nil
