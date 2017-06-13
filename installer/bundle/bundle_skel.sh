@@ -830,13 +830,18 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     fi
     curl_installed
     if [ $? -ne 0 ]; then
+        echo "curl was not found, attempting to install curl..."
+        install_extra_package curl
+    fi
+    check_program_in_path curl
+    if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
-            echo "Error: curl is not installed, installation cannot continue."
+            echo "Error: curl was not installed, installation cannot continue."
             echo "You can run this shell bundle with --force; in this case, we will install omsagent,"
             echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed."
             cleanup_and_exit $INSTALL_CURL
         else
-            echo "curl is not installed, please install curl and re-install omsconfig (DSC configuration) later."
+            echo "curl was not installed, please install curl and re-install omsconfig (DSC configuration) later."
             echo "Installation will continue without installing omsconfig."
         fi
     fi
