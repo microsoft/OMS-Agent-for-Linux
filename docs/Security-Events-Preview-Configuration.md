@@ -15,47 +15,44 @@ Collection of the following 3rd party security log types is supported:
 
 ## Detailed configuration
 1. Download the OMS Agent for Linux, version 1.2.0-25 or above
-	- [OMS Agent for Linux GA v1.2.0-25](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/tag/OMSAgent_GA_v1.2.0-25)
+    - [OMS Agent for Linux GA v1.2.0-25](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/tag/OMSAgent_GA_v1.2.0-25)
 
 2. Install and onboard the agent to your workspace as described here:
- 	 - [Documentation for OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux)  
+    - [Documentation for OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux)  
 
 3. Send the required logs to the OMS Agent for Linux
-  1. Typically the agent is installed on a different machine from the one on which the logs are generated.
-	Forwarding the logs to the agent machine will usually require several steps:
-		- Configure the logging product/machine to forward the required events to the syslog daemon (e.g. rsyslog or syslog-ng) on the agent machine.
-		- Enable the syslog daemon on the agent machine to receive messages from a remote system.
+    * Typically the agent is installed on a different machine from the one on which the logs are generated. Forwarding the logs to the agent machine will usually require several steps:
+        1. Configure the logging product/machine to forward the required events to the syslog daemon (e.g. rsyslog or syslog-ng) on the agent machine.
+        2. Enable the syslog daemon on the agent machine to receive messages from a remote system.
+	    
+    * On the agent machine, the events need to be sent from the syslog daemon to local **UDP port 25226**. The agent is listening for incoming events on this port.  
+        *The following is an example configuration for sending all events from the local4 facility to the agent. You can modify the configuration to fit your local settings.* 
 	
-  2. On the agent machine, the events need to be sent from the syslog daemon to local **UDP port 25226**. The agent is listening for incoming events on this port.  
-	*The following is an example configuration for sending all events from the local4 facility to the agent.
-	You can modify the configuration to fit your local settings.* 
+        **If the agent machine has an rsyslog daemon:**  
+        In directory ```/etc/rsyslog.d/```, create new file ```security-config-omsagent.conf``` with the following content:
+
+        ```
+        #OMS_facility = local4
+        local4.debug       @127.0.0.1:25226
+        ```
 	
-	  **If the agent machine has an rsyslog daemon:**  
-	  In directory ```/etc/rsyslog.d/```, create new file ```security-config-omsagent.conf``` with the following content:
-	```
-	#OMS_facility = local4  
-	local4.debug       @127.0.0.1:25226
-	```  
-	
-	
-	  **If the agent machine has a syslog-ng daemon:**  
-	  In directory ``` /etc/syslog-ng/```, create new file ```security-config-omsagent.conf``` with the following content:
-	```
-	#OMS_facility = local4  
-	filter f_local4_oms { facility(local4); };  
-	destination security_oms { tcp("127.0.0.1" port(25226)); };  
-	log { source(src); filter(f_local4_oms); destination(security_oms); };  
-	```
+        **If the agent machine has a syslog-ng daemon:**  
+	    In directory ``` /etc/syslog-ng/```, create new file ```security-config-omsagent.conf``` with the following content:
+
+        ```
+        #OMS_facility = local4  
+        filter f_local4_oms { facility(local4); };  
+        destination security_oms { tcp("127.0.0.1" port(25226)); };  
+        log { source(src); filter(f_local4_oms); destination(security_oms); };  
+        ```
 
 4. Place the following configuration file on the OMS Agent machine:  
   	- [security_events.conf][1]  
   	_Fluentd configuration file to enable collection and parsing of the events_  
 	Destination path on Agent machine: ```/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/```  
 
-
 5. Restart the syslog daemon:  
-```sudo service rsyslog restart``` or ```/etc/init.d/syslog-ng restart```
-
+```sudo service rsyslog restart``` or ```sudo /etc/init.d/syslog-ng restart```
 
 6. Restart the OMS Agent:  
 ```sudo /opt/microsoft/omsagent/bin/service_control restart```
