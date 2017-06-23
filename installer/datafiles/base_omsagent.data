@@ -209,6 +209,9 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
         rmdir /etc/opt/microsoft/omsagent/$ws_id/certs/ 2> /dev/null
         rmdir /etc/opt/microsoft/omsagent/$ws_id/conf/ 2> /dev/null
         rm /opt/microsoft/omsagent/bin/omsagent-$ws_id 2> /dev/null		
+        rm /var/opt/microsoft/omsagent/$ws_id/tmp/Changetrackinginventory.xml* 2> /dev/null
+        rm /var/opt/microsoft/omsagent/$ws_id/tmp/LinuxFileChangeTracking.xml* 2> /dev/null
+        rm /var/opt/microsoft/omsagent/$ws_id/tmp/ServiceChangeTrackingInventory.xml* 2> /dev/null
     done
    
    # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
@@ -217,7 +220,6 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
    # Clean up symbolic links if multi-workspace scenario
    rm /etc/opt/microsoft/omsagent/certs 2> /dev/null
    rm /etc/opt/microsoft/omsagent/conf 2> /dev/null
-   
    # Clean up directory tree if agent installed or upgraded without onboarding. No symbolic links.
    rmdir /etc/opt/microsoft/omsagent/certs/ 2> /dev/null
    rmdir /etc/opt/microsoft/omsagent/conf/ 2> /dev/null
