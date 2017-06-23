@@ -455,7 +455,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal(previousInventoryChecksum, previousInventoryChecksum1, "Checksum should not differ, since xml file did not change")  
 
 
-    previousTime = Time.now - (24*3600)
+    previousTime = Time.now - (20*3600)
     ChangeTracking.setHash(previousInventoryChecksum, previousTime, @fileinventoryHashPath)
     ret = ChangeTracking.transform_and_wrap(@fileinventoryPath, @fileinventoryHashPath)
     assert(ret.empty?, "Got the wrong number of file inventory instances")
