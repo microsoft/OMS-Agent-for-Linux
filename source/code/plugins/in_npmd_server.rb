@@ -17,6 +17,7 @@ module Fluent
             require 'enumerator'
 
             require_relative 'npmd_config_lib'
+            require_relative 'oms_common'
         end
 
         CMD_START         = "StartNPM"
@@ -176,23 +177,9 @@ module Fluent
         end
 
         def get_fqdn
-            _ip = nil
-            _name = nil
-            Socket.ip_address_list.each do |addrinfo|
-                next unless addrinfo.ip?
-                if addrinfo.ipv4?
-                    next if addrinfo.ipv4_loopback? or
-                        addrinfo.ipv4_multicast?
-                else
-                    next if addrinfo.ipv6_linklocal? or
-                        addrinfo.ipv6_loopback? or
-                        addrinfo.ipv6_multicast?
-                end
-                _ip = addrinfo.ip_address
-                _name = addrinfo.getnameinfo.first
-                break if _ip != _name
-            end
-            _name
+            _fqdn = OMS::Common.get_fully_qualified_domain_name()
+            _fqdn = OMS::Common.get_hostname() if _fqdn.nil?
+            _fqdn
         end
 
         def check_and_get_json(text)
