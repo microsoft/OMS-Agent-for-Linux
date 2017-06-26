@@ -68,7 +68,7 @@
       cceid="CCE-3566-7"
       severity="Critical"
       impact="An attacker could modify userIDs and login shells"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r set-etc-passwd-perms'. This will set the permissions and ownership of /etc/passwd"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r set-etc-passwd-perms'. This will set the permissions and ownership of /etc/passwd"
       ruleId="ad534c97-1070-415c-9fc7-c92366d3fc30">
       <check
         distro="*"
@@ -82,7 +82,7 @@
       cceid="CCE-3967-7"
       severity="Critical"
       impact="An attacker could elevate privileges by modifying group membership"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r set-etc-group-perms'. This will set the permissions and ownership of /etc/group"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r set-etc-group-perms'. This will set the permissions and ownership of /etc/group"
       ruleId="c41a47e9-1ba0-4e72-9f43-4659a4bfed63">
       <check
         distro="*"
@@ -167,7 +167,7 @@
       cceid="CCE-3561-8"
       severity="Important"
       impact="An attacker could use this system to perform IP routing functions"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-ip-forward'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-ip-forward'"
       ruleId="5971bbd2-1977-4652-bd85-a38a8f780052">
       <check
         distro="*"
@@ -181,7 +181,7 @@
       cceid="CCE-4236-6"
       severity="Critical"
       impact="An attacker could redirect traffic for malicious purposes."
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-accept-source-route'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-accept-source-route'"
       ruleId="4ecae4e6-a3e2-44f5-9985-ea2a21962450">
       <check
         distro="*"
@@ -195,7 +195,7 @@
       cceid="CCE-4133-5"
       severity="Critical"
       impact="An attacker could perform an ICMP attack resulting in DoS"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r enable-icmp-ignore-bogus-error-responses'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r enable-icmp-ignore-bogus-error-responses'"
       ruleId="88acc143-2f76-4418-9aa9-d0d5f244ab5f">
       <check
         distro="*"
@@ -209,7 +209,7 @@
       cceid="CCE-3644-2"
       severity="Critical"
       impact="An attacker could perform an ICMP attack resulting in DoS"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r enable-icmp-echo-ignore-broadcasts'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r enable-icmp-echo-ignore-broadcasts'"
       ruleId="f5a5926d-9c64-41fa-8220-5bc0f8213550">
       <check
         distro="*"
@@ -223,7 +223,7 @@
       cceid="CCE-4080-8"
       severity="Critical"
       impact="The system will accept traffic from addresses that are unroutable."
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r enable-rp-filter'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r enable-rp-filter'"
       ruleId="177e6190-1026-49fb-a1f9-fd5b10302280">
       <check
         distro="*"
@@ -237,7 +237,7 @@
       cceid="CCE-3840-6"
       severity="Critical"
       impact="The system will accept traffic from addresses that are unroutable."
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r enable-rp-filter'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r enable-rp-filter'"
       ruleId="c28d5519-6e3a-466f-8d8c-b351851dfc78">
       <check
         distro="*"
@@ -251,7 +251,7 @@
       cceid="CCE-4265-5"
       severity="Critical"
       impact="An attacker could perform a DoS over TCP"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r enable-tcp-syncookies'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r enable-tcp-syncookies'"
       ruleId="db6ca14e-26c5-48cd-a6b7-fc953861043c">
       <check
         distro="*"
@@ -272,7 +272,7 @@
         command="CheckNoPromiscInterfaces" />
     </audit>
     <audit
-      description="All wireless interfaces should be disabled. (disabled)"
+      description="All wireless interfaces should be disabled."
       msid="49"
       cceid="CCE-4276-2"
       severity="Warning"
@@ -289,7 +289,7 @@
       cceid="CCE-14027-7"
       severity="Warning"
       impact="An attacker could use a vulnerability in RDS to compromise the system"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-unnecessary-kernel-mods'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-unnecessary-kernel-mods'"
       ruleId="d9ed5e76-2348-4409-94dd-c76352407fe8">
       <check
         distro="*"
@@ -303,7 +303,7 @@
       cceid="CCE-17742-8"
       severity="Important"
       impact="Reliability and security issues will not be logged, preventing proper diagnosis."
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r install-syslog'. This will install the rsyslog package"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r install-syslog'. This will install the rsyslog package"
       ruleId="8720959b-c356-4eaa-bb4f-720fb8006183">
       <check
         distro="*"
@@ -316,7 +316,7 @@
       cceid="CCE-17698-2"
       severity="Important"
       impact="Reliability and security issues will not be logged, preventing proper diagnosis."
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r enable-syslog'. This will enable and start the syslog service"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r enable-syslog'. This will enable and start the syslog service"
       ruleId="27a8547e-ba91-4593-9360-d8e048e3c84e">
       <check
         distro="!SLES=11"
@@ -335,7 +335,7 @@
       cceid="CCE-18095-0"
       severity="Important"
       impact="An attacker could cover up activity by manipulating logs"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r configure-syslog-file-create-mode'. This adds the line '$FileCreateMode 0640' to the file '/etc/rsyslog.conf'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r configure-syslog-file-create-mode'. This adds the line '$FileCreateMode 0640' to the file '/etc/rsyslog.conf'"
       ruleId="fcc86485-487a-4644-87a0-f29f1b1cd28b">
       <check
         distro="!SLES"
@@ -386,7 +386,7 @@
         service="mdsd" />
     </audit>
     <audit
-      description="Rsyslog should not accept remote messages. (reject)"
+      description="Rsyslog should not accept remote messages."
       msid="67"
       cceid="CCE-17639-6"
       severity="Important"
@@ -400,7 +400,7 @@
         path="/etc/rsyslog.conf" />
     </audit>
     <audit
-      description="The logrotate (syslog rotater) service should be enabled. (enabled)"
+      description="The logrotate (syslog rotater) service should be enabled."
       msid="68"
       cceid="CCE-4182-2"
       severity="Critical"
@@ -433,7 +433,7 @@
         path="/etc/inetd.conf" />
     </audit>
     <audit
-      description="The telnet service should be disabled. (disabled)"
+      description="The telnet service should be disabled."
       msid="72"
       cceid="CCE-3390-2"
       severity="Critical"
@@ -539,7 +539,7 @@
         packagename="isdnutils-base" />
     </audit>
     <audit
-      description="The kdump service should be disabled. (disabled)"
+      description="The kdump service should be disabled."
       msid="88"
       cceid="CCE-3425-6"
       severity="Important"
@@ -552,7 +552,7 @@
         service="kdump-tools" />
     </audit>
     <audit
-      description="Zeroconf networking should be disabled. (disabled)"
+      description="Zeroconf networking should be disabled."
       msid="89"
       cceid="CCE-14054-1"
       severity="Critical"
@@ -566,7 +566,7 @@
         path="/etc/network/interfaces" />
     </audit>
     <audit
-      description="The crond service should be enabled. (enabled)"
+      description="The crond service should be enabled."
       msid="90"
       cceid="CCE-4324-0"
       severity="Critical"
@@ -588,7 +588,7 @@
       cceid="CCE-4304-2"
       severity="Critical"
       impact="An attacker could manipulate this file to prevent scheduled tasks or execute malicious tasks"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r fix-anacrontab-perms'. This sets the ownership and permissions on /etc/anacrontab"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r fix-anacrontab-perms'. This sets the ownership and permissions on /etc/anacrontab"
       ruleId="8199ae98-8d9c-4a26-88ca-e6d9b87d3644">
       <check
         distro="*"
@@ -602,7 +602,7 @@
       cceid="CCE-4325-7"
       severity="Critical"
       impact="An attacker could use flaws in an earlier version of the SSH protocol to gain access"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r configure-ssh-protocol'. This will set 'Protocol 2' in the file '/etc/ssh/sshd_config'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r configure-ssh-protocol'. This will set 'Protocol 2' in the file '/etc/ssh/sshd_config'"
       ruleId="35868e8c-97eb-4981-ab79-99b25101cc86">
       <check
         distro="*"
@@ -616,7 +616,7 @@
       cceid="CCE-4030-3"
       severity="Critical"
       impact="An attacker could use flaws in the Rhosts protocol to gain access"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r enable-ssh-ignore-rhosts'. This will add the line 'IgnoreRhosts yes' to the file '/etc/ssh/sshd_config'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r enable-ssh-ignore-rhosts'. This will add the line 'IgnoreRhosts yes' to the file '/etc/ssh/sshd_config'"
       ruleId="43945588-1bdc-495c-bac8-6a71a62d30aa">
       <check
         distro="*"
@@ -630,7 +630,7 @@
       cceid="CCE-4475-0"
       severity="Critical"
       impact="An attacker could use flaws in the RHosts protocol to gain access"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-ssh-rhost-rsa-auth'. This will add the line 'RhostsRSAAuthentication no' to the file '/etc/ssh/sshd_config'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-ssh-rhost-rsa-auth'. This will add the line 'RhostsRSAAuthentication no' to the file '/etc/ssh/sshd_config'"
       ruleId="c0b75409-01e3-4428-9a32-bfcdb42afcb5">
       <check
         distro="*"
@@ -644,7 +644,7 @@
       cceid="CCE-4370-3"
       severity="Critical"
       impact="An attacker could use use host-based authentication to gain access from a compromised host"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-ssh-host-based-auth'. This will add the line 'HostbasedAuthentication no' to the file '/etc/ssh/sshd_config'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-ssh-host-based-auth'. This will add the line 'HostbasedAuthentication no' to the file '/etc/ssh/sshd_config'"
       ruleId="66511f6b-f690-43df-9654-642260699eec">
       <check
         distro="*"
@@ -658,7 +658,7 @@
       cceid="CCE-3660-8"
       severity="Critical"
       impact="An attacker could gain access through password guessing"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-ssh-empty-passwords'. This will add the line 'PermitEmptyPasswords no' to the file '/etc/ssh/sshd_config'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-ssh-empty-passwords'. This will add the line 'PermitEmptyPasswords no' to the file '/etc/ssh/sshd_config'"
       ruleId="d50c3f39-264c-4cdc-b0ba-89de8a0f6828">
       <check
         distro="*"
@@ -686,7 +686,7 @@
       cceid="CCE-4365-3"
       severity="Warning"
       impact="An attacker could use a vulnerability in the avahi daemon to gain access"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-avahi-daemon'. This will disable the avahi-daemon service"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-avahi-daemon'. This will disable the avahi-daemon service"
       ruleId="c3bf78d8-43a0-4768-b790-c940621057b6">
       <check
         distro="*"
@@ -699,7 +699,7 @@
       cceid="CCE-4425-5"
       severity="Warning"
       impact="An attacker could use a flaw in the cups service to elevate privileges"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-cups'. This will disable the cups service"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-cups'. This will disable the cups service"
       ruleId="4854666c-061b-4945-8a25-19133b8d5c7d">
       <check
         distro="*"
@@ -738,7 +738,7 @@
       cceid="CCE-3535-2"
       severity="Important"
       impact="An attacker could use a flaw in rpcgssd/nfs to gain access"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-rpcgssd'. This will disable the rpcgssd service."
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-rpcgssd'. This will disable the rpcgssd service."
       ruleId="9c11dc9f-ab7e-4c3f-923f-5a8fc4e97cb9">
       <check
         distro="*"
@@ -751,7 +751,7 @@
       cceid="CCE-3568-3"
       severity="Important"
       impact="An attacker could use a flaw in idmapd/nfs to gain access"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-rpcidmapd'. This will disable the rpcidmapd service."
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-rpcidmapd'. This will disable the rpcidmapd service."
       ruleId="b600d670-5b01-4458-9143-8aa7cd25dadc">
       <check
         distro="*"
@@ -764,12 +764,16 @@
       cceid="CCE-4550-0"
       severity="Important"
       impact="An attacker could use a flaw in portmap to gain access"
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-rpcbind'. This will disable the rpcbind service."
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-rpcbind'. This will disable the rpcbind service."
       ruleId="f4a80328-1d67-45ed-b915-274d2e6c699e">
       <check
-        distro="*"
+        distro="Debian|Ubuntu|Oracle|CentOS&lt;7|RedHat&lt;7|SLES=11"
         command="CheckServiceDisabled"
         service="rpcbind" />
+      <check
+        distro="CentOS&gt;=7|RedHat&gt;=7|SLES&gt;11"
+        command="CheckServiceDisabled"
+        service="rpcbind.service,rpcbind.socket" />
     </audit>
     <audit
       description="The rpcsvcgssd service should be disabled."
@@ -957,7 +961,7 @@
         path="/etc/postfix/main.cf" />
     </audit>
     <audit
-      description="The ldap service should be disabled. (disabled)"
+      description="The ldap service should be disabled."
       msid="124"
       cceid="CCE-3501-4"
       severity="Important"
@@ -1054,7 +1058,7 @@
       cceid="CCE-4236-6"
       severity="Critical"
       impact="An attacker could redirect traffic for malicious purposes."
-      remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-accept-source-route'"
+      remediation="Run the command '/opt/microsoft/omsagent/plugin/omsremediate -r disable-accept-source-route'"
       ruleId="b659c9f6-a076-4886-9048-db10c349b9fe">
       <check
         distro="*"
@@ -1077,4 +1081,501 @@
         path="/etc/ssh/sshd_config" />
     </audit>    
   </audits>
+ <remediations>
+  <!--
+    Remediations are preformed in the order they appear in this file.
+    All actions in a remediation that match the distro are performed, and in the order they appear.
+  -->
+  <remediation id="install-updates" cceids="CCE-XXXXX-1" description="Install all available package updates">
+    <action distro="*" action="ActionUpdatePackageInfo"/>
+    <action distro="*" action="ActionInstallAvailableUpdates"/>
+  </remediation>
+
+  <remediation id="install-ntp" cceids="CCE-4376-0" description="Install the ntp service">
+    <action distro="*" action="ActionInstallPackage" package="ntp"/>
+    <action distro="Ubuntu|Debian|SLES=11" action="ActionEnableService" service="ntp"/>
+    <action distro="CentOS|RedHat|Oracle|SLES=12" action="ActionEnableService" service="ntpd"/>
+    <action distro="Ubuntu|Debian|SLES=11" action="ActionRestartService" service="ntp"/>
+    <action distro="CentOS|RedHat|Oracle|SLES=12" action="ActionRestartService" service="ntpd"/>
+  </remediation>
+
+  <remediation id="configure-ntp" cceids="CCE-4385-1" description="Configure the ntp service">
+    <action distro="!SLES" action="ActionScript">
+      <script>
+      <![CDATA[
+# (Audit 119) Configure ntpd
+if [ -z "$(egrep '^server\s+time.windows.com\s*$' /etc/ntp.conf)" ]; then
+    sed -i 's/^\([\s]*server\s\+\)0.*$/\1time.windows.com/g' /etc/ntp.conf
+    sed -i '/^[\s]*server\s\+[1-3].*$/d' /etc/ntp.conf
+fi
+      ]]>
+      </script>
+    </action>
+    <action distro="SLES" action="ActionScript">
+      <script>
+      <![CDATA[
+if [ -z "$(egrep '^server\s+time.windows.com\s*$' /etc/ntp.conf)" ]; then
+    sed -i 's/^\(restrict\s*::1\s*\)$/\1\n\nserver time.windows.com/g' /etc/ntp.conf
+fi
+      ]]>
+      </script>
+    </action>
+    <action distro="Ubuntu|Debian|SLES=11" action="ActionRestartService" service="ntp"/>
+    <action distro="CentOS|RedHat|Oracle|SLES=12" action="ActionRestartService" service="ntpd"/>
+  </remediation>
+
+  <remediation id="remove-at" cceids="CCE-14466-7" description="Remove atd service">
+    <action distro="*" action="ActionRemovePackage" package="at"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+rm -fr /etc/init/atd.conf /etc/init.d/atd
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="configure-ssh-protocol" cceids="CCE-4325-7" description="Configure ssh protocol">
+    <action distro="*" action="ActionEditConfig" name="Protocol" value="2" value-regex="[1-2\,]+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="enable-ssh-ignore-rhosts" cceids="CCE-4030-3" description="Enable IgnoreRhosts in ssh">
+    <action distro="*" action="ActionEditConfig" name="IgnoreRhosts" value="yes" value-regex="[a-z-]+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="disable-ssh-rhost-rsa-auth" cceids="CCE-4475-0" description="Disable RhostsRSAAuthentication in ssh">
+    <action distro="*" action="ActionEditConfig" name="RhostsRSAAuthentication" value="no" value-regex="[a-z-]+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="disable-ssh-host-based-auth" cceids="CCE-4370-3" description="Disable HostbasedAuthentication in ssh">
+    <action distro="*" action="ActionEditConfig" name="HostbasedAuthentication" value="no" value-regex="[a-z-]+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="disable-ssh-root-login" cceids="CCE-4387-7" description="Disable SSH root login">
+    <action distro="*" action="ActionEditConfig" name="PermitRootLogin" value="no" value-regex="[a-z-]+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="configure-ssh-ciphers" cceids="CCE-14491-5" description="Configure ssh ciphers">
+    <action distro="*" action="ActionEditConfig" name="Ciphers" value="aes128-ctr,aes192-ctr,aes256-ctr" value-regex="[a-z\,-]+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="disable-ssh-empty-passwords" cceids="CCE-3660-8" description="Disable SSH empty passwords">
+    <action distro="*" action="ActionEditConfig" name="PermitEmptyPasswords" value="no" value-regex="[a-z-]+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="configure-ssh-banner" cceids="CCE-4431-3" description="Configure ssh banner">
+    <action distro="*" action="ActionEditConfig" name="Banner" value="/etc/azsec/banner.txt" value-regex="\S+" path="/etc/ssh/sshd_config"/>
+  </remediation>
+
+  <remediation id="restart-ssh" cceids="CCE-4325-7,CCE-4475-0,CCE-4387-7,CCE-14491-5,CCE-4431-3" description="Restart ssh service">
+    <action distro="Ubuntu|Debian" action="ActionRestartService" service="ssh"/>
+    <action distro="CentOS|Redhat|Oracle|Sles" action="ActionRestartService" service="sshd"/>
+  </remediation>
+
+  <remediation id="restrict-root-login" cceids="CCE-3485-0" description="Restrict root login">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+echo -e "console\ntty1" > /etc/securetty
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="fix-su-permissions" cceids="CCE-15047-4" description="Fix su permissions">
+    <action distro="!SLES" action="ActionScript">
+      <script>
+      <![CDATA[
+sed -i 's/^#*\s*\(auth\s\+required\s\+pam_wheel.so\)\(\s\+use_uid\)\?$/\1 use_uid/g' /etc/pam.d/su
+      ]]>
+      </script>
+    </action>
+    <action distro="SLES" action="ActionScript">
+      <!-- This change isn't sufficient on SLES -->
+      <script>
+      <![CDATA[
+if [ -z "$(egrep '^\s*auth\s+required\s+pam_wheel.so\s+use_uid\s*$' /etc/pam.d/su)" ]; then
+    sed -i 's/\(\s*auth\s\+sufficient\s\+pam_rootok.so\s*\)$/\1\nauth required pam_wheel.so use_uid/g' /etc/pam.d/su
+fi
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="fix-home-dir-permissions" cceids="CCE-4090-7" description="Fix home dir permissions">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+chmod 750 /home/*
+if [ -e /var/lib/libuuid ]; then
+    chmod 750 /var/lib/libuuid
+fi
+chmod 750 /var/run/dbus
+chmod 750 /var/run/dbus
+# /var/run/sshd created by service at bootup
+if [ -e /etc/init.d/ssh ]; then
+  sed -i 's/\(chmod\s\+\)[0-7]\{4\}/\10750/g' /etc/init.d/ssh
+fi
+if [ -e /etc/init.d/sshd ]; then
+  sed -i 's/\(chmod\s\+\)[0-7]\{4\}/\10750/g' /etc/init.d/sshd
+fi
+if [ -e /etc/init/ssh.conf ]; then
+  sed -i 's/\(mkdir\s\+-p\s\+-m\)[0-9]\{4\}/\10750/g' /etc/init/ssh.conf
+fi
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="set-default-user-umask" cceids="CCE-14847-8" description="Set default umask for all users to 077">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+# (Audit 29) Set default umask to 077
+sed -i 's/^\(UMASK\s\+\)[0-9]\{3\}/\1077/g' /etc/login.defs
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="disable-ip-forward" cceids="CCE-3561-8" description="Disable IP forwarding">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.ip_forward" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv6.conf.default.forwarding" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv6.conf.all.forwarding" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+sysctl -w net.ipv4.ip_forward=0
+
+for i in $(sysctl -N net.ipv6.conf 2>/dev/null | egrep '^net\.ipv6\.conf\.[^\.]+\.forwarding')
+do
+    sysctl -w $i=0
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="enable-tcp-syncookies" cceids="CCE-4265-5" description="Enable tcp_syncookies">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.tcp_syncookies" value="1" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+sysctl -w net.ipv4.tcp_syncookies=1
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="enable-rp-filter" cceids="CCE-4080-8,CCE-3840-6" description="Enable reverse path filter">
+    <!-- TODO: Add ipv6 once that support gets added to the kernel. -->
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.default.rp_filter" value="1" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.all.rp_filter" value="1" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+for i in $(sysctl -N net.ipv4.conf 2>/dev/null | egrep '^net\.ipv4\.conf\.[^\.]+\.rp_filter')
+do
+    sysctl -w $i=1
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="disable-accept-redirects" cceids="CCE-4217-6,CCE-4186-3,CCE-4313-3" description="Disable accept-redirects">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.default.accept_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.all.accept_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv6.conf.default.accept_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv6.conf.all.accept_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+for i in $(sysctl -N net 2>/dev/null | egrep '^net\.ipv[46]\.conf\.[^\.]+\.accept_redirects')
+do
+    sysctl -w $i=0
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="disable-secure-redirects" cceids="CCE-3472-8,CCE-4151-7" description="Disable secure_redirects">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.default.secure_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.all.secure_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+for i in $(sysctl -N net 2>/dev/null | egrep '^net\.ipv4\.conf\.[^\.]+\.secure_redirects')
+do
+    sysctl -w $i=0
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="disable-send-redirects" cceids="CCE-4155-8,CCE-3339-9" description="Disable send_redirects">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.default.send_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.all.send_redirects" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+for i in $(sysctl -N net 2>/dev/null | egrep '^net\.ipv4\.conf\.[^\.]+\.send_redirects')
+do
+    sysctl -w $i=0
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="disable-accept-source-route" cceids="CCE-4236-6,CCE-4091-5" description="Disable accept_source_route">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.default.accept_source_route" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.all.accept_source_route" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv6.conf.default.accept_source_route" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv6.conf.all.accept_source_route" value="0" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+for i in $(sysctl -N net 2>/dev/null | egrep '^net\.ipv[46]\.conf\.[^\.]+\.accept_source_route')
+do
+    sysctl -w $i=0
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="enable-log-martians" cceids="CCE-4320-8" description="Enable log_martians">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.default.log_martians" value="1" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.conf.all.log_martians" value="1" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+for i in $(sysctl -N net 2>/dev/null | egrep '^net\.ipv4\.conf\.[^\.]+\.log_martians')
+do
+    sysctl -w $i=1
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="enable-icmp-ignore-bogus-error-responses" cceids="CCE-4133-5" description="Enable icmp_ignore_bogus_error_responses">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.icmp_ignore_bogus_error_responses" value="1" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+sysctl -w net.ipv4.icmp_ignore_bogus_error_responses=1
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="enable-icmp-echo-ignore-broadcasts" cceids="CCE-3644-2" description="Enable icmp_echo_ignore_broadcasts">
+    <action distro="*" action="ActionEditConfig" name="net.ipv4.icmp_echo_ignore_broadcasts" value="1" value-regex="[0-9]+" sep="=" path="/etc/sysctl.conf"/>
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="install-rsyslog" cceids="CCE-17742-8" description="Install rsyslog">
+    <action distro="*" action="ActionInstallPackage" package="rsyslog"/>
+  </remediation>
+
+  <remediation id="enable-rsyslog" cceids="CCE-17698-2" description="Enable rsyslog">
+    <action distro="!SLES=11" action="ActionEnableService" service="rsyslog"/>
+    <action distro="SLES=11" action="ActionEnableService" service="syslog"/>
+    <action distro="!SLES=11" action="ActionRestartService" service="rsyslog"/>
+    <action distro="SLES=11" action="ActionRestartService" service="syslog"/>
+  </remediation>
+
+  <remediation id="configure-syslog-file-create-mode" cceids="CCE-18095-0" description="Configure rsyslog $FileCreateMode">
+    <action distro="CentOS|RedHat|Oracle" action="ActionScript">
+      <script>
+      <![CDATA[
+if [ -z "$(egrep '^\s*$FileCreateMode' /etc/rsyslog.conf)" ]; then
+    sed -i 's/^\(.*GLOBAL DIRECTIVES.*\)$/\1\n\$FileCreateMode 0640/g' /etc/rsyslog.conf
+fi
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="set-etc-shadow-perms" cceids="CCE-4130-1" description="Set permissions on /etc/shadow">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+# Audit 11
+chmod 400 /etc/shadow
+if [ -e /etc/shadow- ]; then
+    chmod 400 /etc/shadow-
+fi
+if [ -e /etc/shadow.old ]; then
+    chmod 400 /etc/shadow.old
+fi
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="set-etc-gshadow-perms" cceids="CCE-3932-1" description="Set permissions on /etc/gshadow">
+    <action distro="Ubuntu|Debian" action="ActionScript">
+      <script>
+      <![CDATA[
+chown root:shadow /etc/gshadow
+      ]]>
+      </script>
+    </action>
+    <action distro="CentOS|RedHat|Oracle" action="ActionScript">
+      <script>
+      <![CDATA[
+chown root:root /etc/gshadow
+      ]]>
+      </script>
+    </action>
+    <action distro="!SLES" action="ActionScript">
+      <script>
+      <![CDATA[
+chmod 400 /etc/gshadow
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="set-etc-passwd-perms" cceids="CCE-3566-7" description="Set permissions on /etc/passwd">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+chown root:root /etc/passwd
+chmod 644 /etc/passwd
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="set-etc-group-perms" cceids="CCE-3967-7" description="Set permissions on /etc/group">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+chown root:root /etc/group
+chmod 644 /etc/group
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="fix-anacrontab-perms" cceids="CCE-4304-2" description="Fix anacrontab perms">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+if [ -e /etc/anacrontab ]; then
+    chmod 600 /etc/anacrontab
+fi
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="fix-crontab-perms" cceids="CCE-4388-5" description="Fix crontab perms">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+# (Audit 92) Fix Permissions on cron files/folders
+chmod 600 /etc/crontab
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="fix-cron-file-perms" cceids="CCE-4250-7,CCE-4450-3,CCE-4106-1,CCE-4251-5,CCE-4203-6" description="Fix cron file/folder permissions">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+# (Audit 93-97, 100-103) Fix Permissions on cron files/folders
+chmod 700 /etc/cron.*
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="fix-root-path-perms" cceids="CCE-14957-5" description="Fix permissions on dirs in root's path">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+for d in $(bash -l -c 'echo $PATH' | sed 's/:/ /g')
+do
+    chmod og-w $d
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="disable-non-root-system-login" cceids="CCE-3987-5" description="Disable login for system accounts">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+# (Audit 23.1) Disable login for system accounts
+for i in $(egrep -v '^([^:]*:){5}.*(root|home)' /etc/passwd | egrep -v '^([^:]*:){6}(/dev/null|/bin/false|/sbin/nologin|/usr/sbin/nologin)' | cut -d ":" -f 1; egrep '^syslog:' /etc/passwd | egrep -v '^syslog:([^:]*:){5}:(/dev/null|/bin/false|/sbin/nologin|/usr/sbin/nologin)' | cut -d ":" -f 1)
+do
+    chsh -s /bin/false $i 2>/dev/null
+done
+      ]]>
+      </script>
+    </action>
+  </remediation>
+
+  <remediation id="disable-avahi-daemon" cceids="CCE-4365-3" description="Disable avahi-daemon service">
+    <action distro="*" action="ActionDisableService" service="avahi-daemon"/>
+  </remediation>
+
+  <remediation id="disable-cups" cceids="CCE-4425-5" description="Disable cups service">
+    <action distro="*" action="ActionDisableService" service="cups"/>
+  </remediation>
+
+  <remediation id="disable-rpcgssd" cceids="CCE-3535-2" description="Disable rpcgssd service">
+    <action distro="*" action="ActionDisableService" service="rpcgssd"/>
+  </remediation>
+
+  <remediation id="disable-rpcidmapd" cceids="CCE-3568-3" description="Disable rpcidmapd service">
+    <action distro="*" action="ActionDisableService" service="rpcidmapd"/>
+  </remediation>
+
+  <remediation id="disable-rpcbind" cceids="CCE-4550-0" description="Disable rpcbind service">
+    <action distro="SLES=11" action="ActionDisableService" service="nfs"/>
+    <action distro="*" action="ActionDisableService" service="rpcbind"/>
+    <action distro="CentOS>=7|RedHat>=7|SLES>11" action="ActionDisableService" service="rpcbind.socket"/>
+  </remediation>
+
+  <remediation id="disable-unnecessary-kernel-mods" cceids="CCE-14089-7,CCE-14457-6,CCE-15087-0,CCE-14093-9,CCE-14853-6,CCE-14118-4,CCE-14268-7,CCE-14132-5,CCE-14027-7,CCE-14911-2" description="Disable unnecessary Kernel Modules">
+    <action distro="*" action="ActionScript">
+      <script>
+      <![CDATA[
+# (Audit6.1 - 6.6, 54, 55, 57) Disable unnecessary Kernel Modules
+cat > /etc/modprobe.d/blacklist-azurebaseline.conf <<EOF
+# Modules disabled per Azure baseline
+install dccp /bin/true
+install sctp /bin/true
+install rds /bin/true
+install tipc /bin/true
+install cramfs /bin/true
+install freevxfs /bin/true
+install hfs /bin/true
+install hfsplus /bin/true
+install jffs2 /bin/true
+install squashfs /bin/true
+EOF
+chown root.root /etc/modprobe.d/blacklist-azurebaseline.conf
+chmod 644 /etc/modprobe.d/blacklist-azurebaseline.conf
+      ]]>
+      </script>
+    </action>
+  </remediation>
+ </remediations>
 </data>
