@@ -272,7 +272,7 @@
         command="CheckNoPromiscInterfaces" />
     </audit>
     <audit
-      description="All wireless interfaces should be disabled. (disabled)"
+      description="All wireless interfaces should be disabled."
       msid="49"
       cceid="CCE-4276-2"
       severity="Warning"
@@ -386,7 +386,7 @@
         service="mdsd" />
     </audit>
     <audit
-      description="Rsyslog should not accept remote messages. (reject)"
+      description="Rsyslog should not accept remote messages."
       msid="67"
       cceid="CCE-17639-6"
       severity="Important"
@@ -400,7 +400,7 @@
         path="/etc/rsyslog.conf" />
     </audit>
     <audit
-      description="The logrotate (syslog rotater) service should be enabled. (enabled)"
+      description="The logrotate (syslog rotater) service should be enabled."
       msid="68"
       cceid="CCE-4182-2"
       severity="Critical"
@@ -433,7 +433,7 @@
         path="/etc/inetd.conf" />
     </audit>
     <audit
-      description="The telnet service should be disabled. (disabled)"
+      description="The telnet service should be disabled."
       msid="72"
       cceid="CCE-3390-2"
       severity="Critical"
@@ -539,7 +539,7 @@
         packagename="isdnutils-base" />
     </audit>
     <audit
-      description="The kdump service should be disabled. (disabled)"
+      description="The kdump service should be disabled."
       msid="88"
       cceid="CCE-3425-6"
       severity="Important"
@@ -552,7 +552,7 @@
         service="kdump-tools" />
     </audit>
     <audit
-      description="Zeroconf networking should be disabled. (disabled)"
+      description="Zeroconf networking should be disabled."
       msid="89"
       cceid="CCE-14054-1"
       severity="Critical"
@@ -566,7 +566,7 @@
         path="/etc/network/interfaces" />
     </audit>
     <audit
-      description="The crond service should be enabled. (enabled)"
+      description="The crond service should be enabled."
       msid="90"
       cceid="CCE-4324-0"
       severity="Critical"
@@ -767,9 +767,13 @@
       remediation="Run the command '/usr/local/bin/azsecd remediate -r disable-rpcbind'. This will disable the rpcbind service."
       ruleId="f4a80328-1d67-45ed-b915-274d2e6c699e">
       <check
-        distro="*"
+        distro="Debian|Ubuntu|Oracle|CentOS&lt;7|RedHat&lt;7|SLES=11"
         command="CheckServiceDisabled"
         service="rpcbind" />
+      <check
+        distro="CentOS&gt;=7|RedHat&gt;=7|SLES&gt;11"
+        command="CheckServiceDisabled"
+        service="rpcbind.service,rpcbind.socket" />
     </audit>
     <audit
       description="The rpcsvcgssd service should be disabled."
@@ -957,7 +961,7 @@
         path="/etc/postfix/main.cf" />
     </audit>
     <audit
-      description="The ldap service should be disabled. (disabled)"
+      description="The ldap service should be disabled."
       msid="124"
       cceid="CCE-3501-4"
       severity="Important"
