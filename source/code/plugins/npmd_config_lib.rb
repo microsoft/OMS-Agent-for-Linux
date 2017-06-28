@@ -161,7 +161,17 @@ module NPMDConfig
             _h["IDs"] = Hash.new
             begin
                 subnetHash.each do |key, value|
-                    _tempIp = IPAddr.new(value)
+                    _tempIp = nil
+                    begin
+                        _tempIp = IPAddr.new(value)
+                    rescue StandardError => e
+                        _tempArr = value.split('/')
+                        if (_tempArr[0] == "0.0.0.0" and !_tempArr[1].nil?)
+                            _tempIp = IPAddr.new("::/#{_tempArr[1]}")
+                        else
+                            raise e
+                        end
+                    end
                     _h["Masks"][key] = getNetMask(_tempIp)
                     _h["IDs"][key] = _tempIp.to_s
                 end
