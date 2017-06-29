@@ -2,6 +2,24 @@ require 'optparse'
 
 module MaintenanceModule
 
+  # Error codes and categories:
+
+  # User configuration/parameters:
+  INVALID_OPTION_PROVIDED = 2
+  NON_PRIVELEGED_USER_ERROR_CODE = 3
+  # System configuration:
+  MISSING_CONFIG_FILE = 4
+  MISSING_CONFIG = 5
+  MISSING_CERTS = 6
+  # Service/network-related:
+  HTTP_NON_200 = 7
+  ERROR_SENDING_HTTP = 8
+  ERROR_EXTRACTING_ATTRIBUTES = 9
+  MISSING_CERT_UPDATE_ENDPOINT = 10
+  # Internal errors:
+  ERROR_GENERATING_CERTS = 11
+  ERROR_WRITING_TO_FILE = 12
+
   class Maintenance
     require 'openssl'
     require 'fileutils'
@@ -15,7 +33,7 @@ module MaintenanceModule
     require_relative 'agent_topology_request_script'
     require_relative 'oms_configuration'
 
-    attr_reader :AGENT_USER, :load_config_success
+    attr_reader :AGENT_USER, :load_config_return_code
     attr_accessor :suppress_stdout
   
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path,
@@ -40,7 +58,7 @@ module MaintenanceModule
       @LOG_FACILITY = nil
       @CERTIFICATE_UPDATE_ENDPOINT = nil
 
-      @load_config_success = load_config
+      @load_config_return_code = load_config
       @logger = log
       init_logger
 
@@ -143,7 +161,7 @@ module MaintenanceModule
     def load_config
       if !File.exist?(@omsadmin_conf_path)
         log_error("Missing configuration file: #{@omsadmin_conf_path}")
-        return 1
+        return MISSING_CONFIG_FILE
       end
 
       File.open(@omsadmin_conf_path, "r").each_line do |line|
@@ -169,7 +187,7 @@ module MaintenanceModule
     # Update omsadmin.conf with the specified variable's value
     def update_config(var, val)
       if !File.exist?(@omsadmin_conf_path)
-        return 1
+        return MISSING_CONFIG_FILE
       end
 
       old_text = File.read(@omsadmin_conf_path)
@@ -201,10 +219,10 @@ module MaintenanceModule
  
       if cert_update_endpoint.empty?
         log_error("Could not extract the update certificate endpoint.")
-        return 1
+        return MISSING_CERT_UPDATE_ENDPOINT
       elsif update_attr.empty?
         log_error("Could not find the updateCertificate tag in the heartbeat response")
-        return 1
+        return ERROR_EXTRACTING_ATTRIBUTES
       end
 
       # Update omsadmin.conf with cert_update_endpoint variable
@@ -216,7 +234,7 @@ module MaintenanceModule
       if update_attr == "true" and check_for_renew_request
         renew_certs_ret = renew_certs
         if renew_certs_ret != 0
-          return 1
+          return renew_certs_ret
         end
       end
 
@@ -237,7 +255,7 @@ module MaintenanceModule
 
       if dsc_endpoint.empty?
         log_error("Could not extract the DSC endpoint.")
-        return 1
+        return ERROR_EXTRACTING_ATTRIBUTES
       end
 
       # Update omsadmin.conf with dsc_endpoint variable
@@ -251,7 +269,7 @@ module MaintenanceModule
     # Save DSC_ENDPOINT and CERTIFICATE_UPDATE_ENDPOINT variables in file to be read outside of this script
     def apply_endpoints_file(xml_file, output_file)
       if !file_exists_nonempty(xml_file)
-        return 1
+        return MISSING_CONFIG_FILE
       end
 
       server_resp = File.read(xml_file)
@@ -272,7 +290,7 @@ module MaintenanceModule
                               "#{dsc_applied}\n")
         rescue => e
           log_error("Error saving endpoints to file: #{e.message}")
-          return 1
+          return ERROR_WRITING_TO_FILE
         ensure
           if !output_handle.nil?
             output_handle.close
@@ -316,19 +334,20 @@ module MaintenanceModule
     # Perform a heartbeat against the OMS endpoint
     def heartbeat
       # Reload config in case of updates since last heartbeat
-      @load_config_success = load_config
+      @load_config_return_code = load_config
+      if @load_config_return_code != 0
+        log_error("Error loading configuration from #{@omsadmin_conf_path}")
+        return @load_config_return_code
+      end
 
       # Check necessary inputs
-      if @load_config_success != 0
-        log_error("Error loading configuration from #{@omsadmin_conf_path}")
-        return 1
-      elsif @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @URL_TLD.nil? or
+      if @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @URL_TLD.nil? or
           @WORKSPACE_ID.empty? or @AGENT_GUID.empty? or @URL_TLD.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
-        return 1
+        return MISSING_CONFIG
       elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
         log_error("Certificates for heartbeat request do not exist")
-        return 1
+        return MISSING_CERTS
       end
 
       # Generate the request body
@@ -363,25 +382,30 @@ module MaintenanceModule
         res = http.start { |http_each| http.request(req) }
       rescue => e
         log_error("Error sending the heartbeat: #{e.message}")
+        return ERROR_SENDING_HTTP
       end
 
       if !res.nil?
         log_info("Heartbeat response code: #{res.code}") if @verbose
 
         if res.code == "200"
-          results = 0
-          results = 1 if apply_certificate_update_endpoint(res.body) == 1
-          results = 1 if apply_dsc_endpoint(res.body) == 1
-
-          log_info("Heartbeat success") if results == 0
-          return results
+          cert_apply_res = apply_certificate_update_endpoint(res.body)
+          dsc_apply_res = apply_dsc_endpoint(res.body)
+          if cert_apply_res.class != String
+            return cert_apply_res
+          elsif dsc_apply_res.class != String
+            return dsc_apply_res
+          else
+            log_info("Heartbeat success")
+            return 0
+          end
         else
           log_error("Error sending the heartbeat. HTTP code #{res.code}")
-          return 1
+          return HTTP_NON_200
         end
       else
         log_error("Error sending the heartbeat. No HTTP code")
-        return 1
+        return ERROR_SENDING_HTTP
       end
     end
 
@@ -389,7 +413,7 @@ module MaintenanceModule
     def generate_certs(workspace_id, agent_guid)
       if workspace_id.nil? or agent_guid.nil? or workspace_id.empty? or agent_guid.empty?
         log_error("Both WORKSPACE_ID and AGENT_GUID must be defined to generate certificates")
-        return 1
+        return MISSING_CONFIG
       end
 
       log_info("Generating certificate ...")
@@ -449,9 +473,12 @@ module MaintenanceModule
       end
 
       # Check for any error or non-existent or empty files
-      if !error.nil? or !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+      if !error.nil?
+        log_error("Error generating certs: #{error.message}")
+        return ERROR_GENERATING_CERTS
+      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
         log_error("Error generating certs")
-        return 1
+        return ERROR_GENERATING_CERTS
       end
 
       return 0
@@ -476,18 +503,18 @@ module MaintenanceModule
     # Renew certificates for agent/workspace connection
     def renew_certs
       # Check necessary inputs
-      if @load_config_success != 0
+      if @load_config_return_code != 0
         log_error("Error loading configuration from #{@omsadmin_conf_path}")
-        return 1
+        return @load_config_return_code
       elsif @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @WORKSPACE_ID.empty? or @AGENT_GUID.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
-        return 1
+        return MISSING_CONFIG
       elsif @CERTIFICATE_UPDATE_ENDPOINT.nil? or @CERTIFICATE_UPDATE_ENDPOINT.empty?
         log_error("Missing CERTIFICATE_UPDATE_ENDPOINT from configuration")
-        return 1
+        return MISSING_CONFIG
       elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
         log_error("No certificates exist; cannot renew certificates")
-        return 1
+        return MISSING_CERTS
       end
 
       log_info("Renewing the certificates")
@@ -498,7 +525,7 @@ module MaintenanceModule
 
       generated = generate_certs(@WORKSPACE_ID, @AGENT_GUID)
       if generated != 0
-        return 1
+        return generated
       end
 
       # Form POST request
@@ -522,26 +549,31 @@ module MaintenanceModule
       rescue => e
         log_error("Error renewing certificate: #{e.message}")
         restore_old_certs(cert_old, key_old)
-        return 1
+        return ERROR_SENDING_HTTP
       end
 
-      if !res.nil? and res.code == "200"
-        log_info("Renew certificates response code: 200") if @verbose
-        # Do one heartbeat for the server to acknowledge the change
-        hb_return = heartbeat
+      if !res.nil?
+        log_info("Renew certificates response code: #{res.code}") if @verbose
 
-        if hb_return == 0
-          log_info("Certificates successfully renewed")
+        if res.code == "200"
+          # Do one heartbeat for the server to acknowledge the change
+          hb_return = heartbeat
+
+          if hb_return == 0
+            log_info("Certificates successfully renewed")
+          else
+            log_error("Error renewing certificate. Restoring old certs.")
+            restore_old_certs(cert_old, key_old)
+            return hb_return
+          end
         else
-          log_error("Error renewing certificate. Restoring old certs.")
+          log_error("Error renewing certificate. HTTP code #{res.code}")
           restore_old_certs(cert_old, key_old)
-          return 1
+          return HTTP_NON_200
         end
       else
-        http_code = !res.nil? ? "HTTP code #{res.code}" : "No HTTP code"
-        log_error("Error renewing certificate. #{http_code}")
-        restore_old_certs(cert_old, key_old)
-        return 1
+        log_error("Error renewing certificate. No HTTP code")
+        return ERROR_SENDING_HTTP
       end
 
       return 0
@@ -613,7 +645,7 @@ if __FILE__ == $0
   ret_code = 0
 
   if !maintenance.check_user
-    ret_code = 1
+    ret_code = NON_PRIVELEGED_USER_ERROR_CODE
 
   elsif options[:heartbeat]
     ret_code = maintenance.heartbeat
@@ -621,10 +653,10 @@ if __FILE__ == $0
   elsif options[:generate_certs]
     if ENV["TEST_WORKSPACE_ID"].nil? and ENV["TEST_SHARED_KEY"].nil? and !maintenance.is_current_user_root
       usage  # generate_certs only intended for onboarding script and testing
-      ret_code = 1
+      ret_code = INVALID_OPTION_PROVIDED
     elsif options[:workspace_id].nil? or options[:agent_guid].nil?
       print("To generate certificates, you must include both -w WORKSPACE_ID and -a AGENT_GUID")
-      ret_code = 1
+      ret_code = INVALID_OPTION_PROVIDED
     else
       ret_code = maintenance.generate_certs(options[:workspace_id], options[:agent_guid])
     end
@@ -635,11 +667,11 @@ if __FILE__ == $0
   elsif options[:apply_endpoints]
     if ENV["TEST_WORKSPACE_ID"].nil? and ENV["TEST_SHARED_KEY"].nil? and !maintenance.is_current_user_root
       usage  # apply_endpoints only intended for onboarding script and testing
-      ret_code = 1
+      ret_code = INVALID_OPTION_PROVIDED
     elsif options[:apply_endpoints].length != 2
       print("To apply the endpoints, you must include both input XML and output file: "\
             "--endpoints XML,ENDPOINT_FILE\n")
-      ret_code = 1
+      ret_code = INVALID_OPTION_PROVIDED
     else
       ret_code = maintenance.apply_endpoints_file(options[:apply_endpoints][0], options[:apply_endpoints][1])
     end

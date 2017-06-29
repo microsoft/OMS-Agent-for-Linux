@@ -48,6 +48,10 @@ RUBY=/opt/microsoft/omsagent/ruby/bin/ruby
 AUTH_KEY_SCRIPT=/opt/microsoft/omsagent/bin/auth_key.rb
 TOPOLOGY_REQ_SCRIPT=/opt/microsoft/omsagent/plugin/agent_topology_request_script.rb
 MAINTENANCE_TASKS_SCRIPT=/opt/microsoft/omsagent/plugin/agent_maintenance_script.rb
+# Ruby error codes
+AGENT_MAINTENANCE_MISSING_CONFIG_FILE=4
+AGENT_MAINTENANCE_MISSING_CONFIG=5
+AGENT_MAINTENANCE_ERROR_WRITING_TO_FILE=12
 
 METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
 
@@ -87,6 +91,30 @@ MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
 OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
 
+# Error codes and categories:
+
+# User configuration/parameters:
+INVALID_OPTION_PROVIDED=2
+INVALID_CONFIG_PROVIDED=3
+INVALID_PROXY=4
+# Service-related:
+ERROR_ONBOARDING_403=5
+ERROR_ONBOARDING_NON_200_HTTP=6
+# Network-related:
+ERROR_RESOLVING_HOST=7
+ERROR_ONBOARDING=8
+# Internal errors:
+INTERNAL_ERROR=30
+RUBY_ERROR_GENERATING_GUID=31
+ERROR_GENERATING_CERTS=32
+ERROR_GENERATING_METACONFIG=33
+ERROR_METACONFIG_PY_NOT_PRESENT=34
+
+# curl error codes:
+CURL_PROXY_RESOLVE_ERROR=5
+CURL_HOST_RESOLVE_ERROR=6
+CURL_CONNECT_HOST_ERROR=7
+
 usage()
 {
     local basename=`basename $0`
@@ -115,7 +143,6 @@ usage()
     echo
     echo "Azure resource ID:"
     echo "$basename -a <Azure resource ID>"
-    clean_exit 1
 }
 
 set_user_agent()
@@ -155,30 +182,15 @@ save_config()
     chown_omsagent "$CONF_OMSADMIN"
 }
 
-load_config()
-{
-    if [ ! -e "$CONF_OMSADMIN" ]; then
-        log_error "Missing configuration file : $CONF_OMSADMIN"
-        clean_exit 1
-    fi
-
-    . "$CONF_OMSADMIN"
-
-    if [ -z "$WORKSPACE_ID" -o -z "$AGENT_GUID" ]; then
-        log_error "Missing required field from configuration file: $CONF_OMSADMIN"
-        clean_exit 1
-    fi
-
-    # In the upgrade scenario, the URL_TLD doesn't have the .com part
-    # Append it to make it backward-compatible
-    if [ "$URL_TLD" = "opinsights.azure" -o "$URL_TLD" = "int2.microsoftatlanta-int" ]; then
-        URL_TLD="${URL_TLD}.com"
-    fi
-}
-
 cleanup()
 {
     rm "$BODY_ONBOARD" "$RESP_ONBOARD" "$ENDPOINT_FILE" > /dev/null 2>&1 || true
+}
+
+# This helper should only be called in the cases when certs have been created but onboarding failed.
+cleanup_certs()
+{
+    rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
 }
 
 clean_exit()
@@ -213,6 +225,7 @@ parse_args()
         case "$opt" in
         h|\?)
             usage
+            clean_exit 0
             ;;
         s)
             ONBOARDING=1
@@ -263,11 +276,13 @@ parse_args()
     if [ "$@ " != " " ]; then
         log_error "Parsing error: '$@' is unparsed"
         usage
+        clean_exit $INVALID_OPTION_PROVIDED
     fi
 
     if [ -n "$PROXY_USER" -a -z "$PROXY_HOST" ]; then
         log_error "Cannot specify the proxy user without specifying the proxy host"
         usage
+        clean_exit $INVALID_PROXY
     fi
 
     if [ -n "$PROXY_HOST" ]; then
@@ -430,12 +445,12 @@ onboard()
     local error=0
     if [ -z "$WORKSPACE_ID" -o -z "$SHARED_KEY" ]; then
         log_error "Missing Workspace ID or Shared Key information for onboarding"
-        clean_exit 1
+        clean_exit $INVALID_CONFIG_PROVIDED
     fi
 
     if echo "$WORKSPACE_ID" | grep -Eqv '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'; then
         log_error "The Workspace ID is not valid"
-        clean_exit 1
+        clean_exit $INVALID_CONFIG_PROVIDED
     fi
 
     create_workspace_directories $WORKSPACE_ID
@@ -446,16 +461,25 @@ onboard()
         log_info "Reusing previous agent GUID $AGENT_GUID"
     else
         AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
+        if [ $? -ne 0 -o -z "$AGENT_GUID" ]; then
+            log_error "Error generating agent GUID"
+            clean_exit $RUBY_ERROR_GENERATING_GUID
+        fi
+
         $RUBY $MAINTENANCE_TASKS_SCRIPT -c "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" -w "$WORKSPACE_ID" -a "$AGENT_GUID" $CURL_VERBOSE
-        if [ $? -ne 0 ]; then
-          log_error "Error generating certs"
-          clean_exit 1
+        generate_certs_ret=$?
+        if [ $generate_certs_ret -eq $AGENT_MAINTENANCE_MISSING_CONFIG ]; then
+            log_error "Error generating certs: missing config"
+            clean_exit $INTERNAL_ERROR
+        elif [ $generate_certs_ret -ne 0 ]; then
+            log_error "Error generating certs"
+            clean_exit $ERROR_GENERATING_CERTS
         fi
     fi
 
     if [ -z "$AGENT_GUID" ]; then
         log_error "AGENT_GUID should not be empty"
-        return 1
+        return $INTERNAL_ERROR
     else
         log_info "Agent GUID is $AGENT_GUID"
     fi
@@ -473,7 +497,7 @@ onboard()
 
     # append telemetry to $BODY_ONBOARD
     `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"` 
-    [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding. "
+    [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding."
 
     cat /dev/null > "$SHARED_KEY_FILE"
     chmod 600 "$SHARED_KEY_FILE"
@@ -500,8 +524,8 @@ onboard()
         case "$ASSET_TAG" in
             77*) OMSCLOUD_ID=$ASSET_TAG ;;       # If the asset tag begins with a 77 this is the azure guid
         esac
-    fi     
- 
+    fi
+
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
@@ -514,17 +538,34 @@ onboard()
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
         --write-out "%{http_code}\n" $PROXY_SETTING \
         https://${WORKSPACE_ID}.oms.${URL_TLD}/AgentService.svc/LinuxAgentTopologyRequest` || error=$?
-                 
-    if [ $error -ne 0 ]; then
+
+    if [ $error -eq $CURL_HOST_RESOLVE_ERROR -a -z "$PROXY_SETTING" ]; then
+        log_error "Error resolving host during the onboarding request. Check the correctness of the workspace ID and the internet connectivity, or add a proxy."
+        cleanup_certs
+        return $ERROR_RESOLVING_HOST
+    elif [ $error -eq $CURL_PROXY_RESOLVE_ERROR -a -n "$PROXY_SETTING" ]; then
+        log_error "Proxy could not be resolved during the onboarding request. Verify the proxy."
+        cleanup_certs
+        return $INVALID_PROXY
+    elif [ $error -eq $CURL_CONNECT_HOST_ERROR -a -n "$PROXY_SETTING" ]; then
+        log_error "Error connecting to OMS service through proxy. Verify the proxy."
+        cleanup_certs
+        return $INVALID_PROXY
+    elif [ $error -ne 0 ]; then
         log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
-        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
-        return 1
+        cleanup_certs
+        return $ERROR_ONBOARDING
     fi
 
     if [ "$RET_CODE" = "200" ]; then
         $RUBY $MAINTENANCE_TASKS_SCRIPT --endpoints "$RESP_ONBOARD","$ENDPOINT_FILE" "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" $CURL_VERBOSE
-        if [ $? -ne 0 ]; then
-            log_warning "During onboarding request, certificate update and DSC endpoints may not have been extracted."
+        endpoints_ret=$?
+        if [ $endpoints_ret -eq $AGENT_MAINTENANCE_MISSING_CONFIG_FILE ]; then
+            log_error "Onboarding response is missing; certificate update and DSC endpoints were not extracted."
+        elif [ $endpoints_ret -eq $AGENT_MAINTENANCE_ERROR_WRITING_TO_FILE ]; then
+            log_error "Endpoint file could not be written to; certificate update and DSC endpoints were not saved."
+        elif [ $endpoints_ret -ne 0 ]; then
+            log_warning "During onboarding request, certificate update and DSC endpoints may not have been saved."
         else
             log_info "Onboarding success"
         fi
@@ -536,12 +577,12 @@ onboard()
     elif [ "$RET_CODE" = "403" ]; then
         REASON=`cat $RESP_ONBOARD | sed -n 's:.*<Reason>\(.*\)</Reason>.*:\1:p'`
         log_error "Error onboarding. HTTP code 403, Reason: $REASON. Check the Workspace ID, Workspace Key and that the time of the system is correct."
-        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
-        return 1
+        cleanup_certs
+        return $ERROR_ONBOARDING_403
     else
         log_error "Error onboarding. HTTP code $RET_CODE"
-        rm "$FILE_CRT" "$FILE_KEY" > /dev/null 2>&1 || true
-        return 1
+        cleanup_certs
+        return $ERROR_ONBOARDING_NON_200_HTTP
     fi
 
     save_config
@@ -573,16 +614,19 @@ onboard()
             # This is a temp solution since the DSC doesn't support multi-homing now
             # Only the primary workspace receives the configuration from the DSC service
             if [ "$USER_ID" -eq "0" ]; then
-                su - $AGENT_USER -c $METACONFIG_PY > /dev/null
+                su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
             else
                 $METACONFIG_PY > /dev/null || error=$?
             fi
     
             if [ $error -eq 0 ]; then
                 log_info "Configured omsconfig"
+            elif [ ! -f $METACONFIG_PY ]; then
+                log_error "MetaConfig generation script not available at $METACONFIG_PY"
+                return $ERROR_METACONFIG_PY_NOT_PRESENT
             else
                 log_error "Error configuring omsconfig"
-                return 1
+                return $ERROR_GENERATING_METACONFIG
             fi
     
             # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
@@ -751,7 +795,7 @@ list_workspaces()
         echo "No Workspace"
     fi
 
-    return 1
+    return 0
 }
 
 migrate_old_workspace()
@@ -995,11 +1039,12 @@ main()
             ONBOARD_FROM_FILE=1
         else
             usage
+            clean_exit $INVALID_OPTION_PROVIDED
         fi
     fi
 
     if [ "$ONBOARDING" = "1" ]; then
-        onboard || clean_exit 1
+        onboard || clean_exit $?
     fi
 
     if [ "$LIST_WORKSPACES" = "1" ]; then

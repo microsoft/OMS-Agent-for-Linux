@@ -10,6 +10,7 @@ If none of these steps work for you the following channels for help are also ava
 - [Important Log Locations](#important-log-locations)
 - [Important Configuration Files](#important-configuration-files)
 - [Installation Error Codes](#installation-error-codes)
+- [Onboarding Error Codes](#onboarding-error-codes)
 - [Enable Debug Logging](#enable-debug-logging)
 - [OMS output plugin debug](#oms-output-plugin-debug)
 - [Verbose output](#verbose-output)
@@ -61,6 +62,23 @@ If none of these steps work for you the following channels for help are also ava
 | 63 | Missing sed program; Install sed |
 | 64 | Missing curl program; Install curl |
 | 65 | Missing gpg program; Install gpg |
+
+## Onboarding Error Codes
+
+| Error Code | Meaning |
+| --- | --- |
+| 2 | Invalid option provided to the omsadmin script; Run `sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -h` for usage |
+| 3 | Invalid configuration provided to the omsadmin script; Run `sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -h` for usage |
+| 4 | Invalid proxy provided to the omsadmin script; Verify the proxy and see our [documentation for using an HTTP proxy](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#configuring-the-agent-for-use-with-an-http-proxy-server) |
+| 5 | 403 HTTP error received from OMS service; See the full output of the omsadmin script for details |
+| 6 | Non-200 HTTP error received from OMS service; See the full output of the omsadmin script for details |
+| 7 | Unable to connect to OMS service; See the full output of the omsadmin script for details |
+| 8 | Error onboarding to OMS workspace; See the full output of the omsadmin script for details |
+| 30 | Internal script error; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
+| 31 | Error generating agent ID; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
+| 32 | Error generating certificates; See the full output of the omsadmin script for details |
+| 33 | Error generating metaconfiguration for omsconfig; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
+| 34 | Metaconfiguration generation script not present; Retry onboarding with `sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh -w <OMS Workspace ID> -s <OMS Workspace Key>` |
 
 ### Enable Debug Logging
 #### OMS output plugin debug
@@ -142,7 +160,7 @@ Below the output plugin, uncomment the following section by removing the `#` in 
 
 #### Resolutions
 * Re-onboard to the OMS Service with the OMS Agent for Linux using the following command with the option `-v` enabled. This allows verbose output of the agent connecting through the proxy to the OMS Service.
-  * `/opt/microsoft/omsagent/bin/omsadmin.sh -w <OMS Workspace ID> -s <OMS Workspace Key> -p <Proxy Conf> -v`
+  * `sudo /opt/microsoft/omsagent/bin/omsadmin.sh -w <OMS Workspace ID> -s <OMS Workspace Key> -p <Proxy Conf> -v`
   * Review documentation for OMS Proxy located [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#configuring-the-agent-for-use-with-an-http-proxy-server)
 * Double check that the following OMS Service endpoints are whitelisted
 

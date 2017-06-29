@@ -13,18 +13,18 @@ class MaintenanceUnitTest < Test::Unit::TestCase
   VALID_CERTIFICATE_UPDATE_ENDPOINT = "https://#{VALID_WORKSPACE_ID}.oms.int2.microsoftatlanta-"\
                                       "int.com/ConfigurationService.Svc/RenewCertificate"
 
-  VALID_OMSADMIN_CONF = "WORKSPACE_ID=#{VALID_WORKSPACE_ID}\n" \
-                        "AGENT_GUID=#{VALID_AGENT_GUID}\n" \
-                        "LOG_FACILITY=local0\n" \
-                        "CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n" \
-                        "URL_TLD=int2.microsoftatlanta-int.com\n" \
-                        "DSC_ENDPOINT=https://oaasagentsvcdf.cloudapp.net/Accounts/" \
-                        "#{VALID_WORKSPACE_ID}/Nodes(AgentId='#{VALID_AGENT_GUID}')\n" \
-                        "OMS_ENDPOINT=https://#{VALID_WORKSPACE_ID}.ods." \
-                        "int2.microsoftatlanta-int.com/OperationalData.svc/PostJsonDataItems\n" \
-                        "AZURE_RESOURCE_ID=\n" \
-                        "OMSCLOUD_ID=7783-7084-3265-9085-8269-3286-77\n" \
-                        "UUID=274E8EF9-2B6F-8A45-801B-AAEE62710796\n" \
+  VALID_OMSADMIN_CONF = "WORKSPACE_ID=#{VALID_WORKSPACE_ID}\n"\
+                        "AGENT_GUID=#{VALID_AGENT_GUID}\n"\
+                        "LOG_FACILITY=local0\n"\
+                        "CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n"\
+                        "URL_TLD=int2.microsoftatlanta-int.com\n"\
+                        "DSC_ENDPOINT=https://oaasagentsvcdf.cloudapp.net/Accounts/"\
+                        "#{VALID_WORKSPACE_ID}/Nodes(AgentId='#{VALID_AGENT_GUID}')\n"\
+                        "OMS_ENDPOINT=https://#{VALID_WORKSPACE_ID}.ods."\
+                        "int2.microsoftatlanta-int.com/OperationalData.svc/PostJsonDataItems\n"\
+                        "AZURE_RESOURCE_ID=\n"\
+                        "OMSCLOUD_ID=7783-7084-3265-9085-8269-3286-77\n"\
+                        "UUID=274E8EF9-2B6F-8A45-801B-AAEE62710796\n"\
 
   VALID_HEARTBEAT_RESP = "<?xml version=\"1.0\" encoding=\"utf-8\"?><LinuxAgentTopologyResponse "\
                          "queryInterval=\"PT1H\" id=\"628a6594-a618-4da4-a989-bcd9a322d403\" "\
@@ -43,7 +43,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     @omsadmin_conf_file = Tempfile.new("omsadmin_conf")
     @cert_file = Tempfile.new("oms_crt")
     @key_file = Tempfile.new("oms_key")
-    @pid_file = Tempfile.new("omsagent_pid")  # this does not need to have meaningful data during testing
+    @pid_file = Tempfile.new("omsagent_pid")  # doesn't need to have meaningful data for testing
     @proxy_file = Tempfile.new("proxy_conf")
     @os_info_file = Tempfile.new("os_info")
     @install_info_file = Tempfile.new("install_info")
@@ -79,20 +79,22 @@ class MaintenanceUnitTest < Test::Unit::TestCase
 
   def test_load_config_nonexistent_file
     m = get_new_maintenance_obj("/etc/nonexistentomsadmin.conf")
-    assert_equal(m.load_config_success, 1, "load_config succeeded with nonexistent config")
+    assert_equal(m.load_config_return_code, MaintenanceModule::MISSING_CONFIG_FILE,
+                 "load_config succeeded with nonexistent config")
   end
 
-  def test_load_config_success
+  def test_load_config_return_code
     File.write(@omsadmin_conf_file.path, VALID_OMSADMIN_CONF)
     m = get_new_maintenance_obj
-    assert_equal(m.load_config_success, 0, "load_config failed with valid config")
+    assert_equal(m.load_config_return_code, 0, "load_config failed with valid config")
   end
 
   def test_generate_certs_empty_input
     File.write(@cert_file.path, "")
     File.write(@key_file.path, "")
     m = get_new_maintenance_obj
-    assert_equal(m.generate_certs("", ""), 1, "generate_certs passed with empty WORKSPACE_ID and AGENT_GUID")
+    assert_equal(m.generate_certs("", ""), MaintenanceModule::MISSING_CONFIG,
+                 "Incorrect return code for empty WORKSPACE_ID and AGENT_GUID")
     assert(File.zero?(@cert_file.path), "Cert file is non-empty after invalid generate_certs")
     assert(File.zero?(@key_file.path), "Key file is non-empty after invalid generate_certs")
   end
@@ -109,15 +111,18 @@ class MaintenanceUnitTest < Test::Unit::TestCase
   def test_apply_dsc_endpoint_empty_xml
     File.write(@omsadmin_conf_file.path, EMPTY_DSC_ENDPOINT)
     m = get_new_maintenance_obj
-    assert_equal(m.apply_dsc_endpoint(""), 1, "apply_dsc_endpoint passed with empty input")
+    assert_equal(m.apply_dsc_endpoint(""), MaintenanceModule::ERROR_EXTRACTING_ATTRIBUTES,
+                 "Incorrect return code for empty input")
     @omsadmin_conf_file.rewind
-    assert_equal(@omsadmin_conf_file.read, EMPTY_DSC_ENDPOINT, "conf written by apply_dsc_endpoint on empty input")
+    assert_equal(@omsadmin_conf_file.read, EMPTY_DSC_ENDPOINT,
+                 "conf written by apply_dsc_endpoint on empty input")
   end
 
   def test_apply_dsc_endpoint_valid_xml
     File.write(@omsadmin_conf_file.path, EMPTY_DSC_ENDPOINT)
     m = get_new_maintenance_obj
-    assert_not_equal(m.apply_dsc_endpoint(VALID_HEARTBEAT_RESP), 1, "apply_dsc_endpoint failed with valid input")
+    assert_equal(m.apply_dsc_endpoint(VALID_HEARTBEAT_RESP).class, String,
+                 "apply_dsc_endpoint failed with valid input")
     @omsadmin_conf_file.rewind
     assert_equal(no_esc_and_encode(@omsadmin_conf_file.read),
         no_esc_and_encode("DSC_ENDPOINT=#{VALID_DSC_ENDPOINT_NO_ESC}\n"),
@@ -127,34 +132,39 @@ class MaintenanceUnitTest < Test::Unit::TestCase
   def test_apply_certificate_update_endpoint_empty_xml
     File.write(@omsadmin_conf_file.path, EMPTY_CERTIFICATE_UPDATE_ENDPOINT)
     m = get_new_maintenance_obj
-    assert_equal(m.apply_certificate_update_endpoint("", false), 1,
-        "apply_certificate_update_endpoint passed with empty input")
+    assert_equal(m.apply_certificate_update_endpoint("", false),
+                 MaintenanceModule::MISSING_CERT_UPDATE_ENDPOINT,
+                 "Incorrect return code for empty input")
     @omsadmin_conf_file.rewind
     assert_equal(@omsadmin_conf_file.read, EMPTY_CERTIFICATE_UPDATE_ENDPOINT,
-        "conf written by apply_certificate_update_endpoint on empty input")
+                 "conf written by apply_certificate_update_endpoint on empty input")
   end
 
   def test_apply_certificate_update_endpoint_valid_xml
     File.write(@omsadmin_conf_file.path, EMPTY_CERTIFICATE_UPDATE_ENDPOINT)
     m = get_new_maintenance_obj
-    assert_not_equal(m.apply_certificate_update_endpoint(VALID_HEARTBEAT_RESP), 1,
-        "apply_certificate_update_endpoint failed with valid input")
+    assert_equal(m.apply_certificate_update_endpoint(VALID_HEARTBEAT_RESP).class, String,
+                 "apply_certificate_update_endpoint failed with valid input")
     @omsadmin_conf_file.rewind
-    assert_equal(@omsadmin_conf_file.read, "CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n",
-        "conf was not updated correctly by apply_certificate_update_endpoint")
+    assert_equal(@omsadmin_conf_file.read,
+                 "CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n",
+                 "conf was not updated correctly by apply_certificate_update_endpoint")
   end
 
   def test_apply_endpoints_file_nonexistent_xml
     output_file = Tempfile.new("output.txt")
 
-    File.write(@omsadmin_conf_file.path, "#{EMPTY_CERTIFICATE_UPDATE_ENDPOINT}#{EMPTY_DSC_ENDPOINT}")
+    File.write(@omsadmin_conf_file.path,
+               "#{EMPTY_CERTIFICATE_UPDATE_ENDPOINT}#{EMPTY_DSC_ENDPOINT}")
     m = get_new_maintenance_obj
-    assert_equal(m.apply_endpoints_file("/etc/nonexistentxml.txt", output_file.path), 1,
-        "apply_endpoints_file passed with nonexistent xml")
+    assert_equal(m.apply_endpoints_file("/etc/nonexistentxml.txt", output_file.path),
+                 MaintenanceModule::MISSING_CONFIG_FILE,
+                 "Incorrect return code for nonexistent xml")
     @omsadmin_conf_file.rewind
     omsadmin_conf_result = @omsadmin_conf_file.read
     assert_match(/^#{EMPTY_CERTIFICATE_UPDATE_ENDPOINT}/, omsadmin_conf_result,
-        "conf written with CERTIFICATE_UPDATE_ENDPOINT by apply_endpoints_file on nonexistent input")
+                 "conf written with CERTIFICATE_UPDATE_ENDPOINT by apply_endpoints_file on "\
+                 "nonexistent input")
     assert_match(/^#{EMPTY_DSC_ENDPOINT}/, omsadmin_conf_result,
         "conf written with DSC_ENDPOINT by apply_endpoints_file on nonexistent input")
 
@@ -166,8 +176,9 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     File.write(hb_resp_file, VALID_HEARTBEAT_RESP)
 
     m = get_new_maintenance_obj
-    assert_equal(m.apply_endpoints_file(hb_resp_file.path, "/etc/nonexistentdir/nonexistentfile.txt"),
-        1, "apply_endpoints_file passed with invalid output file")
+    assert_equal(m.apply_endpoints_file(hb_resp_file.path,
+                                        "/etc/nonexistentdir/nonexistentfile.txt"),
+                 MaintenanceModule::ERROR_WRITING_TO_FILE, "Incorrect return code for invalid output file")
 
     hb_resp_file.unlink
   end
@@ -177,17 +188,19 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     File.write(hb_resp_file, VALID_HEARTBEAT_RESP)
     output_file = Tempfile.new("output.txt")
 
-    File.write(@omsadmin_conf_file.path, "#{EMPTY_CERTIFICATE_UPDATE_ENDPOINT}#{EMPTY_DSC_ENDPOINT}")
+    File.write(@omsadmin_conf_file.path,
+               "#{EMPTY_CERTIFICATE_UPDATE_ENDPOINT}#{EMPTY_DSC_ENDPOINT}")
     m = get_new_maintenance_obj
     assert_equal(m.apply_endpoints_file(hb_resp_file.path, output_file.path), 0,
         "apply_endpoints_file failed with valid input")
     @omsadmin_conf_file.rewind
     omsadmin_conf_result = no_esc_and_encode(@omsadmin_conf_file.read)
-    assert_match(/^CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n/, omsadmin_conf_result,
-        "conf was not updated correctly with CERTIFICATE_UPDATE_ENDPOINT")
+    assert_match(/^CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n/,
+                 omsadmin_conf_result,
+                 "conf was not updated correctly with CERTIFICATE_UPDATE_ENDPOINT")
     omsadmin_conf_dsc = omsadmin_conf_result.sub(/^CERTIFICATE_UPDATE_ENDPOINT=#{VALID_CERTIFICATE_UPDATE_ENDPOINT}\n/, "")
     assert_equal(omsadmin_conf_dsc, "DSC_ENDPOINT=#{VALID_DSC_ENDPOINT_NO_ESC}\n",
-        "conf was not updated correctly with DSC_ENDPOINT")
+                 "conf was not updated correctly with DSC_ENDPOINT")
 
     hb_resp_file.unlink
     output_file.unlink

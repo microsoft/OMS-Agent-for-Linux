@@ -63,7 +63,7 @@ class OmsadminTest < MaintenanceSystemTestBase
     require 'securerandom'
     output = do_onboard(SecureRandom.uuid, TEST_SHARED_KEY, false)
     assert_no_match(/HTTP|code/, output)
-    assert_match(/Error during the onboarding request/, output)
+    assert_match(/Error resolving host during the onboarding request/, output)
   end
 
   def test_reonboard
