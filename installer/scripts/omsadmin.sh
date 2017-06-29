@@ -904,7 +904,9 @@ make_dir()
     if [ ! -d $1 ]; then
         mkdir -m 755 $1
     else
-        echo "Directory $1 already exists."
+        if [ $VERBOSE -eq 1 ]; then
+            echo "Directory $1 already exists."
+        fi
         chmod 755 $1
     fi
 
