@@ -1,4 +1,4 @@
-# Operations Management Suite Agent for Linux (2017-05)
+# Operations Management Suite Agent for Linux (2017-06)
 
 ## Overview
 Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
