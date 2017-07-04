@@ -52,7 +52,7 @@ module Fluent
         # Reset state and counter. Form SCOM event.
         reset_timer()
         reset_counter()
-        result = SCOM::Common.get_scom_record(time, @event_id, @event_desc)
+        result = SCOM::Common.get_scom_record(time, @event_id, @event_desc, record)
         $log.debug "Event found for ID #{@event_id}"
       end # if
       result

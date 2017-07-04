@@ -53,7 +53,7 @@ module Fluent
       if @exp1_found and @expression2.match(record[key2].to_s)
         # Match found: Change state, stop timer and form SCOM event
         reset_timer()
-        result = SCOM::Common.get_scom_record(time, @event_id, @event_desc)
+        result = SCOM::Common.get_scom_record(time, @event_id, @event_desc, record)
         $log.debug "Event found for ID #{@event_id}"
       end # if
       result

@@ -43,7 +43,7 @@ require 'socket'
       assert_equal(d.emits.length, 3)
       assert_equal(d.emits[0][2], {"message"=>"Authentication Failed"})
       assert_equal(d.emits[1][2], {"message"=>"Authentication Failed"})
-      assert_equal(d.emits[2][2], {"CustomEvents"=>[{"CustomMessage"=>"TestDesc", "EventID"=>"0001", "TimeGenerated"=>"#{d.emits[2][1]}"}]})
+      assert_equal(d.emits[2][2], {"CustomEvents"=>[{"CustomMessage"=>"TestDesc", "EventID"=>"0001", "EventData"=>"{\"message\"=>\"Authentication Failed\"}", "TimeGenerated"=>"#{d.emits[2][1]}"}]})
     end
     
   end

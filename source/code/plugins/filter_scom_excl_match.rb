@@ -39,7 +39,7 @@ module Fluent
       result = record
       #Check if regexp1 matches and regexp2 doesn't in the same record
       if @expression1.match(record[key1].to_s) and !(@expression2.match(record[key2].to_s))
-        result = SCOM::Common.get_scom_record(time, @event_id, @event_desc)
+        result = SCOM::Common.get_scom_record(time, @event_id, @event_desc, record)
         $log.debug "Event found for ID #{@event_id}"
       end
       result

@@ -52,7 +52,7 @@ module Fluent
       @regexps.each do |key, events|
         events.each do |event|
           if event.regexp.match(record[key].to_s)
-            result = SCOM::Common.get_scom_record(time, event.event_id, event.event_desc)
+            result = SCOM::Common.get_scom_record(time, event.event_id, event.event_desc, record)
             $log.debug "Event found for ID #{event.event_id}"
             return result
           end # if
