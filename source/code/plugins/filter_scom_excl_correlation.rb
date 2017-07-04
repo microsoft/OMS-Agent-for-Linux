@@ -19,6 +19,7 @@ module Fluent
         
     def initialize()
       super
+      @event_record = nil;
     end
         
     def configure(conf)
@@ -38,12 +39,14 @@ module Fluent
       if !@exp1_found and @expression1.match(record[key1].to_s)
         # Match found, change state to exp1_found and start timer
         set_timer()
+        @event_record = record;
         $log.debug "Match found for regex #{@regexp1} ID #{@event_id}. Timer Started."
       end # if
       #Check for regexp2 match if regexp1 was found
       if @exp1_found and @expression2.match(record[key2].to_s)
         #Match found: change state and stop timer
         reset_timer()
+        @event_record = nil;
       end # if
       record
     end
@@ -52,7 +55,8 @@ module Fluent
       super
       time = Engine.now
       # Match for regexp2 not found within time, form SCOM event
-      result = SCOM::Common.get_scom_record(time, @event_id, @event_desc)
+      result = SCOM::Common.get_scom_record(time, @event_id, @event_desc, @event_record)
+      @event_record = nil;
       $log.debug "Event found for ID #{@event_id}"
       router.emit("scom.event", time, result)
     end

@@ -21,10 +21,11 @@ module SCOM
     require_relative 'scom_configuration'
     require_relative 'omslog'
         
-    def self.get_scom_record(time, event_id, event_desc)
+    def self.get_scom_record(time, event_id, event_desc, event_data)
       scom_record = {
           "CustomMessage"=>event_desc,
           "EventID"=>event_id,
+          "EventData"=>event_data.to_s,
           "TimeGenerated"=>time.to_s,
       }
       scom_event = {
