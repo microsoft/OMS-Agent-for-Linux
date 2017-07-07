@@ -11,7 +11,7 @@ Class VMwarePerf {
     $this.Connect = Connect-VIServer -Server $secret.Server -Credential $creds
   }
 
-  [Void]VirtualMachines ($vmid, $computer) {
+  [Void]VirtualMachines ($vmid, $computer, $datacenter) {
     $vm = Get-VM -Id $vmid
     $vmstat = Get-Stat -Entity $vm.name -Stat "mem.usage.average","cpu.usage.average","disk.usage.average","net.usage.average","datastore.numberReadAveraged.average","datastore.numberWriteAveraged.average" -MaxSamples 15 -Realtime | group-object "Timestamp"
 
@@ -19,7 +19,7 @@ Class VMwarePerf {
       $vmresult = @{}
       $vmresult.Add("Timestamp",([DateTime]$timestat.Name).ToUniversalTime())
       $vmresult.Add("InstanceType","VM")
-      $vmresult.Add("InstanceName",$vm.ID)
+      $vmresult.Add("InstanceName",$vm.name + "." + $datacenter)
       $vmresult.Add("Host",$computer)
       $vmresult.Add("ObjectName","VMware")
 
@@ -49,46 +49,50 @@ Class VMwarePerf {
   }
 
   [Void]EsxiHost () {
-    $hostdetails = Get-VMHost
-    $viewdata = Get-View -ViewType HostSystem
-    $hoststat = Get-Stat -Server $hostdetails.name -Stat "disk.write.average","disk.read.average","datastore.totalWriteLatency.average","datastore.totalReadLatency.average","datastore.datastoreIops.average" -MaxSamples 15 -Realtime | group-object "Timestamp"
+    $hosts = Get-VMHost
 
-    $computer = @{"Host" = $viewdata.Name; "ObjectName" = "VMware"; "InstanceName" = $hostdetails.ID; "InstanceType" = "ESXI"}
+    foreach ($hostdetails in $hosts){
+      $viewdata = Get-View -ViewType HostSystem -Filter @{"Name"=$hostdetails.Name}
+      $hoststat = Get-Stat -Entity $hostdetails.Name -Stat "disk.write.average","disk.read.average","datastore.totalWriteLatency.average","datastore.totalReadLatency.average","datastore.datastoreIops.average" -MaxSamples 15 -Realtime | group-object "Timestamp"
+      $datacenter = Get-Datacenter -VMHost $hostdetails.Name
 
-    # ESXI Capacity & Perf
-    $this.Data += $computer + @{ "Timestamp" = $this.Connect.ExtensionData.ServerClock.ToUniversalTime(); "Collections" = @(
-      @{"CounterName" = "% Avg Memory Usage"; "Value" = ($hostdetails.MemoryUsageGB * 100) / $hostdetails.MemoryTotalGB},
-      @{"CounterName" = "% Avg CPU Usage"; "Value" = ($hostdetails.CpuUsageMhz * 100) / $hostdetails.CpuTotalMhz})
-    }
+      $computer = @{"Host" = $viewdata.Name; "ObjectName" = "VMware"; "InstanceName" = $hostdetails.ID + $datacenter.Name; "InstanceType" = "ESXI"}
 
-    foreach ($timestat in $hoststat){
-      $hostresult = @{}
-      $hostresult.Add("Timestamp",([DateTime]$timestat.Name).ToUniversalTime())
-
-      $collection = @()
-      foreach ($stat in $timestat.Group){
-        $counter = @{}
-        $counter.Add("Value",$stat.Value)
-        if($stat.MetricId -eq "disk.write.average"){
-          $counter.Add("CounterName","Avg Disk Write KB/s")
-        } elseif ($stat.MetricId -eq "disk.read.average") {
-          $counter.Add("CounterName","Avg Disk Read KB/s")
-        } elseif ($stat.MetricId -eq "datastore.totalWriteLatency.average") {
-          $counter.Add("CounterName","Avg Datastore Write Latency ms")
-        } elseif ($stat.MetricId -eq "datastore.totalReadLatency.average") {
-          $counter.Add("CounterName","Avg Datastore Read Latency ms")
-        } elseif ($stat.MetricId -eq "datastore.datastoreIops.average") {
-          $counter.Add("CounterName","Avg Datastore IOPS")
-        }
-        $collection += $counter
+      # ESXI Capacity & Perf
+      $this.Data += $computer + @{ "Timestamp" = $this.Connect.ExtensionData.ServerClock.ToUniversalTime(); "Collections" = @(
+        @{"CounterName" = "% Avg Memory Usage"; "Value" = ($hostdetails.MemoryUsageGB * 100) / $hostdetails.MemoryTotalGB},
+        @{"CounterName" = "% Avg CPU Usage"; "Value" = ($hostdetails.CpuUsageMhz * 100) / $hostdetails.CpuTotalMhz})
       }
-      $hostresult.Add("Collections",$collection)
 
-      $this.Data += $computer + $hostresult
-    }
+      foreach ($timestat in $hoststat){
+        $hostresult = @{}
+        $hostresult.Add("Timestamp",([DateTime]$timestat.Name).ToUniversalTime())
 
-    foreach ($vm in $viewdata.Vm){
-      $this.VirtualMachines( $vm.tostring(), $viewdata.Name )
+        $collection = @()
+        foreach ($stat in $timestat.Group){
+          $counter = @{}
+          $counter.Add("Value",$stat.Value)
+          if($stat.MetricId -eq "disk.write.average"){
+            $counter.Add("CounterName","Avg Disk Write KB/s")
+          } elseif ($stat.MetricId -eq "disk.read.average") {
+            $counter.Add("CounterName","Avg Disk Read KB/s")
+          } elseif ($stat.MetricId -eq "datastore.totalWriteLatency.average") {
+            $counter.Add("CounterName","Avg Datastore Write Latency ms")
+          } elseif ($stat.MetricId -eq "datastore.totalReadLatency.average") {
+            $counter.Add("CounterName","Avg Datastore Read Latency ms")
+          } elseif ($stat.MetricId -eq "datastore.datastoreIops.average") {
+            $counter.Add("CounterName","Avg Datastore IOPS")
+          }
+          $collection += $counter
+        }
+        $hostresult.Add("Collections",$collection)
+
+        $this.Data += $computer + $hostresult
+      }
+
+      foreach ($vm in $viewdata.Vm){
+        $this.VirtualMachines( $vm.tostring(), $viewdata.Name, $datacenter.Name )
+      }
     }
   }
 
