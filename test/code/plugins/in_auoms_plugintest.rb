@@ -3,12 +3,17 @@ require 'fluent/test'
 require_relative '../../../source/code/plugins/in_auoms'
 
 class AuOMSInputTest < Test::Unit::TestCase
-  TMP_PREFIX = "/tmp/in_auoms"
-  TMP_PATH = "/tmp/in_auoms#{ENV['TEST_ENV_NUMBER']}"
+  TMP_PATH = "/tmp/in_auoms_#{Process.uid}"
 
   def setup
     Fluent::Test.setup
-    FileUtils.rm(Dir.glob("#{TMP_PREFIX}*"), :force => true)
+    FileUtils.rm_f(TMP_PATH)
+  end
+
+  def teardown
+    super
+    Fluent::Engine.stop
+    FileUtils.rm_f(TMP_PATH)
   end
 
   CONFIG = %[
