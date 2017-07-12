@@ -296,7 +296,7 @@ sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py -enable
 ```
 
 ### Syslog events
-Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a local port the agent is listening on (by default port 25224). When the agent is installed, a default syslog configuration is applied. This can be found at:
+Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a local port the agent is listening on (by default port 25224). When the agent is installed, a default syslog configuration is applied. See [OMS syslog overview](https://blogs.technet.microsoft.com/msoms/2016/05/12/syslog-collection-in-operations-management-suite/). This can be found at:
 •	Rsyslog: `/etc/rsyslog.d/rsyslog-oms.conf`
 •	Syslog-ng: `/etc/syslog-ng/syslog-ng.conf`
 The default OMS Agent syslog configuration uploads syslog events from all facilities with a severity of warning or higher. 
@@ -380,7 +380,32 @@ If you are using selinux, the semanage tool can be used to allow TCP traffic for
 	  tag oms.syslog
 </source>
 ```
-**Note:** ports 0-1024 are privileged, and require special permissions. As the OMS Agent for Linux runs as the `omsagent` user trying to allocate a source port of 0 to 1024 results in agent startup failure
+### Syslog troubleshooting
+**Note:** ports 0-1024 are privileged, and require special permissions. As the OMS Agent for Linux runs as the `omsagent` user trying to allocate a source port of 0 to 1024 results in agent startup failure.
+
+**Checking for existance of a syslog collector**
+
+Make sure there is a syslog collector available by running the following commands in shell:
+```
+	[ -f /etc/rsyslog.conf ] && echo "rsyslog is configured"
+	[ -f /etc/syslog-ng/syslog-ng.conf ] && echo "syslog-ng is configured"
+```
+
+**Checking port bindings using netstat**
+```
+	PORT=<port you use>
+	netstat -an | grep $PORT
+```
+**Checking port availability using netstat**
+```
+	PORT=<port you want to use>	
+	[ -z "`netstat -an | grep $PORT`" ] && echo "$PORT port is available" || echo "$PORT port is NOT available"
+```
+**Customizing syslog log format using FluentD's format regular expression parameter if syslog data shows up truncated in OMS portal**
+
+OMS agent syslog configuration `/etc/opt/microsoft/omsagent/<your_wid>/conf/omsagent.d/syslog.conf` is using FluentD's default syslog log format. If your device is generating non-standard syslog formats you can add custom filters to syslog.conf through fluentd 'format' parameter as regexp as documented [here](http://docs.fluentd.org/v0.10/articles/in_syslog).
+
+You can use rubular tool that can help to easily write regular expressions like shown in [this example](http://rubular.com/r/sZqRCJ9OMq).
 
 ### Performance metrics
 Performance metrics to collect are controlled by the configuration in `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`. The appendix to this document details available classes and metrics in this release of the agent.
