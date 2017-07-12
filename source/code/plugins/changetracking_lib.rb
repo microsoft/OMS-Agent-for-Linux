@@ -272,13 +272,9 @@ class ChangeTracking
 
     def self.setHash(prev_hash, last_upload_time, file_path)
                 # File.write('/path/to/file', 'Some glorious content')
-                if File.exist?(file_path) # If file exists
-                        File.open(file_path, "w") do |f| # Open file
-                                f.puts "#{PREV_HASH}=#{prev_hash}"
-                                f.puts "#{LAST_UPLOAD_TIME}=#{last_upload_time}"
-                        end
-                else
-                        File.write(file_path, "#{PREV_HASH}=#{prev_hash}\n#{LAST_UPLOAD_TIME}=#{last_upload_time}")
+                File.open(file_path, "w+", 0644) do |f| # Open file
+                     f.puts "#{PREV_HASH}=#{prev_hash}"
+                     f.puts "#{LAST_UPLOAD_TIME}=#{last_upload_time}"
                 end
     end
 
