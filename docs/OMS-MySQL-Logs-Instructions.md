@@ -1,4 +1,4 @@
-# MySQL Server and Log Monitoring Solution for Operations Management Suite
+# MySQL Server Log Monitoring Solution for Operations Management Suite
 
 1. Setup a supported Linux machine and install [MySQL](http://dev.mysql.com/doc/refman/5.7/en/installing.html).
 
@@ -11,21 +11,12 @@
 
 4. Configure MySQL to generate [slow](http://dev.mysql.com/doc/refman/5.7/en/slow-query-log.html), [error](http://dev.mysql.com/doc/refman/5.7/en/error-log.html), and [general](http://dev.mysql.com/doc/refman/5.7/en/query-log.html) logs.
 
-5. Verify and update the MySQL log file path in the configuration file `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/mysql.conf`  
-If `mysql.conf` is not present in the above location, move it:  
-`sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/`  
-`sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/mysql.conf`
+5. Verify and update the MySQL log file path in the configuration file `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/mysql_logs.conf`  
+If `mysql_logs.conf` is not present in the above location, move it:  
+`sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_logs.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/`  
+`sudo chown omsagent:omiusers /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/mysql_logs.conf`
 
   ```config
-  # MySQL Workload
-  
-  <source>
-    ...
-    username <MySQL-username>
-    password <MySQL-password-for-username>
-    ...
-  </source>
-  
   # MySQL General Log
   
   <source>
