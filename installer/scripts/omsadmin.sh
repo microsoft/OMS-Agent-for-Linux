@@ -453,6 +453,11 @@ onboard()
         clean_exit $INVALID_CONFIG_PROVIDED
     fi
 
+    $SERVICE_CONTROL is-running $WORKSPACE_ID
+    if [ $? -eq 1 ]; then
+        echo "Workspace $WORKSPACE_ID already onboarded and agent is running."
+        return 0
+    fi
     create_workspace_directories $WORKSPACE_ID
 
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
@@ -836,7 +841,7 @@ migrate_old_workspace()
 migrate_old_omsagent_conf()
 {
     # migrate the omsagent.conf
-    cp -f $CONF_DIR/omsagent.conf $CONF_DIR/omsagent.conf.bak
+    cp -pf $CONF_DIR/omsagent.conf $CONF_DIR/omsagent.conf.bak
 
     # remove the syslog configuration. it has been moved to omsagent.d/syslog.conf
     cat $CONF_DIR/omsagent.conf.bak | sed '/port 25224/,+4 d' | sed '/<filter oms\.syslog\.\*\*>/,+3 d' | tac | sed '/type syslog/,+1 d' | tac > $CONF_DIR/omsagent.conf
@@ -915,7 +920,7 @@ make_dir()
 
 copy_omsagent_conf()
 {
-    cp $SYSCONF_DIR/omsagent.conf $CONF_DIR
+    cp -p $SYSCONF_DIR/omsagent.conf $CONF_DIR
 
     update_path $CONF_DIR/omsagent.conf
 
@@ -929,13 +934,13 @@ copy_omsagent_d_conf()
     OMSAGENTD_DIR=$CONF_DIR/omsagent.d
     make_dir $OMSAGENTD_DIR
 
-    cp $SYSCONF_DIR/omsagent.d/monitor.conf $OMSAGENTD_DIR
-    cp $SYSCONF_DIR/omsagent.d/syslog.conf $OMSAGENTD_DIR
-    cp $SYSCONF_DIR/omsagent.d/heartbeat.conf $OMSAGENTD_DIR
-    cp $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
-    cp $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
-    cp $SYSCONF_DIR/omsagent.d/oms_audits.xml $OMSAGENTD_DIR
-    cp $SYSCONF_DIR/omsagent.d/container.conf $OMSAGENTD_DIR 2>/dev/null
+    cp -p $SYSCONF_DIR/omsagent.d/monitor.conf $OMSAGENTD_DIR
+    cp -p $SYSCONF_DIR/omsagent.d/syslog.conf $OMSAGENTD_DIR
+    cp -p $SYSCONF_DIR/omsagent.d/heartbeat.conf $OMSAGENTD_DIR
+    cp -p $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
+    cp -p $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
+    cp -p $SYSCONF_DIR/omsagent.d/oms_audits.xml $OMSAGENTD_DIR
+    cp -p $SYSCONF_DIR/omsagent.d/container.conf $OMSAGENTD_DIR 2>/dev/null
 
     update_path $OMSAGENTD_DIR/monitor.conf
     update_path $OMSAGENTD_DIR/heartbeat.conf
