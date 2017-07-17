@@ -118,7 +118,7 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 #--------------------------------------------------------------------------------
 # Build targets
 .PHONY: all clean clean-ruby distclean clean-status kit
-.PHONY: tests test omstest unittest systemtest systemtestrb systemtestsh
+.PHONY: tests test omstest unittest systemtest systemtestrb
 
 all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
@@ -554,7 +554,7 @@ unittest : $(RUBY_TESTING_DIR)
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
 		RUBY_DEST_DIR=$(RUBY_TESTING_DIR)
 
-systemtest: systemtestrb systemtestsh
+systemtest: systemtestrb
 
 ifneq (,$(wildcard $(SYSTEST_CONFIG)))
 systemtestrb : $(RUBY_TESTING_DIR)
@@ -569,15 +569,6 @@ systemtestrb : $(RUBY_TESTING_DIR)
 else
 systemtestrb:
 	@echo "Warning: ruby system tests will not run without $(SYSTEST_CONFIG)" >&2
-endif
-
-ifneq (,$(wildcard $(SYSTEST_CONFIG)))
-systemtestsh :
-	@echo "========================= Performing Test omsadmin.sh"
-	. $(SYSTEST_CONFIG); \
-	bash $(BASE_DIR)/test/installer/scripts/test_omsadmin.sh $(BASE_DIR) $(RUBY_TESTING_DIR)
-else
-	@echo "Warning: shell system tests will not run without $(SYSTEST_CONFIG)" >&2
 endif
 
 omstest : unittest systemtest

@@ -1,4 +1,5 @@
 require 'digest'
+require 'fileutils'
 require_relative 'maintenance_systestbase'
 
 class OmsadminTest < MaintenanceSystemTestBase
@@ -128,6 +129,56 @@ class OmsadminTest < MaintenanceSystemTestBase
 
     output_list = `#{@omsadmin_script} -l`
     assert_match(/No Workspace/, output_list, "No workspace should be listed: #{output_list}")
+  end
+
+  def test_set_proc_limit_default
+    set_omsagent_proc_limit()
+    assert(FileUtils.compare_file(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-default.conf"),
+           "The user process limit was not set correctly to the default value")
+  end
+
+  def test_set_proc_limit_non_default
+    set_omsagent_proc_limit(5000)
+    assert(FileUtils.compare_file(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-non-default.conf"),
+           "The user process limit was not set correctly to the new value")
+  end
+
+  def test_set_proc_limit_string
+    FileUtils.cp(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-original.conf")
+    output = set_omsagent_proc_limit("NaN", false)
+    assert(FileUtils.compare_file(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-original.conf"),
+           "Process limit conf file was wrongly changed")
+    assert_match(/New process limit must be a positive numerical value/, output,
+                 "Did not find correct error message")
+  end
+
+  def test_set_proc_limit_below_min
+    FileUtils.cp(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-original.conf")
+    output = set_omsagent_proc_limit(1, false)
+    assert(FileUtils.compare_file(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-original.conf"),
+           "Process limit conf file was wrongly changed")
+    assert_match(/New process limit must be at least/, output, "Did not find correct error message")
+  end
+
+  def set_omsagent_proc_limit(val = nil, should_succeed = true)
+    if val.nil?
+      val = 75
+      set_proc_limit_cmd = "#{@omsadmin_script} -N"
+    else
+      set_proc_limit_cmd = "#{@omsadmin_script} -n #{val}"
+    end
+    output = `#{set_proc_limit_cmd}`
+    ret_code = $?
+
+    if should_succeed
+      assert_equal(0, ret_code.to_i, "The command to set the user process limit was unsuccessful")
+      assert_match(/Setting process limit for the .* user in .* to #{val}.../, output,
+                   "Did not find correct setting message")
+    else
+      assert_not_equal(0, ret_code.to_i, "The command to set the user process limit was " \
+                                         "unexpectedly successful")
+    end
+    return output
   end
 
 end

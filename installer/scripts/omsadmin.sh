@@ -88,6 +88,10 @@ DEFAULT_MONITOR_AGENT_PORT=25324
 SYSLOG_PORT=$DEFAULT_SYSLOG_PORT
 MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 
+DF_OMSAGENT_PROC_LIMIT=75
+MIN_OMSAGENT_PROC_LIMIT=5
+PROC_LIMIT_CONF=/etc/security/limits.conf
+
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
 OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
@@ -144,6 +148,12 @@ usage()
     echo
     echo "Azure resource ID:"
     echo "$basename -a <Azure resource ID>"
+    echo
+    echo "Set process limit for OMSAgent:"
+    echo "$basename -n <specific number limit>"
+    echo
+    echo "Set process limit for OMSAgent to default value:"
+    echo "$basename -N"
 }
 
 set_user_agent()
@@ -231,7 +241,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nn:" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -277,6 +287,12 @@ parse_args()
             ;;
         m)
             MULTI_HOMING_MARKER=$OPTARG
+            ;;
+        n)
+            NEW_OMSAGENT_PROC_LIMIT=$OPTARG
+            ;;
+        N)
+            NEW_OMSAGENT_PROC_LIMIT=$DF_OMSAGENT_PROC_LIMIT
             ;;
         esac
     done
@@ -343,6 +359,28 @@ set_proxy_setting()
     if [ -n "$conf_proxy_content" ]; then
         PROXY_SETTING="--proxy $conf_proxy_content"
         log_info "Using proxy settings from '$CONF_PROXY'"
+    fi
+}
+
+set_omsagent_proc_limit()
+{
+    if echo "$NEW_OMSAGENT_PROC_LIMIT" | grep -Eqv '^[0-9]+'; then
+        log_error "New process limit must be a positive numerical value"
+        clean_exit $INVALID_CONFIG_PROVIDED
+    elif [ $NEW_OMSAGENT_PROC_LIMIT -lt $MIN_OMSAGENT_PROC_LIMIT ]; then
+        log_error "New process limit must be at least $MIN_OMSAGENT_PROC_LIMIT"
+        clean_exit $INVALID_CONFIG_PROVIDED
+    fi
+
+    log_info "Setting process limit for the $AGENT_USER user in $PROC_LIMIT_CONF to $NEW_OMSAGENT_PROC_LIMIT..."
+    local omsagent_line_regex="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$"
+    local new_omsagent_line="$AGENT_USER  hard  nproc  $NEW_OMSAGENT_PROC_LIMIT"
+    cat $PROC_LIMIT_CONF | grep -E "$omsagent_line_regex" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$omsagent_line_regex" | tail -1`
+        sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
+    else
+        echo $new_omsagent_line >> $PROC_LIMIT_CONF
     fi
 }
 
@@ -1142,6 +1180,10 @@ main()
             usage
             clean_exit $INVALID_OPTION_PROVIDED
         fi
+    fi
+
+    if [ -n "$NEW_OMSAGENT_PROC_LIMIT" ]; then
+        set_omsagent_proc_limit || clean_exit $?
     fi
 
     if [ "$ONBOARDING" = "1" ]; then
