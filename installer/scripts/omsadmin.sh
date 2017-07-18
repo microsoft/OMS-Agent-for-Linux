@@ -987,16 +987,20 @@ find_available_port()
 {
     local port=$1
     local result=$2
-
-    until [ -z "`netstat -an | grep ${port}`" -a -z "`grep ${port} $ETC_DIR/*/conf/omsagent.d/*.conf`" ]; do
-        port=$((port+1))
-    done
-
+    if [ "`which netstat > /dev/null 2>&1; echo $?`" = 0 ]; then
+        until [ -z "`netstat -an | grep ${port}`" -a -z "`grep ${port} $ETC_DIR/*/conf/omsagent.d/*.conf`" ]; do
+            port=$((port+1))
+        done
+    else
+        log_info "netstat tool is not available. Default port defined in omsadmin.sh will be used."		
+    fi
+    
     eval $result="${port}"
 }
 
 configure_syslog()
 {
+    echo "Configure syslog..."
     find_available_port $DEFAULT_SYSLOG_PORT SYSLOG_PORT
 
     sed -i s,%SYSLOG_PORT%,$SYSLOG_PORT,1 $CONF_DIR/omsagent.d/syslog.conf
@@ -1006,6 +1010,7 @@ configure_syslog()
 
 configure_monitor_agent()
 {
+    echo "Configure heartbeat monitoring agent..."
     find_available_port $DEFAULT_MONITOR_AGENT_PORT MONITOR_AGENT_PORT
 
     sed -i s,%MONITOR_AGENT_PORT%,$MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
@@ -1013,6 +1018,7 @@ configure_monitor_agent()
 
 configure_logrotate()
 {
+    echo "Configure log rotate..."
     # create the logrotate file for the workspace if it doesn't exist
     if [ ! -f /etc/logrotate.d/omsagent-$WORKSPACE_ID ]; then
         cat $SYSCONF_DIR/logrotate.conf | sed "s/%WORKSPACE_ID%/$WORKSPACE_ID/g" > /etc/logrotate.d/omsagent-$WORKSPACE_ID
