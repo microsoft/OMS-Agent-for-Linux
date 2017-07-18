@@ -452,11 +452,14 @@ onboard()
         log_error "The Workspace ID is not valid"
         clean_exit $INVALID_CONFIG_PROVIDED
     fi
-
-    $SERVICE_CONTROL is-running $WORKSPACE_ID
-    if [ $? -eq 1 ]; then
-        echo "Workspace $WORKSPACE_ID already onboarded and agent is running."
-        return 0
+    
+    # If a test is not in progress then call service_control to check on the workspace status 
+    if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
+        $SERVICE_CONTROL is-running $WORKSPACE_ID
+        if [ $? -eq 1 ]; then
+            echo "Workspace $WORKSPACE_ID already onboarded and agent is running."
+            return 0
+        fi
     fi
     create_workspace_directories $WORKSPACE_ID
 
