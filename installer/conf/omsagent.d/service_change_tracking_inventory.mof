@@ -7,7 +7,7 @@ instance of MSFT_nxServiceResource
                 Name = "*";
                 Controller = "*";
                 ResourceId = "[MSFT_nxServiceResource]Inventory";
-                ModuleName = "PSDesiredStateConfiguration";
+                ModuleName = "nx";
                 ModuleVersion = "1.0";
 
 

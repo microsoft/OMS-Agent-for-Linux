@@ -27,7 +27,7 @@ instance of MSFT_nxPackageResource
 {
  Name = "*";
  ResourceId = "[MSFT_nxPackageResource]Inventory";
- ModuleName = "PSDesiredStateConfiguration";
+ ModuleName = "nx";
  ModuleVersion = "1.0";
 };
 
@@ -36,7 +36,7 @@ instance of MSFT_nxServiceResource
  Name = "*";
  Controller = "init";
  ResourceId = "[MSFT_nxFileResource]Inventory";
- ModuleName = "PSDesiredStateConfiguration";
+ ModuleName = "nx";
  ModuleVersion = "1.0";
 };
 
