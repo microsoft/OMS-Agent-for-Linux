@@ -30,7 +30,7 @@ instance of MSFT_nxPackageResource
 {
     Name = "*";
     ResourceId = "[MSFT_nxPackageResource]Inventory";
-    ModuleName = "PSDesiredStateConfiguration";
+    ModuleName = "nx";
     ModuleVersion = "1.0";
 };
 
@@ -38,7 +38,7 @@ instance of MSFT_nxAvailableUpdatesResource
 {
     Name = "*";
     ResourceId = "[MSFT_nxAvailableUpdates]Inventory";
-    ModuleName = "PSDesiredStateConfiguration";
+    ModuleName = "nx";
     ModuleVersion = "1.0";
 };
 
