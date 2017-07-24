@@ -455,7 +455,7 @@ onboard()
     
     # If a test is not in progress then call service_control to check on the workspace status 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
-        $SERVICE_CONTROL is-running $WORKSPACE_ID
+        $SERVICE_CONTROL is-running $WORKSPACE_ID > /dev/null 2>&1
         if [ $? -eq 1 ]; then
             echo "Workspace $WORKSPACE_ID already onboarded and agent is running."
             return 0
