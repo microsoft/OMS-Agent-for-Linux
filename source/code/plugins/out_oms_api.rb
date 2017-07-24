@@ -134,7 +134,7 @@ module Fluent
       end
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."
-      Log.error_once("Error for Request-ID: #{request_id} Error: #{e}")
+      OMS::Log.error_once("Error for Request-ID: #{request_id} Error: #{e}")
       @log.debug "Error:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
       raise e.message, "Request-ID: #{request_id}"

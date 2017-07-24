@@ -9,7 +9,7 @@ module OMS
       begin
         data = eval(select)
       rescue => e
-        Log.error_once("Invalid select: #{select} #{e}");
+        OMS::Log.error_once("Invalid select: #{select} #{e}");
       end
 
       if data.instance_of?(Array)
