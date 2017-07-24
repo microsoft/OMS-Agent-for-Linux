@@ -382,7 +382,6 @@ module MaintenanceModule
         res = http.start { |http_each| http.request(req) }
       rescue => e
         log_error("Error sending the heartbeat: #{e.message}")
-        return ERROR_SENDING_HTTP
       end
 
       if !res.nil?
