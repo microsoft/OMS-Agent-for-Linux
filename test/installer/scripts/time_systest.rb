@@ -5,7 +5,13 @@ require 'open-uri'
 class Time_Test < Test::Unit::TestCase
 
   def test_time_skew()
-    output = `ntpdate -q pool.ntp.org`
+    begin
+      output = `ntpdate -q pool.ntp.org`
+    rescue Errno::ENOENT
+      print "Warning: ntpdate command not found; cannot run time skew test"
+      return
+    end
+
     assert_equal(0, $?, "ntpdate command failed with error code : #{$?}")
     offset_line = output[/offset (.*) sec/]
     assert(offset_line != nil, "Could not find the offset line in '#{output}'")
