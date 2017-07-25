@@ -1,6 +1,7 @@
 require 'fluent/test'
 require_relative '../../../source/code/plugins/in_npmd_server'
 require 'socket'
+require 'securerandom'
 
 class Logger
     def self.logToStdOut(msg, depth=0)
@@ -59,6 +60,7 @@ class NPMDServerTest < Test::Unit::TestCase
         f = File.new(FAKE_ADMIN_CONF_LOCATION, "w")
         f.write(FAKE_ADMIN_CONF_FILE_DATA)
         f.close
+        Fluent::NPM::OMS_AGENTGUID_FILE.replace "#{TMP_DIR}/test_oms_guid_file"
     end
 
     def teardown
@@ -945,6 +947,82 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 7
         assert_equal(false, File.exist?(npmdVersionFile), "Error the default npm_version file should be absent")
+    end
+
+
+    # Method test 01: Checking agent id read from guid file
+    # Now the omsagent agentid is being moved to a different file
+    # with the intention of having a single id for entire computer
+    # Checking different cases for agent id read from this file
+    def test_method_get_agent_id_from_guid_file
+
+        test_ws_id = SecureRandom.uuid
+        test_guid = SecureRandom.uuid
+        test_guid_file = Fluent::NPM::OMS_AGENTGUID_FILE
+
+        d = create_driver
+
+        # Case 1: When ws id and guid file are valid
+        d.instance.define_singleton_method(:get_workspace_id) do
+            test_ws_id
+        end
+        File.open(test_guid_file, "w") do |f|
+            f.write(test_guid)
+        end
+        _result = d.instance.get_agent_id_from_guid_file()
+        assert_equal("#{test_guid}##{test_ws_id}", _result, "The result for valid case should be ComputerId#WorkspaceId")
+
+        # Case 2: When guid is invalid
+        File.open(test_guid_file, "w") do |f|
+            f.write(test_guid[0..-2])
+        end
+        _result = d.instance.get_agent_id_from_guid_file()
+        assert_equal(nil, _result, "The result for when guid is invalid should be nil")
+
+        # Case 3: When guid has garbage at end
+        File.open(test_guid_file, "w") do |f|
+            f.write("#{test_guid}123445564523123213")
+        end
+        _result = d.instance.get_agent_id_from_guid_file()
+        assert_equal("#{test_guid}##{test_ws_id}", _result, "The result when guid has garbage appended should be ComputerId#WorkspaceId")
+
+        # Case 4: When guid file does not exist
+        File.unlink(test_guid_file)
+        _result = d.instance.get_agent_id_from_guid_file()
+        assert_equal(nil, _result, "The result for when guid file is missing should be nil")
+
+        # case 5: When ws id is invalid
+        d.instance.define_singleton_method(:get_workspace_id) do
+            nil
+        end
+        File.open(test_guid_file, "w") do |f|
+            f.write(test_guid)
+        end
+        _result = d.instance.get_agent_id_from_guid_file()
+        assert_equal(nil, _result, "The result for when ws id is nil should be nil")
+    end
+
+    # Method test 02: Checking reading of workspace id from omsadmin conf path
+    # The workspace id will be needed to single out instances running under a
+    # particular computer id. Checking different cases for same
+    def test_method_get_workspace_id
+        d = create_driver
+        test_ws_id = SecureRandom.uuid
+
+        # Case 1: When omsadmin conf path is valid
+        d.instance.omsadmin_conf_path = "/etc/opt/microsoft/omsagent/#{test_ws_id}/conf/omsadmin.conf"
+        _result = d.instance.get_workspace_id()
+        assert_equal(test_ws_id, _result, "The result should match with test_ws_id for valid case")
+
+        # Case 2: Invalid number of path components
+        d.instance.omsadmin_conf_path = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+        _result = d.instance.get_workspace_id()
+        assert_equal(nil, _result, "The result should be nil when path components are less")
+
+        # Case 3: Ws Id is not of guid length
+        d.instance.omsadmin_conf_path = "/etc/opt/microsoft/omsagent/#{test_ws_id}abcsd/conf/omsadmin.conf"
+        _result = d.instance.get_workspace_id()
+        assert_equal(nil, _result, "The result should be nil when ws id is not of guid length")
     end
 
 end
