@@ -170,6 +170,11 @@ chown -R omsagent:root /opt/microsoft/omsagent/plugin
 
 %Postinstall_200
 /opt/microsoft/omsagent/bin/omsadmin.sh -M
+# This is a temporary fix until the sysconf upgrade scenario is resolved.
+if [ -h /etc/opt/microsoft/omsagent/conf ]; then
+    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/operation.conf
+    cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms_audits.xml /etc/opt/microsoft/omsagent/conf/omsagent.d/oms_audits.xml
+fi
 
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then
