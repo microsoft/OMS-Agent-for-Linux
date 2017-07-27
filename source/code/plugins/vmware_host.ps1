@@ -1,51 +1,15 @@
-Class VMwareMetrics {
-  [Array]$Data
+$global:HostResult = @()
+Class VMwareHostMetrics {
   $Connect
   $Secret
 
-  VMwareMetrics() {
-    $this.Secret = Import-Csv "/opt/microsoft/omsagent/bin/vmware_secret.csv"
+  VMwareHostMetrics($secret) {
+    $this.Secret = $secret
     get-Module -ListAvailable PowerCLI.* | Import-Module
     Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -confirm:$false > $null
     $secure_string = ConvertTo-SecureString $this.Secret.SecureString -Key (3,4,2,3,56,34,254,222,1,1,2,23,42,54,33,233,1,34,2,7,6,5,35,43)
     $creds = New-Object System.Management.Automation.PSCredential ($this.Secret.Username, $secure_string)
     $this.Connect = Connect-VIServer -Server $this.Secret.Server -Credential $creds
-  }
-
-  [Void]VirtualMachines ($vmid, $computer) {
-    $vm = Get-VM -Id $vmid
-    $vmnetwork = Get-NetworkAdapter -VM $vm.Name
-    $vmdisk = Get-HardDisk $vm
-
-    $vmresult = @{}
-    $vmresult.Add("Type","VM")
-    $vmresult.Add("State",$vm.PowerState.tostring())
-    $vmresult.Add("VMID",$vm.ID)
-    $vmresult.Add("VMName",$vm.Name)
-    $vmresult.Add("VMHostID",$vm.VMHostID)
-    $vmresult.Add("IPAddress",$vm.Guest.IPAddress[0])
-    $vmresult.Add("CPUCount",$vm.NumCpu)
-    $vmresult.Add("OSType",$vm.Guest.OSFullName)
-    $vmresult.Add("Network",$vmnetwork.NetworkName)
-    $vmresult.Add("NetworkType",$vmnetwork.Type.tostring())
-    $vmresult.Add("Computer",$computer)
-    $vmresult.Add("VMMemoryTotalSizeGB",[math]::Round($vm.MemoryGB,2))
-    $vmresult.Add("ProvisionedStorageGB",[math]::Round($vm.ProvisionedSpaceGB,2))
-    $vmresult.Add("UsedStorageGB",[math]::Round($vm.UsedSpaceGB,2))
-    $vmresult.Add('ResourcePool',$vm.ResourcePool.toString())
-    $vmresult.Add('ResourcePoolId',$vm.ResourcePool.Id)
-    $vmresult.Add('ToolsInstalled',$vm.Guest.ToolsVersion -ne "")
-    $vmresult.Add('SnapshotCount', (Get-SnapShot -VM $vm.Name).count)
-    $vmresult.Add('StorageFormat',$vmdisk.StorageFormat)
-    $vmresult.Add('StoragePersistence',$vmdisk.Persistence)
-    $vmresult.Add('StorageCapacityGB',$vmdisk.CapacityGB)
-    $vmresult.Add('StorageBacking',$vmdisk.Filename)
-
-    if($vm.Guest.ToolsVersion -ne ""){
-      $vmresult.Add('ToolsVersion',$vm.Guest.ToolsVersion)
-    }
-
-    $this.Data+=$vmresult
   }
 
   [Void]EsxiHost () {
@@ -55,6 +19,7 @@ Class VMwareMetrics {
       $storagedetails = Get-Datastore -VMHost $hostdetails.Name
       $cluster = Get-Cluster -VMHost $hostdetails.Name
       $esxcli = Get-EsxCli -VMHost $hostdetails
+      $datacenter = Get-Datacenter -VMHost $hostdetails.Name
 
       $viewdata = Get-View -ViewType HostSystem -Filter @{"Name"=$hostdetails.Name} | Select Name, VM,
         @{N="BIOSVersion";E={$_.Hardware.BiosInfo.BiosVersion}},
@@ -62,7 +27,7 @@ Class VMwareMetrics {
         @{N="BootTime";E={$_.Runtime.BootTime}},
         @{N="VMCount";E={$_.Vm.count}},
         @{N="NICCount";E={$_.Summary.Hardware.NumNics}},
-        @{N="StorageDatasetCount";E={$_.Datastore.count}},
+        @{N="StorageDatastoreCount";E={$_.Datastore.count}},
         @{N="PhysicalNicCount";E={$_.Config.Network.Pnic.count}},
         @{N="Network";E={$_.Network.Value}},
         @{N="HardwareVendor";E={$_.Hardware.SystemInfo.Vendor}}
@@ -72,6 +37,7 @@ Class VMwareMetrics {
       $esxiresult.Add("Type","ESXI")
       $esxiresult.Add("Timestamp",$this.Connect.ExtensionData.ServerClock.ToUniversalTime())
       $esxiresult.Add("HostID",$hostdetails.ID)
+      $esxiresult.Add("Build",$hostdetails.Build)
       $esxiresult.Add("Network",$viewdata.Network)
       $esxiresult.Add("HostState",$hostdetails.PowerState.tostring())
       $esxiresult.Add("ESXIVersion",$hostdetails.Version)
@@ -98,9 +64,6 @@ Class VMwareMetrics {
         $esxiresult.Add("Cluster",$cluster.Name)
       }
 
-      # ESXI Capacity & Perf
-      $esxiresult.Add("HostMemoryTotalGB",$hostdetails.MemoryTotalGB)
-      $esxiresult.Add("TotalCPUCapacityMhz",$hostdetails.CpuTotalMhz)
       $capacity = 0
       $freespace = 0
       $store = 1
@@ -109,18 +72,25 @@ Class VMwareMetrics {
         $capacity += $storage.CapacityGB
         $freespace += $storage.FreeSpaceGB
 
-        $esxiresult.Add("Storage"+$store+"CapacityGB",[math]::Round($storage.CapacityGB,2))
-        $esxiresult.Add("Storage"+$store+"AvailablespaceGB",[math]::Round($storage.FreeSpaceGB,2))
-        $esxiresult.Add("Storage"+$store+"Filetype",$storage.Type)
-        $esxiresult.Add("Storage"+$store+"DatasetName",$storage.Name)
-        $store += 1
+        $storageresult = @{}
+        $storageresult.Add("StorageCapacityGB",[math]::Round($storage.CapacityGB,2))
+        $storageresult.Add("StorageFreespaceGB",[math]::Round($storage.FreeSpaceGB,2))
+        # $storageresult.Add("StorageUsagePercentage",[math]::Round((($storage.CapacityGB - $storage.FreeSpaceGB) * 100 ) / $storage.CapacityGB,2))
+        $storageresult.Add("StorageFiletype",$storage.Type)
+        $storageresult.Add("StorageDatastoreName",$storage.Name)
+        $storageresult.Add("StorageID",$storage.Id)
+        $storageresult.Add("StorageState",$storage.State.toString())
+        $storageresult.Add("Datacenter",$storage.Datacenter.Name)
+        $storageresult.Add("Computer",$viewdata.Name)
+        $global:HostResult+=$storageresult
       }
+
       $esxiresult.Add("StorageTotalCapacityGB",[math]::Round($capacity,2))
-      $esxiresult.Add("StorageTotalAvailablespaceGB",[math]::Round($freespace,2))
-      $esxiresult.Add("HostStorageUsagePercentage",(($capacity - $freespace) * 100 ) / $capacity)
-      
-      $esxiresult.Add("Datacenter",$storagedetails.Datacenter.Name)
-      $esxiresult.Add("StorageDatasetCount",$viewdata.StorageDatasetCount)
+      $esxiresult.Add("StorageTotalFreespaceGB",[math]::Round($freespace,2))
+      # $esxiresult.Add("StorageTotalUsagePercentage",[math]::Round((($capacity - $freespace) * 100 ) / $capacity, 2))
+      $esxiresult.Add("StorageDatastoreCount",$viewdata.StorageDatasetCount)
+
+      $esxiresult.Add("Datacenter",$datacenter[0].Name)
 
       if ($this.Secret.Solution -eq "vCenter"){
         $esxiresult.Add("VCenter", $this.Secret.Server)
@@ -128,21 +98,21 @@ Class VMwareMetrics {
         $esxiresult.Add("VCenter",$hostdetails.ExtensionData.Client.ServiceUrl.Split('/')[2])
       }
 
-      $this.Data+=$esxiresult
-
-      foreach ($vm in $viewdata.Vm){
-        $this.VirtualMachines( $vm.tostring(), $viewdata.Name )
-      }
+      $global:HostResult+=$esxiresult
     }
   }
 
-  [Array]GetMetrics () {
+  GetMetrics () {
     $this.EsxiHost()
-    return $this.Data
   }
 }
 
-if (Test-Path /opt/microsoft/omsagent/bin/vmware_secret.csv) {
-  $data=[VMwareMetrics]::New()
-  $data.GetMetrics() | convertto-json
+if (Test-Path /var/opt/microsoft/omsagent/state/vmware_secret.csv) {
+  $allSecrets = Import-Csv "/var/opt/microsoft/omsagent/state/vmware_secret.csv"
+  foreach ($secret in $allSecrets){
+    $obj=[VMwareHostMetrics]::New($secret)
+    $obj.GetMetrics()
+  }
+
+  $global:HostResult | convertto-json -Depth 5
 }
