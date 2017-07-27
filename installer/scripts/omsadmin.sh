@@ -79,7 +79,7 @@ AZURE_RESOURCE_ID=""
 OMSCLOUD_ID=""
 UUID=""
 USER_ID=`id -u`
-MULTI_HOMING_MARKER=
+WORKSPACE_LABEL=
 
 DEFAULT_SYSLOG_PORT=25224
 DEFAULT_MONITOR_AGENT_PORT=25324
@@ -135,8 +135,8 @@ usage()
     echo "Migrate Old Workspace to the New Folder Structure:"
     echo "$basename -M"
     echo
-    echo "Onboard the workspace with a multi-homing marker. The workspace will be regarded as secondary."
-    echo "$basename -m <multi-homing marker>"
+    echo "Give the onboarding workspace a label:"
+    echo "$basename -m <label>"
     echo
     echo "Define proxy settings ('-u' will prompt for password):"
     echo "$basename [-u user] -p host[:port]"
@@ -267,7 +267,7 @@ parse_args()
             MIGRATE_OLD_PROXY_CONF=1
             ;;
         m)
-            MULTI_HOMING_MARKER=$OPTARG
+            WORKSPACE_LABEL=$OPTARG
             ;;
         esac
     done
@@ -394,7 +394,7 @@ onboard_scom()
     update_path $CONF_DIR/omsagent.conf
     chown_omsagent $CONF_DIR/*
     make_dir $CONF_DIR/omsagent.d
-    #Always register SCOM as secondary Workspace
+    #Always store label for SCOM Workspace
     echo "SCOM Workspace" > $CONF_DIR/.multihoming_marker
     configure_logrotate
 
@@ -418,7 +418,7 @@ onboard_lad()
     echo "@include omsagent.d/*" > $CONF_DIR/omsagent.conf
     chown_omsagent $CONF_DIR/*
     make_dir $CONF_DIR/omsagent.d
-    #Always register LAD as secondary Workspace
+    #Always store label for LAD Workspace
     echo "LAD Workspace" > $CONF_DIR/.multihoming_marker
     save_config
     configure_logrotate
@@ -597,14 +597,14 @@ onboard()
 
     copy_omsagent_conf
 
-    if [ -z "$MULTI_HOMING_MARKER" ]; then
-        # update the default folders when onboard to a workspace as primary
+    if [ -z "$WORKSPACE_LABEL" ]; then
+        # update the default folders when no workspace label is given
         # this is the default behavior
         update_symlinks
     else
-        # do not update the default folders when onboard the workspace as secondary
-        # leave a marker in the etc folder of the workspace to indicate the partner
-        echo $MULTI_HOMING_MARKER > $CONF_DIR/.multihoming_marker
+        # do not update the default folders when the workspace has a label
+        # leave a marker file in the etc folder of the workspace with the label
+        echo $WORKSPACE_LABEL > $CONF_DIR/.multihoming_marker
     fi
 
     configure_syslog
@@ -617,10 +617,9 @@ onboard()
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         $SERVICE_CONTROL start $WORKSPACE_ID 
 
-        if [ -z "$MULTI_HOMING_MARKER" ]; then
-            # Configure omsconfig when the workspace is primary
+        if [ -z "$WORKSPACE_LABEL" ]; then
+            # This check should go away when $METACONFIG_PY has been updated for multiple pull servers
             # This is a temp solution since the DSC doesn't support multi-homing now
-            # Only the primary workspace receives the configuration from the DSC service
             if [ "$USER_ID" -eq "0" ]; then
                 su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
             else
@@ -712,7 +711,6 @@ show_workspace_status()
 {
     local ws_conf_dir=$1
     local ws_id=$2
-    local is_primary=$3
     local status='Unknown'
 
     # 1 if omsagent-ws_id is running, 0 otherwise
@@ -727,23 +725,19 @@ show_workspace_status()
         status='Failure(Agent Not Onboarded, No Workspace Configuration Present)'
     fi
 
-    local mh_marker=
+    local ws_label=
     if [ -f ${ws_conf_dir}/.multihoming_marker ]; then
-        mh_marker="(`cat ${ws_conf_dir}/.multihoming_marker`)"
+        ws_label="(`cat ${ws_conf_dir}/.multihoming_marker`)"
     fi
     
-    if [ ${is_primary} -eq 1 ]; then
-        echo "Primary Workspace: ${ws_id}    Status: ${status}"
-    else
-        echo "Workspace${mh_marker}: ${ws_id}    Status: ${status}"
-    fi
+    echo "Workspace${ws_label}: ${ws_id}    Status: ${status}"
 }
 
 list_scom_workspace()
 {
     ls -1 $ETC_DIR | grep -w scom > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        show_workspace_status $ETC_DIR/scom/conf scom 0
+        show_workspace_status $ETC_DIR/scom/conf scom
         return 1
     fi
     return 0
@@ -754,27 +748,8 @@ list_workspaces()
     local found_ws=0
     local ws_conf_dir=$ETC_DIR/conf
 
-    if [ -h ${ws_conf_dir} ]; then
-        # symbolic link - multiple workspace folder structure
-        local primary_ws_id=''
-        if [ -f ${ws_conf_dir}/omsadmin.conf ]; then
-            primary_ws_id=`grep WORKSPACE_ID ${ws_conf_dir}/omsadmin.conf | cut -d= -f2`
-        fi
-
-        if [ "${primary_ws_id}" != "" ]; then
-            found_ws=1
-            show_workspace_status ${ws_conf_dir} ${primary_ws_id} 1
-        fi
-
-        for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
-        do
-            if [ "${primary_ws_id}" != "${ws_id}" ]; then
-                found_ws=1
-                show_workspace_status $ETC_DIR/${ws_id}/conf ${ws_id} 0
-            fi
-        done
-    elif [ -d ${ws_conf_dir} ]; then
-        # directory - single workspace folder structure
+    if [ -d ${ws_conf_dir} -a ! -h ${ws_conf_dir} ]; then
+        # Directory and not a symlink - single workspace folder structure
         local ws_id=''
 
         if [ -f ${ws_conf_dir}/omsadmin.conf ]; then
@@ -783,14 +758,14 @@ list_workspaces()
 
         if [ "${ws_id}" != "" ]; then
             found_ws=1
-            show_workspace_status ${ws_conf_dir} ${ws_id} 1
+            show_workspace_status ${ws_conf_dir} ${ws_id}
         fi
     else
-        # no default conf folder, check all the potential workspace folders
+        # Check all the potential workspace folders
         for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
         do
             found_ws=1
-            show_workspace_status $ETC_DIR/${ws_id}/conf ${ws_id} 0
+            show_workspace_status $ETC_DIR/${ws_id}/conf ${ws_id}
         done
     fi
     # check scom workspace
