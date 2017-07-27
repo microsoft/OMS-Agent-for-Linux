@@ -159,6 +159,9 @@ usage()
     echo
     echo "Remove the process limit for OMSAgent:"
     echo "$basename -r"
+    echo
+    echo "Detect if omiserver is listening to SCOM port:"
+    echo "$basename -o"
 }
 
 set_user_agent()
@@ -246,7 +249,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:o" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -301,6 +304,9 @@ parse_args()
             ;;
         r)
             UNSET_OMSAGENT_PROC_LIMIT=1
+            ;;
+        o)
+            DETECT_SCOM=1
             ;;
         esac
     done
@@ -1195,6 +1201,11 @@ main()
 
     if [ "$UNSET_OMSAGENT_PROC_LIMIT" = "1" ]; then
         unset_omsagent_proc_limit || clean_exit $?
+    fi
+
+    if [ "$DETECT_SCOM" = "1" ]; then
+        is_scom_port_open > /dev/null 2>&1
+        clean_exit $?
     fi
 
     if [ "$ONBOARDING" = "1" ]; then
