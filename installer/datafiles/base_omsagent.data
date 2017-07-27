@@ -180,11 +180,10 @@ fi
 if [ -f /etc/omsagent-onboard.conf ]; then
     /opt/microsoft/omsagent/bin/omsadmin.sh
 else
-    # Create a logrotate conf file for the Primary workspace if it does not already exist
-    # This is needed when upgrading from old omsagent to multi-homing enabled version
-    PRIMARY_WSID=`grep WORKSPACE_ID ${{CONF_DIR}}/omsadmin.conf | cut -d= -f2` > /dev/null 2>&1
-    if [ "$PRIMARY_WSID" -a ! -f /etc/logrotate.d/omsagent-$PRIMARY_WSID ]; then
-        cat ${{SYSCONF_DIR}}/logrotate.conf | sed "s/%WORKSPACE_ID%/$PRIMARY_WSID/g" > /etc/logrotate.d/omsagent-$PRIMARY_WSID
+    # If a pre-multi-homing workspace has just been migrated, create a logrotate conf file for it
+    MIGRATED_WSID=`grep WORKSPACE_ID ${{CONF_DIR}}/omsadmin.conf | cut -d= -f2` > /dev/null 2>&1
+    if [ "$MIGRATED_WSID" -a ! -f /etc/logrotate.d/omsagent-$MIGRATED_WSID ]; then
+        cat ${{SYSCONF_DIR}}/logrotate.conf | sed "s/%WORKSPACE_ID%/$MIGRATED_WSID/g" > /etc/logrotate.d/omsagent-$MIGRATED_WSID
     fi
 fi
 # Set up a cron job to logrotate all omsagent-$WORKSPACE_ID every 5 minutes

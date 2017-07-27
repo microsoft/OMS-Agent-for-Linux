@@ -34,7 +34,7 @@
   ```
 
 6. Restart the OMS agent:
-`sudo /opt/microsoft/omsagent/bin/service_control restart`
+`sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]`
 
 7. Confirm that there are no errors in the OMS agent log:
 `tail /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log`

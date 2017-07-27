@@ -46,7 +46,7 @@ If `mysql_logs.conf` is not present in the above location, move it:
 `sudo service mysql restart` or `/etc/init.d/mysqld restart`
 
 7. Restart the OMS agent:
-`sudo /opt/microsoft/omsagent/bin/service_control restart`
+`sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]`
 
 
 8. Confirm that there are no errors in the OMS Agent log:  
@@ -77,7 +77,7 @@ If you encounter the following error in `omsagent.log`:
 Change `create 640 mysql adm` to `create 644 mysql adm`
 
 3. After changing file permissions, the OMS agent should be restarted:  
-`sudo /opt/microsoft/omsagent/bin/service_control restart`
+`sudo /opt/microsoft/omsagent/bin/service_control restart [<workspace id>]`
 
 
 

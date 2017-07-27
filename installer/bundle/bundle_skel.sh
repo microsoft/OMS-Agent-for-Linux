@@ -89,8 +89,8 @@ usage()
     echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
     echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  -a id, --azure-resource id Use Azure Resource ID <id>."
-    echo "  -m marker, --multi-homing-marker marker"
-    echo "                             Onboard as a multi-homing(Non-Primary) workspace."
+    echo "  -m marker, --multi-homing-marker label"
+    echo "                             Give the onboarding workspace a label."
     echo
     echo "  -? | -h | --help           shows this usage text."
 }

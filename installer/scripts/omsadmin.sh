@@ -355,7 +355,7 @@ IFS='
         fi
         IFS=$OIFS
         # 1st line starting with <optional-spaces>httpsport<optional-spaces>=
-        # Replace = and , with space.
+# Replace = and , with space.
         # e.g httpsport=0,1270 should become httpsport 0 1270
         m_line=`echo $line | sed "s/[=,]/ /g"`
         # Do a exact word match for port 1270.

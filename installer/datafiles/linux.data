@@ -115,7 +115,7 @@ fi
 
 chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
 
-# Set group read permission on OMS cert and key files used by the primary workspace
+# Set group read permission on OMS cert and key files used by the symlinked workspace
 OMS_CERTS_DIR="/etc/opt/microsoft/omsagent/certs"
 if [ -d "$OMS_CERTS_DIR" ]; then
     chmod -R 750 "$OMS_CERTS_DIR"
