@@ -25,12 +25,12 @@ module OMS
       # test the onboard file existence
       def test_onboard_file(file_name)
         if !File.file?(file_name)
-          Log.error_once("Could not find #{file_name} Make sure to onboard.")
+          OMS::Log.error_once("Could not find #{file_name} Make sure to onboard.")
           return false
         end
       
         if !File.readable?(file_name)
-          Log.error_once("Could not read #{file_name} Check that the read permissions are set for the omsagent user")
+          OMS::Log.error_once("Could not read #{file_name} Check that the read permissions are set for the omsagent user")
           return false
         end
 
@@ -50,7 +50,7 @@ module OMS
         end
 
         if proxy_config.nil?
-          Log.error_once("Failed to parse the proxy configuration in '#{proxy_conf_path}'")
+          OMS::Log.error_once("Failed to parse the proxy configuration in '#{proxy_conf_path}'")
           return {}
         end
 
@@ -82,10 +82,10 @@ module OMS
 
         endpoint_lines = IO.readlines(conf_path).select{ |line| line.start_with?("OMS_ENDPOINT")}
         if endpoint_lines.size == 0
-          Log.error_once("Could not find OMS_ENDPOINT setting in #{conf_path}")
+          OMS::Log.error_once("Could not find OMS_ENDPOINT setting in #{conf_path}")
           return false
         elsif endpoint_lines.size > 1
-          Log.warn_once("Found more than one OMS_ENDPOINT setting in #{conf_path}, will use the first one.")
+          OMS::Log.warn_once("Found more than one OMS_ENDPOINT setting in #{conf_path}, will use the first one.")
         end
 
         begin
@@ -96,7 +96,7 @@ module OMS
           @@NotifyBlobODSEndpoint = @@ODSEndpoint.clone
           @@NotifyBlobODSEndpoint.path = '/ContainerService.svc/PostBlobUploadNotification'
         rescue => e
-          Log.error_once("Error parsing endpoint url. #{e}")
+          OMS::Log.error_once("Error parsing endpoint url. #{e}")
           return false
         end
 
@@ -108,28 +108,28 @@ module OMS
             @@DiagnosticEndpoint.path = '/DiagnosticsDataService.svc/PostJsonDataItems'
           else
             if diagnostic_endpoint_lines.size > 1
-              Log.warn_once("Found more than one DIAGNOSTIC_ENDPOINT setting in #{conf_path}, will use the first one.")
+              OMS::Log.warn_once("Found more than one DIAGNOSTIC_ENDPOINT setting in #{conf_path}, will use the first one.")
             end
             diagnostic_endpoint_url = diagnostic_endpoint_lines[0].split("=")[1].strip
             @@DiagnosticEndpoint = URI.parse( diagnostic_endpoint_url )
           end
         rescue => e
-          Log.error_once("Error obtaining diagnostic endpoint url. #{e}")
+          OMS::Log.error_once("Error obtaining diagnostic endpoint url. #{e}")
           return false
         end
 
         agentid_lines = IO.readlines(conf_path).select{ |line| line.start_with?("AGENT_GUID")}
         if agentid_lines.size == 0
-          Log.error_once("Could not find AGENT_GUID setting in #{conf_path}")
+          OMS::Log.error_once("Could not find AGENT_GUID setting in #{conf_path}")
           return false
         elsif agentid_lines.size > 1
-          Log.warn_once("Found more than one AGENT_GUID setting in #{conf_path}, will use the first one.")
+          OMS::Log.warn_once("Found more than one AGENT_GUID setting in #{conf_path}, will use the first one.")
         end
 
         begin
           @@AgentId = agentid_lines[0].split("=")[1].strip
         rescue => e
-          Log.error_once("Error parsing agent id. #{e}")
+          OMS::Log.error_once("Error parsing agent id. #{e}")
           return false
         end
 
@@ -151,7 +151,7 @@ module OMS
           raw = File.read key_path
           @@Key  = OpenSSL::PKey::RSA.new raw
         rescue => e
-          Log.error_once("Error loading certs: #{e}")
+          OMS::Log.error_once("Error loading certs: #{e}")
           return false
         end
 

@@ -171,6 +171,10 @@ module Fluent
                     File.unlink(@location_unix_endpoint)
                 end
                 @server_obj = UNIXServer.new(@location_unix_endpoint)
+
+                if File.exist?(@location_unix_endpoint)
+                    FileUtils.chmod(0600, @location_unix_endpoint)
+                end
             rescue StandardError => e
                 log_error "Got error #{e}", Logger::resc
             end

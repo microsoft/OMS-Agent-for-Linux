@@ -166,7 +166,7 @@ module Fluent
       req.body = msg
       return req
     rescue OMS::RetryRequestException => e
-        Log.error_once("HTTP error for Request-ID: #{request_id} Error: #{e}")
+        OMS::Log.error_once("HTTP error for Request-ID: #{request_id} Error: #{e}")
         raise e.message, "Request-ID: #{request_id}"
     end # create_blob_put_request
 
