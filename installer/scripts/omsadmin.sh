@@ -621,6 +621,13 @@ onboard()
             # Configure omsconfig when the workspace is primary
             # This is a temp solution since the DSC doesn't support multi-homing now
             # Only the primary workspace receives the configuration from the DSC service
+
+            # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
+            # This should be done regardless of MetaConfig creation
+            if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
+                echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+            fi
+
             if [ "$USER_ID" -eq "0" ]; then
                 su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
             else
@@ -635,11 +642,6 @@ onboard()
             else
                 log_error "Error configuring omsconfig"
                 return $ERROR_GENERATING_METACONFIG
-            fi
-    
-            # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
-            if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
-                echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
             fi
         fi
     fi
