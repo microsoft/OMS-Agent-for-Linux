@@ -445,7 +445,7 @@ shouldInstall_omsconfig()
 install_extra_package()
 {
     # Parameter: package name to install
-    #            possibilities: tar, sed
+    #            possibilities: tar, sed, curl
     # Returns: 0 on success, 1 on failure
     if [ $# -ne 1 ]; then
         echo "INTERNAL ERROR: Incorrect number of parameters passed to install_extra_package" >&2
@@ -471,10 +471,13 @@ install_extra_package()
     if [ -z "$install_cmd" ]; then
         echo "No vendor found to install $package"
         return 1
-    else
-        $install_cmd $package
-        return $?
+    elif [ "$install_cmd" == "apt-get install -y" ]; then
+        # The package lists may need to be updated before the package can be installed
+        apt-get update
     fi
+
+    $install_cmd $package
+    return $?
 }
 
 #
