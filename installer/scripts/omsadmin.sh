@@ -822,6 +822,11 @@ migrate_pre_mh_workspace()
         sed -i s,%MONITOR_AGENT_PORT%,$DEFAULT_MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
 
         update_symlinks
+    elif [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR ]; then
+        # In some upgrade cases, conf and conf/omsagent.d directories are created and are empty
+        # Remove these directories if they are empty
+        rmdir $DF_CONF_DIR/omsagent.d 2> /dev/null
+        rmdir $DF_CONF_DIR 2> /dev/null
     fi
 }
 
