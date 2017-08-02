@@ -887,7 +887,7 @@ list_workspaces()
 
 migrate_to_single_agent_id()
 {
-    # If there are any workspaces configured, move the agent GUID to the central location
+    # If there is a symlinked workspace configured, move the agent GUID to the central location
     if [ -f $CONF_OMSADMIN -a ! -f $AGENTGUID_FILE ]; then
         echo "Migrating agent ID to multi-homing folder structure..."
         AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
@@ -925,6 +925,11 @@ migrate_pre_mh_workspace()
         sed -i s,%MONITOR_AGENT_PORT%,$DEFAULT_MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
 
         update_symlinks
+    elif [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR ]; then
+        # In some upgrade cases, conf and conf/omsagent.d directories are created and are empty
+        # Remove these directories if they are empty
+        rmdir $DF_CONF_DIR/omsagent.d 2> /dev/null
+        rmdir $DF_CONF_DIR 2> /dev/null
     fi
 }
 
