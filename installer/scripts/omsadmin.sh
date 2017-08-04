@@ -991,6 +991,7 @@ copy_no_port_omsagent_d_conf()
     cp -p $SYSCONF_DIR/omsagent.d/container.conf $1 2>/dev/null
 
     update_path $1/heartbeat.conf
+    update_path $1/operation.conf
     if [ -f $1/container.conf ] ; then
         update_path $1/container.conf
     fi
