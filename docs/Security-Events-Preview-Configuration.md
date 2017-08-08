@@ -25,7 +25,7 @@ Collection of the following 3rd party security log types is supported:
         1. Configure the logging product/machine to forward the required events to the syslog daemon (e.g. rsyslog or syslog-ng) on the agent machine.
         2. Enable the syslog daemon on the agent machine to receive messages from a remote system.
 	    
-    * On the agent machine, the events need to be sent from the syslog daemon to local **UDP port 25226**. The agent is listening for incoming events on this port.  
+    * On the agent machine, the events need to be sent from the syslog daemon to a local UDP port. Use [this guide](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#syslog-troubleshooting) to check for available ports; in this example, we use UDP port 25226.
         *The following is an example configuration for sending all events from the local4 facility to the agent. You can modify the configuration to fit your local settings.* 
 	
         **If the agent machine has an rsyslog daemon:**  
