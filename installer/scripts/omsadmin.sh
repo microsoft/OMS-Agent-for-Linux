@@ -171,6 +171,8 @@ save_config()
 {
     #Save configuration
     echo WORKSPACE_ID=$WORKSPACE_ID > $CONF_OMSADMIN
+    # TODO remove this once nxOMSPlugin 3.0 is public
+    echo AGENT_GUID=$AGENT_GUID >> $CONF_OMSADMIN
     echo LOG_FACILITY=$LOG_FACILITY >> $CONF_OMSADMIN
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
