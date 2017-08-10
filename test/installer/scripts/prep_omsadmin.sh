@@ -69,3 +69,21 @@ omiagent    soft    nproc 75
 $TEST_USER  hard  nproc  5000
 #    $TEST_USER hard nproc 20000
 EOF
+
+cat <<EOF > $TESTDIR/limits-two-settings.conf
+@$TEST_GROUP          hard           nproc                20
+*       hard    nproc   10
+omiagent    soft    nproc 75
+#        hard    nproc           75
+$TEST_USER  hard  nproc  200
+$TEST_USER  hard  nproc  100
+#    $TEST_USER hard nproc 20000
+EOF
+
+cat <<EOF > $TESTDIR/limits-no-settings.conf
+@$TEST_GROUP          hard           nproc                20
+*       hard    nproc   10
+omiagent    soft    nproc 75
+#        hard    nproc           75
+#    $TEST_USER hard nproc 20000
+EOF

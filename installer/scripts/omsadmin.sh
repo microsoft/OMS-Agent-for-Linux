@@ -91,6 +91,7 @@ MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 DF_OMSAGENT_PROC_LIMIT=75
 MIN_OMSAGENT_PROC_LIMIT=5
 PROC_LIMIT_CONF=/etc/security/limits.conf
+LIMIT_LINE_REGEX="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$"
 
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
@@ -155,6 +156,9 @@ usage()
     echo
     echo "Set process limit for OMSAgent to default value:"
     echo "$basename -N"
+    echo
+    echo "Remove the process limit for OMSAgent:"
+    echo "$basename -r"
 }
 
 set_user_agent()
@@ -242,7 +246,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nn:" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -294,6 +298,9 @@ parse_args()
             ;;
         N)
             NEW_OMSAGENT_PROC_LIMIT=$DF_OMSAGENT_PROC_LIMIT
+            ;;
+        r)
+            UNSET_OMSAGENT_PROC_LIMIT=1
             ;;
         esac
     done
@@ -374,15 +381,32 @@ set_omsagent_proc_limit()
     fi
 
     log_info "Setting process limit for the $AGENT_USER user in $PROC_LIMIT_CONF to $NEW_OMSAGENT_PROC_LIMIT..."
-    local omsagent_line_regex="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$"
     local new_omsagent_line="$AGENT_USER  hard  nproc  $NEW_OMSAGENT_PROC_LIMIT"
-    cat $PROC_LIMIT_CONF | grep -E "$omsagent_line_regex" > /dev/null 2>&1
+    find_current_omsagent_proc_limit
     if [ $? -eq 0 ]; then
-        old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$omsagent_line_regex" | tail -1`
+        old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1`
         sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
     else
         echo $new_omsagent_line >> $PROC_LIMIT_CONF
     fi
+}
+
+unset_omsagent_proc_limit()
+{
+    find_current_omsagent_proc_limit
+    if [ $? -eq 0 ]; then
+        # Remove all lines for the omsagent from the limit file
+        log_info "Removing process limit for the $AGENT_USER user in $PROC_LIMIT_CONF..."
+        cp $PROC_LIMIT_CONF $PROC_LIMIT_CONF.bak
+        # sed does not handle the complex/extended regex in older versions, but grep does
+        cat $PROC_LIMIT_CONF.bak | grep -Ev "$LIMIT_LINE_REGEX"  > $PROC_LIMIT_CONF
+    fi
+}
+
+find_current_omsagent_proc_limit()
+{
+    cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" > /dev/null 2>&1
+    return $?
 }
 
 is_scom_port_open()
@@ -1167,6 +1191,10 @@ main()
 
     if [ -n "$NEW_OMSAGENT_PROC_LIMIT" ]; then
         set_omsagent_proc_limit || clean_exit $?
+    fi
+
+    if [ "$UNSET_OMSAGENT_PROC_LIMIT" = "1" ]; then
+        unset_omsagent_proc_limit || clean_exit $?
     fi
 
     if [ "$ONBOARDING" = "1" ]; then
