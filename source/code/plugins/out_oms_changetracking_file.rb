@@ -19,6 +19,7 @@ module Fluent
       require 'securerandom'
       require 'socket'
       require 'uri'
+      require 'cgi'
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
@@ -30,13 +31,15 @@ module Fluent
     config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf'
     config_param :compress, :bool, :default => true
     config_param :PrimaryContentLocation, :string, :default => ''
-    config_param :SecondryContentLocation, :string, :default => ''
+    config_param :SecondaryContentLocation, :string, :default => ''
+    config_param :ContentLocationDescription, :string, :default => ''
     config_param :buffer_path, :string, :default => ''
 
     @@ContentlocationUri = ''
     @@LastContentlocationUri = ''
+    @@ContentlocationUriResourceId = ''
     @@PrimaryContentLocationAccessToken = ''
-    @@SecondryContentLocationAccessToken = ''
+    @@SecondaryContentLocationAccessToken = ''
     @@ContentLocationCacheFileName = "contentlocationcache.cache"
 
     # Set/Get methods for use in tests
@@ -52,11 +55,11 @@ module Fluent
     def set_PrimaryContentLocationAccessToken(token)
        @@PrimaryContentLocationAccessToken = token
     end 
-    def get_SecondryContentLocationAccessToken
-       return @@SecondryContentLocationAccessToken
+    def get_SecondaryContentLocationAccessToken
+       return @@SecondaryContentLocationAccessToken
     end 
-    def set_SecondryContentLocationAccessToken(token)
-       return @@SecondryContentLocationAccessToken = token
+    def set_SecondaryContentLocationAccessToken(token)
+       return @@SecondaryContentLocationAccessToken = token
     end 
     def get_PrimaryContentLocation
        return @@PrimaryContentLocation
@@ -64,11 +67,17 @@ module Fluent
     def set_PrimaryContentLocation(primaryContentLocation)
         @@PrimaryContentLocation = primaryContentLocation
     end 
-    def get_SecondryContentLocation
-       return @@SecondryContentLocation
+    def get_SecondaryContentLocation
+       return @@SecondaryContentLocation
     end 
-    def set_SecondryContentLocation(secondryContentLocation)
-        @@SecondryContentLocation = secondryContentLocation
+    def set_SecondaryContentLocation(secondryContentLocation)
+        @@SecondaryContentLocation = secondryContentLocation
+    end 
+    def get_ContentlocationUriResourceId
+       return @@ContentlocationUriResourceId
+    end 
+    def set_ContentlocationUriResourceId(resourceId)
+        @@ContentlocationUriResourceId = resourceId
     end 
 
     def configure(conf)
@@ -77,16 +86,19 @@ module Fluent
 
       super
       if !@PrimaryContentLocation.nil? and !@PrimaryContentLocation.empty? and @PrimaryContentLocation.include? "http" or @PrimaryContentLocation.include? "https"
-         urlDetails = @PrimaryContentLocation.split('?')
+         decodedUri = CGI::unescapeHTML(@PrimaryContentLocation)
+         urlDetails = decodedUri.split('?')
          if !urlDetails.nil? and urlDetails.length == 2
             @@ContentlocationUri = urlDetails[0].strip
             @@PrimaryContentLocationAccessToken = urlDetails[1]
+            @@ContentlocationUriResourceId = @ContentLocationDescription
          end
       end
-      if !@SecondryContentLocation.nil? and !@SecondryContentLocation.empty? and @SecondryContentLocation.include? "http" or @SecondryContentLocation.include? "https"
-         urlDetails = @SecondryContentLocation.split('?')
+      if !@SecondaryContentLocation.nil? and !@SecondaryContentLocation.empty? and @SecondaryContentLocation.include? "http" or @SecondaryContentLocation.include? "https"
+         decodedUri = CGI::unescapeHTML(@SecondaryContentLocation)
+         urlDetails = decodedUri.split('?')
          if !urlDetails.nil? and urlDetails.length == 2
-            @@SecondryContentLocationAccessToken = urlDetails[1].strip
+            @@SecondaryContentLocationAccessToken = urlDetails[1].strip
          end
       end
     end
@@ -260,10 +272,10 @@ module Fluent
       @log.trace "Handling record : #{tag}"
       @log.trace "Content location : #{@@ContentlocationUri}"
       @log.trace "Primary Content location : #{@PrimaryContentLocation}"
-      @log.trace "Secondry Content location : #{@SecondryContentLocation}"
+      @log.trace "Secondary Content location : #{@SecondaryContentLocation}"
       
       @log.trace "Primary Token = #{@@PrimaryContentLocationAccessToken}"
-      @log.trace "secondry Token = #{@@SecondryContentLocationAccessToken}"
+      @log.trace "secondry Token = #{@@SecondaryContentLocationAccessToken}"
 
       modifiedcollections = get_changed_files(records)
       changed_records = update_records_with_upload_url(records)
@@ -295,7 +307,7 @@ module Fluent
                 if !@@ContentlocationUri.nil? and !@@ContentlocationUri.empty? and !collection.empty?
                    key = collection["CollectionName"]
                    date = collection["DateModified"]
-                   fileName = File.basename(key) + date
+                   fileName = date + '-' + File.basename(key)
                    uri = @@ContentlocationUri + '/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + fileName
                    if collection["FileContentBlobLink"] == " " or (@@LastContentlocationUri.eql?(@@ContentlocationUri) == false)
                       modifiedcollections[key] = uri
@@ -322,8 +334,8 @@ module Fluent
                 if !@@ContentlocationUri.nil? and !@@ContentlocationUri.empty? and !collection.empty?
                    key = collection["CollectionName"]
                    date = collection["DateModified"]
-                   fileName = File.basename(key) + date
-                   uri = @@ContentlocationUri + '/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + fileName
+                   fileName = date + '-' + File.basename(key)
+                   uri = @@ContentlocationUri + '/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + fileName + "?resourceid=" + @@ContentlocationUriResourceId
                    collection["FileContentBlobLink"] = uri
                 end
              }
@@ -337,10 +349,10 @@ module Fluent
     def upload_file_to_azure_storage(collections)
       if !@@ContentlocationUri.nil? and !@@ContentlocationUri.empty?
          @log.trace "Primary Token = #{@@PrimaryContentLocationAccessToken}"
-         @log.trace "secondry Token = #{@@SecondryContentLocationAccessToken}"
+         @log.trace "secondry Token = #{@@SecondaryContentLocationAccessToken}"
 
-         if !@@PrimaryContentLocationAccessToken.nil? or !@@SecondContentLocationAccessToken.nil?
-            collections.each{|filePath, blob_uri| upload_file_to_blob(filePath, blob_uri, @@PrimaryContentLocationAccessToken, @@PrimaryContentLocationAccessToken)}
+         if !@@PrimaryContentLocationAccessToken.nil? or !@@SecondaryContentLocationAccessToken.nil?
+            collections.each{|filePath, blob_uri| upload_file_to_blob(filePath, blob_uri, @@PrimaryContentLocationAccessToken, @@SecondaryContentLocationAccessToken)}
          end
       end
     end  

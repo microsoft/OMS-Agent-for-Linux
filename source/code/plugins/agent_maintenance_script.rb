@@ -37,13 +37,14 @@ module MaintenanceModule
     attr_accessor :suppress_stdout
   
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path,
-                   os_info, install_info, log = nil, verbose = false)
+                   os_info, install_info, agentid_path, log = nil, verbose = false)
       @suppress_logging = true  # suppress_logging suppresses all output, including both print and logger
       @suppress_stdout = false  # suppress_stdout suppresses only print
 
       @AGENT_USER = "omsagent"
       @AGENT_GROUP = "omiusers"
       @omsadmin_conf_path = omsadmin_conf_path
+      @agentid_path = !agentid_path.nil? ? agentid_path : "/etc/opt/microsoft/omsagent/agentid"
       @cert_path = cert_path
       @key_path = key_path
       @pid_path = pid_path
@@ -159,6 +160,10 @@ module MaintenanceModule
 
     # Load necessary configuration values from omsadmin.conf
     def load_config
+      if File.exist?(@agentid_path)
+        @AGENT_GUID = File.read(@agentid_path).strip
+      end
+
       if !File.exist?(@omsadmin_conf_path)
         log_error("Missing configuration file: #{@omsadmin_conf_path}")
         return MISSING_CONFIG_FILE
@@ -167,7 +172,8 @@ module MaintenanceModule
       File.open(@omsadmin_conf_path, "r").each_line do |line|
         if line =~ /^WORKSPACE_ID/
           @WORKSPACE_ID = line.sub("WORKSPACE_ID=","").strip
-        elsif line =~ /^AGENT_GUID/
+        # Do not allow contents of omsadmin.conf to overwrite machine agent GUID
+        elsif line =~ /^AGENT_GUID/ and @AGENT_GUID.nil?
           @AGENT_GUID = line.sub("AGENT_GUID=","").strip
         elsif line =~ /^URL_TLD/
           @URL_TLD = line.sub("URL_TLD=","").strip
@@ -640,7 +646,8 @@ if __FILE__ == $0
   install_info = ARGV[6]
 
   maintenance = MaintenanceModule::Maintenance.new(omsadmin_conf_path, cert_path, key_path,
-                    pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
+                    pid_path, proxy_path, os_info, install_info, agentid_path = nil,
+                    log = nil, options[:verbose])
   ret_code = 0
 
   if !maintenance.check_user

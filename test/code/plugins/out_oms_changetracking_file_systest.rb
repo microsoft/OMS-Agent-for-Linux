@@ -36,10 +36,12 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     output = d.configure(conf).instance
     output.set_ContentlocationUri("http://abc.blob.core.net/changetracking")
     output.set_PrimaryContentLocationAccessToken("xyz")
-    output.set_SecondryContentLocationAccessToken("pqr")
+    output.set_SecondaryContentLocationAccessToken("pqr")
+    output.set_ContentlocationUriResourceId("subscription/subname/groupname/group/accountname/account")
     output.start
 
     assert_equal("http://abc.blob.core.net/changetracking", output.get_ContentlocationUri, "Content Location Uri not found : '#{output.get_ContentlocationUri}'") 
+    assert_equal("subscription/subname/groupname/group/accountname/account", output.get_ContentlocationUriResourceId, "Content Location Resource not found : '#{output.get_ContentlocationUriResourceId}'")
 
    $log.clear
    record = {
@@ -102,7 +104,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     assert(output.handle_records(tag, record), "Failed to send change tracking updates data : '#{$log.logs}'")
     append_blob_log = output.get_append_blob_log()
     assert_not_nil(append_blob_log)
-    assert_equal(append_blob_log["/etc/yum.conf"],  "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z?xyz")
+    assert_equal(append_blob_log["/etc/yum.conf"],  "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/2016-08-20T18:12:22.000Z-yum.conf?xyz")
     assert_equal(append_blob_log["/etc/yum1.conf"], nil)
 
  
@@ -141,7 +143,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     collection = output.get_changed_files(record)
     assert_not_nil(collection, "changed files should not be nil")
     assert_not_nil(collection["/etc/yum.conf"])
-    assert_equal(collection["/etc/yum.conf"], "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z")
+    assert_equal(collection["/etc/yum.conf"], "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/2016-08-20T18:12:22.000Z-yum.conf")
     assert_equal(collection["/etc/yum1.conf"], nil)
 
     expected_changed_record = {"DataItems"=>
@@ -151,7 +153,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
        "DateCreated"=>"2016-08-20T18:12:22.000Z",
        "DateModified"=>"2016-08-20T18:12:22.000Z",
        "FileContentBlobLink"=>
-        "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum.conf2016-08-20T18:12:22.000Z",
+        "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/2016-08-20T18:12:22.000Z-yum.conf?resourceid=subscription/subname/groupname/group/accountname/account",
        "FileSystemPath"=>"/etc/yum.conf",
        "Group"=>"root",
        "Mode"=>"644",
@@ -162,7 +164,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
        "DateCreated"=>"2016-08-20T18:12:22.000Z",
        "DateModified"=>"2016-08-20T18:12:22.000Z",
        "FileContentBlobLink"=>
-        "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/yum1.conf2016-08-20T18:12:22.000Z",
+        "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/2016-08-20T18:12:22.000Z-yum1.conf?resourceid=subscription/subname/groupname/group/accountname/account",
        "FileSystemPath"=>"/etc/yum1.conf",
        "Group"=>"root",
        "Mode"=>"644",

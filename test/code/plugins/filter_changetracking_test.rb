@@ -376,6 +376,42 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal(expectedHash, wrappedHash, "#{wrappedHash}")
   end
 
+  def test_comparechecksum_add_remove_modified
+    previousInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"cc"}
+    currentInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"cc", "/etc/d"=>"dd"}
+    compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
+    assert_equal(compareChecksum["/etc/d"], "dd")
+
+
+    previousInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"cc"}
+    currentInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb"}
+    compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
+    assert_equal(compareChecksum["/etc/c"], "cc")
+
+
+    previousInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb"}
+    currentInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"cc"}
+    compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
+    assert_equal(compareChecksum["/etc/c"], "cc")
+
+
+    previousInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"cc"}
+    currentInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"dd"}
+    compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
+    assert_equal(compareChecksum["/etc/c"], "dd")
+
+    previousInventoryChecksum = nil 
+    currentInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"dd"}
+    compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
+    assert_equal(compareChecksum["/etc/c"], "dd")
+
+    previousInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"dd"}
+    currentInventoryChecksum = nil
+    compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
+    assert_equal(compareChecksum["/etc/c"], "dd")
+    assert_equal(compareChecksum["/etc/a"], "aa")
+  end
+
   def test_performance_packagechangetracking
     inventoryXMLstr = File.read(@packageinventoryPath)
 

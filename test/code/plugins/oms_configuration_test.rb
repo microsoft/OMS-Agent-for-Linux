@@ -30,25 +30,30 @@ module OMS
       Configuration.configurationLoaded = false
       Common.OSFullName = nil
       @tmp_conf_file = Tempfile.new('oms_conf_file')
+      @tmp_agentid_file = Tempfile.new('agentid')
       @tmp_cert_file = Tempfile.new('temp_cert_file')
       @tmp_key_file = Tempfile.new('temp_key_file')
     end
 
     def teardown
-      [@tmp_conf_file, @tmp_cert_file, @tmp_key_file].each { |tmpfile|
+      [@tmp_conf_file,
+       @tmp_agentid_file,
+       @tmp_cert_file,
+       @tmp_key_file].each { |tmpfile|
         tmpfile.unlink
       }
     end
 
     def prepare_files
       conf = "WORKSPACE_ID=#{TEST_WORKSPACE_ID}\n" \
-      "AGENT_GUID=#{TEST_AGENT_GUID}\n" \
       "LOG_FACILITY=local0\n" \
       "CERTIFICATE_UPDATE_ENDPOINT=#{TEST_CERT_UPDATE_ENDPOINT}\n" \
       "DSC_ENDPOINT=#{TEST_DSC_ENDPOINT}\n" \
       "OMS_ENDPOINT=#{TEST_ODS_ENDPOINT}\n"
 
       File.write(@tmp_conf_file.path, conf)
+
+      File.write(@tmp_agentid_file.path, "#{TEST_AGENT_GUID}\n")
 
       # this is a fake certificate
       cert = "-----BEGIN CERTIFICATE-----\n" \
@@ -114,7 +119,7 @@ module OMS
     def test_load_configuration()
       prepare_files
       $log = MockLog.new
-      success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
+      success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path, @tmp_agentid_file.path)
       puts $log.logs
       assert_equal(true, success, 'Configuration should be loaded')
       assert_equal(TEST_AGENT_GUID, Configuration.agent_id, "Agent ID should be loaded")
@@ -126,26 +131,45 @@ module OMS
       assert_equal([], $log.logs, "There was an error loading the configuration")
     end
 
+    def test_load_configuration_no_agentid_file()
+      prepare_files
+      conf_content = File.read(@tmp_conf_file.path)
+      conf_content += "AGENT_GUID=#{TEST_AGENT_GUID}\n"
+      File.write(@tmp_conf_file.path, conf_content)
+      $log = MockLog.new
+      fake_agentid_path = @tmp_agentid_file.path + '.fake'
+      assert_equal(false, File.file?(fake_agentid_path))
+      success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path, fake_agentid_path)
+      assert_equal(true, success, 'Configuration should be loaded')
+      assert_equal(TEST_AGENT_GUID, Configuration.agent_id, "Agent ID should be loaded")
+      assert_equal([], $log.logs, "There was an error loading the configuration")
+    end
+
     def test_load_configuration_wrong_path()
       prepare_files
       fake_conf_path = @tmp_conf_file.path + '.fake'
       assert_equal(false, File.file?(fake_conf_path))
-      success = Configuration.load_configuration(fake_conf_path, @tmp_cert_file.path, @tmp_key_file.path)
+      success = Configuration.load_configuration(fake_conf_path, @tmp_cert_file.path, @tmp_key_file.path, @tmp_agentid_file.path)
       assert_equal(false, success, "Should not find configuration in a non existing file")
       
       fake_cert_path = @tmp_cert_file.path + '.fake'
       assert_equal(false, File.file?(fake_cert_path))
-      success = Configuration.load_configuration(@tmp_conf_file.path, fake_cert_path, @tmp_key_file.path)
+      success = Configuration.load_configuration(@tmp_conf_file.path, fake_cert_path, @tmp_key_file.path, @tmp_agentid_file.path)
       assert_equal(false, success, "Should not find configuration in a non existing file")
 
       fake_key_path = @tmp_key_file.path + '.fake'
       assert_equal(false, File.file?(fake_key_path))
-      success = Configuration.load_configuration(@tmp_key_file.path, @tmp_cert_file.path, fake_key_path)
+      success = Configuration.load_configuration(@tmp_key_file.path, @tmp_cert_file.path, fake_key_path, @tmp_agentid_file.path)
+      assert_equal(false, success, "Should not find configuration in a non existing file")
+
+      fake_agentid_path = @tmp_agentid_file.path + '.fake'
+      assert_equal(false, File.file?(fake_agentid_path))
+      success = Configuration.load_configuration(@tmp_key_file.path, @tmp_cert_file.path, @tmp_key_file.path, fake_agentid_path)
       assert_equal(false, success, "Should not find configuration in a non existing file")
 
       $log = MockLog.new
       # Should retry the second time since it did not find anything before
-      success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
+      success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path, @tmp_agentid_file.path)
       assert_equal(true, success, 'Configuration should be loaded')
       assert_equal([], $log.logs, "There was an error loading the configuration")
     end

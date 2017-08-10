@@ -19,6 +19,7 @@ module Fluent
     config_param :proxy_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf' #optional
     config_param :os_info, :string, :default => '/etc/opt/microsoft/scx/conf/scx-release' #optional
     config_param :install_info, :string, :default => '/etc/opt/microsoft/omsagent/sysconf/installinfo.txt' #optional
+    config_param :agentid_path, :string, :default => '/etc/opt/microsoft/omsagent/agentid' #optional
 
     def configure (conf)
       super
@@ -38,7 +39,8 @@ module Fluent
 
     def start
       @maintenance_script = MaintenanceModule::Maintenance.new(@omsadmin_conf_path, @cert_path,
-                              @key_path, @pid_path, @proxy_path, @os_info, @install_info, @log)
+                              @key_path, @pid_path, @proxy_path, @os_info, @install_info,
+                              @agentid_path, @log)
 
       if @run_interval
         @finished = false

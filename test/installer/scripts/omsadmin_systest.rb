@@ -14,11 +14,15 @@ class OmsadminTest < MaintenanceSystemTestBase
   def post_onboard_validation(ws_dir = @omsadmin_test_dir_ws1)
     crt_path = "#{ws_dir}/certs/oms.crt"
     key_path = "#{ws_dir}/certs/oms.key"
+    agentid_path = get_agentid_path(ws_dir)
 
     # Make sure certs and config was generated
     assert(File.file?(crt_path), "'#{crt_path}' does not exist!")
     assert(File.file?(key_path), "'#{key_path}' does not exist!")
     assert(File.file?("#{ws_dir}/conf/omsadmin.conf"), "omsadmin.conf does not exist!")
+    assert(File.file?(agentid_path), "The agentid file does not exist!")
+    omsadmin_conf_contents = File.read("#{ws_dir}/conf/omsadmin.conf")
+    assert_not_match(/AGENT_GUID=/, omsadmin_conf_contents, "Agent GUID should not be stored in omsadmin.conf")
 
     # Check permissions
     crt_uid = File.stat(crt_path).uid
@@ -79,7 +83,7 @@ class OmsadminTest < MaintenanceSystemTestBase
     
     # Reonboarding should not modify the agent GUID or the certs 
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
-    assert_match(/Reusing previous agent GUID/, output, "Did not find GUID reuse message")
+    assert_match(/Reusing machine's agent GUID/, output, "Did not find GUID reuse message")
     assert_equal(old_guid, get_GUID(), "Agent GUID should not change on reonboarding")
     assert(crt_hash == Digest::SHA256.file(crt_path), "The cert should not change on reonboarding")
     assert(key_hash == Digest::SHA256.file(key_path), "The key should not change on reonboarding")
@@ -92,8 +96,9 @@ class OmsadminTest < MaintenanceSystemTestBase
     output = do_onboard(TEST_WORKSPACE_ID_2, TEST_SHARED_KEY_2)
     new_guid = get_GUID(@omsadmin_test_dir_ws2)
 
-    assert_not_equal(old_guid, new_guid, "The GUID should change when reonboarding with a different workspace ID")
-    assert_not_match(/Reusing/, output, "Should not be reusing GUID")
+    assert_equal(old_guid, new_guid, "The GUID should not change when reonboarding with a different workspace ID")
+    assert_not_match(/Reusing/, output, "Should not print reusing message")
+    assert_match(/Using machine's agent GUID/, output, "Should be using GUID from machine")
   end
 
   def test_onboard_two_workspaces

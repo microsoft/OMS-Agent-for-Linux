@@ -26,13 +26,14 @@ FILE_ONBOARD=/etc/omsagent-onboard.conf
 
 # Generated conf file containing information for this script
 CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
+AGENTGUID_FILE=$ETC_DIR/agentid
 
 # Omsagent daemon configuration
 CONF_OMSAGENT=$CONF_DIR/omsagent.conf
 
 # Omsagent proxy configuration
 CONF_PROXY=$ETC_DIR/proxy.conf
-OLD_CONF_PROXY=$DF_CONF_DIR/proxy.conf
+PRE_MH_CONF_PROXY=$DF_CONF_DIR/proxy.conf
 
 # File with OS information for telemetry
 OS_INFO=/etc/opt/microsoft/scx/conf/scx-release
@@ -132,8 +133,8 @@ usage()
     echo "Remove All Workspaces:"
     echo "$basename -X"
     echo
-    echo "Migrate Old Workspace to the New Folder Structure:"
-    echo "$basename -M"
+    echo "Update workspace configuration and folder structure to multi-homing schema:"
+    echo "$basename -U"
     echo
     echo "Onboard the workspace with a multi-homing marker. The workspace will be regarded as secondary."
     echo "$basename -m <multi-homing marker>"
@@ -170,7 +171,6 @@ save_config()
 {
     #Save configuration
     echo WORKSPACE_ID=$WORKSPACE_ID > $CONF_OMSADMIN
-    echo AGENT_GUID=$AGENT_GUID >> $CONF_OMSADMIN
     echo LOG_FACILITY=$LOG_FACILITY >> $CONF_OMSADMIN
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
@@ -180,6 +180,16 @@ save_config()
     echo OMSCLOUD_ID=$OMSCLOUD_ID | tr -d ' ' >> $CONF_OMSADMIN
     echo UUID=$UUID | tr -d ' ' >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
+
+    save_agent_guid
+}
+
+save_agent_guid()
+{
+    if [ -n "$AGENT_GUID" ]; then
+        echo $AGENT_GUID > $AGENTGUID_FILE
+        chown_omsagent "$AGENTGUID_FILE"
+    fi
 }
 
 cleanup()
@@ -221,7 +231,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XMm:" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -262,9 +272,8 @@ parse_args()
         X)
             REMOVE_ALL=1
             ;;
-        M)
-            MIGRATE_OLD_WS=1
-            MIGRATE_OLD_PROXY_CONF=1
+        U)
+            UPDATE_WORKSPACES=1
             ;;
         m)
             MULTI_HOMING_MARKER=$OPTARG
@@ -311,18 +320,15 @@ create_proxy_conf()
     log_info "Created proxy configuration: $CONF_PROXY"
 }
 
-copy_proxy_conf_from_old()
+copy_proxy_conf_from_pre_mh_loc()
 {
     # Expected behavior is to use new proxy location first, then fallback to
-    # the old location, then assume no proxy is configured
-    if [ -r "$CONF_PROXY" -o ! -r "$OLD_CONF_PROXY" ]; then
-        return
+    # the pre-multi-homing location, then assume no proxy is configured
+    # In future: change from cp to mv once all plugins have been updated to use new location
+    if [ -f "$PRE_MH_CONF_PROXY" ]; then
+        echo "Moving proxy configuration from file $PRE_MH_CONF_PROXY to $CONF_PROXY..."
+        cp -pf $PRE_MH_CONF_PROXY $CONF_PROXY
     fi
-
-    local old_conf_proxy_content=""
-    old_conf_proxy_content=`cat $OLD_CONF_PROXY`
-    log_info "Moving proxy configuration from file $OLD_CONF_PROXY to $CONF_PROXY..."
-    create_proxy_conf "$old_conf_proxy_content"
 }
 
 set_proxy_setting()
@@ -333,7 +339,6 @@ set_proxy_setting()
         return
     fi
     local conf_proxy_content=""
-    [ -r "$OLD_CONF_PROXY" ] && copy_proxy_conf_from_old
     [ -r "$CONF_PROXY" ] && conf_proxy_content=`cat $CONF_PROXY`
     if [ -n "$conf_proxy_content" ]; then
         PROXY_SETTING="--proxy $conf_proxy_content"
@@ -464,16 +469,44 @@ onboard()
     create_workspace_directories $WORKSPACE_ID
 
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
-        # Keep the same agent GUID by loading it from the previous conf
-        AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
-        log_info "Reusing previous agent GUID $AGENT_GUID"
-    else
-        AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
-        if [ $? -ne 0 -o -z "$AGENT_GUID" ]; then
-            log_error "Error generating agent GUID"
-            clean_exit $RUBY_ERROR_GENERATING_GUID
+        # Certs have been generated from a GUID
+        CONF_OMSADMIN_AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2` # this may result in an empty string
+        if [ -f $AGENTGUID_FILE ]; then
+            AGENT_GUID=`cat $AGENTGUID_FILE`
+            if [ -z "$CONF_OMSADMIN_AGENT_GUID" ]; then
+                # There is no GUID stored in omsadmin.conf. The certs must have been generated with the machine GUID.
+                log_info "Reusing machine's agent GUID $AGENT_GUID"
+            elif [ "$CONF_OMSADMIN_AGENT_GUID" == "$AGENT_GUID" ]; then
+                # The GUID stored in omsadmin.conf matches the machine GUID. It will be removed from omsadmin.conf at the end of onboarding.
+                log_info "Reusing previous agent GUID $AGENT_GUID"
+            else
+                # The GUID stored in omsadmin.conf does NOT match the machine GUID. The certs will be re-generated with the machine GUID.
+                log_info "Workspace is using an old agent GUID: Using machine's agent GUID $AGENT_GUID"
+                GENERATE_CERTS="true"
+            fi
+        else
+            # The agent GUID hasn't been moved to the non-workspace-specific location yet. It will be saved there at the end of onboarding.
+            AGENT_GUID=$CONF_OMSADMIN_AGENT_GUID
+            log_info "Reusing previous agent GUID $AGENT_GUID"
         fi
+    else
+        GENERATE_CERTS="true"
+        if [ -f $AGENTGUID_FILE ]; then
+            AGENT_GUID=`cat $AGENTGUID_FILE`
+            log_info "Using machine's agent GUID $AGENT_GUID"
+        else
+            AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
+        fi
+    fi
 
+    if [ -z "$AGENT_GUID" ]; then
+        log_error "AGENT_GUID should not be empty"
+        return $INTERNAL_ERROR
+    else
+        log_info "Agent GUID is $AGENT_GUID"
+    fi
+
+    if [ -n "$GENERATE_CERTS" ]; then
         $RUBY $MAINTENANCE_TASKS_SCRIPT -c "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" -w "$WORKSPACE_ID" -a "$AGENT_GUID" $CURL_VERBOSE
         generate_certs_ret=$?
         if [ $generate_certs_ret -eq $AGENT_MAINTENANCE_MISSING_CONFIG ]; then
@@ -483,13 +516,6 @@ onboard()
             log_error "Error generating certs"
             clean_exit $ERROR_GENERATING_CERTS
         fi
-    fi
-
-    if [ -z "$AGENT_GUID" ]; then
-        log_error "AGENT_GUID should not be empty"
-        return $INTERNAL_ERROR
-    else
-        log_info "Agent GUID is $AGENT_GUID"
     fi
 
     if [ "$VERBOSE" = "1" ]; then
@@ -621,6 +647,13 @@ onboard()
             # Configure omsconfig when the workspace is primary
             # This is a temp solution since the DSC doesn't support multi-homing now
             # Only the primary workspace receives the configuration from the DSC service
+
+            # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
+            # This should be done regardless of MetaConfig creation
+            if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
+                echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+            fi
+
             if [ "$USER_ID" -eq "0" ]; then
                 su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
             else
@@ -635,11 +668,6 @@ onboard()
             else
                 log_error "Error configuring omsconfig"
                 return $ERROR_GENERATING_METACONFIG
-            fi
-    
-            # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
-            if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
-                echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
             fi
         fi
     fi
@@ -806,7 +834,17 @@ list_workspaces()
     return 0
 }
 
-migrate_old_workspace()
+migrate_to_single_agent_id()
+{
+    # If there are any workspaces configured, move the agent GUID to the central location
+    if [ -f $CONF_OMSADMIN -a ! -f $AGENTGUID_FILE ]; then
+        echo "Migrating agent ID to multi-homing folder structure..."
+        AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
+        save_agent_guid
+    fi
+}
+
+migrate_pre_mh_workspace()
 {
     if [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR -a -f $DF_CONF_DIR/omsadmin.conf ]; then
         WORKSPACE_ID=`grep WORKSPACE_ID $DF_CONF_DIR/omsadmin.conf | cut -d= -f2`
@@ -814,6 +852,8 @@ migrate_old_workspace()
         if [ $? -ne 0 -o -z $WORKSPACE_ID ]; then
             echo "WORKSPACE_ID is not found. Skip migration."
             return
+        else
+            echo "Migrating to multi-homing folder structure..."
         fi
 
         create_workspace_directories $WORKSPACE_ID
@@ -828,20 +868,16 @@ migrate_old_workspace()
 
         copy_omsagent_d_conf
 
-        migrate_old_omsagent_conf
+        migrate_pre_mh_omsagent_conf
 
         sed -i s,%SYSLOG_PORT%,$DEFAULT_SYSLOG_PORT,1 $CONF_DIR/omsagent.d/syslog.conf
         sed -i s,%MONITOR_AGENT_PORT%,$DEFAULT_MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
-
-        if [ -f $DF_CONF_DIR/proxy.conf ]; then
-            cp -pf $DF_CONF_DIR/proxy.conf $ETC_DIR
-        fi
 
         update_symlinks
     fi
 }
 
-migrate_old_omsagent_conf()
+migrate_pre_mh_omsagent_conf()
 {
     # migrate the omsagent.conf
     cp -pf $CONF_DIR/omsagent.conf $CONF_DIR/omsagent.conf.bak
@@ -857,6 +893,44 @@ migrate_old_omsagent_conf()
 
     # update the workspace state folder
     sed -i s,"/var/opt/microsoft/omsagent/state",$STATE_DIR,g $CONF_DIR/omsagent.conf
+}
+
+update_omsagent_d_conf()
+{
+    # Parameter: Workspace ID for the folder to update
+    setup_workspace_variables $1
+    WS_OMSAGENT_D_DIR=$CONF_DIR/omsagent.d
+    if [ ! -d "$WS_OMSAGENT_D_DIR" ]; then
+        echo "$WS_OMSAGENT_D_DIR does not exist; skipping update in this directory."
+        return
+    fi
+
+    # Note: if syslog.conf, monitor.conf, or other configuration files using a port must be updated
+    # during version upgrade, then new functionality will have to be added here
+    copy_no_port_omsagent_d_conf $WS_OMSAGENT_D_DIR
+    chown_omsagent $WS_OMSAGENT_D_DIR/*
+}
+
+# Update configuration and structure for all configured workspaces
+update_workspaces()
+{
+    local error=0
+    # Updating from pre-multi-homing version
+    migrate_pre_mh_workspace || error=$?
+
+    # Updating from pre-multi-homing structure (somewhat present in versions >1.3)
+    copy_proxy_conf_from_pre_mh_loc || error=$?
+    migrate_to_single_agent_id || error=$?
+
+    # Updating configuration for all onboarded workspaces to latest shipped versions
+    for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+    do
+        update_omsagent_d_conf $ws_id || error=$?
+    done
+
+    if [ $error -ne 0 ]; then
+        clean_exit $error
+    fi
 }
 
 setup_workspace_variables()
@@ -939,19 +1013,30 @@ copy_omsagent_d_conf()
 
     cp -p $SYSCONF_DIR/omsagent.d/monitor.conf $OMSAGENTD_DIR
     cp -p $SYSCONF_DIR/omsagent.d/syslog.conf $OMSAGENTD_DIR
-    cp -p $SYSCONF_DIR/omsagent.d/heartbeat.conf $OMSAGENTD_DIR
-    cp -p $SYSCONF_DIR/omsagent.d/operation.conf $OMSAGENTD_DIR
-    cp -p $SYSCONF_DIR/omi_mapping.json $OMSAGENTD_DIR
-    cp -p $SYSCONF_DIR/omsagent.d/oms_audits.xml $OMSAGENTD_DIR
-    cp -p $SYSCONF_DIR/omsagent.d/container.conf $OMSAGENTD_DIR 2>/dev/null
 
     update_path $OMSAGENTD_DIR/monitor.conf
-    update_path $OMSAGENTD_DIR/heartbeat.conf
-    if [ -f $OMSAGENTD_DIR/container.conf ] ; then
-        update_path $OMSAGENTD_DIR/container.conf
-    fi
+
+    copy_no_port_omsagent_d_conf $OMSAGENTD_DIR
 
     chown_omsagent $OMSAGENTD_DIR/*
+}
+
+copy_no_port_omsagent_d_conf()
+{
+    # Copy configuration files from sysconf to a workspace-specific omsagent.d directory
+    # which do not depend on a workspace-specific port being set
+    # Parameter: workspace-specific omsagent.d directory
+    cp -p $SYSCONF_DIR/omsagent.d/heartbeat.conf $1
+    cp -p $SYSCONF_DIR/omsagent.d/operation.conf $1
+    cp -p $SYSCONF_DIR/omi_mapping.json $1
+    cp -p $SYSCONF_DIR/omsagent.d/oms_audits.xml $1
+    cp -p $SYSCONF_DIR/omsagent.d/container.conf $1 2>/dev/null
+
+    update_path $1/heartbeat.conf
+    update_path $1/operation.conf
+    if [ -f $1/container.conf ] ; then
+        update_path $1/container.conf
+    fi
 }
 
 update_path()
@@ -1067,12 +1152,8 @@ main()
         list_workspaces || clean_exit 1
     fi
 
-    if [ "$MIGRATE_OLD_WS" = "1" ]; then
-        migrate_old_workspace || clean_exit 1
-    fi
-
-    if [ "$MIGRATE_OLD_PROXY_CONF" = "1" ]; then
-        copy_proxy_conf_from_old || clean_exit 1
+    if [ "$UPDATE_WORKSPACES" = "1" ]; then
+        update_workspaces || clean_exit $?
     fi
 
     if [ "$REMOVE" = "1" ]; then

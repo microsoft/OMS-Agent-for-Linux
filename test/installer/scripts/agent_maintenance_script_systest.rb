@@ -68,6 +68,7 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
     @pid_path = Tempfile.new("omsagent_pid")  # this does not need to be meaningful during testing
     @os_info_path = "#{@omsadmin_test_dir}/scx-release"
     @install_info_path = "#{@base_dir}/installer/conf/installinfo.txt"
+    @agentid_path = get_agentid_path(@omsadmin_test_dir_ws1)
     @log = OMS::MockLog.new
 
     @test_omsadmin_conf = Tempfile.new("omsadmin_conf")
@@ -88,11 +89,10 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
   # Helper to create a new Maintenance class object to test; uses valid files by default
   def get_new_maintenance_obj(omsadmin_path = @omsadmin_conf_path, cert_path = @cert_path,
        key_path = @key_path, pid_path = @pid_path.path, proxy_path = @proxy_conf,
-       os_info_path = @os_info_path, install_info_path = @install_info_path, log = @log,
-       verbose = false)
-
+       os_info_path = @os_info_path, install_info_path = @install_info_path,
+       agentid_path = @agentid_path, log = @log, verbose = false)
     m = MaintenanceModule::Maintenance.new(omsadmin_path, cert_path, key_path, pid_path,
-         proxy_path, os_info_path, install_info_path, log, verbose)
+         proxy_path, os_info_path, install_info_path, agentid_path, log, verbose)
     m.suppress_stdout = true
     return m
   end
