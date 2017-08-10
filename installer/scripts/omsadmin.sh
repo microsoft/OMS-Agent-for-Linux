@@ -95,6 +95,7 @@ PROC_LIMIT_CONF=/etc/security/limits.conf
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
 OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
+OMI_CONF_EDITOR=/opt/omi/bin/omiconfigeditor
 
 # Error codes and categories:
 
@@ -386,30 +387,12 @@ set_omsagent_proc_limit()
 
 is_scom_port_open()
 {
-    OIFS=$IFS
-# Ignore formatting. It was required for IFS to take new line on both bash and sh
-IFS='
-'
-    for line in `cat $OMI_CONF_FILE | grep httpsport`
-    do
-        echo $line | grep -E '^[ ]*httpsport[ ]*=.*$' > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-        continue
-        fi
-        IFS=$OIFS
-        # 1st line starting with <optional-spaces>httpsport<optional-spaces>=
-        # Replace = and , with space.
-        # e.g httpsport=0,1270 should become httpsport 0 1270
-        m_line=`echo $line | sed "s/[=,]/ /g"`
-        # Do a exact word match for port 1270.
-        # This ensures cases like 11270 does not match 
-        echo $m_line | grep -w 1270 > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            echo "Port 1270 already open"
-            return 0
-        fi
+    $OMI_CONF_EDITOR httpsport -q 1270 < $OMI_CONF_FILE > /dev/null 2>&1
+    if [ $? -eq 1 ]; then
         return 1
-    done
+    fi
+    echo "Port 1270 already open"
+    return 0
 }
 
 onboard_scom()
@@ -445,8 +428,8 @@ onboard_scom()
     is_scom_port_open
     if [ $? -eq 1 ]; then
         echo "Opening port 1270"
-        /opt/omi/bin/omiconfigeditor httpsport -a 1270 < /etc/opt/omi/conf/omiserver.conf > /etc/opt/omi/conf/omiserver.conf_temp
-        mv /etc/opt/omi/conf/omiserver.conf_temp /etc/opt/omi/conf/omiserver.conf
+        $OMI_CONF_EDITOR httpsport -a 1270 < $OMI_CONF_FILE > /etc/opt/omi/conf/omiserver.conf_temp
+        mv /etc/opt/omi/conf/omiserver.conf_temp $OMI_CONF_FILE
         # Restart OMI
         /opt/omi/bin/service_control restart
     fi
