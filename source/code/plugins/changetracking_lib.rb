@@ -162,12 +162,20 @@ class ChangeTracking
     end
 
     def self.comparechecksum(previous_inventory, current_inventory)
-        inventoryChecksum =  current_inventory.select { |key, value| lookupchecksum(key, value, previous_inventory) }
-        return inventoryChecksum 
+        inventoryChecksumInstalled = {}
+        if !current_inventory.nil?
+         inventoryChecksumInstalled = current_inventory.select { |key, value| lookupchecksum(key, value, previous_inventory) }
+        end
+
+        inventoryChecksumRemoved = {} 
+        if !previous_inventory.nil?
+        inventoryChecksumRemoved = previous_inventory.select { |key, value| lookupchecksum(key, value, current_inventory) }
+        end
+        return inventoryChecksumRemoved.merge!(inventoryChecksumInstalled)
     end 
 
     def self.lookupchecksum(key, value, previous_inventory)
-        if previous_inventory.has_key?(key)
+        if !previous_inventory.nil? and previous_inventory.has_key?(key)
            if value == previous_inventory[key]
               return false
            end
