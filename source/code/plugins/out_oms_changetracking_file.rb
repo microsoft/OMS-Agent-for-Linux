@@ -36,7 +36,7 @@ module Fluent
     config_param :buffer_path, :string, :default => ''
 
     @@ContentlocationUri = ''
-    @@LastContentlocationUri = ''
+    @@LastContentLocationUri = ''
     @@ContentlocationUriResourceId = ''
     @@PrimaryContentLocationAccessToken = ''
     @@SecondaryContentLocationAccessToken = ''
@@ -113,24 +113,23 @@ module Fluent
 
          @log.debug "contentlocationfilepath : #{contentlocationfilepath}"
          if File.exists?(contentlocationfilepath)
-            @@LastContentlocationUri = File.open(contentlocationfilepath, &:gets).strip
+            content = File.open(contentlocationfilepath, &:gets)
+            if !content.nil? and !content.empty?
+               @@LastContentLocationUri = content.strip
+            end
          end
       end
-      @log.debug "LastContentlocationUri : #{@@LastContentlocationUri}"
+      @log.debug "LastContentLocationUri : #{@@LastContentLocationUri}"
     end
 
     def shutdown
       if !@buffer_path.empty?
          contentlocationfilepath = File.dirname(@buffer_path) + '/' + @@ContentLocationCacheFileName
-         if File.exists?(contentlocationfilepath)
-            File.open(contentlocationfilepath, "w") do |f|
-                f.puts "#{@@ContentlocationUri}"
-            end 
-         else
-            File.write(contentlocationfilepath, "#{@@ContentlocationUri}")
+         File.open(file_path, "w+", 0644) do |f| # Open file
+              f.puts "#{@@ContentlocationUri}"
          end
       end
-      @log.debug "LastContentlocationUri written to : #{contentlocationfilepath}"
+      @log.debug "LastContentLocationUri written to : #{contentlocationfilepath}"
       super
     end
 
@@ -309,12 +308,12 @@ module Fluent
                    date = collection["DateModified"]
                    fileName = date + '-' + File.basename(key)
                    uri = @@ContentlocationUri + '/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + fileName
-                   if collection["FileContentBlobLink"] == " " or (@@LastContentlocationUri.eql?(@@ContentlocationUri) == false)
+                   if collection["FileContentBlobLink"] == " " or (@@LastContentLocationUri.eql?(@@ContentlocationUri) == false)
                       modifiedcollections[key] = uri
                    end
                 end
              }
-          @@LastContentlocationUri = @@ContentlocationUri
+          @@LastContentLocationUri = @@ContentlocationUri
           else
              @log.trace "Record is NOT of ConfigChangeType = Files, skipping"
              return modifiedcollections
@@ -339,7 +338,7 @@ module Fluent
                    collection["FileContentBlobLink"] = uri
                 end
              }
-          @@LastContentlocationUri = @@ContentlocationUri
+          @@LastContentLocationUri = @@ContentlocationUri
           end
         }
       end
@@ -473,7 +472,7 @@ module Fluent
             File.write(contentlocationfilepath, "#{@@ContentlocationUri}")
          end
       end
-      @log.debug "LastContentlocationUri written to : #{contentlocationfilepath}"
+      @log.debug "LastContentLocationUri written to : #{contentlocationfilepath}"
     end
 
     def format(tag, time, record)

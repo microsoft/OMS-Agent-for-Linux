@@ -21,6 +21,7 @@ class ChangeTracking
     # end
 
     @@force_send_last_upload = Time.now
+    @@lastInventorySnapshotTime = Time.now
 
     @@prev_hash = ""
     def self.prev_hash= (value)
@@ -39,14 +40,19 @@ class ChangeTracking
         ret
     end
 
-    def self.serviceXMLtoHash(serviceXML)
+    def self.serviceXMLtoHash(serviceXML, isInventorySnapshot = false)
         serviceHash = instanceXMLtoHash(serviceXML)
         serviceHash["CollectionName"] = serviceHash["Name"]
-        serviceHash["InventoryChecksum"] = Digest::SHA256.hexdigest(serviceHash.to_json)
+
+        if isInventorySnapshot
+           serviceHash["LastInventorySnapshotTime"] = @@lastInventorySnapshotTime
+        else
+           serviceHash["InventoryChecksum"] = Digest::SHA256.hexdigest(serviceHash.to_json)
+        end
         serviceHash
     end
 
-    def self.packageXMLtoHash(packageXML)
+    def self.packageXMLtoHash(packageXML, isInventorySnapshot = false)
         packageHash = instanceXMLtoHash(packageXML)
         ret = {}
         ret["Architecture"] = packageHash["Architecture"]
@@ -56,11 +62,16 @@ class ChangeTracking
         ret["Publisher"] = packageHash["Publisher"]
         ret["Size"] = packageHash["Size"]
         ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
-        ret["InventoryChecksum"] = Digest::SHA256.hexdigest(packageHash.to_json)
+
+        if isInventorySnapshot
+           ret["LastInventorySnapshotTime"] = @@lastInventorySnapshotTime
+        else
+           ret["InventoryChecksum"] = Digest::SHA256.hexdigest(packageHash.to_json)
+        end
         ret
     end
 
-    def self.fileInventoryXMLtoHash(fileInventoryXML)
+    def self.fileInventoryXMLtoHash(fileInventoryXML, isInventorySnapshot = false)
         fileInventoryHash = instanceXMLtoHash(fileInventoryXML)
         ret = {}
         ret["FileSystemPath"] = fileInventoryHash["DestinationPath"]
@@ -72,7 +83,12 @@ class ChangeTracking
         ret["Contents"] = fileInventoryHash["Contents"]
         ret["DateModified"] = OMS::Common.format_time_str(fileInventoryHash["ModifiedDate"])
         ret["DateCreated"] = OMS::Common.format_time_str(fileInventoryHash["CreatedDate"])
-        ret["InventoryChecksum"] = Digest::SHA256.hexdigest(fileInventoryHash.to_json)
+
+        if isInventorySnapshot
+           ret["LastInventorySnapshotTime"] = @@lastInventorySnapshotTime
+        else
+           ret["InventoryChecksum"] = Digest::SHA256.hexdigest(fileInventoryHash.to_json)
+        end
         ret
     end
 
@@ -108,7 +124,7 @@ class ChangeTracking
         instanceXML.attributes['CLASSNAME'] == 'MSFT_nxFileInventoryResource'
     end
 
-    def self.transform(inventoryXMLstr, log = nil)
+    def self.transform(inventoryXMLstr, log = nil, isInventorySnapshot = false)
         # Extract the instances in xml format
         inventoryXML = strToXML(inventoryXMLstr)
         instancesXML = getInstancesXML(inventoryXML)
@@ -119,9 +135,9 @@ class ChangeTracking
         fileInventoriesXML = instancesXML.select { |instanceXML| isFileInventoryInstanceXML(instanceXML) }
 
         # Convert to xml to hash/json representation
-        packages = packagesXML.map { |package|  packageXMLtoHash(package)}
-        services = servicesXML.map { |service|  serviceXMLtoHash(service)}
-        fileInventories = fileInventoriesXML.map { |fileInventory|  fileInventoryXMLtoHash(fileInventory)}
+        packages = packagesXML.map { |package|  packageXMLtoHash(package, isInventorySnapshot)}
+        services = servicesXML.map { |service|  serviceXMLtoHash(service, isInventorySnapshot)}
+        fileInventories = fileInventoriesXML.map { |fileInventory|  fileInventoryXMLtoHash(fileInventory, isInventorySnapshot)}
 
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
         packages = removeDuplicateCollectionNames(packages)
@@ -286,19 +302,52 @@ class ChangeTracking
                 end
     end
 
+    def self.setInventoryTimestamp(timestamp, file_path)
+        File.open(file_path, "w+", 0644) do |f| 
+             f.puts "#{timestamp}"
+        end
+    end
 
-    def self.transform_and_wrap(inventoryFile, inventoryHashFile)
+    def self.getInventoryTimestampInRubyTime(file_path)
+        time = Time.now - (10 * 60 * 60) # default time to return if file not found or read error
+        if File.exist?(file_path)
+           content = File.open(file_path, &:gets)
+           if !content.nil? and !content.empty?
+              time = DateTime.parse(content).to_time
+           end
+        end
+        return time
+    end
+
+    def self.transform_and_wrap(inventoryFile, inventoryHashFile, inventoryTimestampFile)
         if File.exist?(inventoryFile)                       
             @@log.debug ("Found the change tracking inventory file.")
             # Get the parameters ready.
             time = Time.now
-            force_send_run_interval_hours = 24
+            force_send_run_interval_hours = 10
             force_send_run_interval = force_send_run_interval_hours.to_i * 3600
             @hostname = OMS::Common.get_hostname or "Unknown host"
 
             # Read the inventory XML.
             file = File.open(inventoryFile, "rb")
             xml_string = file.read; nil # To top the output to show up on STDOUT.
+            # ########### INVENTORY #####################
+            # if its time to send inventory
+            # send the inventory snapshot and dont update any hashes, so change tracking sends a snapshot subsequently
+            isInventorySnapshot = false
+            @@lastInventorySnapshotTime = getInventoryTimestampInRubyTime(inventoryTimestampFile)
+            if Time.now.to_i - @@lastInventorySnapshotTime.to_i >= force_send_run_interval
+               isInventorySnapshot = true
+            end
+
+            transformed_hash_map = ChangeTracking.transform(xml_string, @@log, isInventorySnapshot)
+
+            if isInventorySnapshot 
+               output = ChangeTracking.wrap(transformed_hash_map, @hostname, time)
+               setInventoryTimestamp(Time.now, inventoryTimestampFile)
+               return output
+            end
+            ############ END INVENTORY ##############
 
             previousSnapshot = ChangeTracking.getHash(inventoryHashFile)
             previous_inventory_checksum = {}
@@ -310,8 +359,7 @@ class ChangeTracking
                 @@log.warn ("Error parsing previous hash file")
                 previousSnapshot = nil
             end
-            #Transform the XML to HashMap
-            transformed_hash_map = ChangeTracking.transform(xml_string, @@log)
+
             current_inventory_checksum = ChangeTracking.computechecksum(transformed_hash_map)
             changed_checksum = ChangeTracking.comparechecksum(previous_inventory_checksum, current_inventory_checksum)
             transformed_hash_map_with_changes_marked = ChangeTracking.markchangedinventory(changed_checksum, transformed_hash_map)
@@ -319,23 +367,13 @@ class ChangeTracking
             output = ChangeTracking.wrap(transformed_hash_map_with_changes_marked, @hostname, time)
             hash = current_inventory_checksum.to_json
 
-            # If there is a previous hash
-            if !previousSnapshot.nil?
-                # If you need to force send
-                previousSnapshotTime = DateTime.parse(previousSnapshot[LAST_UPLOAD_TIME]).to_time
-                if force_send_run_interval > 0 and 
-                    Time.now.to_i - previousSnapshotTime.to_i > force_send_run_interval
-                    ChangeTracking.setHash(hash, Time.now,inventoryHashFile)
-                elsif !changed_checksum.nil? and !changed_checksum.empty?
-                    ChangeTracking.setHash(hash, Time.now, inventoryHashFile)
-                else
-                    return {}
-                end
-            else # Previous Hash did not exist. Write it
-                # and the return the output.
-                ChangeTracking.setHash(hash, Time.now, inventoryHashFile)
+            # Send inventory irrespectve of changes
+            if !changed_checksum.nil? and !changed_checksum.empty?
+               ChangeTracking.setHash(hash, Time.now, inventoryHashFile)
+               return output
+            else
+               return {}
             end
-            return output
         else
             @@log.warn ("The ChangeTracking inventory xml file does not exists")
             return {}
