@@ -12,6 +12,7 @@ require_relative 'oms_common'
 class ChangeTrackingRunner 
 	CHANGE_TRACKING_FILE = ARGV[0] 
 	CHANGE_TRACKING_STATE_FILE = CHANGE_TRACKING_FILE + ".hash"
+	CHANGE_TRACKING_INVENTORY_STATE_FILE = CHANGE_TRACKING_FILE + ".inventory.hash"
 
 	@@log =  Logger.new(STDERR) #nil
 	@@log.formatter = proc do |severity, time, progname, msg|
@@ -19,7 +20,7 @@ class ChangeTrackingRunner
 	end
 
 	def self.transform_and_wrap()
-            return ChangeTracking.transform_and_wrap(CHANGE_TRACKING_FILE, CHANGE_TRACKING_STATE_FILE)
+            return ChangeTracking.transform_and_wrap(CHANGE_TRACKING_FILE, CHANGE_TRACKING_STATE_FILE, CHANGE_TRACKING_INVENTORY_STATE_FILE)
         end
 end
 
