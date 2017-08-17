@@ -902,7 +902,7 @@ reconstruct_full_workspace_state()
         setup_workspace_variables $WORKSPACE_ID
 
         if [ -f $CERT_DIR/oms.key -a -f $CERT_DIR/oms.crt -a -f $CONF_DIR/omsadmin.conf ]; then
-            local omsadmin_contents="`cat $CONF_OMSADMIN 2> /dev/null`"
+            local omsadmin_contents="`cat $CONF_DIR/omsadmin.conf 2> /dev/null`"
             if [ -n "$omsadmin_contents" ]; then
                 # Create all workspace-specific directories; if they already exist, this is a NOOP
                 create_workspace_directories $WORKSPACE_ID
