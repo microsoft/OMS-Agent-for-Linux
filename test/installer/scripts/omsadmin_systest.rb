@@ -14,11 +14,21 @@ class OmsadminTest < MaintenanceSystemTestBase
   def post_onboard_validation(ws_dir = @omsadmin_test_dir_ws1)
     crt_path = "#{ws_dir}/certs/oms.crt"
     key_path = "#{ws_dir}/certs/oms.key"
+    log_dir = "#{ws_dir}/log/"
+    run_dir = "#{ws_dir}/run/"
+    state_dir = "#{ws_dir}/state/"
+    tmp_dir = "#{ws_dir}/tmp/"
 
     # Make sure certs and config was generated
     assert(File.file?(crt_path), "'#{crt_path}' does not exist!")
     assert(File.file?(key_path), "'#{key_path}' does not exist!")
     assert(File.file?("#{ws_dir}/conf/omsadmin.conf"), "omsadmin.conf does not exist!")
+
+    # Make sure directories under /var were set up
+    assert(File.directory?(log_dir), "'#{log_dir}' does not exist!")
+    assert(File.directory?(run_dir), "'#{run_dir}' does not exist!")
+    assert(File.directory?(state_dir), "'#{state_dir}' does not exist!")
+    assert(File.directory?(tmp_dir), "'#{tmp_dir}' does not exist!")
 
     # Check permissions
     crt_uid = File.stat(crt_path).uid
@@ -123,6 +133,53 @@ class OmsadminTest < MaintenanceSystemTestBase
 
     output_list = `#{@omsadmin_script} -l`
     assert_match(/No Workspace/, output_list, "No workspace should be listed: #{output_list}")
+  end
+
+  def test_reconstruct_from_full_state
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    post_onboard_validation
+    output = `#{@omsadmin_script} -R`.strip()
+    post_onboard_validation
+    assert_equal("", output, "Nothing should have been printed for NOOP reconstruction")
+  end
+
+  def test_reconstruct_from_partial_good_state
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    post_onboard_validation
+
+    # Mimic old extension upgrade scenario - remove entire /var structure
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/log/")
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/run/")
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/state/")
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/tmp/")
+
+    output = `#{@omsadmin_script} -R`.strip()
+    post_onboard_validation
+    assert_equal("", output, "Nothing should have been printed for expected reconstruction")
+  end
+
+  def test_reconstruct_from_partial_empty_omsadmin_conf
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    post_onboard_validation
+
+    # Mimic bad state where omsadmin.conf is empty
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/log/")
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/run/")
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/state/")
+    FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/tmp/")
+    File.write("#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf", "")
+
+    output = `#{@omsadmin_script} -R`.strip()
+    assert_match(/Workspace #{TEST_WORKSPACE_ID} has an empty configuration file/, output,
+                 "Warning should have been printed about empty config")
+    assert_false(File.directory?("#{@omsadmin_test_dir_ws1}/log/"),
+                 "log directory was mistakenly created")
+    assert_false(File.directory?("#{@omsadmin_test_dir_ws1}/run/"),
+                 "run directory was mistakenly created")
+    assert_false(File.directory?("#{@omsadmin_test_dir_ws1}/state/"),
+                 "state directory was mistakenly created")
+    assert_false(File.directory?("#{@omsadmin_test_dir_ws1}/tmp/"),
+                 "tmp directory was mistakenly created")
   end
 
 end

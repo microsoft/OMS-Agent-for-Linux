@@ -1,8 +1,9 @@
 %Variables
-PF:           'Linux'
-OMI_SERVICE:  '/opt/omi/bin/service_control'
-OMS_SERVICE:  '/opt/microsoft/omsagent/bin/service_control'
-CONF_SYSLOG:  '/opt/microsoft/omsagent/bin/configure_syslog.sh'
+PF:               'Linux'
+OMI_SERVICE:      '/opt/omi/bin/service_control'
+OMS_SERVICE:      '/opt/microsoft/omsagent/bin/service_control'
+CONF_SYSLOG:      '/opt/microsoft/omsagent/bin/configure_syslog.sh'
+OMSADMIN_SCRIPT:  '/opt/microsoft/omsagent/bin/omsadmin.sh'
 
 %Directories
 /etc;                                                   755; root; root; sysdir
@@ -129,6 +130,9 @@ if [ -d "$NPM_STATE_DIR" ]; then
 fi
 
 %Postinstall_600
+# Set up required states of all onboarded workspaces before starting their daemons
+${{OMSADMIN_SCRIPT}} -R
+# Start all workspace-specific omsagent daemons
 ${{OMS_SERVICE}} start
 
 %Preuninstall_10
