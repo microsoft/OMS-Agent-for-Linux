@@ -130,6 +130,9 @@ if [ -d "$NPM_STATE_DIR" ]; then
 fi
 
 %Postinstall_600
+# Set up required states of all onboarded workspaces before starting their daemons
+${{OMSADMIN_SCRIPT}} -R
+# Start all workspace-specific omsagent daemons
 ${{OMS_SERVICE}} start
 
 %Preuninstall_10

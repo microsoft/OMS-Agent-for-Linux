@@ -239,7 +239,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:o" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:oR" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -297,6 +297,9 @@ parse_args()
             ;;
         o)
             DETECT_SCOM=1
+            ;;
+        R)
+            RECONSTRUCT_WORKSPACE_STATE=1
             ;;
         esac
     done
@@ -504,7 +507,11 @@ onboard()
         $SERVICE_CONTROL is-running $WORKSPACE_ID > /dev/null 2>&1
         if [ $? -eq 1 ]; then
             echo "Workspace $WORKSPACE_ID already onboarded and agent is running."
-            return 0
+            if [ -z "$MULTI_HOMING_MARKER" -a ! -h $DF_CONF_DIR ]; then
+                echo "Symbolic links have not been created; re-onboarding to create them"
+            else
+                return 0
+            fi
         fi
     fi
     create_workspace_directories $WORKSPACE_ID
@@ -949,6 +956,34 @@ update_workspaces()
     fi
 }
 
+reconstruct_full_workspace_state()
+{
+    for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+    do
+        WORKSPACE_ID=$ws_id
+        setup_workspace_variables $WORKSPACE_ID
+
+        if [ -f $CERT_DIR/oms.key -a -f $CERT_DIR/oms.crt -a -f $CONF_DIR/omsadmin.conf ]; then
+            local omsadmin_contents="`cat $CONF_DIR/omsadmin.conf 2> /dev/null`"
+            if [ -n "$omsadmin_contents" ]; then
+                # Create all workspace-specific directories; if they already exist, this is a NOOP
+                create_workspace_directories $WORKSPACE_ID
+
+                # If a test is not in progress, then syslog and logrotate can be set up
+                if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
+                    # During omsagent removal, log rotate files are removed; set up log rotate like in onboarding
+                    configure_logrotate
+                    # Note: we could re-configure syslog here, but it will overwrite user settings in some cases
+                fi
+            else
+                log_warning "Workspace $ws_id has an empty configuration file at $CONF_DIR/omsadmin.conf; please onboard to populate this configuration"
+            fi
+        else
+            log_warning "Workspace $ws_id has created a folder $ETC_DIR/$ws_id, but is missing certificates or configuration; please onboard"
+        fi
+    done
+}
+
 setup_workspace_variables()
 {
     VAR_DIR_WS=$VAR_DIR/$1
@@ -1122,7 +1157,7 @@ configure_monitor_agent()
 
 configure_logrotate()
 {
-    echo "Configure log rotate..."
+    echo "Configure log rotate for workspace $WORKSPACE_ID..."
     # create the logrotate file for the workspace if it doesn't exist
     if [ ! -f /etc/logrotate.d/omsagent-$WORKSPACE_ID ]; then
         cat $SYSCONF_DIR/logrotate.conf | sed "s/%WORKSPACE_ID%/$WORKSPACE_ID/g" > /etc/logrotate.d/omsagent-$WORKSPACE_ID
@@ -1183,6 +1218,10 @@ main()
 
     if [ "$UPDATE_WORKSPACES" = "1" ]; then
         update_workspaces || clean_exit $?
+    fi
+
+    if [ "$RECONSTRUCT_WORKSPACE_STATE" = "1" ]; then
+        reconstruct_full_workspace_state || clean_exit $?
     fi
 
     if [ "$REMOVE" = "1" ]; then
