@@ -160,6 +160,24 @@ class OmsadminTest < MaintenanceSystemTestBase
     assert_match(/New process limit must be at least/, output, "Did not find correct error message")
   end
 
+  def test_unset_proc_limit_when_set
+    FileUtils.cp("#{@omsadmin_test_dir}/limits-two-settings.conf", @proc_limits_conf)
+    output = unset_proc_limit
+    assert_match(/Removing process limit/, output, "Did not find expected removal message")
+    assert(FileUtils.compare_file(@proc_limits_conf,
+                                  "#{@omsadmin_test_dir}/limits-no-settings.conf"),
+           "Process limit conf file was not cleared out correctly")
+  end
+
+  def test_unset_proc_limit_when_not_set
+    FileUtils.cp("#{@omsadmin_test_dir}/limits-no-settings.conf", @proc_limits_conf)
+    output = unset_proc_limit
+    assert_not_match(/Removing process limit/, output, "Should not have found a limit")
+    assert(FileUtils.compare_file(@proc_limits_conf,
+                                  "#{@omsadmin_test_dir}/limits-no-settings.conf"),
+           "Process limit conf file was wrongly changed")
+  end
+
   def set_omsagent_proc_limit(val = nil, should_succeed = true)
     if val.nil?
       val = 75
@@ -178,6 +196,13 @@ class OmsadminTest < MaintenanceSystemTestBase
       assert_not_equal(0, ret_code.to_i, "The command to set the user process limit was " \
                                          "unexpectedly successful")
     end
+    return output
+  end
+
+  def unset_proc_limit
+    output = `#{@omsadmin_script} -r`
+    ret_code = $?
+    assert_equal(0, ret_code.to_i, "The command to unset the proc limit failed")
     return output
   end
 
