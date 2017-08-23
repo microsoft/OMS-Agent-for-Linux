@@ -26,7 +26,6 @@ FILE_ONBOARD=/etc/omsagent-onboard.conf
 
 # Generated conf file containing information for this script
 CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
-AGENTGUID_FILE=$ETC_DIR/agentid
 
 # Omsagent daemon configuration
 CONF_OMSAGENT=$CONF_DIR/omsagent.conf
@@ -189,6 +188,7 @@ save_config()
 {
     #Save configuration
     echo WORKSPACE_ID=$WORKSPACE_ID > $CONF_OMSADMIN
+    echo AGENT_GUID=$AGENT_GUID >> $CONF_OMSADMIN
     echo LOG_FACILITY=$LOG_FACILITY >> $CONF_OMSADMIN
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
@@ -198,16 +198,6 @@ save_config()
     echo OMSCLOUD_ID=$OMSCLOUD_ID | tr -d ' ' >> $CONF_OMSADMIN
     echo UUID=$UUID | tr -d ' ' >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
-
-    save_agent_guid
-}
-
-save_agent_guid()
-{
-    if [ -n "$AGENT_GUID" ]; then
-        echo $AGENT_GUID > $AGENTGUID_FILE
-        chown_omsagent "$AGENTGUID_FILE"
-    fi
 }
 
 cleanup()
@@ -520,44 +510,16 @@ onboard()
     create_workspace_directories $WORKSPACE_ID
 
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
-        # Certs have been generated from a GUID
-        CONF_OMSADMIN_AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2` # this may result in an empty string
-        if [ -f $AGENTGUID_FILE ]; then
-            AGENT_GUID=`cat $AGENTGUID_FILE`
-            if [ -z "$CONF_OMSADMIN_AGENT_GUID" ]; then
-                # There is no GUID stored in omsadmin.conf. The certs must have been generated with the machine GUID.
-                log_info "Reusing machine's agent GUID $AGENT_GUID"
-            elif [ "$CONF_OMSADMIN_AGENT_GUID" == "$AGENT_GUID" ]; then
-                # The GUID stored in omsadmin.conf matches the machine GUID. It will be removed from omsadmin.conf at the end of onboarding.
-                log_info "Reusing previous agent GUID $AGENT_GUID"
-            else
-                # The GUID stored in omsadmin.conf does NOT match the machine GUID. The certs will be re-generated with the machine GUID.
-                log_info "Workspace is using an old agent GUID: Using machine's agent GUID $AGENT_GUID"
-                GENERATE_CERTS="true"
-            fi
-        else
-            # The agent GUID hasn't been moved to the non-workspace-specific location yet. It will be saved there at the end of onboarding.
-            AGENT_GUID=$CONF_OMSADMIN_AGENT_GUID
-            log_info "Reusing previous agent GUID $AGENT_GUID"
-        fi
+        # Keep the same agent GUID by loading it from the previous conf
+        AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
+        log_info "Reusing previous agent GUID $AGENT_GUID"
     else
-        GENERATE_CERTS="true"
-        if [ -f $AGENTGUID_FILE ]; then
-            AGENT_GUID=`cat $AGENTGUID_FILE`
-            log_info "Using machine's agent GUID $AGENT_GUID"
-        else
-            AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
+        AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
+        if [ $? -ne 0 -o -z "$AGENT_GUID" ]; then
+            log_error "Error generating agent GUID"
+            clean_exit $RUBY_ERROR_GENERATING_GUID
         fi
-    fi
 
-    if [ -z "$AGENT_GUID" ]; then
-        log_error "AGENT_GUID should not be empty"
-        return $INTERNAL_ERROR
-    else
-        log_info "Agent GUID is $AGENT_GUID"
-    fi
-
-    if [ -n "$GENERATE_CERTS" ]; then
         $RUBY $MAINTENANCE_TASKS_SCRIPT -c "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" -w "$WORKSPACE_ID" -a "$AGENT_GUID" $CURL_VERBOSE
         generate_certs_ret=$?
         if [ $generate_certs_ret -eq $AGENT_MAINTENANCE_MISSING_CONFIG ]; then
@@ -567,6 +529,13 @@ onboard()
             log_error "Error generating certs"
             clean_exit $ERROR_GENERATING_CERTS
         fi
+    fi
+
+    if [ -z "$AGENT_GUID" ]; then
+        log_error "AGENT_GUID should not be empty"
+        return $INTERNAL_ERROR
+    else
+        log_info "Agent GUID is $AGENT_GUID"
     fi
 
     if [ "$VERBOSE" = "1" ]; then
@@ -885,16 +854,6 @@ list_workspaces()
     return 0
 }
 
-migrate_to_single_agent_id()
-{
-    # If there is a symlinked workspace configured, move the agent GUID to the central location
-    if [ -f $CONF_OMSADMIN -a ! -f $AGENTGUID_FILE ]; then
-        echo "Migrating agent ID to multi-homing folder structure..."
-        AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
-        save_agent_guid
-    fi
-}
-
 migrate_pre_mh_workspace()
 {
     if [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR -a -f $DF_CONF_DIR/omsadmin.conf ]; then
@@ -976,7 +935,6 @@ update_workspaces()
 
     # Updating from pre-multi-homing structure (somewhat present in versions >1.3)
     copy_proxy_conf_from_pre_mh_loc || error=$?
-    migrate_to_single_agent_id || error=$?
 
     # Updating configuration for all onboarded workspaces to latest shipped versions
     for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
