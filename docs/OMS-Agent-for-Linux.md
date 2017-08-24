@@ -418,6 +418,7 @@ Each Object (or category) of performance metrics to collect should be defined in
   instance_regex ".*"
   counter_name_regex ".*"
   interval 30s
+  omi_mapping_path /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/omi_mapping.json
 </source>
 ```
 
@@ -427,40 +428,8 @@ The configurable parameters of this element are:
 * **Counter_name_regex**: a *regular expression* defining which counters (for the object) to collect. Reference the objects and counters listed in the Appendix of this document. To collect all counters for the object, specify: “.*”. To collect only swap space counters for the memory object, you could specify: “.+Swap.+”
 * **Interval**: The frequency at which the object's counters are collected
 
-The default configuration for a performance metric is:
-```
-<source>
-  type oms_omi
-  object_name "Physical Disk"
-  instance_regex ".*"
-  counter_name_regex ".*"
-  interval 5m
-</source>
+The default configuration is to collect no performance metrics.
 
-<source>
-  type oms_omi
-  object_name "Logical Disk"
-  instance_regex ".*
-  counter_name_regex ".*"
-  interval 5m
-</source>
-
-<source>
-  type oms_omi
-  object_name "Processor"
-  instance_regex ".*
-  counter_name_regex ".*"
-  interval 30s
-</source>
-
-<source>
-  type oms_omi
-  object_name "Memory"
-  instance_regex ".*"
-  counter_name_regex ".*"
-  interval 30s
-</source>
-```
 ### CollectD Metrics
 
 #### Background
