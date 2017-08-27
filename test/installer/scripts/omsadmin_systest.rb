@@ -201,4 +201,42 @@ class OmsadminTest < MaintenanceSystemTestBase
     return output
   end
 
+  def test_reonboard_with_blank_omsadmin_conf
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    post_onboard_validation
+
+    crt_path = "#{@omsadmin_test_dir_ws1}/certs/oms.crt"
+    key_path = "#{@omsadmin_test_dir_ws1}/certs/oms.key"
+    crt_hash = Digest::SHA256.file(crt_path)
+    key_hash = Digest::SHA256.file(key_path)
+    old_guid = get_GUID()
+
+    # Mimic bad state where omsadmin.conf is empty
+    File.write("#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf", "")
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    post_onboard_validation
+
+    # Reonboarding should create a new agent GUID and re-write the certs
+    assert_no_match(/Reusing previous agent GUID/, output, "Should not have found a GUID to reuse")
+    assert_not_equal(old_guid, get_GUID(), "New agent GUID should have been generated")
+    assert(crt_hash != Digest::SHA256.file(crt_path), "The cert should have used new agent GUID")
+    assert(key_hash != Digest::SHA256.file(key_path), "The key should have used new agent GUID")
+  end
+
+  def test_reonboard_does_not_pull_wrong_values_from_omsadmin_conf
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    post_onboard_validation
+
+    # Write a foreign value to omsadmin.conf - this should not be used
+    text = File.read("#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf")
+    contains_resource_id = text.gsub(/AZURE_RESOURCE_ID\=/, "AZURE_RESOURCE_ID=bogus_value")
+    File.write("#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf", contains_resource_id)
+
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+    post_onboard_validation
+    new_content = File.read("#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf")
+    assert_not_match(/bogus_value/, new_content, "Re-onboarding should not have executed " \
+                                                 "omsadmin.conf")
+  end
+
 end
