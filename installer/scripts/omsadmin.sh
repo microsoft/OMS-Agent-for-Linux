@@ -454,7 +454,9 @@ onboard()
     fi
     create_workspace_directories $WORKSPACE_ID
 
-    if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
+    # Guard against blank omsadmin.conf
+    local omsadmin_contents="`cat $CONF_OMSADMIN 2> /dev/null`"
+    if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN -a -n "$omsadmin_contents" ]; then
         # Keep the same agent GUID by loading it from the previous conf
         AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
         log_info "Reusing previous agent GUID $AGENT_GUID"
