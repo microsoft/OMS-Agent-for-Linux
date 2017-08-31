@@ -26,7 +26,6 @@ FILE_ONBOARD=/etc/omsagent-onboard.conf
 
 # Generated conf file containing information for this script
 CONF_OMSADMIN=$CONF_DIR/omsadmin.conf
-AGENTGUID_FILE=$ETC_DIR/agentid
 
 # Omsagent daemon configuration
 CONF_OMSAGENT=$CONF_DIR/omsagent.conf
@@ -91,10 +90,12 @@ MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 DF_OMSAGENT_PROC_LIMIT=75
 MIN_OMSAGENT_PROC_LIMIT=5
 PROC_LIMIT_CONF=/etc/security/limits.conf
+LIMIT_LINE_REGEX="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$"
 
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
 OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
+OMI_CONF_EDITOR=/opt/omi/bin/omiconfigeditor
 
 # Error codes and categories:
 
@@ -154,6 +155,12 @@ usage()
     echo
     echo "Set process limit for OMSAgent to default value:"
     echo "$basename -N"
+    echo
+    echo "Remove the process limit for OMSAgent:"
+    echo "$basename -r"
+    echo
+    echo "Detect if omiserver is listening to SCOM port:"
+    echo "$basename -o"
 }
 
 set_user_agent()
@@ -181,6 +188,7 @@ save_config()
 {
     #Save configuration
     echo WORKSPACE_ID=$WORKSPACE_ID > $CONF_OMSADMIN
+    echo AGENT_GUID=$AGENT_GUID >> $CONF_OMSADMIN
     echo LOG_FACILITY=$LOG_FACILITY >> $CONF_OMSADMIN
     echo CERTIFICATE_UPDATE_ENDPOINT=$CERTIFICATE_UPDATE_ENDPOINT >> $CONF_OMSADMIN
     echo URL_TLD=$URL_TLD >> $CONF_OMSADMIN
@@ -190,16 +198,6 @@ save_config()
     echo OMSCLOUD_ID=$OMSCLOUD_ID | tr -d ' ' >> $CONF_OMSADMIN
     echo UUID=$UUID | tr -d ' ' >> $CONF_OMSADMIN
     chown_omsagent "$CONF_OMSADMIN"
-
-    save_agent_guid
-}
-
-save_agent_guid()
-{
-    if [ -n "$AGENT_GUID" ]; then
-        echo $AGENT_GUID > $AGENTGUID_FILE
-        chown_omsagent "$AGENTGUID_FILE"
-    fi
 }
 
 cleanup()
@@ -241,7 +239,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nn:" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:o" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -293,6 +291,12 @@ parse_args()
             ;;
         N)
             NEW_OMSAGENT_PROC_LIMIT=$DF_OMSAGENT_PROC_LIMIT
+            ;;
+        r)
+            UNSET_OMSAGENT_PROC_LIMIT=1
+            ;;
+        o)
+            DETECT_SCOM=1
             ;;
         esac
     done
@@ -373,43 +377,42 @@ set_omsagent_proc_limit()
     fi
 
     log_info "Setting process limit for the $AGENT_USER user in $PROC_LIMIT_CONF to $NEW_OMSAGENT_PROC_LIMIT..."
-    local omsagent_line_regex="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$"
     local new_omsagent_line="$AGENT_USER  hard  nproc  $NEW_OMSAGENT_PROC_LIMIT"
-    cat $PROC_LIMIT_CONF | grep -E "$omsagent_line_regex" > /dev/null 2>&1
+    find_current_omsagent_proc_limit
     if [ $? -eq 0 ]; then
-        old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$omsagent_line_regex" | tail -1`
+        old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1`
         sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
     else
         echo $new_omsagent_line >> $PROC_LIMIT_CONF
     fi
 }
 
+unset_omsagent_proc_limit()
+{
+    find_current_omsagent_proc_limit
+    if [ $? -eq 0 ]; then
+        # Remove all lines for the omsagent from the limit file
+        log_info "Removing process limit for the $AGENT_USER user in $PROC_LIMIT_CONF..."
+        cp $PROC_LIMIT_CONF $PROC_LIMIT_CONF.bak
+        # sed does not handle the complex/extended regex in older versions, but grep does
+        cat $PROC_LIMIT_CONF.bak | grep -Ev "$LIMIT_LINE_REGEX"  > $PROC_LIMIT_CONF
+    fi
+}
+
+find_current_omsagent_proc_limit()
+{
+    cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" > /dev/null 2>&1
+    return $?
+}
+
 is_scom_port_open()
 {
-    OIFS=$IFS
-# Ignore formatting. It was required for IFS to take new line on both bash and sh
-IFS='
-'
-    for line in `cat $OMI_CONF_FILE | grep httpsport`
-    do
-        echo $line | grep -E '^[ ]*httpsport[ ]*=.*$' > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-        continue
-        fi
-        IFS=$OIFS
-        # 1st line starting with <optional-spaces>httpsport<optional-spaces>=
-        # Replace = and , with space.
-        # e.g httpsport=0,1270 should become httpsport 0 1270
-        m_line=`echo $line | sed "s/[=,]/ /g"`
-        # Do a exact word match for port 1270.
-        # This ensures cases like 11270 does not match 
-        echo $m_line | grep -w 1270 > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            echo "Port 1270 already open"
-            return 0
-        fi
+    $OMI_CONF_EDITOR httpsport -q 1270 < $OMI_CONF_FILE > /dev/null 2>&1
+    if [ $? -eq 1 ]; then
         return 1
-    done
+    fi
+    echo "Port 1270 already open"
+    return 0
 }
 
 onboard_scom()
@@ -445,8 +448,8 @@ onboard_scom()
     is_scom_port_open
     if [ $? -eq 1 ]; then
         echo "Opening port 1270"
-        /opt/omi/bin/omiconfigeditor httpsport -a 1270 < /etc/opt/omi/conf/omiserver.conf > /etc/opt/omi/conf/omiserver.conf_temp
-        mv /etc/opt/omi/conf/omiserver.conf_temp /etc/opt/omi/conf/omiserver.conf
+        $OMI_CONF_EDITOR httpsport -a 1270 < $OMI_CONF_FILE > /etc/opt/omi/conf/omiserver.conf_temp
+        mv /etc/opt/omi/conf/omiserver.conf_temp $OMI_CONF_FILE
         # Restart OMI
         /opt/omi/bin/service_control restart
     fi
@@ -507,44 +510,16 @@ onboard()
     create_workspace_directories $WORKSPACE_ID
 
     if [ -f $FILE_KEY -a -f $FILE_CRT -a -f $CONF_OMSADMIN ]; then
-        # Certs have been generated from a GUID
-        CONF_OMSADMIN_AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2` # this may result in an empty string
-        if [ -f $AGENTGUID_FILE ]; then
-            AGENT_GUID=`cat $AGENTGUID_FILE`
-            if [ -z "$CONF_OMSADMIN_AGENT_GUID" ]; then
-                # There is no GUID stored in omsadmin.conf. The certs must have been generated with the machine GUID.
-                log_info "Reusing machine's agent GUID $AGENT_GUID"
-            elif [ "$CONF_OMSADMIN_AGENT_GUID" == "$AGENT_GUID" ]; then
-                # The GUID stored in omsadmin.conf matches the machine GUID. It will be removed from omsadmin.conf at the end of onboarding.
-                log_info "Reusing previous agent GUID $AGENT_GUID"
-            else
-                # The GUID stored in omsadmin.conf does NOT match the machine GUID. The certs will be re-generated with the machine GUID.
-                log_info "Workspace is using an old agent GUID: Using machine's agent GUID $AGENT_GUID"
-                GENERATE_CERTS="true"
-            fi
-        else
-            # The agent GUID hasn't been moved to the non-workspace-specific location yet. It will be saved there at the end of onboarding.
-            AGENT_GUID=$CONF_OMSADMIN_AGENT_GUID
-            log_info "Reusing previous agent GUID $AGENT_GUID"
-        fi
+        # Keep the same agent GUID by loading it from the previous conf
+        AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
+        log_info "Reusing previous agent GUID $AGENT_GUID"
     else
-        GENERATE_CERTS="true"
-        if [ -f $AGENTGUID_FILE ]; then
-            AGENT_GUID=`cat $AGENTGUID_FILE`
-            log_info "Using machine's agent GUID $AGENT_GUID"
-        else
-            AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
+        AGENT_GUID=`$RUBY -e "require 'securerandom'; print SecureRandom.uuid"`
+        if [ $? -ne 0 -o -z "$AGENT_GUID" ]; then
+            log_error "Error generating agent GUID"
+            clean_exit $RUBY_ERROR_GENERATING_GUID
         fi
-    fi
 
-    if [ -z "$AGENT_GUID" ]; then
-        log_error "AGENT_GUID should not be empty"
-        return $INTERNAL_ERROR
-    else
-        log_info "Agent GUID is $AGENT_GUID"
-    fi
-
-    if [ -n "$GENERATE_CERTS" ]; then
         $RUBY $MAINTENANCE_TASKS_SCRIPT -c "$CONF_OMSADMIN" "$FILE_CRT" "$FILE_KEY" "$RUN_DIR/omsagent.pid" "$CONF_PROXY" "$OS_INFO" "$INSTALL_INFO" -w "$WORKSPACE_ID" -a "$AGENT_GUID" $CURL_VERBOSE
         generate_certs_ret=$?
         if [ $generate_certs_ret -eq $AGENT_MAINTENANCE_MISSING_CONFIG ]; then
@@ -554,6 +529,13 @@ onboard()
             log_error "Error generating certs"
             clean_exit $ERROR_GENERATING_CERTS
         fi
+    fi
+
+    if [ -z "$AGENT_GUID" ]; then
+        log_error "AGENT_GUID should not be empty"
+        return $INTERNAL_ERROR
+    else
+        log_info "Agent GUID is $AGENT_GUID"
     fi
 
     if [ "$VERBOSE" = "1" ]; then
@@ -872,16 +854,6 @@ list_workspaces()
     return 0
 }
 
-migrate_to_single_agent_id()
-{
-    # If there are any workspaces configured, move the agent GUID to the central location
-    if [ -f $CONF_OMSADMIN -a ! -f $AGENTGUID_FILE ]; then
-        echo "Migrating agent ID to multi-homing folder structure..."
-        AGENT_GUID=`grep AGENT_GUID $CONF_OMSADMIN | cut -d= -f2`
-        save_agent_guid
-    fi
-}
-
 migrate_pre_mh_workspace()
 {
     if [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR -a -f $DF_CONF_DIR/omsadmin.conf ]; then
@@ -912,6 +884,11 @@ migrate_pre_mh_workspace()
         sed -i s,%MONITOR_AGENT_PORT%,$DEFAULT_MONITOR_AGENT_PORT,1 $CONF_DIR/omsagent.d/monitor.conf
 
         update_symlinks
+    elif [ -d $DF_CONF_DIR -a ! -h $DF_CONF_DIR ]; then
+        # In some upgrade cases, conf and conf/omsagent.d directories are created and are empty
+        # Remove these directories if they are empty
+        rmdir $DF_CONF_DIR/omsagent.d 2> /dev/null
+        rmdir $DF_CONF_DIR 2> /dev/null
     fi
 }
 
@@ -958,7 +935,6 @@ update_workspaces()
 
     # Updating from pre-multi-homing structure (somewhat present in versions >1.3)
     copy_proxy_conf_from_pre_mh_loc || error=$?
-    migrate_to_single_agent_id || error=$?
 
     # Updating configuration for all onboarded workspaces to latest shipped versions
     for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
@@ -1184,6 +1160,15 @@ main()
 
     if [ -n "$NEW_OMSAGENT_PROC_LIMIT" ]; then
         set_omsagent_proc_limit || clean_exit $?
+    fi
+
+    if [ "$UNSET_OMSAGENT_PROC_LIMIT" = "1" ]; then
+        unset_omsagent_proc_limit || clean_exit $?
+    fi
+
+    if [ "$DETECT_SCOM" = "1" ]; then
+        is_scom_port_open > /dev/null 2>&1
+        clean_exit $?
     fi
 
     if [ "$ONBOARDING" = "1" ]; then

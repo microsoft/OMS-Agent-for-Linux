@@ -7,8 +7,8 @@ SEPKG_DIR_OMSAGENT: '/usr/share/selinux/packages/omsagent-logrotate'
 %% In omsadmin.sh: 'curl' requires 'curl',
 curl
 
-omi >= 1.0.8-6
-scx >= 1.6.2-129
+omi >= 1.3.0-2
+scx >= 1.6.3-212
 
 %Files
 ${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.fc;                       installer/selinux/omsagent-logrotate.fc;                                 644; root; root
