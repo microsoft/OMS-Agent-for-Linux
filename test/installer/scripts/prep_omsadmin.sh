@@ -87,3 +87,25 @@ omiagent    soft    nproc 75
 #        hard    nproc           75
 #    $TEST_USER hard nproc 20000
 EOF
+
+# The following two represent the actual kind of file ending found on systems:
+cat <<EOF > $TESTDIR/limits-no-settings-endlabel.conf
+@$TEST_GROUP          hard           nproc                20
+*       hard    nproc   10
+omiagent    soft    nproc 75
+#        hard    nproc           75
+#    $TEST_USER hard nproc 20000
+
+# End of file
+EOF
+
+cat <<EOF > $TESTDIR/limits-new-settings-endlabel.conf
+@$TEST_GROUP          hard           nproc                20
+*       hard    nproc   10
+omiagent    soft    nproc 75
+#        hard    nproc           75
+#    $TEST_USER hard nproc 20000
+$TEST_USER  hard  nproc  20000
+
+# End of file
+EOF
