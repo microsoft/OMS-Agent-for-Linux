@@ -183,6 +183,13 @@ class OmsadminTest < MaintenanceSystemTestBase
            "Process limit conf file was wrongly changed")
   end
 
+  def test_set_new_proc_limit_anticipate_end_label
+    FileUtils.cp("#{@omsadmin_test_dir}/limits-no-settings-endlabel.conf", @proc_limits_conf)
+    output = set_omsagent_proc_limit(20000)
+    assert(FileUtils.compare_file(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-new-settings-endlabel.conf"),
+           "The user process limit was not set correctly to the new value")
+  end
+
   def set_omsagent_proc_limit(val = nil, should_succeed = true)
     if val.nil?
       val = 75
@@ -201,6 +208,13 @@ class OmsadminTest < MaintenanceSystemTestBase
       assert_not_equal(0, ret_code.to_i, "The command to set the user process limit was " \
                                          "unexpectedly successful")
     end
+    return output
+  end
+
+  def show_omsagent_proc_limit
+    output = `#{@omsadmin_script} -c`
+    ret_code = $?
+    assert_equal(0, ret_code.to_i, "The command to show the user process limit was unsuccessful")
     return output
   end
 
@@ -294,6 +308,30 @@ class OmsadminTest < MaintenanceSystemTestBase
                  "state directory was mistakenly created")
     assert_false(File.directory?("#{@omsadmin_test_dir_ws1}/tmp/"),
                  "tmp directory was mistakenly created")
+  end
+
+  def test_show_omsagent_proc_limit_default
+    set_omsagent_proc_limit()
+    lso = show_omsagent_proc_limit()
+    assert_match(/^-?\d+$/, lso, "The command to show what should be the default proc limit did not yield an integer.")
+  end
+
+  def test_show_omsagent_proc_limit_5000
+    set_omsagent_proc_limit(5000)
+    lso = show_omsagent_proc_limit()
+    assert_match(/^5000$/, lso, "Should have been 5000 process limit.")
+  end
+
+  def test_show_omsagent_proc_limit_two_entries
+    FileUtils.cp("#{@omsadmin_test_dir}/limits-two-settings.conf", @proc_limits_conf)
+    lso = show_omsagent_proc_limit()
+    assert_match(/^100$/, lso, "Multiple entries should still report last entry, in compliance with specification.")
+  end
+
+  def test_show_omsagent_proc_limit_no_entry
+    FileUtils.cp("#{@omsadmin_test_dir}/limits-no-settings.conf", @proc_limits_conf)
+    lso = show_omsagent_proc_limit()
+    assert_equal("", lso, "The integer associated with unlimited is -1, but we return blank for reporting.")
   end
 
 end

@@ -161,6 +161,9 @@ usage()
     echo
     echo "Detect if omiserver is listening to SCOM port:"
     echo "$basename -o"
+    echo
+    echo "Show the configured process limit in /etc/limits.conf for user $AGENT_USER."
+    echo "$basename -c"
 }
 
 set_user_agent()
@@ -239,7 +242,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:oR" opt; do
+    while getopts "ch?s:w:d:vp:u:a:lx:XUm:Nrn:oR" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -300,6 +303,9 @@ parse_args()
             ;;
         R)
             RECONSTRUCT_WORKSPACE_STATE=1
+            ;;
+        c)
+            show_omsagent_proc_limit
             ;;
         esac
     done
@@ -369,6 +375,17 @@ set_proxy_setting()
     fi
 }
 
+insert_new_omsagent_proc_limit()
+{
+    new_omsagent_line=$1
+
+    LASTLINESTOPRESERVE=2
+    TOTALLINES=`wc -l $PROC_LIMIT_CONF | awk '{print $1}'`
+    insertlineno=$( expr $TOTALLINES - $LASTLINESTOPRESERVE )
+
+    sed -i "${insertlineno}a $new_omsagent_line" $PROC_LIMIT_CONF
+}
+
 set_omsagent_proc_limit()
 {
     if echo "$NEW_OMSAGENT_PROC_LIMIT" | grep -Eqv '^[0-9]+'; then
@@ -386,7 +403,7 @@ set_omsagent_proc_limit()
         old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1`
         sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
     else
-        echo $new_omsagent_line >> $PROC_LIMIT_CONF
+        insert_new_omsagent_proc_limit "$new_omsagent_line"
     fi
 }
 
@@ -794,6 +811,40 @@ show_workspace_status()
     else
         echo "Workspace${mh_marker}: ${ws_id}    Status: ${status}"
     fi
+}
+
+show_omsagent_proc_limit()
+{
+    local result_limit=
+
+    if [ ! -f $PROC_LIMIT_CONF ]; then
+        log_error "Limits configuration file '$PROC_LIMIT_CONF' missing!"
+        return 1
+    fi
+    local count=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | wc -l`
+
+    if [ "$count" -eq "0" ]; then
+        log_info "Process limit not currently set for $AGENT_USER."
+    elif [ "$count" -eq "1" ]; then
+        result_limit=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | awk '{print $4}'`
+    else
+        log_info "$count $AGENT_USER entries found in $PROC_LIMIT_CONF.  This may yield problems.  Last entry should apply."
+        log_info ">>Last entry presumed to apply<<"
+        local limit_lines=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX"`
+        log_info $limit_lines
+        log_info "End of the $count duplicate entry WARNING Message"
+        local result_limit=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1 | awk '{print $4}'`
+    fi
+
+    if [ "$result_limit" -eq "-1" ]; then
+        log_info "$AGENT_USER process count unlimited."
+        result_limit=
+    elif [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
+        log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
+    fi
+
+    echo $result_limit
+    return 0
 }
 
 list_scom_workspace()
