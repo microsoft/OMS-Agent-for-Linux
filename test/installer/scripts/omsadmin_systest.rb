@@ -230,7 +230,7 @@ class OmsadminTest < MaintenanceSystemTestBase
   def test_show_omsagent_proc_limit_5000
     set_omsagent_proc_limit(5000)
     lso, lse = show_omsagent_proc_limit()
-    assert_match(/^-?\d+$/,lso,"The command to show what should be the default proc limit did not yield an integer.")
+    assert_match(/^5000$/,lso,"Should have been 5000 process limit.  Instead #{lso}.")
     assert_equal(lse, "", "Unexpected error: '#{lse}")
   end
 

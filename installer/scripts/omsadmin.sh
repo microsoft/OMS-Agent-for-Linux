@@ -806,31 +806,31 @@ show_workspace_status()
 
 show_omsagent_proc_limit()
 {
-	llimit=-1
+    llimit=-1
     resultcode=0
 
-	count=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | wc -l`
+    count=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | wc -l`
 
     if [ "$count" -eq "0" ]; then
-		echo "INFO:  OMS Agent process limit NOT Presently Set." 1>&2
+        log_info "INFO:  OMS Agent process limit NOT Presently Set."
     elif [ $count -eq 1 ]; then
-		llimit=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | awk '{print $4}'`
+        llimit=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | awk '{print $4}'`
     else
-        echo "WARNING:  $count $AGENT_USER entries found in $PROC_LIMIT_CONF.  This may yield problems.  Last entry should apply." 1>&2
-		echo ">>Last entry presumed to apply<<" 1>&2
-        grep -E "$LIMIT_LINE_REGEX" $PROC_LIMIT_CONF | awk '{print $4}' 1>&2
-		echo "End of the $count duplicate entry WARNING Message" 1>&2
+        log_warning "$count $AGENT_USER entries found in $PROC_LIMIT_CONF.  This may yield problems.  Last entry should apply."
+        log_warning ">>Last entry presumed to apply<<"
+        grep -E "$LIMIT_LINE_REGEX" $PROC_LIMIT_CONF 1>&2
+        log_warning "End of the $count duplicate entry WARNING Message"
         llimit=`grep -E "$LIMIT_LINE_REGEX" $PROC_LIMIT_CONF | tail -1 | awk '{print $4}'`
     fi
 
-	if [ "$llimit" -eq -1 ]; then
-        echo "INFO: $AGENT_USER proc count unlimited." 1>&2
-	elif [ "$llimit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
-        echo "ERROR: $AGENT_USER proc limit setting of '$llimit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT." 1>&2
+    if [ "$llimit" -eq -1 ]; then
+        log_info "$AGENT_USER proc count unlimited."
+    elif [ "$llimit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
+        log_error "$AGENT_USER proc limit setting of '$llimit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
         resultcode=1
-	fi
+    fi
 
-	echo $llimit
+    echo $llimit
     return $resultcode
 }
 
