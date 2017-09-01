@@ -7,6 +7,9 @@
 # which is used by the service control scripts. This allows for deeper control
 # of the process at a low level.
 #
+# NOTE:  Sourcing through Bourne Shell and Dash does not allow ANY qualifier,
+#   so the above is probably only working in Bash and perhaps Kornshell and zsh.
+#
 # Otherwise (this is the normal case), invoke this with one of the following
 # options:
 #
@@ -16,32 +19,107 @@
 #    reload:   Reload agent configuration
 #
 
-VAR_DIR=/var/opt/microsoft/omsagent
-ETC_DIR=/etc/opt/microsoft/omsagent
-BIN_DIR=/opt/microsoft/omsagent/bin
-
-WORKSPACE_REGEX='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+OMSAGENT_START_WAIT_MAX=18
+OMSAGENT_STOP_WAIT_MAX=15
+STOP_PROCESS_WAIT_MAX=5
 
 # Space seperated list of non oms workspaces
 NON_OMS_WS="scom"
 
+# Standard Path Definitions
+
+COMMONSEGMENT=/opt/microsoft/omsagent
+BIN_DIR=$COMMONSEGMENT/bin
+ETC_DIR=/etc$COMMONSEGMENT
+VAR_DIR=/var$COMMONSEGMENT
+
+# Error codes and categories:
+
+# User configuration/parameters:
+
+INVALID_OPTION_PROVIDED=2
+NO_OPTION_PROVIDED=3
+
+# Internal errors:
+
+INTERNAL_ERROR=30
+
+# Files and I/O
+
+FILE_NOT_FOUND=1
+FILE_NOT_GONE=2
+
+# 
+REGEX_UUID='[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+WORKSPACE_REGEX="^$REGEX_UUID$"
+
+# Begin Lower Level Utilities
+
+validate_file_has_line_pattern()
+{
+    # Does regular expression check for entire line.  As a validaytor routine,
+    # it exits with a non-zero value if the validation failes.  Specifying any
+    # third argument stifles messaging.
+    local _fSpec=$1
+    local _pattA="$2"
+    local _boolOnly=$3
+    cat $_fSpec | grep -Eq "^$_pattA$"
+    if [ $? -eq 0 ]; then
+        return 0
+    fi
+    if [ -z "$_boolOnly" ]; then
+        echo "INTERNAL ERROR:  $_fSpec missing required pattern '^$_pattA\$'."
+    fi
+    exit $INTERNAL_ERROR
+}
+
+# End Lower Level Utilities
+
+# Begin FailCount Singleton Interface
+
+fcso_any_failures()
+{
+    return $FCSO_FailCount
+}
+
+fcso_increment()
+{
+    if [ $# -ne 3 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to fcso_increment" >&2
+        echo "$# arguments seen." >&2
+        exit $INTERNAL_ERROR
+    fi
+    local _actStr=$1
+    local _wId=$2
+    local _sCode=$3
+
+    if [ "$_sCode" -eq "0" ]; then
+        return
+    else
+        FCSO_FailCount=`expr $FCSO_FailCount + 1`
+    fi
+    echo "ERROR:  $_actStr failed with result '$_sCode' on WS Id $_wId."
+}
+
+fcso_new()
+{
+    FCSO_FailCount=0 # Supposed to be NOT local.
+}
+
+# End FailCount Singleton Interface
+
 setup_variables()
 {
+
+    local initial_conf_dir=
     if [ -z "$1" ]; then
-        if [ -f $ETC_DIR/conf/omsadmin.conf ]; then
-            . "$ETC_DIR/conf/omsadmin.conf"
-        else
-            echo "Warning: No workspace is onboarded"
-            exit 0 
-        fi
+        initial_conf_dir="$ETC_DIR/conf/omsadmin.conf"
     else
-        if [ -f $ETC_DIR/$1/conf/omsadmin.conf ]; then
-            . "$ETC_DIR/$1/conf/omsadmin.conf"
-        else
-            echo "Warning: Specified workspace $1 does not exist on the machine. Check the correctness of the workspace ID and that onboarding succeeded."
-            exit 0
-        fi
+        initial_conf_dir="$ETC_DIR/$1/conf/omsadmin.conf"
     fi
+
+    validate_omsadmin_conf $initial_conf_dir
+    . $initial_conf_dir
 
     VAR_DIR_WS=$VAR_DIR/$WORKSPACE_ID
     ETC_DIR_WS=$ETC_DIR/$WORKSPACE_ID
@@ -59,6 +137,36 @@ setup_variables()
     OMSADMIN_CONF=$CONF_DIR/omsadmin.conf
 
     OMSAGENT_WS=omsagent-$WORKSPACE_ID
+
+    WS_STATUS=0
+}
+
+validate_omsadmin_conf()
+{
+    # Checks for a series of identifier assignment lines which should always be present
+    # for an onboarded workspace to be complete and healthy.
+    local _fSpec=$1
+    local _boolOnly=$2
+    VALIDATION_SUPPLEMENT_MESSAGE="Onboarding incorrect or incomplete."
+    if [ -f $_fSpec ]; then
+        validate_file_has_line_pattern $_fSpec "WORKSPACE_ID=$REGEX_UUID" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "AGENT_GUID=$REGEX_UUID" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "LOG_FACILITY=.*" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "CERTIFICATE_UPDATE_ENDPOINT=.*" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "URL_TLD=.*" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "DSC_ENDPOINT=.*" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "OMS_ENDPOINT=.*" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "AZURE_RESOURCE_ID=.*" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "OMSCLOUD_ID=.*" $_boolOnly
+        validate_file_has_line_pattern $_fSpec "UUID=$REGEX_UUID" $_boolOnly
+        return 0
+    else
+        if [ -z "$_boolOnly" ]; then
+            echo "INTERNAL_ERROR:  OMS Admin configuration file $_fSpec NOT Found!" >&2
+            echo $VALIDATION_SUPPLEMENT_MESSAGE
+        fi
+        exit $INTERNAL_ERROR
+    fi
 }
 
 verify_privileges()
@@ -69,72 +177,126 @@ verify_privileges()
     fi
 }
 
+this_omsagent_running()
+{
+    WS_STATUS=0
+    if [ -f $PIDFILE ]; then
+        ps -p `cat $PIDFILE` | grep -q omsagent
+        WS_STATUS=$?
+    else
+        WS_STATUS=$FILE_NOT_FOUND
+    fi
+    return $WS_STATUS
+}
+
 is_omsagent_running()
 {
-    verify_privileges
-
     # Returns 1 if 'omsagent' is running, 0 otherwise
-    [ -f $PIDFILE ] || return 0
-    ps -p `cat $PIDFILE` | grep -q omsagent
-    STATUS=$?
-
-    # Kill PID file if we're not running any longer
-    if [ $STATUS -ne 0 ]; then
-        rm -f $PIDFILE
-        return 0
-    else
+    #### Keeping return value on this as it originally was.  I deduce
+    #### that because this value is returned with the is-running qualifier
+    #### to service_control, that there are scripts in other languages
+    #### that use the more conventional values for booleans.  Meanwhile,
+    #### I recommend deprecation in all but the external interface.  XC
+    if this_omsagent_running; then
         return 1
+    else
+        return 0
     fi
+} 
+
+remove_PIDfile_unless_omsagent_running()
+{
+
+    if this_omsagent_running; then
+        return 0
+    fi
+    rm -f $PIDFILE
+    WS_STATUS=0 # Re-initialize, as this_omsagent_running set it to non-zero.
+    if [ -f $PIDFILE ]; then
+        WS_STATUS=$FILE_NOT_GONE
+    fi
+    return $WS_STATUS
 }
 
 exit_if_agent_not_onboarded()
 {
     if [ ! -f $OMSADMIN_CONF ]; then
-        echo "Warning: Agent is not onboarded. omsagent cannot be registered as a service."
-        exit 0 
+        echo "FATAL: Agent is not onboarded. omsagent cannot be registered as a service."
+        WS_STATUS=$FILE_NOT_FOUND
+        exit $WS_STATUS
     fi
 }
 
-wait_until_omsagent_stops()
+wait_until_omsagent_is_running()
 {
-    # Required parameter: Number of seconds to wait for agent to stop
+    # Required parameter: Number of seconds to wait for agent to become running.
     if [ -z "$1" -o "$1" -le 0 ]; then
         echo "Function \"wait_until_omsagent_stops\" called with invalid parameter"
-        exit 1
+        WS_STATUS=1
+        exit $WS_STATUS
     fi
 
     COUNTER=$(( $1 * 2 )) # Since we sleep 0.5 seconds, compute number of seconds
     while [ $COUNTER -gt 0 ]; do
-        is_omsagent_running && return $?
-        COUNTER=$(( $COUNTER - 1 ))
-        sleep 0.5
+        if ! this_omsagent_running; then
+            COUNTER=$(( $COUNTER - 1 ))
+            sleep 0.5
+        else
+            return 0
+        fi
     done
 
-    # One final try for accurate return status (just return status from the call)
-    is_omsagent_running
+    return 1 # Never came up.
+}
+
+wait_until_omsagent_stopped()
+{
+    # Required parameter: Number of seconds to wait for agent to stop
+    if [ -z "$1" -o "$1" -le 0 ]; then
+        echo "INTERNAL ERROR:  Function \"wait_until_omsagent_stops\" called with invalid parameter"
+        exit $INTERNAL_ERROR
+    fi
+
+    COUNTER=$(( $1 * 2 )) # Since we sleep 0.5 seconds, compute number of seconds
+    while [ $COUNTER -gt 0 ]; do
+        if this_omsagent_running; then
+            COUNTER=$(( $COUNTER - 1 ))
+            sleep 0.5
+        else
+            remove_PIDfile_unless_omsagent_running
+            return $? # Should only be non-zero if a PIDFILE remains.
+        fi
+    done
+
+    return 1 # Never stopped.
 }
 
 stop_omsagent_process()
 {
-    # First try sending a graceful shutdown request.
-    # If omsagent doesn't stop, forcefully kill it.
-    #
-    # TODO: omsagent doesn't currently gracefully shut down, we're investigating this later
-
-    is_omsagent_running && return $?
-
-    # kill -sigterm `cat $PIDFILE`
-    # wait_until_omsagent_stops 10 && return $?
+    remove_PIDfile_unless_omsagent_running
+    if ! this_omsagent_running; then
+        # It is stopped.  Presume okay.
+        return 0
+    fi
+    WS_STATUS=0 # Try yet again.
 
     echo -n "(Forced) "
     kill -sigkill `cat $PIDFILE`
-    wait_until_omsagent_stops 5
-    return $?
+    if [ $? -eq 0 ]; then
+        wait_until_omsagent_stopped $STOP_PROCESS_WAIT_MAX
+    fi
+    WS_STATUS=$?
+    return $WS_STATUS
 }
 
+    #  XC on 20170824; Laura says this is no longer used:
 start_omsagent_process()
 {
-    is_omsagent_running && /opt/microsoft/omsagent/bin/omsagent -d $PIDFILE --no-supervisor -o $LOGFILE -c $CONFFILE
+    if remove_PIDfile_unless_omsagent_running; then
+        $BIN_DIR/omsagent -d $PIDFILE --no-supervisor -o $LOGFILE -c $CONFFILE
+    fi
+    WS_STATUS=$?
+    return $WS_STATUS
 }
 
 #
@@ -145,8 +307,10 @@ start_omsagent()
 {
     exit_if_agent_not_onboarded
     enable_omsagent_service
-    is_omsagent_running
-    [ $? -ne 0 ] && return
+    remove_PIDfile_unless_omsagent_running
+    if [ $WS_STATUS -ne 0 ]; then
+        return $WS_STATUS
+    fi
 
     # If systemd lives here, then we have a systemd unit file
     if pidof systemd 1> /dev/null 2> /dev/null; then
@@ -159,16 +323,22 @@ start_omsagent()
         elif [ -x /bin/systemctl ]; then
             /bin/systemctl start $OMSAGENT_WS
         else
-            echo "Unrecognized service controller to start OMS Agent service" 1>&2
+            echo "ERROR:  Unrecognized service controller to start OMS Agent service" 1>&2
             exit 1
         fi
     fi
+    WS_STATUS=$?
+    if [ $WS_STATUS -eq 0 ]; then
+        wait_until_omsagent_is_running $OMSAGENT_START_WAIT_MAX
+        WS_STATUS=$?
+    fi
+    return $WS_STATUS
 }
 
 stop_omsagent()
 {
-    is_omsagent_running
-    if [ $? -ne 0 ]; then
+    remove_PIDfile_unless_omsagent_running
+    if this_omsagent_running; then
         # If systemd lives here, then we have a systemd unit file
         if pidof systemd 1> /dev/null 2> /dev/null; then
             /bin/systemctl stop $OMSAGENT_WS
@@ -180,23 +350,32 @@ stop_omsagent()
             elif [ -x /bin/systemctl ]; then
                 /bin/systemctl stop $OMSAGENT_WS
             else
-                echo "Unrecognized service controller to stop OMS Agent service" 1>&2
+                echo "ERROR:  Unrecognized service controller to stop OMS Agent service" 1>&2
                 exit 1
             fi
         fi
+        WS_STATUS=$?
+    else
+        WS_STATUS=0
+        return 0
     fi
+    if [ $WS_STATUS -eq 0 ]; then
+        wait_until_omsagent_stopped $OMSAGENT_STOP_WAIT_MAX
+        WS_STATUS=$?
+    fi
+    return $WS_STATUS
 }
 
 restart_omsagent()
 {
     exit_if_agent_not_onboarded
-    
-    is_omsagent_running
-    if [ $? -eq 0 ]; then
-        start_omsagent
-        return
-    else
+
+    remove_PIDfile_unless_omsagent_running
+    if this_omsagent_running; then
         enable_omsagent_service
+    else
+        start_omsagent
+        return $WS_STATUS
     fi
 
     # If systemd lives here, then we have a systemd unit file
@@ -210,10 +389,16 @@ restart_omsagent()
         elif [ -x /bin/systemctl ]; then
             /bin/systemctl restart $OMSAGENT_WS
         else
-            echo "Unrecognized service controller to restart OMS Agent service" 1>&2
+            echo "ERROR:  Unrecognized service controller to restart OMS Agent service" 1>&2
             exit 1
         fi
     fi
+    WS_STATUS=$?
+    if [ $WS_STATUS -eq 0 ]; then
+        wait_until_omsagent_is_running $OMSAGENT_START_WAIT_MAX
+        WS_STATUS=$?
+    fi
+    return $WS_STATUS
 }
 
 
@@ -241,7 +426,8 @@ find_systemd_dir()
         echo "FATAL: Unable to resolve systemd unit directory!" 1>&2
         exit 1
     else
-        return 1
+        WS_STATUS=1
+        return $WS_STATUS
     fi
 }
 
@@ -249,7 +435,7 @@ enable_omsagent_service()
 {
     exit_if_agent_not_onboarded
     if [ ! -f $CONF_DIR/.service_registered ] && [ -f $OMSADMIN_CONF ]; then
-        echo "Configuring OMS agent service ..."
+        echo "INFO:  Configuring OMS agent service $WORKSPACE_ID ..."
         if [ ! -f $BIN_DIR/$OMSAGENT_WS ]; then
             ln -s $BIN_DIR/omsagent $BIN_DIR/$OMSAGENT_WS
         fi
@@ -283,12 +469,16 @@ enable_omsagent_service()
             elif [ -x /sbin/chkconfig ]; then
                 /sbin/chkconfig --add $OMSAGENT_WS > /dev/null
             else
-                echo "Could not find a service controller to configure the OMS Agent Service."
-                exit 1
+                echo "FATAL:  Could not find a service controller to configure the OMS Agent Service."
+                exit 9
             fi
         fi
-        touch  $CONF_DIR/.service_registered
+        WS_STATUS=$?
+        if [ "$WS_STATUS" -eq 0 ]; then
+            touch  $CONF_DIR/.service_registered
+        fi
     fi 
+    return $WS_STATUS
 }
 
 
@@ -302,12 +492,13 @@ disable_omsagent_service()
     local omsagent_service=${systemd_dir}/$OMSAGENT_WS.service
     local omsagent_initd=/etc/init.d/$OMSAGENT_WS
     if [ -f $omsagent_service ]; then
-        echo "Unconfiguring OMS agent (systemd) service ..."
+        echo "INFO:  Unconfiguring OMS agent (systemd) service $WORKSPACE_ID ..."
         /bin/systemctl -q disable $OMSAGENT_WS
         rm -f $omsagent_service
         /bin/systemctl daemon-reload
+        WS_STATUS=$?
     elif [ -f $omsagent_initd ]; then
-        echo "Unconfiguring OMS agent service ..."
+        echo "INFO:  Unconfiguring OMS agent service $WORKSPACE_ID ..."
         if [ -f /usr/sbin/update-rc.d ]; then
             /usr/sbin/update-rc.d -f $OMSAGENT_WS remove
         elif [ -x /usr/lib/lsb/remove_initd ]; then
@@ -315,94 +506,129 @@ disable_omsagent_service()
         elif [ -x /sbin/chkconfig ]; then
             /sbin/chkconfig --del $OMSAGENT_WS > /dev/null
         else
-            echo "Unrecognized Service Controller to unregister OMS Agent Service."
+            echo "FATAL:  Unrecognized Service Controller to unregister OMS Agent Service."
             exit 1
         fi
+        WS_STATUS=$?
 
         rm $omsagent_initd
     fi
     rm -f $CONF_DIR/.service_registered
+    return $WS_STATUS
 }
 
 check_ws_and_invoke()
 {
+    fcso_new
     for ws_id in $NON_OMS_WS
     do
         ls -1 $ETC_DIR | grep -w ${ws_id} > /dev/null 2>&1
         if [ $? -eq 0 ]; then
             setup_variables ${ws_id}
             $1
+            WS_STATUS=$?
+            fcso_increment $1 $WORKSPACE_ID $WS_STATUS
         fi
     done
 }
 
 start_all_omsagent()
 {
+    fcso_new
     for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
     do
-       setup_variables ${ws_id}
-       start_omsagent
+        setup_variables ${ws_id}
+        start_omsagent
+        WS_STATUS=$?
+        fcso_increment start_omsagent $WORKSPACE_ID $WS_STATUS
     done
 
     check_ws_and_invoke start_omsagent
+    WS_STATUS=$FCSO_FailCount
+    return $WS_STATUS
 }
 
 stop_all_omsagent()
 {
+    fcso_new
     for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
     do
-       setup_variables ${ws_id}
-       stop_omsagent
+        setup_variables ${ws_id}
+        stop_omsagent
+        WS_STATUS=$?
+        fcso_increment stop_omsagent $WORKSPACE_ID $WS_STATUS
     done
 
     check_ws_and_invoke stop_omsagent
+    WS_STATUS=$FCSO_FailCount
+    return $WS_STATUS
 }
 
 restart_all_omsagent()
 {
+    fcso_new
     for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
     do
-       setup_variables ${ws_id}
-       restart_omsagent
+        setup_variables ${ws_id}
+        restart_omsagent
+        WS_STATUS=$?
+        fcso_increment restart_omsagent $WORKSPACE_ID $WS_STATUS
     done
 
     check_ws_and_invoke restart_omsagent
+    WS_STATUS=$FCSO_FailCount
+    return $WS_STATUS
 }
 
 enable_all_omsagent_services()
 {
+    fcso_new
     for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
     do
-       setup_variables ${ws_id}
-       enable_omsagent_service
+        setup_variables ${ws_id}
+        enable_omsagent_service
+        WS_STATUS=$?
+        fcso_increment enable_omsagent $WORKSPACE_ID $WS_STATUS
     done
 
     check_ws_and_invoke enable_omsagent_service
+    WS_STATUS=$FCSO_FailCount
+    return $WS_STATUS
 }
 
 disable_all_omsagent_services()
 {
+    fcso_new
     for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
     do
-       setup_variables ${ws_id}
-       disable_omsagent_service
+        setup_variables ${ws_id}
+        disable_omsagent_service
+        WS_STATUS=$?
+        fcso_increment disable_omsagent $WORKSPACE_ID $WS_STATUS
     done
 
     check_ws_and_invoke disable_omsagent_service
+    WS_STATUS=$FCSO_FailCount
+    return $WS_STATUS
 }
 
 case "$1" in
     functions)
         setup_variables $2
+        return $WS_STATUS
         ;;
 
-    is-running)
+    is-running) # As it is not a Shell success boolean, but a more
+                # traditional truth value boolean we return here,
+                # Presumably this return value is used by programs
+                # in another language or environment.
         setup_variables $2
         is_omsagent_running
         exit $?
         ;;
 
     start)
+        verify_privileges
         if [ -z $2 ]; then
             start_all_omsagent
         else
@@ -412,6 +638,7 @@ case "$1" in
         ;;
 
     stop)
+        verify_privileges
         if [ -z $2 ]; then
             stop_all_omsagent
         else
@@ -421,6 +648,7 @@ case "$1" in
         ;;
 
     restart)
+        verify_privileges
         if [ -z $2 ]; then
             restart_all_omsagent
         else
@@ -430,6 +658,7 @@ case "$1" in
         ;;
 
     reload)
+        verify_privileges
         # TODO: Due to a bug in OMS right now, we can't reload via a signal
         if [ -z $2 ]; then
             restart_all_omsagent
@@ -444,6 +673,7 @@ case "$1" in
         ;;
 
     enable)
+        verify_privileges
         if [ -z $2 ]; then
             enable_all_omsagent_services
         else
@@ -453,16 +683,25 @@ case "$1" in
         ;;
 
     disable)
+        verify_privileges
         if [ -z $2 ]; then
-	    disable_all_omsagent_services
+            disable_all_omsagent_services
         else
             setup_variables $2
-	    disable_omsagent_service
+            disable_omsagent_service
         fi
         ;;
 
     *)
         echo "Unknown parameter : $1" 1>&2
-        exit 1
+        return $INVALID_OPTION_PROVIDED 2>/dev/null || exit $INVALID_OPTION_PROVIDED
         ;;
 esac
+
+# The following or sequence is necessary until or unless we separate out the
+# library features of service_control from its interface, because sourcing
+# an exit will cause the sourcing process to exit, whereas executing with a
+# return is disallowed by some interpreters.  Therefore, to return the specific
+# WS_STATUS value we must have such a combination.  Probably separation to a
+# library and a short interface script is a better long term answer.
+return $WS_STATUS 2>/dev/null || exit $WS_STATUS
