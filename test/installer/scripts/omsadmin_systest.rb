@@ -136,7 +136,6 @@ class OmsadminTest < MaintenanceSystemTestBase
     set_omsagent_proc_limit(5000)
     assert(FileUtils.compare_file(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-non-default.conf"),
            "The user process limit was not set correctly to the new value")
-	
   end
 
   def test_set_proc_limit_string
@@ -174,7 +173,7 @@ class OmsadminTest < MaintenanceSystemTestBase
            "Process limit conf file was wrongly changed")
   end
 
-  def test_new_proc_limit
+  def test_set_new_proc_limit_anticipate_end_label
     FileUtils.cp("#{@omsadmin_test_dir}/limits-no-settings-endlabel.conf", @proc_limits_conf)
     output = set_omsagent_proc_limit(20000)
     assert(FileUtils.compare_file(@proc_limits_conf, "#{@omsadmin_test_dir}/limits-new-settings-endlabel.conf"),
@@ -203,14 +202,10 @@ class OmsadminTest < MaintenanceSystemTestBase
   end
 
   def show_omsagent_proc_limit
-    lstderrprefix='/tmp/show_omsagent_proc_limit'
-    stdout_str = `#{@omsadmin_script} -c 2>#{lstderrprefix}.stderrbuffer`
+    output = `#{@omsadmin_script} -c`
     ret_code = $?
-    stderr_str = `cat #{lstderrprefix}.stderrbuffer`
-    `rm -f #{lstderrprefix}.stderrbuffer`
-
     assert_equal(0, ret_code.to_i, "The command to show the user process limit was unsuccessful")
-    return stdout_str,stderr_str
+    return output
   end
 
   def unset_proc_limit
@@ -222,16 +217,29 @@ class OmsadminTest < MaintenanceSystemTestBase
 
   def test_show_omsagent_proc_limit_default
     set_omsagent_proc_limit()
-    lso, lse = show_omsagent_proc_limit()
-    assert_match(/^-?\d+$/,lso,"The command to show what should be the default proc limit did not yield an integer.")
-    assert_equal(lse, "", "Unexpected error: '#{lse}")
+    lso = show_omsagent_proc_limit()
+    assert_match(/^-?\d+$/, lso, "The command to show what should be the default proc limit did not yield an integer.")
   end
 
   def test_show_omsagent_proc_limit_5000
     set_omsagent_proc_limit(5000)
-    lso, lse = show_omsagent_proc_limit()
-    assert_match(/^5000$/,lso,"Should have been 5000 process limit.  Instead #{lso}.")
-    assert_equal(lse, "", "Unexpected error: '#{lse}")
+    lso = show_omsagent_proc_limit()
+    assert_match(/^5000$/, lso, "Should have been 5000 process limit.")
+  end
+
+showing the limit set in a file with 2+ omsagent lines (you can use #{@omsadmin_test_dir}/limits-two-settings.conf found here)
+showing the limit when there is no line for omsagent (you can use #{@omsadmin_test_dir}/limits-no-settings.conf found here)
+
+  def test_show_omsagent_proc_limit_two_entries
+    FileUtils.cp("#{@omsadmin_test_dir}/limits-two-settings.conf", @proc_limits_conf)
+    lso = show_omsagent_proc_limit()
+    assert_match(/^100$/, lso, "Multiple entries should still report last entry, in compliance with specification.")
+  end
+
+  def test_show_omsagent_proc_limit_no_entry
+    FileUtils.cp("#{@omsadmin_test_dir}/limits-no-settings.conf", @proc_limits_conf)
+    lso = show_omsagent_proc_limit()
+    assert_equal("", lso, "The integer associated with unlimited is -1, but we return blank for reporting.")
   end
 
 end
