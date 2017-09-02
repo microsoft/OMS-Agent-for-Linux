@@ -242,7 +242,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "ch?s:w:d:vp:u:a:lx:XUm:Nrn:oR" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:oRc" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -422,6 +422,12 @@ unset_omsagent_proc_limit()
 find_current_omsagent_proc_limit()
 {
     cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" > /dev/null 2>&1
+    return $?
+}
+
+get_current_omsagent_proc_limit()
+{
+    cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX"
     return $?
 }
 
@@ -815,35 +821,28 @@ show_workspace_status()
 
 show_omsagent_proc_limit()
 {
-    local result_limit=
-
     if [ ! -f $PROC_LIMIT_CONF ]; then
         log_error "Limits configuration file '$PROC_LIMIT_CONF' missing!"
         return 1
     fi
-    local count=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | wc -l`
+    local count=`get_current_omsagent_proc_limit | wc -l`
 
     if [ "$count" -eq "0" ]; then
-        log_info "Process limit not currently set for $AGENT_USER."
-    elif [ "$count" -eq "1" ]; then
-        result_limit=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | awk '{print $4}'`
+        log_info "There is NO present limit to number of processes for $AGENT_USER."
+        echo ""
     else
-        log_info "$count $AGENT_USER entries found in $PROC_LIMIT_CONF.  This may yield problems.  Last entry should apply."
-        log_info ">>Last entry presumed to apply<<"
-        local limit_lines=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX"`
-        log_info $limit_lines
-        log_info "End of the $count duplicate entry WARNING Message"
-        local result_limit=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1 | awk '{print $4}'`
+        if [ "$count" -gt "1" ]; then
+            log_info "$count $AGENT_USER entries found in $PROC_LIMIT_CONF."
+            log_info ">>Last entry should apply<<" # NOTE:  This will not pick up -1 entries.
+            get_current_omsagent_proc_limit
+            log_info "End of the $count duplicate entry info Message"
+        fi
+        local result_limit=`get_current_omsagent_proc_limit | tail -1 | awk '{print $4}'`
+        if [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
+            log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
+        fi
+        echo $result_limit
     fi
-
-    if [ "$result_limit" -eq "-1" ]; then
-        log_info "$AGENT_USER process count unlimited."
-        result_limit=
-    elif [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
-        log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
-    fi
-
-    echo $result_limit
     return 0
 }
 

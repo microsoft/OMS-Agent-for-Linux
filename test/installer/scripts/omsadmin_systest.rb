@@ -319,19 +319,24 @@ class OmsadminTest < MaintenanceSystemTestBase
   def test_show_omsagent_proc_limit_5000
     set_omsagent_proc_limit(5000)
     lso = show_omsagent_proc_limit()
-    assert_match(/^5000$/, lso, "Should have been 5000 process limit.")
+    nostr = lso.chomp
+    assert_equal("5000", nostr, "Should have been 5000 process limit.")
   end
 
   def test_show_omsagent_proc_limit_two_entries
     FileUtils.cp("#{@omsadmin_test_dir}/limits-two-settings.conf", @proc_limits_conf)
     lso = show_omsagent_proc_limit()
-    assert_match(/^100$/, lso, "Multiple entries should still report last entry, in compliance with specification.")
+    linearray = lso.split("\n")
+    l = linearray.length
+    v = linearray[l-1].chomp
+    assert_equal(6, l, "This example should have six output lines from stdout.")
+    assert_equal("100", v, "Multiple entries should still report last entry, in compliance with specification.")
   end
 
   def test_show_omsagent_proc_limit_no_entry
     FileUtils.cp("#{@omsadmin_test_dir}/limits-no-settings.conf", @proc_limits_conf)
     lso = show_omsagent_proc_limit()
-    assert_equal("", lso, "The integer associated with unlimited is -1, but we return blank for reporting.")
+    assert_match(/info/, lso, "The integer associated with unlimited is -1, but we return only logging.")
   end
 
 end
