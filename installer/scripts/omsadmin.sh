@@ -90,7 +90,7 @@ MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 DF_OMSAGENT_PROC_LIMIT=75
 MIN_OMSAGENT_PROC_LIMIT=5
 PROC_LIMIT_CONF=/etc/security/limits.conf
-LIMIT_LINE_REGEX="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$"
+LIMIT_LINE_REGEX="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+-?[0-9]+[[:space:]]*$"
 
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
@@ -398,7 +398,7 @@ set_omsagent_proc_limit()
 
     log_info "Setting process limit for the $AGENT_USER user in $PROC_LIMIT_CONF to $NEW_OMSAGENT_PROC_LIMIT..."
     local new_omsagent_line="$AGENT_USER  hard  nproc  $NEW_OMSAGENT_PROC_LIMIT"
-    find_current_omsagent_proc_limit
+    get_current_omsagent_proc_limit >/dev/null 2>/dev/null
     if [ $? -eq 0 ]; then
         old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1`
         sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
@@ -409,7 +409,7 @@ set_omsagent_proc_limit()
 
 unset_omsagent_proc_limit()
 {
-    find_current_omsagent_proc_limit
+    get_current_omsagent_proc_limit >/dev/null 2>/dev/null
     if [ $? -eq 0 ]; then
         # Remove all lines for the omsagent from the limit file
         log_info "Removing process limit for the $AGENT_USER user in $PROC_LIMIT_CONF..."
@@ -421,7 +421,8 @@ unset_omsagent_proc_limit()
 
 find_current_omsagent_proc_limit()
 {
-    cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" > /dev/null 2>&1
+    #cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" > /dev/null 2>&1
+    get_current_omsagent_proc_limit >/dev/null 2>/dev/null
     return $?
 }
 
@@ -821,6 +822,7 @@ show_workspace_status()
 
 show_omsagent_proc_limit()
 {
+    local result_limit="No Limit"
     if [ ! -f $PROC_LIMIT_CONF ]; then
         log_error "Limits configuration file '$PROC_LIMIT_CONF' missing!"
         return 1
@@ -829,7 +831,6 @@ show_omsagent_proc_limit()
 
     if [ "$count" -eq "0" ]; then
         log_info "There is NO present limit to number of processes for $AGENT_USER."
-        echo ""
     else
         if [ "$count" -gt "1" ]; then
             log_info "$count $AGENT_USER entries found in $PROC_LIMIT_CONF."
@@ -837,12 +838,15 @@ show_omsagent_proc_limit()
             get_current_omsagent_proc_limit
             log_info "End of the $count duplicate entry info Message"
         fi
-        local result_limit=`get_current_omsagent_proc_limit | tail -1 | awk '{print $4}'`
-        if [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
+        result_limit=`get_current_omsagent_proc_limit | tail -1 | awk '{print $4}'`
+        if [ "$result_limit" -eq "-1" ]; then
+            result_limit="No Limit"
+            log_info "There is NO present limit to number of processes for $AGENT_USER."
+        elif [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
             log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
         fi
-        echo $result_limit
     fi
+    echo $result_limit
     return 0
 }
 
