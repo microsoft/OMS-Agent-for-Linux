@@ -53,7 +53,7 @@ check_if_pkg_is_installed() {
     if [ "$INSTALLER" = "DPKG" ]; then
         dpkg -s $1 2> /dev/null | grep Status | egrep " installed| deinstall" 1> /dev/null
     else
-        rpm -q $1 2> /dev/null 1> /dev/null
+        rpm -q $1 > /dev/null 2>&1
     fi
 
     return $?
@@ -130,6 +130,6 @@ if [ "$installMode" = "P" ]; then
 	rm -rf /etc/opt/microsoft/auoms /opt/microsoft/auoms /var/opt/microsoft/auoms
     fi
 
-    rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
-    rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
+    rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2>&1 || true
+    rmdir /etc/opt /var/opt > /dev/null 2>&1 || true
 fi

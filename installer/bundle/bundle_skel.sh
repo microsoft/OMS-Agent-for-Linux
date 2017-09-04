@@ -120,19 +120,8 @@ cleanup_and_exit()
     fi
 }
 
-check_program_in_path() {
-    # Parameter: name of program to check
-    # Returns: 0 if program is in path, non-zero if not
-    if [ $# -ne 1 ]; then
-        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_program_in_path" >&2
-        cleanup_and_exit $INTERNAL_ERROR
-    fi
-    local program=$1
-    which $program > /dev/null 2>&1
-    return $?
-}
-
-check_version_installable() {
+check_version_installable()
+{
     # POSIX Semantic Version <= Test
     # Exit code 0 is true (i.e. installable).
     # Exit code non-zero means existing version is >= version to install.
@@ -216,7 +205,8 @@ verifyNoInstallationOption()
     return;
 }
 
-verifyPrivileges() {
+verifyPrivileges()
+{
     # Parameter: desired operation (for meaningful output)
     if [ -z "$1" ]; then
         echo "INTERNAL ERROR: verifyPrivileges missing required parameter (operation)" 1>& 2
@@ -229,7 +219,8 @@ verifyPrivileges() {
     fi
 }
 
-ulinux_detect_openssl_version() {
+ulinux_detect_openssl_version()
+{
     TMPBINDIR=
     # the system OpenSSL version is 0.9.8.  Likewise with OPENSSL_SYSTEM_VERSION_100
     OPENSSL_SYSTEM_VERSION_FULL=`openssl version | awk '{print $2}'`
@@ -252,7 +243,7 @@ ulinux_detect_installer()
     INSTALLER=
 
     # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    check_program_in_path dpkg
+    check_if_program_in_path dpkg
     if [ $? -eq 0 ]; then
         INSTALLER=DPKG
     else
@@ -261,19 +252,74 @@ ulinux_detect_installer()
 }
 
 # $1 - The name of the package to check as to whether it's installed
-check_if_pkg_is_installed() {
+check_if_pkg_is_installed()
+{
     if [ "$INSTALLER" = "DPKG" ]; then
         dpkg -s $1 2> /dev/null | grep Status | grep " installed" 1> /dev/null
     else
-        rpm -q $1 2> /dev/null 1> /dev/null
+        rpm -q $1 > /dev/null 2>&1
     fi
 
     return $?
 }
 
+check_if_program_in_path()
+{
+    # Parameter: name of program to check
+    # Returns: 0 if program is in path, non-zero if not
+    if [ $# -ne 1 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_if_program_in_path" >&2
+        cleanup_and_exit $INTERNAL_ERROR
+    fi
+    which $1 > /dev/null 2>&1
+    return $?
+}
+
+check_if_program_exists_on_system()
+{
+    # Parameters: $1 - name of program to check
+    # Returns: 0 if program is in system or installed as a package, 1 if not
+    if [ $# -ne 1 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_if_program_exists_on_system" >&2
+        cleanup_and_exit $INTERNAL_ERROR
+    fi
+    local exists=1
+    check_if_pkg_is_installed $1
+    [ $? -eq 0 ] && exists=0
+    check_if_program_in_path $1
+    [ $? -eq 0 ] && exists=0
+    return $exists
+}
+
+install_if_program_does_not_exist_on_system()
+{
+    # Parameters: $1 - name of program to check and possibly install
+    # Returns: 0 if program is in system or installed as a package, 1 if not
+    if [ $# -ne 1 ]; then
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to install_if_program_does_not_exist_on_system" >&2
+        cleanup_and_exit $INTERNAL_ERROR
+    fi
+
+    check_if_program_exists_on_system $1
+    if [ $? -eq 0 ]; then
+        return 0
+    fi
+
+    echo "$1 was not found; attempting to install $1..."
+    install_extra_package $1
+    if [ $? -eq 0 ]; then
+        return 0
+    else
+        # If package installation did not succeed, return the check status in case it's changed
+        check_if_program_exists_on_system $1
+        return $?
+    fi
+}
+
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed (for future compatibility)
-pkg_add_list() {
+pkg_add_list()
+{
     pkg_filename=$1
     pkg_name=$2
 
@@ -289,7 +335,8 @@ pkg_add_list() {
 }
 
 # $1 - The package name of the package to be uninstalled
-pkg_rm() {
+pkg_rm()
+{
     echo "----- Removing package: $1 -----"
     if [ "$INSTALLER" = "DPKG" ]; then
         if [ "$installMode" = "P" ]; then
@@ -308,7 +355,8 @@ pkg_rm() {
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed
 # $3 - Okay to upgrade the package? (Optional)
-pkg_upd_list() {
+pkg_upd_list()
+{
     pkg_filename=$1
     pkg_name=$2
     pkg_allowed=$3
@@ -369,33 +417,16 @@ compare_install_type()
     fi
 }
 
-python_ctypes_installed() {
+python_ctypes_installed()
+{
     # Check for Python ctypes library (required for omsconfig)
     hasCtypes=1    
 	
     # Attempt to run python with the single import command
-    python -c "import ctypes" 1> /dev/null 2> /dev/null
+    python -c "import ctypes" > /dev/null 2>&1
     [ $? -eq 0 ] && hasCtypes=0
 
     return $hasCtypes
-}
-
-curl_installed() {
-    # Check for curl (required for omsconfig)
-    preReqCurl=1
-    which curl 1> /dev/null 2> /dev/null
-    [ $? -eq 0 ] && preReqCurl=0
-
-    return $preReqCurl
-}
-
-gpg_installed() {
-    # Check for gpg (required for omsconfig)
-    preReqGpg=1
-    which gpg 1> /dev/null 2> /dev/null
-    [ $? -eq 0 ] && preReqGpg=0
-
-    return $preReqGpg
 }
 
 getInstalledVersion()
@@ -427,8 +458,8 @@ shouldInstall_omsagent()
 shouldInstall_omsconfig()
 {
     # Package omsconfig will never install without Python ctypes and curl ...
-    if python_ctypes_installed 1> /dev/null 2> /dev/null; then
-        if curl_installed 1> /dev/null 2> /dev/null; then
+    if python_ctypes_installed; then
+        if check_if_program_exists_on_system curl; then
             local versionInstalled=`getInstalledVersion omsconfig`
             [ "$versionInstalled" = "None" ] && return 0
             local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
@@ -445,7 +476,6 @@ shouldInstall_omsconfig()
 install_extra_package()
 {
     # Parameter: package name to install
-    #            possibilities: tar, sed
     # Returns: 0 on success, 1 on failure
     if [ $# -ne 1 ]; then
         echo "INTERNAL ERROR: Incorrect number of parameters passed to install_extra_package" >&2
@@ -453,7 +483,6 @@ install_extra_package()
     fi
 
     local install_cmd=""
-    local package=$1
 
     which zypper > /dev/null 2>&1
     if [ $? -eq 0 ]; then
@@ -469,10 +498,10 @@ install_extra_package()
     fi
 
     if [ -z "$install_cmd" ]; then
-        echo "No vendor found to install $package"
+        echo "No vendor found to install $1"
         return 1
     else
-        $install_cmd $package
+        $install_cmd $1
         return $?
     fi
 }
@@ -678,8 +707,8 @@ cd $EXTRACT_DIR
 # Do we need to remove the package?
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
-    rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2> /dev/null 
-    rm -f "$ONBOARD_FILE" > /dev/null 2> /dev/null
+    rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
+    rm -f "$ONBOARD_FILE" > /dev/null 2>&1
     if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
         /opt/microsoft/omsagent/bin/uninstall $installMode
     else
@@ -699,9 +728,8 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
         pkg_rm omsagent
 
         # If MDSD is installed and we're just removing (not purging), leave SCX
-
         MDSD_INSTALLED=1
-        check_if_pkg_is_installed azsec-mdsd
+        check_if_program_exists_on_system azsec-mdsd
         if [ $? -eq 0 -o -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd ]; then
             MDSD_INSTALLED=0
         fi
@@ -765,12 +793,12 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
                 rm -rf /etc/opt/microsoft/auoms /opt/microsoft/auoms /var/opt/microsoft/auoms
             fi
 
-            rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2> /dev/null || true
-            rmdir /etc/opt /var/opt > /dev/null 2> /dev/null || true
+            rmdir /etc/opt/microsoft /opt/microsoft /var/opt/microsoft > /dev/null 2>&1 || true
+            rmdir /etc/opt /var/opt > /dev/null 2>&1 || true
         fi
     fi
-    rm -f /etc/collectd.d/oms.conf > /dev/null 2> /dev/null
-    rm -f /etc/collectd/collectd.conf.d/oms.conf > /dev/null 2> /dev/null
+    rm -f /etc/collectd.d/oms.conf > /dev/null 2>&1
+    rm -f /etc/collectd/collectd.conf.d/oms.conf > /dev/null 2>&1
 fi
 
 if [ -n "${shouldexit}" ]
@@ -805,35 +833,19 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
         fi
     fi
 
-    check_if_pkg_is_installed tar
+    install_if_program_does_not_exist_on_system tar
     if [ $? -ne 0 ]; then
-        echo "tar was not found, attempting to install tar..."
-        install_extra_package tar
-    fi
-    tar_package_installed=$?
-    check_program_in_path tar
-    if [ $? -ne 0 -a $tar_package_installed -ne 0 ]; then
         echo "tar was not installed, installation cannot continue. Please install tar."
         cleanup_and_exit $INSTALL_TAR
     fi
 
-    check_if_pkg_is_installed sed
+    install_if_program_does_not_exist_on_system sed
     if [ $? -ne 0 ]; then
-        echo "sed was not found, attempting to install sed..."
-        install_extra_package sed
-    fi
-    sed_package_installed=$?
-    check_program_in_path sed
-    if [ $? -ne 0 -a $sed_package_installed -ne 0 ]; then
         echo "sed was not installed, installation cannot continue. Please install sed."
         cleanup_and_exit $INSTALL_SED
     fi
-    curl_installed
-    if [ $? -ne 0 ]; then
-        echo "curl was not found, attempting to install curl..."
-        install_extra_package curl
-    fi
-    check_program_in_path curl
+
+    install_if_program_does_not_exist_on_system curl
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
             echo "Error: curl was not installed, installation cannot continue."
@@ -845,7 +857,8 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
             echo "Installation will continue without installing omsconfig."
         fi
     fi
-    gpg_installed
+
+    check_if_program_exists_on_system gpg
     if [ $? -ne 0 ]; then
         echo "gpg is not installed, installation cannot continue."
         cleanup_and_exit $INSTALL_GPG
