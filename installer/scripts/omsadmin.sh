@@ -150,6 +150,9 @@ usage()
     echo "Azure resource ID:"
     echo "$basename -a <Azure resource ID>"
     echo
+    echo "Show the configured process limit in $PROC_LIMIT_CONF for user $AGENT_USER."
+    echo "$basename -c"
+    echo
     echo "Set process limit for OMSAgent:"
     echo "$basename -n <specific number limit>"
     echo
@@ -161,9 +164,6 @@ usage()
     echo
     echo "Detect if omiserver is listening to SCOM port:"
     echo "$basename -o"
-    echo
-    echo "Show the configured process limit in $PROC_LIMIT_CONF for user $AGENT_USER."
-    echo "$basename -c"
 }
 
 set_user_agent()
