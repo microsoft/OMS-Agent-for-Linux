@@ -2,6 +2,8 @@ require 'fluent/test'
 
 class MaintenanceSystemTestBase < Test::Unit::TestCase
 
+  TEST_USER=`id -un`.chomp  # NOTE OF CAUTION:  These two lines must be defined
+  TEST_GROUP=`id -gn`.chomp # in parallel to those by same name in prep_omsadmin.sh
   TEST_WORKSPACE_ID = ENV["TEST_WORKSPACE_ID"]
   TEST_SHARED_KEY = ENV["TEST_SHARED_KEY"]
   TEST_WORKSPACE_ID_2 = ENV["TEST_WORKSPACE_ID_2"]

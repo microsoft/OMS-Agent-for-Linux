@@ -162,7 +162,7 @@ usage()
     echo "Detect if omiserver is listening to SCOM port:"
     echo "$basename -o"
     echo
-    echo "Show the configured process limit in /etc/limits.conf for user $AGENT_USER."
+    echo "Show the configured process limit in $PROC_LIMIT_CONF for user $AGENT_USER."
     echo "$basename -c"
 }
 
@@ -242,7 +242,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrn:oRc" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:cNrn:oR" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -422,7 +422,7 @@ unset_omsagent_proc_limit()
 find_current_omsagent_proc_limit()
 {
     #cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" > /dev/null 2>&1
-    get_current_omsagent_proc_limit >/dev/null 2>/dev/null
+    get_current_omsagent_proc_limit > /dev/null 2>&1
     return $?
 }
 
@@ -841,7 +841,8 @@ show_omsagent_proc_limit()
         result_limit=`get_current_omsagent_proc_limit | tail -1 | awk '{print $4}'`
         if [ "$result_limit" -eq "-1" ]; then
             result_limit="No Limit"
-            log_info "There is NO present limit to number of processes for $AGENT_USER."
+            #log_info "There is NO present limit to number of processes for $AGENT_USER."
+            log_info "The number of processes for $AGENT_USER is unlimited."
         elif [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
             log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
         fi
