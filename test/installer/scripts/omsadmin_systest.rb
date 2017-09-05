@@ -332,8 +332,8 @@ class OmsadminTest < MaintenanceSystemTestBase
     v = linearray[l-1].chomp
     assert_equal(6, l, "This example should have six output lines from stdout.")
     expectedline0 = "2 #{TEST_USER} entries found in #{@proc_limits_conf}."
-    assert_not_match(/error/i,m,"Should not be an error")
-    assert_match(/#{expectedline0}/,m,"Expected first line message does not match that output.")
+    assert_not_match(/error/i, m, "Should not be an error")
+    assert_match(/#{expectedline0}/, m, "Expected first line message does not match that output.")
     assert_equal("100", v, "Multiple entries should still report last entry, in compliance with specification.")
   end
 
@@ -346,8 +346,8 @@ class OmsadminTest < MaintenanceSystemTestBase
     v = linearray[l-1].chomp
     assert_equal(2, l, "This example should have six output lines from stdout.")
     expectedline0 = "There is NO present limit to number of processes for #{TEST_USER}."
-    assert_not_match(/error/i,m,"Should not be an error")
-    assert_match(/#{expectedline0}/,m,"Expected first line message does not match that output.")
+    assert_not_match(/error/i, m, "Should not be an error")
+    assert_match(/#{expectedline0}/, m, "Expected first line message does not match that output.")
     assert_equal("No Limit", v, "Unexpected return value for -c.")
   end
 

@@ -242,7 +242,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:cNrn:oR" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrcn:oR" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -398,7 +398,7 @@ set_omsagent_proc_limit()
 
     log_info "Setting process limit for the $AGENT_USER user in $PROC_LIMIT_CONF to $NEW_OMSAGENT_PROC_LIMIT..."
     local new_omsagent_line="$AGENT_USER  hard  nproc  $NEW_OMSAGENT_PROC_LIMIT"
-    get_current_omsagent_proc_limit >/dev/null 2>/dev/null
+    get_current_omsagent_proc_limit > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1`
         sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
@@ -409,7 +409,7 @@ set_omsagent_proc_limit()
 
 unset_omsagent_proc_limit()
 {
-    get_current_omsagent_proc_limit >/dev/null 2>/dev/null
+    get_current_omsagent_proc_limit > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         # Remove all lines for the omsagent from the limit file
         log_info "Removing process limit for the $AGENT_USER user in $PROC_LIMIT_CONF..."
@@ -417,13 +417,6 @@ unset_omsagent_proc_limit()
         # sed does not handle the complex/extended regex in older versions, but grep does
         cat $PROC_LIMIT_CONF.bak | grep -Ev "$LIMIT_LINE_REGEX"  > $PROC_LIMIT_CONF
     fi
-}
-
-find_current_omsagent_proc_limit()
-{
-    #cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" > /dev/null 2>&1
-    get_current_omsagent_proc_limit > /dev/null 2>&1
-    return $?
 }
 
 get_current_omsagent_proc_limit()
@@ -841,7 +834,6 @@ show_omsagent_proc_limit()
         result_limit=`get_current_omsagent_proc_limit | tail -1 | awk '{print $4}'`
         if [ "$result_limit" -eq "-1" ]; then
             result_limit="No Limit"
-            #log_info "There is NO present limit to number of processes for $AGENT_USER."
             log_info "The number of processes for $AGENT_USER is unlimited."
         elif [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
             log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
