@@ -640,12 +640,14 @@ An example section of the `omsagent.conf` configuration file `/etc/opt/microsoft
 </source>
 ```
 # Agent Logs
-The logs for the Operations Management Suite Agent for Linux can be found at: 
-`/var/opt/microsoft/omsagent/<workspace id>/log/`
-The logs for the omsconfig (agent configuration) program can be found at: 
-`/var/opt/microsoft/omsconfig/log/`
-Logs for the OMI and SCX components (which provide performance metrics data) can be found at:
-`/var/opt/omi/log/ and /var/opt/microsoft/scx/log`
+
+Logs for omsagent specifically have a node for the workspace ID.  The  omsconfig directory has one log in an upper level directory, with no log directory named per se.  Here are the directories holding logs for the four facilities supporting OMS Agent:
+
+1. Logs for OMS Agent itself:  `/var/opt/microsoft/omsagent/<workspace id>/log/`
+2. Agent Configuration Logs:   `/var/opt/microsoft/omsconfig/`
+3. OMI Component Logs:         `/var/opt/omi/log/`
+4. SCX Component Logs          `/var/opt/microsoft/scx/log/`
+
 
 ## Log Rotation Configuration
 The log rotate configuration for omsagent can be found at:
