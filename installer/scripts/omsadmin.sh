@@ -496,8 +496,12 @@ onboard_lad()
 onboard()
 {
     if [ $VERBOSE -eq 1 ]; then
+        # Mask the shared key
+        local shared_key_trunc=`echo "$SHARED_KEY" | cut -c 1-4 2> /dev/null`
+        local shared_key_covered=`echo "$SHARED_KEY" | tr "$SHARED_KEY" "*" | cut -c 5- 2> /dev/null`
+
         echo "Workspace ID:      $WORKSPACE_ID"
-        echo "Shared key:        $SHARED_KEY"
+        echo "Shared key:        $shared_key_trunc$shared_key_covered"
         echo "Top Level Domain:  $URL_TLD"
     fi
 
@@ -592,9 +596,13 @@ onboard()
     AUTHORIZATION_KEY=`echo $AUTHS | cut -d" " -f2`
 
     if [ $VERBOSE -ne 0 ]; then
+        # Mask the certificate in the request
+        local body_no_newlines="`cat $BODY_ONBOARD | tr -d '\n' 2> /dev/null`"
+        local cert_tag="AuthenticationCertificate"
+        local hidden_cert="********"
         echo
         echo "Generated request:"
-        cat $BODY_ONBOARD
+        echo "$body_no_newlines" | sed "s/<$cert_tag>[^<]*<\/$cert_tag>/<$cert_tag>$hidden_cert<\/$cert_tag>/g"
         echo
     fi
 

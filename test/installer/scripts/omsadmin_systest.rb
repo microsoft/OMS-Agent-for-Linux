@@ -77,6 +77,28 @@ class OmsadminTest < MaintenanceSystemTestBase
     assert_match(/Error resolving host during the onboarding request/, output)
   end
 
+  def test_onboard_verbose_valid_shared_key
+    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY, should_succeed = true, verbose = true)
+    original_key = TEST_SHARED_KEY.dup
+    assert_match(/Shared key:\s+#{original_key.slice!(0..3)}\*{#{TEST_SHARED_KEY.length - 4}}/,
+                 output, "Did not find correct shared key printout")
+    assert_match(/<AuthenticationCertificate>\*+<\/AuthenticationCertificate>/, output,
+                 "Did not find masked cert")
+    post_onboard_validation
+  end
+
+  def test_onboard_verbose_short_shared_key
+    output = do_onboard(TEST_WORKSPACE_ID, "xx", should_succeed = false, verbose = true)
+    assert_match(/Shared key:\s+xx\n/, output,
+                 "Did not find correct shared key printout")
+  end
+
+  def test_onboard_verbose_no_shared_key
+    output = do_onboard(TEST_WORKSPACE_ID, nil, should_succeed = false, verbose = true)
+    assert_match(/Shared key:\s+\n/, output,
+                 "Did not find correct shared key printout")
+  end
+
   def test_reonboard
     do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
 
