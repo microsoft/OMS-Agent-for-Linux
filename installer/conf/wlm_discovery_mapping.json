@@ -1,0 +1,61 @@
+[
+    {
+        "CimClassName": "SCX_OperatingSystem",
+        "InstanceProperty": "Caption",
+        "InstanceRegex": ".*",
+        "Namespace": "root/scx",
+        "DiscoveryID": "SystemDiscoveryID",
+        "ClassName": "Universal Linux Computer",
+        "CimProperties": ["CSName","CurrentTimeZone"]
+    },
+    {
+        "CimClassName": "SCX_RTProcessorStatisticalInformation",
+        "InstanceProperty": "Name",
+        "InstanceRegex": "^(?!_Total).*$",
+        "Namespace": "root/scx",
+        "DiscoveryID": "ProcessorDiscoveryID",
+        "ClassName": "Processor",
+        "Parent": "Universal Linux Computer",
+        "CimProperties": ["Name"]
+    },
+    {
+        "CimClassName": "SCX_FileSystem",
+        "InstanceProperty": "Name",
+        "InstanceRegex": "^(?!_Total).*$",
+        "Namespace": "root/scx",
+        "DiscoveryID": "LogicalDiskDiscoveryID",
+        "ClassName": "Logical Disk",
+        "Parent": "Universal Linux Computer",
+        "CimProperties": ["Name","FileSystemType","CompressionMethod","FileSystemSize"]
+    },
+    {
+        "CimClassName": "SCX_IPProtocolEndpoint",
+        "InstanceProperty": "Name",
+        "InstanceRegex": "^(?!sit).*$",
+        "Namespace": "root/scx",
+        "DiscoveryID": "NetworkAdapterDiscoveryID",
+        "ClassName": "Network Adapter",
+        "Parent": "Universal Linux Computer",
+        "CimProperties": ["Name","ElementName","IPv4Address","SubnetMask"]
+    },
+    {
+        "CimClassName": "SCX_OperatingSystem",
+        "InstanceProperty": "Caption",
+        "InstanceRegex": ".*",
+        "Namespace": "root/scx",
+        "DiscoveryID": "OperatingSystemDiscoveryID",
+        "ClassName": "Universal Linux Operating System",
+        "Parent": "Universal Linux Computer",
+        "CimProperties": ["Version","Caption"]
+    },
+    {
+        "CimClassName": "SCX_DiskDrive",
+        "InstanceProperty": "Name",
+        "InstanceRegex": "^(?!_Total).*$",
+        "Namespace": "root/scx",
+        "DiscoveryID": "PhysicalDiskDiscoveryID",
+        "ClassName": "Physical Disk",
+        "Parent": "Universal Linux Computer",
+        "CimProperties": ["Name","InterfaceType","MaxMediaSize","TotalCylinders","TotalHeads","TotalSectors"]
+    }
+]
