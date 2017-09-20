@@ -4,12 +4,64 @@ require 'net/http'
 require 'net/https'
 require 'json'
 require 'fileutils'
+require 'flexmock/test_unit'
 require_relative 'omstestlib'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/oms_common'
 
+
 module OMS
 
+  TestHostnameList = 
+  [
+          #         Address Type  Compliant Name
+
+    TestHostname.new(:RFC1123Hostname, true,  'onetwo'),
+    TestHostname.new(:RFC1123Hostname, true,  'xxx1234'),
+    TestHostname.new(:RFC1123Hostname, true,  'x'),
+    TestHostname.new(:RFC1123Hostname, true,  'www'),
+    TestHostname.new(:RFC1123Hostname, true,  'Microsoft'),
+    TestHostname.new(:RFC1123Hostname, true,  'xxx123456789012345678901234567890123456789012345678901234567890'),
+
+    TestHostname.new(:RFC1123Hostname, false, ''),
+    TestHostname.new(:RFC1123Hostname, false, 'xxx123456789012345678901234567890123456789012345678901234567890x'),
+    TestHostname.new(:RFC1123Hostname, false, 'one.two'),
+    TestHostname.new(:RFC1123Hostname, false, 'one:two'),
+    TestHostname.new(:RFC1123Hostname, false, 'microsoft.com'),
+    TestHostname.new(:RFC1123Hostname, false, 'microsoft:355'),
+    TestHostname.new(:RFC1123Hostname, false, nil),
+
+    TestHostname.new(:IPv4,            true,  '192.168.0.5'),
+    TestHostname.new(:IPv4,            true,  '1.2.3.4'),
+    TestHostname.new(:IPv4,            true,  '254.254.254.254'),
+    TestHostname.new(:IPv4,            true,  '1.0.0.0'),
+
+    TestHostname.new(:IPv4,            false, ''),
+    TestHostname.new(:IPv4,            false, '192.168.0.256'),
+    TestHostname.new(:IPv4,            false, '1.0.0.444'),
+    TestHostname.new(:IPv4,            false, '192.168.0.A'),
+    TestHostname.new(:IPv4,            false, '0.2.3.4'),
+    TestHostname.new(:IPv4,            false, '1.2.3.255'),
+    TestHostname.new(:IPv4,            false, '255.255.255.255'),
+    TestHostname.new(:IPv4,            false, '192.168.0'),
+    TestHostname.new(:IPv4,            false, '192.168..5'),
+    TestHostname.new(:IPv4,            false, '192.168.0.5.5'),
+    TestHostname.new(:IPv4,            false, '192.168.0.5.A'),
+
+    TestHostname.new(:IPv6,            true,  '2001:0db8:85a3:0000:0000:8a2e:0370:7334'),
+    TestHostname.new(:IPv6,            true,  '1234:DDDD:FFFF:EEEE:3333:8888:7777:1111'),
+    TestHostname.new(:IPv6,            true,  '0db8:85a3:0000:0000:8a2e:0370:7334:f135'),
+
+    TestHostname.new(:IPv6,            false, ''),
+    TestHostname.new(:IPv6,            false, '1000:::::::1000'),
+    TestHostname.new(:IPv6,            false, 'XXXX:0db8:85a3:0000:0000:8a2e:0370:7334'),
+    TestHostname.new(:IPv6,            false, 'xx:0db8:85a3:0000:0000:8a2e:0370:7334'),
+    TestHostname.new(:IPv6,            false, ':0db8:85a3:0000:0000:8a2e:0370:7334'),
+    TestHostname.new(:IPv6,            false, '0db8:85a3:0000:0000:8a2e:0370:7334'),
+    TestHostname.new(:IPv6,            false, ':0db8:85a3:0000:0000:8a2e:0370:7334'),
+  ]
+
   class CommonTest < Test::Unit::TestCase
+    include FlexMock::TestCase
 
     # Extend class to reset OSFullName class variable
     class OMS::Common
@@ -48,6 +100,10 @@ module OMS
 
         def HostnameFilePath=(hostname_file_path)
           @@HostnameFilePath = hostname_file_path
+        end
+
+        def GetHostnameInternalForTest
+          return @@Hostname
         end
       end
     end
@@ -93,6 +149,106 @@ module OMS
       "OSFullName=CentOS Linux 7.0 (x86_64)\n" \
       "OSAlias=UniversalR\n" \
       "OSManufacturer=Central Logistics GmbH\n"
+
+    # Begin:  Tests on Public internals; probably only for use inside the Singular object.
+
+    def test_clean_hostname_string
+      hostname = '        microsoft     '
+      b = Common.clean_hostname_string(hostname)
+      expected = 'microsoft'
+      assert_equal(b, expected, "method clean_hostname_string should return '#{expected}'.")
+      hostname = expected
+      b = Common.clean_hostname_string(hostname)
+      assert_equal(b, expected, "method clean_hostname_string should return '#{expected}'.")
+    end
+
+    def test_has_designated_hostnamefile?
+      container_hostname_tempfile = Tempfile.new('containerhostname')
+      test_hostname = 'test_hostname'
+      Common.HostnameFilePath = container_hostname_tempfile.path
+      File.write(container_hostname_tempfile.path, test_hostname)
+      r = Common.has_designated_hostnamefile?
+      assert(r, "method has_designated_hostnamefile? should see #{container_hostname_tempfile.path} exists at this point.")
+      container_hostname_tempfile.unlink
+      r = Common.has_designated_hostnamefile?
+      assert_false(r, "method has_designated_hostnamefile? should see #{container_hostname_tempfile.path} Does NOT exist at this point.")
+      Common.HostnameFilePath = nil
+      Common.Hostname = nil
+    end
+
+    def test_is_hostname_compliant?
+      TestHostnameList.each do |thno| # thno stands for TestHostname object
+        next unless thno.AddressType == :RFC1123Hostname
+        if thno.SpecCompliant then
+          assert(Common.is_hostname_compliant?(thno.Hostname),       "Common.is_hostname_compliant?(#{thno.Hostname}) should be true.")
+        else
+          assert_false(Common.is_hostname_compliant?(thno.Hostname), "Common.is_hostname_compliant?(#{thno.Hostname}) should NOT be true.")
+        end
+      end
+    end
+
+    def test_is_like_ipv4_string?
+      TestHostnameList.each do |thno| # thno stands for TestHostname object
+        next unless thno.AddressType == :IPv4
+        if thno.SpecCompliant then
+          assert(Common.is_like_ipv4_string?(thno.Hostname),       "Common.is_like_ipv4_string?(#{thno.Hostname}) should be true.")
+        else
+          assert_false(Common.is_like_ipv4_string?(thno.Hostname), "Common.is_like_ipv4_string?(#{thno.Hostname}) should NOT be true.")
+        end
+      end
+    end
+
+    def test_is_like_ipv6_string?
+      TestHostnameList.each do |thno| # thno stands for TestHostname object
+        next unless thno.AddressType == :IPv6
+        if thno.SpecCompliant then
+          assert(Common.is_like_ipv6_string?(thno.Hostname),       "Common.is_like_ipv6_string?(#{thno.Hostname}) should be true.")
+        else
+          assert_false(Common.is_like_ipv6_string?(thno.Hostname), "Common.is_like_ipv6_string?(#{thno.Hostname}) should NOT be true.")
+        end
+      end
+    end
+
+    def test_look_for_socket_class_host_address
+      Common.Hostname = nil
+      Common.look_for_socket_class_host_address
+      hostname = Common.GetHostnameInternalForTest
+      assert(hostname.length > 0, "Hostname internal should be non-zero length.")
+    end
+
+    def test_look_in_designated_hostnamefile
+      container_hostname_tempfile = Tempfile.new('containerhostname')
+      test_hostname = 'test_hostname'
+      Common.HostnameFilePath = container_hostname_tempfile.path
+      File.write(container_hostname_tempfile.path, test_hostname)
+      Common.Hostname = nil
+
+      Common.look_in_designated_hostnamefile
+      hostname = Common.GetHostnameInternalForTest
+      assert_equal(test_hostname, hostname, "Hostname internal should be #{test_hostname} file")
+
+      # Remove container host name file
+      container_hostname_tempfile.unlink
+      Common.Hostname = nil
+      Common.HostnameFilePath = nil
+    end
+
+    def test_validate_hostname_equivalent
+      TestHostnameList.each do |thno| # thno stands for TestHostname object
+        next unless thno.AddressType == :IPv6
+        if thno.SpecCompliant then
+          assert_nothing_raised do
+              Common.validate_hostname_equivalent(thno.Hostname)
+          end
+        else
+          assert_raise NameError do
+              Common.validate_hostname_equivalent(thno.Hostname)
+          end
+        end
+      end
+    end
+
+    # End:  Tests on Public Internals
 
     def test_get_os_full_name()
       File.write(@tmp_conf_file.path, @@OSConf)
@@ -205,8 +361,40 @@ module OMS
       Common.Hostname = nil
       container_hostname_tempfile.unlink
       hostname = Common.get_hostname
-      test_hostname = Socket.gethostname.split(".")[0]
+      test_hostname = Socket.gethostname
       assert_equal(test_hostname, hostname, 'get_hostname should read from Socket.gethostname')
+    end
+
+    def test_get_hostname_as_mocks_from_socket_gethostname
+      result_hostname = nil
+      TestHostnameList.each do |thno| # thno stands for TestHostname object
+        $log = MockLog.new
+        flexmock(Socket, :strict, Socket => :gethostname, :gethostname => thno.Hostname) do
+          load "#{ENV['BASE_DIR']}/source/code/plugins/oms_common.rb"
+          assert_nothing_raised do
+            result_hostname = Common.get_hostname
+          end
+          if thno.Hostname.nil? then
+              assert_equal(result_hostname, '', 'Did not get correct hostname')
+          else
+              assert_equal(result_hostname, thno.Hostname, 'Did not get correct hostname')
+          end
+          if thno.SpecCompliant then
+            assert($log.logs.empty?, "No exception should be logged")
+          else
+            assert_false($log.logs.empty?, "Error should be logged")
+            # Checks on error logs for the validation specifics may be appropriate, but leaving
+            # out for now until there is a task specifying the log text so we don't generate
+            # unknown issues.
+            assert($log.logs[-1].include?('did NOT validate as compliant.'), "Warning in log: #{$log.logs}")
+          end
+        end
+        flexmock(Socket).flexmock_teardown
+        sleep 0.1
+      end
+      # Then back to normal (a validation afterwards would be better, but that is another project)
+      flexmock(Socket).flexmock_teardown
+      load "#{ENV['BASE_DIR']}/source/code/plugins/oms_common.rb"
     end
 
     def test_get_fqdn
@@ -318,7 +506,7 @@ module OMS
       record["DataItems"] = [ {"Message" => "iPhone\xAE"} ];
       parsed_record = Common.parse_json_record_encoding(record);
       assert_equal("{\"DataItems\":[{\"Message\":\"iPhone®\"}]}", parsed_record, "parse json record utf-8 encoding failed");
-    end	
+    end
     
     def test_safe_dump_simple_hash_array_noerror
       $log = MockLog.new
@@ -328,7 +516,7 @@ module OMS
       assert_equal("[{\"ID\":1,\"Enabled\":true,\"Nil\":null,\"Float\":1.2,\"Message\":\"iPhone®\"}]", json, "parse json record utf-8 encoding failed: #{json}");
 
       assert($log.logs.empty?, "No exception should be logged")
-    end	
+    end
     
     def test_safe_dump_simple_hash_array_firsterror_encoding_success
       $log = MockLog.new
@@ -338,7 +526,7 @@ module OMS
       assert_equal("[{\"ID\":1,\"Message\":\"iPhone®\"}]", json, "parse json record utf-8 encoding failed: #{json}");
       assert_not_equal(0, $log.logs.length, "Exception should be logged")
       assert($log.logs[-1].include?("source sequence is illegal/malformed utf-8"), "Except error in log: '#{$log.logs}'")
-    end	
+    end
 
     def test_safe_dump_simple_hash_array_firsterror_encoding_error
       $log = MockLog.new
@@ -352,7 +540,7 @@ module OMS
       assert_not_equal(0, $log.logs.length, "Exception should be logged")
       assert($log.logs[-1].include?("source sequence is illegal/malformed utf-8"), "Except error in log: '#{$log.logs}'")
       assert_equal(nil, json, "Expect nil: #{json}")
-    end	
+    end
 
     def test_get_current_timezone
       $log = MockLog.new
