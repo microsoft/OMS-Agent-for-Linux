@@ -97,6 +97,9 @@ SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
 OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
 OMI_CONF_EDITOR=/opt/omi/bin/omiconfigeditor
 
+# Space seperated list of non oms workspaces
+NON_OMS_WS="scom LAD"
+
 # Error codes and categories:
 
 # User configuration/parameters:
@@ -592,6 +595,7 @@ onboard()
         echo
         echo "Generated request:"
         cat $BODY_ONBOARD
+        echo
     fi
 
     set_proxy_setting
@@ -632,7 +636,7 @@ onboard()
         cleanup_certs
         return $INVALID_PROXY
     elif [ $error -ne 0 ]; then
-        log_error "Error during the onboarding request. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
+        log_error "Error during the onboarding request: curl returned $error. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
         cleanup_certs
         return $ERROR_ONBOARDING
     fi
@@ -770,16 +774,15 @@ remove_all()
         remove_workspace
     done
 
-    # Remove LAD workspace
-    WORKSPACE_ID="LAD"
-    remove_workspace
-
-    # remove scom workspace
-    ls -l $ETC_DIR | grep -w scom > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        WORKSPACE_ID="scom"
-        remove_workspace
-    fi
+    # Remove non-OMS "workspaces"
+    for ws_id in $NON_OMS_WS
+    do
+       ls -l $ETC_DIR | grep -w "$ws_id" > /dev/null 2>&1
+       if [ $? -eq 0 ]; then
+           WORKSPACE_ID="$ws_id"
+           remove_workspace
+       fi
+    done
 }
 
 show_workspace_status()
@@ -1128,7 +1131,7 @@ copy_no_port_omsagent_d_conf()
     cp -p $SYSCONF_DIR/omsagent.d/operation.conf $1
     cp -p $SYSCONF_DIR/omi_mapping.json $1
     cp -p $SYSCONF_DIR/omsagent.d/oms_audits.xml $1
-    cp -p $SYSCONF_DIR/omsagent.d/container.conf $1 2>/dev/null
+    cp -p $SYSCONF_DIR/omsagent.d/container.conf $1 2> /dev/null
 
     update_path $1/heartbeat.conf
     update_path $1/operation.conf

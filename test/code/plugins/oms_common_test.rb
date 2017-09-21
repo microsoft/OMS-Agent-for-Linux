@@ -187,25 +187,23 @@ module OMS
       assert(hostname.size > 0, "Hostname returned is empty")
     end
 
-    def test_get_hostname_in_containerzed_agent
+    def test_get_hostname_in_containerized_agent
       $log = MockLog.new
-      file_hostname = '/tmp/containerhostname'
+
+      # create container hostname file
+      # get_hostname should read hostname from this file when exist
+      container_hostname_tempfile = Tempfile.new('containerhostname')
       test_hostname = 'test_hostname'
       Common.Hostname = nil
-      Common.HostnameFilePath = file_hostname
-
-      # create container hostname file 
-      # get_hostname should read hostname from this file when exist
-      out_file = File.new(file_hostname, "w+")
-      out_file.puts(test_hostname)
-      out_file.close
+      Common.HostnameFilePath = container_hostname_tempfile.path
+      File.write(container_hostname_tempfile.path, test_hostname)
       hostname = Common.get_hostname
-      assert_equal(test_hostname, hostname, 'get_hostname should read from /tmp/containerhostname file')
+      assert_equal(test_hostname, hostname, 'get_hostname should read from containerhostname file')
 
       # Remove container host name file
       # get_hostname should get hostname from Socket.gethostname when this file when doesn't exist
       Common.Hostname = nil
-      File.delete(file_hostname)
+      container_hostname_tempfile.unlink
       hostname = Common.get_hostname
       test_hostname = Socket.gethostname.split(".")[0]
       assert_equal(test_hostname, hostname, 'get_hostname should read from Socket.gethostname')

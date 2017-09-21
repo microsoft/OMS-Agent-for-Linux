@@ -41,8 +41,8 @@ class OmsadminTest < MaintenanceSystemTestBase
 
   def test_create_proxy_file
     assert(!File.file?(@proxy_conf), "Proxy file should not be present beforehand.")
-    output = `#{@omsadmin_script} -p proxy_host:8080`
-    assert_equal(0, $?.to_i, "Unexpected failure creating proxy file. #{output}")
+    result, output = run_command("#{@omsadmin_script} -p proxy_host:8080")
+    assert_equal(0, result.to_i, "Unexpected failure creating proxy file. #{output}")
     assert_match(/Created proxy configuration/, output, "Did not find proxy config create message")
     assert(File.file?(@proxy_conf), "Failed to find generated proxy file.")
     check_cert_perms(@proxy_conf)
@@ -108,7 +108,7 @@ class OmsadminTest < MaintenanceSystemTestBase
   end
 
   def test_onboard_two_workspaces
-    $log.info "Test results in #{@omsadmin_test_dir}"
+    print "Test results in #{@omsadmin_test_dir}"
     output1 = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_match(/Generating certificate/, output1, "Did not find cert generation message for workspace 1")
     post_onboard_validation(@omsadmin_test_dir_ws1)
@@ -117,22 +117,21 @@ class OmsadminTest < MaintenanceSystemTestBase
     assert_match(/Generating certificate/, output2, "Did not find cert generation message for workspace 2")
     post_onboard_validation(@omsadmin_test_dir_ws2)
 
-    output_list = `#{@omsadmin_script} -l`
+    result, output_list = run_command("#{@omsadmin_script} -l")
     assert_match(/#{TEST_WORKSPACE_ID}/, output_list, "Did not find workspace 1 in list")
     assert_match(/#{TEST_WORKSPACE_ID_2}/, output_list, "Did not find workspace 2 in list")
 
     remove_workspace(TEST_WORKSPACE_ID)
     remove_workspace(TEST_WORKSPACE_ID, false)
 
-    output_list = `#{@omsadmin_script} -l`
-
+    result, output_list = run_command("#{@omsadmin_script} -l")
     assert_not_match(/#{TEST_WORKSPACE_ID}/, output_list, "Should not find workspace 1 in list")
     assert_match(/#{TEST_WORKSPACE_ID_2}/, output_list, "Did not find workspace 2 in list")
 
-    output_removeall = `#{@omsadmin_script} -X`
-    assert_equal(0, $?.to_i, "Remove all workspace should succeed: #{output_removeall}")
+    result, output_removeall = run_command("#{@omsadmin_script} -X")
+    assert_equal(0, result.to_i, "Remove all workspace should succeed: #{output_removeall}")
 
-    output_list = `#{@omsadmin_script} -l`
+    result, output_list = run_command("#{@omsadmin_script} -l")
     assert_match(/No Workspace/, output_list, "No workspace should be listed: #{output_list}")
   end
 
@@ -197,8 +196,7 @@ class OmsadminTest < MaintenanceSystemTestBase
     else
       set_proc_limit_cmd = "#{@omsadmin_script} -n #{val}"
     end
-    output = `#{set_proc_limit_cmd}`
-    ret_code = $?
+    ret_code, output = run_command(set_proc_limit_cmd, assert_no_error = should_succeed)
 
     if should_succeed
       assert_equal(0, ret_code.to_i, "The command to set the user process limit was unsuccessful")
@@ -212,15 +210,13 @@ class OmsadminTest < MaintenanceSystemTestBase
   end
 
   def show_omsagent_proc_limit
-    output = `#{@omsadmin_script} -c`
-    ret_code = $?
+    ret_code, output = run_command("#{@omsadmin_script} -c")
     assert_equal(0, ret_code.to_i, "The command to show the user process limit was unsuccessful")
     return output
   end
 
   def unset_proc_limit
-    output = `#{@omsadmin_script} -r`
-    ret_code = $?
+    ret_code, output = run_command("#{@omsadmin_script} -r")
     assert_equal(0, ret_code.to_i, "The command to unset the proc limit failed")
     return output
   end
@@ -266,9 +262,9 @@ class OmsadminTest < MaintenanceSystemTestBase
   def test_reconstruct_from_full_state
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     post_onboard_validation
-    output = `#{@omsadmin_script} -R`.strip()
+    result, output = run_command("#{@omsadmin_script} -R")
     post_onboard_validation
-    assert_equal("", output, "Nothing should have been printed for NOOP reconstruction")
+    assert_equal("", output.strip(), "Nothing should have been printed for NOOP reconstruction")
   end
 
   def test_reconstruct_from_partial_good_state
@@ -281,9 +277,9 @@ class OmsadminTest < MaintenanceSystemTestBase
     FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/state/")
     FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/tmp/")
 
-    output = `#{@omsadmin_script} -R`.strip()
+    result, output = run_command("#{@omsadmin_script} -R")
     post_onboard_validation
-    assert_equal("", output, "Nothing should have been printed for expected reconstruction")
+    assert_equal("", output.strip(), "Nothing should have been printed for expected reconstruction")
   end
 
   def test_reconstruct_from_partial_empty_omsadmin_conf
@@ -297,8 +293,8 @@ class OmsadminTest < MaintenanceSystemTestBase
     FileUtils.rm_rf("#{@omsadmin_test_dir_ws1}/tmp/")
     File.write("#{@omsadmin_test_dir_ws1}/conf/omsadmin.conf", "")
 
-    output = `#{@omsadmin_script} -R`.strip()
-    assert_match(/Workspace #{TEST_WORKSPACE_ID} has an empty configuration file/, output,
+    result, output = run_command("#{@omsadmin_script} -R")
+    assert_match(/Workspace #{TEST_WORKSPACE_ID} has an empty configuration file/, output.strip(),
                  "Warning should have been printed about empty config")
     assert_false(File.directory?("#{@omsadmin_test_dir_ws1}/log/"),
                  "log directory was mistakenly created")
