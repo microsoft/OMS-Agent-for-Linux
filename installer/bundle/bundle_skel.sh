@@ -1039,7 +1039,7 @@ case "$installMode" in
 
             # In case --upgrade is run without -w <id> and -s <key>
             if [ ! -f "$OMS_CONSISTENCY_INVOKER" ]; then
-                echo "*/5 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
+                echo "*/15 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
             fi
             /opt/omi/bin/service_control restart
         fi

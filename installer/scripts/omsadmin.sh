@@ -706,10 +706,10 @@ onboard()
             # This is a temp solution since the DSC doesn't support multi-homing now
             # Only the primary workspace receives the configuration from the DSC service
 
-            # Set up a cron job to run the OMSConsistencyInvoker every 5 minutes
+            # Set up a cron job to run the OMSConsistencyInvoker every 15 minutes
             # This should be done regardless of MetaConfig creation
             if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
-                echo "*/5 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+                echo "*/15 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
             fi
 
             if [ "$USER_ID" -eq "0" ]; then
