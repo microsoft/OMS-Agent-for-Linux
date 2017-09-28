@@ -7,7 +7,7 @@ If none of these steps work for you the following channels for help are also ava
 * Feedback forum for ideas and bugs [http://aka.ms/opinsightsfeedback](http://aka.ms/opinsightsfeedback)
 
 # Table of Contents
-- [Important Log Locations](#important-log-locations)
+- [Important Log Locations and Log Collector Tool](#important-log-locations-and-log-collector-tool)
 - [Important Configuration Files](#important-configuration-files)
 - [Installation Error Codes](#installation-error-codes)
 - [Onboarding Error Codes](#onboarding-error-codes)
@@ -23,12 +23,14 @@ If none of these steps work for you the following channels for help are also ava
 - [My portal side configuration for (Syslog/Linux Performance Counter) is not being applied](#my-portal-side-configuration-for-sysloglinux-performance-counter-is-not-being-applied)
 - [I'm not seeing my Custom Log Data in the OMS Potal](#im-not-seeing-my-custom-log-data-in-the-oms-portal)
 
-## Important Log Locations
+## Important Log Locations and Log Collector Tool
 
  File | Path 
  ---- | ----- 
  OMS Agent for Linux Log File | `/var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log `
  OMS Agent Configuration Log File | `/var/opt/microsoft/omsconfig/omsconfig.log`
+ 
+ We recommend you to use our log collector tool to retrieve important logs for troubleshooting or before submitting a github issue. You can read more about the tool and how to run it [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/OMS_Linux_Agent_and_Container_Log_Collector.docx)
  
 ## Important Configuration Files
 
