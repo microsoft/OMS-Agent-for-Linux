@@ -401,6 +401,12 @@ def copyCommonFiles(omsLinuxType):
     cmd='cp /var/opt/microsoft/omsconfig/omsconfig* /tmp/omslogs'
     out=execCommand(cmd)
     writeLogCommand(cmd)
+    cmd='mkdir -p /tmp/omslogs/dscconfiguration'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    cmd='cp -rf /etc/opt/omi/conf/omsconfig/configuration/* /tmp/omslogs/dscconfiguration'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
     if(omsLinuxType == 'Ubuntu'):
        cmd='cp /var/log/syslog* /tmp/omslogs'
     else:
