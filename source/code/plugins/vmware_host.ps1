@@ -102,7 +102,7 @@ Class VMwareHostMetrics {
   }
 
   StreamMetrics ($result) {
-    Invoke-WebRequest -Uri http://127.0.0.1:1515/oms.api.VMwareSolution -Method POST -Body ($result | convertto-json)
+    Invoke-WebRequest -Uri http://127.0.0.1:1515/oms.api.VMwareInventory -Method POST -Body ($result | convertto-json)
   }
 
   GetMetrics () {
