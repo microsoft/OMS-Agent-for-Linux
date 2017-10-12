@@ -116,7 +116,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
       "Enabled"=> "false",
       "Controller"=> "init",
       "InventoryChecksum"=>
-      "6d53388bb96294678111ee5c81cde7ef32d7a3ecf6a320c65142516ee32a9967"
+      "6d53388bb96294678111ee5c81cde7ef32d7a3ecf6a320c65142516ee32a9967",
+      "IsInventorySnapshot"=> false
     }
     instanceXML = ChangeTracking::strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
@@ -181,6 +182,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
       "Timestamp"=> "2016-03-18T22:11:05.000Z",
       "InventoryChecksum"=>
       "17daf5f8849aa11a1afbe453e9cdf0ea2d9cb8a17488e3b9e0f54575e65497a8",
+      "IsInventorySnapshot"=> false,
       "Architecture"=> "x86_64",
       "Size"=> "38487871"
     }
@@ -236,6 +238,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
  "Group"=>"root",
  "InventoryChecksum"=>
   "0e084a89b6cce82c34eff883a0dd4deb0d510a1997e4a3e087c962a115369aea",
+ "IsInventorySnapshot"=>false,
  "Mode"=>"644",
  "Owner"=>"root",
  "Size"=>"835"}
@@ -252,6 +255,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
          [{"Architecture"=>"x86_64",
            "CollectionName"=>"rsyslog",
            "CurrentVersion"=>"7.4.7",
+           "IsInventorySnapshot"=>false,
            "Name"=>"rsyslog",
            "Publisher"=>"CentOS BuildSystem <http://bugs.centos.org>",
            "Size"=>"2033615",
@@ -280,6 +284,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
            "FilePath"=>"",
            "Installed"=>"true",
            "InstalledOn"=>"1458339065",
+           "IsInventorySnapshot"=>false,
            "Name"=>"omsagent",
            "PackageDescription"=>
            "Microsoft Operations Management Suite for UNIX/Linux agent",
@@ -315,6 +320,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
          "DateModified"=>"2016-08-20T21:12:22.000Z",
          "FileSystemPath"=>"/etc/yum.conf",
          "Group"=>"root",
+         "IsInventorySnapshot"=>false,
          "Mode"=>"644",
          "Owner"=>"root",
          "Size"=>"835"},
@@ -324,6 +330,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
          "DateModified"=>"2016-08-20T21:12:22.000Z",
          "FileSystemPath"=>"/etc/yum1.conf",
          "Group"=>"root",
+         "IsInventorySnapshot"=>false,
          "Mode"=>"644",
          "Owner"=>"root",
          "Size"=>"835"}],
@@ -361,6 +368,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
        "FileContentBlobLink"=>" ",
        "FileSystemPath"=>"/etc/yum.conf",
        "Group"=>"root",
+       "IsInventorySnapshot"=>false,
        "Mode"=>"644",
        "Owner"=>"root",
        "Size"=>"835"},
@@ -370,6 +378,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
        "DateModified"=>"2016-08-20T21:12:22.000Z",
        "FileSystemPath"=>"/etc/yum1.conf",
        "Group"=>"root",
+       "IsInventorySnapshot"=>false,
        "Mode"=>"644",
        "Owner"=>"root",
        "Size"=>"835"}],
@@ -483,7 +492,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     ret = ChangeTracking.transform_and_wrap(@fileinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(1, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime") == false)
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == false)
     assert(ret["DataItems"][0]["Collections"][0].has_key?("InventoryChecksum") == false)
 
     previousHash = ChangeTracking.getHash(@fileinventoryHashPath)
@@ -494,7 +504,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     #2nd call should return empty since inventory did not change and time 
     ret = ChangeTracking.transform_and_wrap(@fileinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(1, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime"))
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot"))
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == true)
     assert(ret["DataItems"][0]["Collections"][0].has_key?("InventoryChecksum") == false)
 
     previousHash1 = ChangeTracking.getHash(@fileinventoryHashPath)
@@ -522,7 +533,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     ret = ChangeTracking.transform_and_wrap(@packageinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(1371, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime") == false)
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == false)
     assert(ret["DataItems"][0]["Collections"][0].has_key?("InventoryChecksum") == false)
 
     previousHash = ChangeTracking.getHash(@fileinventoryHashPath)
@@ -533,7 +545,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     #2nd call should return empty since inventory did not change and time 
     ret = ChangeTracking.transform_and_wrap(@packageinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(1371, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime"))
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == true)
     assert(ret["DataItems"][0]["Collections"][0].has_key?("InventoryChecksum") == false)
 
     previousHash1 = ChangeTracking.getHash(@fileinventoryHashPath)
@@ -561,7 +574,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime") == false)
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == false)
     assert(ret["DataItems"][0]["Collections"][0].has_key?("InventoryChecksum") == false)
 
     previousHash = ChangeTracking.getHash(@fileinventoryHashPath)
@@ -572,7 +586,8 @@ class ChangeTrackingTest < Test::Unit::TestCase
     #2nd call should return empty since inventory did not change and time 
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime"))
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == true)
     assert(ret["DataItems"][0]["Collections"][0].has_key?("InventoryChecksum") == false)
 
     previousHash1 = ChangeTracking.getHash(@fileinventoryHashPath)
@@ -594,20 +609,23 @@ class ChangeTrackingTest < Test::Unit::TestCase
     end
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime"))
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == true)
     
     #Case 2 - last inventory was sent a while ago, its time for inventory
     previousTime = Time.now - (25*3600)
     SetInventoryTimeStamp(@fileInventoryTimestampHashPath, previousTime) 
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime"))
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == true)
     
     #case 3 - last inventry was sent moments ago, inventorry should not be sent, but a change should be found since there was no previous hashfile
     SetInventoryTimeStamp(@fileInventoryTimestampHashPath, Time.now) 
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
-    assert(ret["DataItems"][0]["Collections"][0].has_key?("LastInventorySnapshotTime") == false)
+    assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
+    assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == false)
 
     #case 4 - last inventry was sent moments ago, inventorry should not be sent, and there is not change
     previousTime = Time.now - (9*3600)

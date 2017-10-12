@@ -43,12 +43,11 @@ class ChangeTracking
     def self.serviceXMLtoHash(serviceXML, isInventorySnapshot = false)
         serviceHash = instanceXMLtoHash(serviceXML)
         serviceHash["CollectionName"] = serviceHash["Name"]
-
-        if isInventorySnapshot
-           serviceHash["LastInventorySnapshotTime"] = @@lastInventorySnapshotTime
-        else
+        #InventoryChecksum should be calculated before InventorySnapshot is filled.
+        if isInventorySnapshot == false
            serviceHash["InventoryChecksum"] = Digest::SHA256.hexdigest(serviceHash.to_json)
         end
+        serviceHash["IsInventorySnapshot"] = isInventorySnapshot
         serviceHash
     end
 
@@ -62,12 +61,12 @@ class ChangeTracking
         ret["Publisher"] = packageHash["Publisher"]
         ret["Size"] = packageHash["Size"]
         ret["Timestamp"] = OMS::Common.format_time(packageHash["InstalledOn"].to_i)
-
-        if isInventorySnapshot
-           ret["LastInventorySnapshotTime"] = @@lastInventorySnapshotTime
-        else
+        #InventoryChecksum should be calculated before InventorySnapshot is filled.
+        if isInventorySnapshot == false
            ret["InventoryChecksum"] = Digest::SHA256.hexdigest(packageHash.to_json)
         end
+        ret["IsInventorySnapshot"] = isInventorySnapshot
+
         ret
     end
 
@@ -84,11 +83,11 @@ class ChangeTracking
         ret["DateModified"] = OMS::Common.format_time_str(fileInventoryHash["ModifiedDate"])
         ret["DateCreated"] = OMS::Common.format_time_str(fileInventoryHash["CreatedDate"])
 
-        if isInventorySnapshot
-           ret["LastInventorySnapshotTime"] = @@lastInventorySnapshotTime
-        else
+        #InventoryChecksum should be calculated before InventorySnapshot is filled.
+        if isInventorySnapshot == false
            ret["InventoryChecksum"] = Digest::SHA256.hexdigest(fileInventoryHash.to_json)
         end
+        ret["IsInventorySnapshot"] = isInventorySnapshot
         ret
     end
 
