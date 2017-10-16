@@ -134,6 +134,18 @@ notification_exit()
 
 # End Lower Level Utilities
 
+should_check_omsadmin_conf()
+{
+    local ws_id
+    for ws_id in $NON_OMS_WS
+    do
+        if [ "$1" = "$ws_id" ]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
 setup_variables()
 {
 
@@ -145,8 +157,11 @@ setup_variables()
     fi
 
     WS_STATUS=0
-    check_omsadmin_conf $initial_conf_dir
-    WS_STATUS=$?
+    should_check_omsadmin_conf $1    
+    if [ $? -eq 0 ]; then
+        check_omsadmin_conf $initial_conf_dir
+        WS_STATUS=$?
+    fi
     if [ "$WS_STATUS" -eq "0" ]; then
         . $initial_conf_dir
         WS_STATUS=$?
