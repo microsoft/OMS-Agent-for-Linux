@@ -852,6 +852,16 @@ try:
     '''
     if(omsInstallType == 1 or omsInstallType == 2):
        runCommonCommands()
+
+    '''
+    Run DSC diagnostics commands
+    '''
+    cmd='chmod +x ./dscDiagnostics.sh'
+    out=execCommand(cmd)
+    cmd='bash ./dscDiagnostics.sh ' + outDir + '/dscdiagnostics-' + str(datetime.datetime.utcnow().isoformat())
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    writeLogOutput(out)
         
     '''
     Logic to capture IOError or OSError in above logic
