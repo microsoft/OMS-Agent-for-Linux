@@ -1138,7 +1138,6 @@ copy_no_port_omsagent_d_conf()
     cp -p $SYSCONF_DIR/omsagent.d/heartbeat.conf $1
     cp -p $SYSCONF_DIR/omsagent.d/operation.conf $1
     cp -p $SYSCONF_DIR/omi_mapping.json $1
-    cp -p $SYSCONF_DIR/omsagent.d/oms_audits.xml $1
     cp -p $SYSCONF_DIR/omsagent.d/container.conf $1 2> /dev/null
 
     update_path $1/heartbeat.conf

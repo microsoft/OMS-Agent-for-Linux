@@ -11,15 +11,49 @@ module OMS
         end
 
         # ------------------------------------------------------
-        def transform_and_wrap(results, host, time)
+        def transform_and_wrap(results, hostname, time)
             if results.nil?
                 @log.error "Security Baseline Assessment failed; Empty input"
-                return nil, nil
+                wrapper = {
+                    "DataType"=>"OPERATION_BLOB",
+                    "IPName"=>"LogManagement",
+                    "DataItems"=>[
+                        {
+                            "Timestamp" => OMS::Common.format_time(time),
+                            "OperationStatus" => "Error",
+                            "Computer" => hostname,
+                            "Category" => "Security Baseline",
+                            "Solution" => "Security",
+                            "Detail" => "Security Baseline Assessment failed: Empty output"
+                        }
+                    ]
+                }
+                return wrapper, nil
             end
 
-            if results["results"].nil? 
-                @log.error "Security Baseline Assessment failed; Invalid input:" + results.inspect
-                return nil, nil
+            if results["results"].nil?
+                msg = "Security Baseline Assessment failed: Unknown error"
+                if results["error"].nil?
+                    @log.error "Security Baseline Assessment failed; Invalid input:" + results.inspect
+                else
+                    @log.error "Security Baseline Assessment failed; " + results["error"]
+                    msg = "Security Baseline Assessment failed: " + results["error"]
+                end
+                wrapper = {
+                    "DataType"=>"OPERATION_BLOB",
+                    "IPName"=>"LogManagement",
+                    "DataItems"=>[
+                        {
+                            "Timestamp" => OMS::Common.format_time(time),
+                            "OperationStatus" => "Error",
+                            "Computer" => hostname,
+                            "Category" => "Security Baseline",
+                            "Solution" => "Security",
+                            "Detail" => msg
+                        }
+                    ]
+                }
+                return wrapper, nil
             end
 
             results["assessment_id"] = SecureRandom.uuid      
@@ -40,11 +74,11 @@ module OMS
                     next
                 end
                 
-                oms_baseline_result = transform_asm_2_oms(asm_baseline_result, scan_time, host, assessment_id)	
+                oms_baseline_result = transform_asm_2_oms(asm_baseline_result, scan_time, hostname, assessment_id)	
                 security_baseline_blob["DataItems"].push(oms_baseline_result)
             end 
 
-            security_baseline_summary_blob = calculate_summary(results, host, time)
+            security_baseline_summary_blob = calculate_summary(results, hostname, time)
 
             @log.info "Security Baseline Summary: " + security_baseline_summary_blob.inspect
 

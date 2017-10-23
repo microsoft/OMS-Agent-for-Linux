@@ -37,6 +37,8 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsof
 # Enable nxOMSAuditdResource
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSAuditdPlugin.sh
 
+# run omsbaseline
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/plugin/omsbaseline *
 
 # Enable nxAutomationWorker scenarios
 Defaults:nxautomation !requiretty
