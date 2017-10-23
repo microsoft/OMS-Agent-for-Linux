@@ -6,3 +6,11 @@
   read_from_head true
   tag oms.api.Memcached
 </source>
+
+<filter oms.api.Memcached>
+  type record_transformer
+  enable_ruby
+  <record>
+    Computer ${OMS::Common.get_hostname}
+  </record>
+</filter>
