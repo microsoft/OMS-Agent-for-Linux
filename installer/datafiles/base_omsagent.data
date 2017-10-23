@@ -43,7 +43,6 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf;        installer/conf/omsagent.d/vmware_esxi.conf;            644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf;          installer/conf/omsagent.d/operation.conf;              644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/postgresql_logs.conf;    installer/conf/omsagent.d/postgresql_logs.conf;        644; root; root
-/etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms_audits.xml;          installer/conf/omsagent.d/oms_audits.xml;              644; root; root
 
 /opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
 
@@ -78,6 +77,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/tailfilereader.rb;                       source/code/plugins/tailfilereader.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/filter_security_baseline.rb;             source/code/plugins/filter_security_baseline.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
+/opt/microsoft/omsagent/plugin/oms_audits.xml;                          source/code/plugins/oms_audits.xml;                    644; root; root
 /opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root
 /opt/microsoft/omsagent/plugin/omsremediate;                            source/code/plugins/omsremediate_${{PFARCH}};          755; root; root
 /opt/microsoft/omsagent/plugin/out_oms_diag.rb;                         source/code/plugins/out_oms_diag.rb;                   744; root; root

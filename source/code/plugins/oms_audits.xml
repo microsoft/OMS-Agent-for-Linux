@@ -372,20 +372,6 @@
         path="/etc/rsyslog.conf" />
     </audit>
     <audit
-      description="Logs should be sent to a remote loghost (using mdsd service)"
-      msid="66"
-      cceid="CCE-17248-6"
-      severity="Important"
-      impact="An attacker could cover up activity by manipulating logs on the local system"
-      remediation="Start the mdsd service (service mdsd start)"
-      ruleId="4f6119cf-13b9-4165-af52-88661ab45683">
-      <check
-        distro="*"
-        command="CheckServiceStatus"
-        expect="running"
-        service="mdsd" />
-    </audit>
-    <audit
       description="Rsyslog should not accept remote messages."
       msid="67"
       cceid="CCE-17639-6"
