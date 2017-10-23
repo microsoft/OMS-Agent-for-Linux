@@ -53,21 +53,21 @@ RETVAL=0
 USER_REQ=""
 case "$1" in
      start)
-        AGENT_RUNNING=is_omsagent_running
+        AGENT_RUNNING=this_omsagent_running # New routine returns 0 for true
         START_QUALS="-d $PIDFILE --no-supervisor -o $LOGFILE -c $CONFFILE"
 
         case $INIT_STYLE in
             D)
                 log_begin_msg "Starting $OMS_NAME: "
                 [ "`id -u`" -eq 0 ] && USER_REQ="--chuid omsagent"
-                $AGENT_RUNNING && /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --exec $OMS_BIN -- $START_QUALS
+                $AGENT_RUNNING || /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --exec $OMS_BIN -- $START_QUALS
                 RETVAL=$?
                 log_end_msg $RETVAL
                 ;;               
             R)
                 echo -n "Starting $OMS_NAME: "
                 [ "`id -u`" -eq 0 ] && USER_REQ="--user=omsagent"
-                $AGENT_RUNNING && daemon $USER_REQ $OMS_BIN $START_QUALS
+                $AGENT_RUNNING || daemon $USER_REQ $OMS_BIN $START_QUALS
                 RETVAL=$?
                 echo
                 ;;
@@ -77,7 +77,7 @@ case "$1" in
                 LC_CTYPE="$RC_LANG"; export LC_CTYPE
                 echo -n "Starting $OMS_NAME "
                 [ "`id -u`" -eq 0 ] && USER_REQ="-u omsagent"
-                $AGENT_RUNNING && startproc $USER_REQ -p $PIDFILE $OMS_BIN $START_QUALS
+                $AGENT_RUNNING || startproc $USER_REQ -p $PIDFILE $OMS_BIN $START_QUALS
                 rc_status -v
                 ;;
             *)  exit 1   ;;
