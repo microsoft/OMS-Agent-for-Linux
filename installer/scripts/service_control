@@ -206,7 +206,7 @@ check_omsadmin_conf()
         if ! check_file_has_line_pattern $_fs "OMS_ENDPOINT=.*";                then ec=$(expr $ec + 1); fi
         if ! check_file_has_line_pattern $_fs "AZURE_RESOURCE_ID=.*";           then ec=$(expr $ec + 1); fi
         if ! check_file_has_line_pattern $_fs "OMSCLOUD_ID=.*";                 then ec=$(expr $ec + 1); fi
-        if ! check_file_has_line_pattern $_fs "UUID=$REGEX_UUID";               then ec=$(expr $ec + 1); fi
+        if ! check_file_has_line_pattern $_fs "UUID=.*";                        then ec=$(expr $ec + 1); fi
         return $ec
     else
         echo "ERROR:  OMS Admin configuration file $_fs NOT Found!" >&2
