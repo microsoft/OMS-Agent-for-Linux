@@ -148,7 +148,6 @@ should_check_omsadmin_conf()
 
 setup_variables()
 {
-
     local initial_conf_dir=
     if [ -z "$1" ]; then
         initial_conf_dir="$ETC_DIR/conf/omsadmin.conf"
@@ -156,17 +155,10 @@ setup_variables()
         initial_conf_dir="$ETC_DIR/$1/conf/omsadmin.conf"
     fi
 
-    WS_STATUS=0
-    should_check_omsadmin_conf $1    
-    if [ $? -eq 0 ]; then
-        check_omsadmin_conf $initial_conf_dir
-        WS_STATUS=$?
-    fi
-    if [ "$WS_STATUS" -eq "0" ]; then
-        . $initial_conf_dir
-        WS_STATUS=$?
-    fi
-
+    WS_STATUS=0    
+    . $initial_conf_dir
+    WS_STATUS=$?
+    
     if [ "$WS_STATUS" -eq "0" ]; then
 
         VAR_DIR_WS=$VAR_DIR/$WORKSPACE_ID
