@@ -56,6 +56,7 @@ RUBY_TESTING_EXE := $(RUBY_TESTING_DIR)/bin/ruby
 
 ifeq ($(ENABLE_DEBUG),1)
 DEBUG_FLAGS := -g
+DEBUG_FLAGS_DSC_OMI := --enable-debug
 endif
 
 # Need to use RUBY_COMPILE_FLAGS when compiling code that uses C Ruby interfaces
@@ -182,9 +183,9 @@ clean-status :
 $(OMI_LIBRARY_LIB_BASE) :
 	@$(ECHO) "========================= Performing Building OMI Project"
 ifeq ($(ULINUX),1)
-	cd $(OMI_ROOT); ./configure --enable-microsoft --enable-ulinux
+	cd $(OMI_ROOT); ./configure $(DEBUG_FLAGS_DSC_OMI) --enable-microsoft --enable-ulinux
 else
-	cd $(OMI_ROOT); ./configure --enable-microsoft
+	cd $(OMI_ROOT); ./configure $(DEBUG_FLAGS_DSC_OMI) --enable-microsoft
 endif
 	$(MAKE) -C $(OMI_ROOT) all
 
@@ -197,7 +198,7 @@ endif
 $(DSC_TARGET_DIR) : $(OMI_LIBRARY_LIB_BASE)
 ifeq ($(ULINUX),1)
 	@$(ECHO) "========================= Performing Building DSC Project"
-	cd $(DSC_DIR); ./configure --oms
+	cd $(DSC_DIR); ./configure --oms $(DEBUG_FLAGS_DSC_OMI)
 	ln -fs $(OMI_ROOT) $(DSC_DIR)/omi-1.0.8
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_0.9.8 output
 	$(MAKE) -C $(DSC_DIR) dsc098
