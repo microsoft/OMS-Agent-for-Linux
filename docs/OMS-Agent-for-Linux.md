@@ -146,7 +146,7 @@ http://user01:password@proxy01.contoso.com:8080
 *Note: Although you do not have any user/password set for the proxy, you will still need to add a psuedo user/password. This can be any username or password.    
 (This will be enhanced in future so that these psuedo user/password will not be necessary)*
 
-The proxy server can be specified during installation or directly in a file (at any point). 
+OMS agent only creates secure connection over http. Even if you specify the protocol as http, please note that http requests are created using SSL/TLS secure connection so the proxy must support SSL/TLS. The proxy server can be specified during installation or directly in a file (at any point). 
 
 **Specify proxy configuration during installation:**
 The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use. 
