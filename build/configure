@@ -248,20 +248,20 @@ fi
 # And we need our local SSL directories to be able to deal with ULINUX
 
 if [ $ULINUX -eq 1 ]; then
-    if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 ]; then
+    if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 -o ! -d /usr/local_ssl_1.1.0 ]; then
         echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
         exit 1
     fi
 fi
 
-if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then
+if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 -a -d /usr/local_ssl_1.1.0 ]; then
     echo "This appears to be a ULINUX system, but you're not doing a ULINUX build." >& 2
     echo "Given that OMI makes assumptions based on these directories, there is an" >& 2
     echo "extraordinarily good chance that your build will fail. You should do a" >& 2
     echo "ULINUX build (--enable-ulinux) on this system." >& 2
     echo "" >& 2
     echo "If you really do not want a universal (ULINUX) build, then run:" >& 2
-    echo "    sudo rm -rf /usr/local_ssl_0.9.8 /usr/local_ssl_1.0.0" >& 2
+    echo "    sudo rm -rf /usr/local_ssl_0.9.8 /usr/local_ssl_1.0.0 /usr/local_ssl_1.1.0" >& 2
     echo "and then re-run configure. IMPORTANT: Only try this on a private system," >& 2
     echo "Do NOT do this on a shared system without consulting your team!" >& 2
     exit 1
