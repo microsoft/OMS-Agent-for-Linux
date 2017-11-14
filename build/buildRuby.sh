@@ -10,6 +10,7 @@
 #   Parameter may be one of:
 #       "100": Build for SSL v1.0.0
 #       "098": Build for SSL v0.9.8
+#       "110": Build for SSL v1.1.0
 #       blank: Build for the local system
 #       test:  Build for test purposes
 #       
@@ -106,12 +107,19 @@ case $RUBY_BUILD_TYPE in
         export PKG_CONFIG_PATH=${SSL_100_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
         ;;
 
+    110)
+        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_110[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+
+        export LD_LIBRARY_PATH=$SSL_110_LIBPATH:$LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH=${SSL_110_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+        ;;
     *)
         INT_APPEND_DIR=""
         RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         if [ -n "$RUBY_BUILD_TYPE" ]; then
-            echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, 098, 100, or blank" >& 2
+            echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, 098, 100, 110 or blank" >& 2
             exit 1
         fi
 esac

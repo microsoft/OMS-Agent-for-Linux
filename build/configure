@@ -436,6 +436,10 @@ if [ "$ULINUX" = "1" ]; then
     ssl_100_dirpath=/usr/local_ssl_1.0.0
     ruby_configure_quals_100=( --with-openssl-dir=$ssl_100_dirpath
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
+
+    ssl_110_dirpath=/usr/local_ssl_1.1.0
+    ruby_configure_quals_110=( --with-openssl-dir=$ssl_110_dirpath
+        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 fi
 
 # Do we have a version file from the super project? If not, make one
@@ -484,11 +488,14 @@ if [ "$ULINUX" = "1" ]; then
     # SSL "lib" directory name can vary based on platform AND OpenSSL version ...
     ssl_098_libpath=`eval echo ${ssl_098_dirpath}/lib*`
     ssl_100_libpath=`eval echo ${ssl_100_dirpath}/lib*`
+    ssl_110_libpath=`eval echo ${ssl_110_dirpath}/lib*`
 
     echo "SSL_098_LIBPATH=${ssl_098_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_098=( ${ruby_configure_quals_098[@]} )" >> config.mak
     echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
+    echo "SSL_110_LIBPATH=${ssl_110_libpath}" >> config.mak
+    echo "RUBY_CONFIGURE_QUALS_110=( ${ruby_configure_quals_110[@]} )" >> config.mak
 fi
 
 # Fix permissions in case they aren't executable - and then configure AUOMS
