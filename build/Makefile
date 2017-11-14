@@ -205,7 +205,7 @@ ifeq ($(ULINUX),1)
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.0.0 output
 	$(MAKE) -C $(DSC_DIR) dsc100
 	$(MAKE) -C $(DSC_DIR) dsckit100
-    cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.1.0 output
+	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.1.0 output
 	$(MAKE) -C $(DSC_DIR) dsc110
 	$(MAKE) -C $(DSC_DIR) dsckit110
 	cd $(OMI_ROOT); $(RMDIR) output
@@ -267,8 +267,8 @@ ifeq ($(ULINUX),1)
 	$(BASE_DIR)/build/buildRuby.sh 098
 	@$(ECHO) "========================= Performing Building Ruby for SSL v1.0.0 ..."
 	$(BASE_DIR)/build/buildRuby.sh 100
-    @$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
-    $(BASE_DIR)/build/buildRuby.sh 110
+	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
+	$(BASE_DIR)/build/buildRuby.sh 110
 else
 	@$(ECHO) "========================= Performing Building Ruby"
 	$(BASE_DIR)/build/buildRuby.sh
@@ -360,9 +360,9 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
 	cd $(INTERMEDIATE_DIR)/100; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_100././'` ; $(MV) $$SOURCE $$DEST; done
 	
-    cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/110
-    cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/110
-    cd $(INTERMEDIATE_DIR)/110; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_110././'` ; $(MV) $$SOURCE $$DEST; done
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/110
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/110
+	cd $(INTERMEDIATE_DIR)/110; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_110././'` ; $(MV) $$SOURCE $$DEST; done
 	
 	# Pick up the OSS (Open Source) providers
 	$(RMDIR) $(INTERMEDIATE_DIR)/oss-kits
