@@ -30,7 +30,7 @@ If none of these steps work for you the following channels for help are also ava
  OMS Agent for Linux Log File | `/var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log `
  OMS Agent Configuration Log File | `/var/opt/microsoft/omsconfig/omsconfig.log`
  
- We recommend you to use our log collector tool to retrieve important logs for troubleshooting or before submitting a github issue. You can read more about the tool and how to run it [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/OMS_Linux_Agent_and_Container_Log_Collector.docx)
+ We recommend you to use our log collector tool to retrieve important logs for troubleshooting or before submitting a github issue. You can read more about the tool and how to run it [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/OMS_Linux_Agent_Log_Collector.md)
  
 ## Important Configuration Files
 
