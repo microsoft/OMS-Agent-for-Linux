@@ -26,7 +26,7 @@ AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
 #      of the Ruby installed with the OMSAgent
-RUBY_VER := 2.3.0
+RUBY_VER := 2.4.0
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
 
@@ -59,7 +59,7 @@ DEBUG_FLAGS := -g
 endif
 
 # Need to use RUBY_COMPILE_FLAGS when compiling code that uses C Ruby interfaces
-# (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.3.3)
+# (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.4.0)
 RUBY_COMPILE_FLAGS := $(DEBUG_FLAGS) -D_REENTRANT -fstack-protector-all -Wall -fno-nonansi-builtins -Woverloaded-virtual -Wformat -Wformat-security -Wcast-align -Wswitch-enum  -Wwrite-strings  -Werror -Wcast-qual -fPIC # -Wshadow -Wredundant-decls
 PLUGIN_LINK_LIBRARIES := -L$(OMI_LIBRARY_DIR) -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
 SHARED_FLAGS := -shared
@@ -541,7 +541,7 @@ endif
 #--------------------------------------------------------------------------------
 # Run unit tests
 #
-# Note: With the upgrade to Ruby 2.3, rake needs the temporary $PATH (system
+# Note: With the upgrade to Ruby 2.4, rake needs the temporary $PATH (system
 #       environment variable) change to execute using the correct Ruby (the
 #       OMSAgent test Ruby)
 
