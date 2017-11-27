@@ -177,7 +177,7 @@ touch configure
 echo "========================= Performing Repairing Ruby sources"
 
 # RUBY_REPAIR_LIST is set reletive to the Ruby source directory
-RUBY_REPAIR_LIST="enc/unicode/name2ctype.h enc/jis/props.h"
+RUBY_REPAIR_LIST="enc/unicode/9.0.0/name2ctype.h enc/jis/props.h"
 
 cd ${RUBY_SRCDIR}
 git checkout -- ${RUBY_REPAIR_LIST}
@@ -203,7 +203,7 @@ echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
 echo "Installing Builder into Ruby ..."
-elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.2.gem
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.3.gem
 
 echo "Installing Gyoku into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/gyoku-1.3.1.gem
@@ -223,7 +223,7 @@ echo "========================= Performing Building FluentD"
 cd ${FLUENTD_DIR}
 bundle install --local
 bundle exec rake build
-elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.24.gem
+elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.40.gem
 
 echo "========================= Performing Stripping Binaries"
 sudo find ${RUBY_DESTDIR} -name \*.so -print -exec strip {} \;

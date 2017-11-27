@@ -1,5 +1,5 @@
 # This file is utilized for testing oms_diag.rb as part of oms_diag_test.rb
-
+require 'fluent/input'
 require_relative '../../../source/code/plugins/oms_diag_lib'
 module Fluent
     class DiagTest < Input
