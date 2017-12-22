@@ -1,0 +1,190 @@
+[
+    {
+        "CimClassName": "SCX_RTProcessorStatisticalInformation",
+        "ObjectName": "Processor",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "PercentProcessorTime",
+                "CounterName": "% Processor Time"
+            },
+            {
+                "CimPropertyName": "PercentDPCTime",
+                "CounterName": "% DPC Time"
+            },
+            {
+                "CimPropertyName": "PercentInterruptTime",
+                "CounterName": "% Interrupt Time"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_FileSystemStatisticalInformation",
+        "ObjectName": "Logical Disk",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "PercentFreeInodes",
+                "CounterName": "% Free Inodes"
+            },
+            {
+                "CimPropertyName": "FreeMegabytes",
+                "CounterName": "Free Megabytes"
+            },
+            {
+                "CimPropertyName": "PercentFreeSpace",
+                "CounterName": "% Free Space"
+            },
+            {   "CimPropertyName": "IsOnline",
+                "CounterName": "Logical Disk Online"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_MemoryStatisticalInformation",
+        "ObjectName": "Universal Linux Operating System",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "AvailableMemory",
+                "CounterName": "Available MBytes Memory"
+            },
+            {
+                "CimPropertyName": "AvailableSwap",
+                "CounterName": "Available MBytes Swap"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_DiskDriveStatisticalInformation",
+        "ObjectName": "Physical Disk",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "AverageTransferTime",
+                "CounterName": "Avg. Disk sec/Transfer"
+            },
+            {
+                "CimPropertyName": "AverageReadTime",
+                "CounterName": "Avg. Disk sec/Read"
+            },
+            {
+                "CimPropertyName": "AverageWriteTime",
+                "CounterName": "Avg. Disk sec/Write"
+            },
+            {   "CimPropertyName": "IsOnline",
+                "CounterName": "Physical Disk Online"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_IPProtocolEndpoint",
+        "ObjectName": "Network Adapter",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "EnabledState",
+                "CounterName": "Enabled state"
+            }
+        ]
+    },
+    {
+        "CimClassName": "SCX_UnixProcessStatisticalInformation",
+        "ObjectName": "Process",
+        "InstanceProperty": "Name",
+        "Namespace": "root/scx",
+        "CimProperties": [
+            {
+                "CimPropertyName": "PercentUserTime",
+                "CounterName": "Pct User Time"
+            },
+            {
+                "CimPropertyName": "PercentPrivilegedTime",
+                "CounterName": "Pct Privileged Time"
+            },
+            {
+                "CimPropertyName": "UsedMemory",
+                "CounterName": "Used Memory",
+                "DisplayName": "Used Memory kBytes"
+            },
+            {
+                "CimPropertyName": "VirtualSharedMemory",
+                "CounterName": "Virtual Shared Memory"
+            }
+        ]
+    },
+    {
+        "CimClassName": "Apache_HTTPDServerStatistics",
+        "ObjectName": "Apache HTTP Server Statistics",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/apache",
+        "CimProperties": [
+            {
+                "CimPropertyName": "TotalPctCPU",
+                "CounterName": "Total Pct CPU"
+            },
+            {
+                "CimPropertyName": "IdleWorkers",
+                "CounterName": "Idle Workers"
+            },
+            {
+                "CimPropertyName": "BusyWorkers",
+                "CounterName": "Busy Workers"
+            },
+            {
+                "CimPropertyName": "PctBusyWorkers",
+                "CounterName": "Pct Busy Workers"
+            }
+        ]
+    },
+    {
+        "CimClassName": "Apache_HTTPDServer",
+        "ObjectName": "Apache HTTP Server",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/apache",
+        "CimProperties": [
+            {
+              "CimPropertyName": "OperatingStatus",
+              "CounterName": "Operating Status"
+            }
+        ]
+    },
+    {
+        "CimClassName": "Apache_HTTPDVirtualHostStatistics",
+        "ObjectName": "Apache Virtual Host",
+        "InstanceProperty": "InstanceID",
+        "Namespace": "root/apache",
+        "CimProperties": [
+            {
+                "CimPropertyName": "RequestsPerSecond",
+                "CounterName": "Requests per Second"
+            },
+            {
+                "CimPropertyName": "ErrorsPerMinute400",
+                "CounterName": "Errors per Minute - Client"
+            },
+            {
+                "CimPropertyName": "ErrorsPerMinute500",
+                "CounterName": "Errors per Minute - Server"
+            }   
+        ]
+    },
+   {
+        "CimClassName": "Apache_HTTPDVirtualHostCertificate",
+        "ObjectName": "Apache Virtual Host Certificate",
+        "InstanceProperty": "Name",
+        "Namespace": "root/apache",
+        "CimProperties": [
+            {
+                "CimPropertyName": "DaysUntilExpiration",
+                "CounterName": "Days Until Expiration"
+            }
+        ]
+    }
+]
+
