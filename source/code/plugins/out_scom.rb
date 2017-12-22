@@ -14,8 +14,8 @@ module Fluent
       require_relative 'scom_common'
     end
 
-    desc 'Set this parameter to true to validate server certificate'
-    config_param :enable_server_auth, :bool, :default => false
+    desc 'Parameter to enable/disable SCOM server authentication'
+    config_param :enable_server_auth, :bool, :default => true
 
     def configure(conf)
       super

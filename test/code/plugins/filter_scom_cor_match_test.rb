@@ -19,6 +19,23 @@ require 'socket'
       time_interval 5
     ]
     
+    CONFIG_TIME_LIMIT = %[
+      regexp1 message Installing package [A-Za-z0-9]*
+      regexp2 message Install failed for package [A-Za-z0-9]*
+      event_id 0001
+      event_desc TestDesc
+      time_interval 5000
+    ]
+    
+    CONFIG_NO_TIME_LIMIT = %[
+      regexp1 message Installing package [A-Za-z0-9]*
+      regexp2 message Install failed for package [A-Za-z0-9]*
+      event_id 0001
+      event_desc TestDesc
+      time_interval 5000
+      disable_timer_limit true
+    ]
+    
     def create_driver(conf=CONFIG)
       Fluent::Test::FilterTestDriver.new(Fluent::SCOMCorrelatedMatchFilter).configure(conf)
     end
@@ -30,6 +47,24 @@ require 'socket'
       assert_equal(d.instance.key1, 'message')
       assert_equal(d.instance.key2, 'message')
       assert_equal(d.instance.time_interval, 5)
+    end
+    
+    def test_configure_time_limit
+      d = create_driver(CONFIG_TIME_LIMIT)
+      assert_equal(d.instance.expression1, Regexp.compile('Installing package [A-Za-z0-9]*'))
+      assert_equal(d.instance.expression2, Regexp.compile('Install failed for package [A-Za-z0-9]*'))
+      assert_equal(d.instance.key1, 'message')
+      assert_equal(d.instance.key2, 'message')
+      assert_equal(d.instance.time_interval, 3600)
+    end
+    
+    def test_configure_no_time_limit
+      d = create_driver(CONFIG_NO_TIME_LIMIT)
+      assert_equal(d.instance.expression1, Regexp.compile('Installing package [A-Za-z0-9]*'))
+      assert_equal(d.instance.expression2, Regexp.compile('Install failed for package [A-Za-z0-9]*'))
+      assert_equal(d.instance.key1, 'message')
+      assert_equal(d.instance.key2, 'message')
+      assert_equal(d.instance.time_interval, 5000)
     end
     
     def test_filter
