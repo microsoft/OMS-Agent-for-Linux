@@ -171,9 +171,6 @@ module MaintenanceModule
           @AGENT_GUID = line.sub("AGENT_GUID=","").strip
         elsif line =~ /^URL_TLD/
           @URL_TLD = line.sub("URL_TLD=","").strip
-          if !@URL_TLD.end_with?(".com")
-            @URL_TLD.concat(".com")  # Ensure URL_TLD is backwards-compatible
-          end
         elsif line =~ /^LOG_FACILITY/
           @LOG_FACILITY = line.sub("LOG_FACILITY=","").strip
         elsif line =~ /^CERTIFICATE_UPDATE_ENDPOINT/
