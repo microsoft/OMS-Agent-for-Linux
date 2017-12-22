@@ -1,0 +1,114 @@
+[
+  {
+    "Name":"Disk Partition",
+    "Id":"26e4e0bb-806a-765b-2271-753373764e32",
+    "properties": [
+      {"Id":"883cd2bb-eb57-b4ff-bbf2-69b7cf4570dc","Name":"DisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"d3e652a3-299c-6205-ab69-671206afdd6c","Name":"ObjectStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"6c51988d-69fe-7f3c-d56f-70b761ed1a3b","Name":"AssetStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8838bd0e-e9ca-ae96-0d1e-7da1291a772f","Name":"Notes","Type":8,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"47ea2d8d-a28f-161b-14e1-5cc98b736208","Name":"DeviceID","Type":3,"IsKey":true,"IsCaseSensitive":false},
+      {"Id":"03414ef5-5e89-39cc-c858-7a6751b10fdc","Name":"DeviceName","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"0d87b39a-3d89-42df-cf60-d7c47a78675f","Name":"DiskIndex","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"fe7e26e7-a252-5668-4cc4-6df1450ec836","Name":"BlockSize","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"2801abff-093a-dda9-d568-b9379f28fe3e",    "Name":"PrimaryPartition","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"582cded2-9e3f-3103-bf64-ecb214c603b1","Name":"Bootable","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"1f1be831-240c-5daf-acb8-f1e17df1c51b","Name":"Size","Type":3,"IsKey":false,"IsCaseSensitive":false}
+    ]
+  },
+  {
+    "Name":"Universal Linux Computer",
+    "Id":"30bc9ca4-f724-93f4-2208-58e872489b95",
+    "properties": [
+      {"Id":"883cd2bb-eb57-b4ff-bbf2-69b7cf4570dc","Name":"DisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"CSName"},
+      {"Id":"d3e652a3-299c-6205-ab69-671206afdd6c","Name":"ObjectStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"6c51988d-69fe-7f3c-d56f-70b761ed1a3b","Name":"AssetStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8838bd0e-e9ca-ae96-0d1e-7da1291a772f","Name":"Notes","Type":8,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"5442c0f1-3251-3bf6-6f1b-d8c6f333afc3","Name":"PrincipalName","Type":3,"IsKey":true,"IsCaseSensitive":false,"CimName":"CSName"},
+      {"Id":"a670add7-280a-8f11-96e5-45ff00baba46","Name":"DNSName","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"aea59933-e0b2-6e7c-8999-798836b5730e","Name":"IPAddress","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"63e3c71e-f002-f8c4-f071-abee558cb077","Name":"NetworkName","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"144b1601-1bd9-77c2-f085-f1d09c88218b","Name":"SSHPort","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"dbdd2341-592f-0de4-7d7f-bf3007c9bf89","Name":"AgentVersion","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"51f3b833-ae5f-a4d0-fdd6-deb1c1263d35","Name":"Architecture","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"904bd983-8e8a-1ae4-5a2c-94b34fda675c","Name":"TimeZoneOffset","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"CurrentTimeZone"},
+      {"Id":"491fcb88-dfa2-08af-a147-cab2d5f74e52","Name":"IsVirtualMachine","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"ac616fe1-d25e-2575-54b4-577bf6589d67","Name":"LogicalProcessors","Type":0,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"1c2fc5ed-90b5-1656-58b8-eb7082ce13e1","Name":"PhysicalProcessors","Type":0,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"9fb792d3-6f0f-bc95-751b-ae2b2e8c6b1a","Name":"HostServerName","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"b807c42b-c750-4e45-4c85-41fddd461948","Name":"VirtualMachineName","Type":3,"IsKey":false,"IsCaseSensitive":false}
+    ]
+  },
+  {
+    "Name":"Universal Linux Operating System",
+    "Id":"5cac2bf9-b7a0-5e30-8122-70c09c077516",
+    "properties": [
+      {"Id":"883cd2bb-eb57-b4ff-bbf2-69b7cf4570dc","Name":"DisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Caption"},
+      {"Id":"d3e652a3-299c-6205-ab69-671206afdd6c","Name":"ObjectStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"6c51988d-69fe-7f3c-d56f-70b761ed1a3b","Name":"AssetStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8838bd0e-e9ca-ae96-0d1e-7da1291a772f","Name":"Notes","Type":8,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"e218457a-4fbf-34e5-c5b4-f134e4f476df","Name":"OSVersion","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Version"},
+      {"Id":"76ee6891-3a76-37d0-082e-64f272545242","Name":"OSVersionDisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Caption"}
+    ]
+  },
+  {
+    "Name":"Logical Disk",
+    "Id":"74735bff-9225-c45f-1edf-fa2edb1f7884",
+    "properties": [
+      {"Id":"883cd2bb-eb57-b4ff-bbf2-69b7cf4570dc","Name":"DisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"d3e652a3-299c-6205-ab69-671206afdd6c","Name":"ObjectStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"6c51988d-69fe-7f3c-d56f-70b761ed1a3b","Name":"AssetStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8838bd0e-e9ca-ae96-0d1e-7da1291a772f","Name":"Notes","Type":8,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"47ea2d8d-a28f-161b-14e1-5cc98b736208","Name":"DeviceID","Type":3,"IsKey":true,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"03414ef5-5e89-39cc-c858-7a6751b10fdc","Name":"DeviceName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"8714ce8a-1d61-b2b4-ffb6-1ffb73cc4fbc","Name":"FileSystem","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"FileSystemType"},
+      {"Id":"3111f912-5791-3853-1464-d3f4a0b0243e","Name":"Compressed","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"CompressionMethod"},
+      {"Id":"da334500-da1c-476a-69d6-732001aade17","Name":"Size","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"FileSystemSize"}
+    ]
+  },
+  {
+    "Name":"Physical Disk",
+    "Id":"a9eef4f2-c51c-ee4c-39d9-fa838bd52f20",
+    "properties": [
+      {"Id":"883cd2bb-eb57-b4ff-bbf2-69b7cf4570dc","Name":"DisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"d3e652a3-299c-6205-ab69-671206afdd6c","Name":"ObjectStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"6c51988d-69fe-7f3c-d56f-70b761ed1a3b","Name":"AssetStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8838bd0e-e9ca-ae96-0d1e-7da1291a772f","Name":"Notes","Type":8,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"47ea2d8d-a28f-161b-14e1-5cc98b736208","Name":"DeviceID","Type":3,"IsKey":true,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"03414ef5-5e89-39cc-c858-7a6751b10fdc","Name":"DeviceName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"0b7121e8-767b-1848-978b-2a9459a83bc9","Name":"InterfaceType","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"InterfaceType"},
+      {"Id":"91180091-159e-ce3b-18d1-0f783e981e67","Name":"Model","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8e9d27b7-bb1b-be03-4ae3-17160ad8f06e","Name":"Size","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"MaxMediaSize"},
+      {"Id":"db155b3a-02a1-d540-88b1-6539c904c68f","Name":"TotalCylinders","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"TotalCylinders"},
+      {"Id":"6e954922-a6a3-1423-310d-dc8140504b59","Name":"TotalHeads","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"TotalHeads"},
+      {"Id":"d0156721-6f31-43b9-89bd-89c8e6264db0","Name":"TotalSectors","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"TotalSectors"}
+    ]
+  },
+  {
+    "Name":"Network Adapter",
+    "Id":"c4700c4e-8a81-1f93-bfc2-eb738f70d561",
+    "properties": [
+      {"Id":"883cd2bb-eb57-b4ff-bbf2-69b7cf4570dc","Name":"DisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"d3e652a3-299c-6205-ab69-671206afdd6c","Name":"ObjectStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"6c51988d-69fe-7f3c-d56f-70b761ed1a3b","Name":"AssetStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8838bd0e-e9ca-ae96-0d1e-7da1291a772f","Name":"Notes","Type":8,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"47ea2d8d-a28f-161b-14e1-5cc98b736208","Name":"DeviceID","Type":3,"IsKey":true,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"03414ef5-5e89-39cc-c858-7a6751b10fdc","Name":"DeviceName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"ElementName"},
+      {"Id":"2460e156-cb84-3f7b-eac3-1349cde7c5db","Name":"IPAddress","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"IPv4Address"},
+      {"Id":"d26d0fc5-5e4e-7c26-34ec-6f8da5e01bcb","Name":"IPSubnet","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"SubnetMask"}
+    ]
+  },
+  {
+    "Name":"Processor",
+    "Id":"e00521c1-e161-bbe5-fb70-af43ed73ea9f",
+    "properties": [
+      {"Id":"883cd2bb-eb57-b4ff-bbf2-69b7cf4570dc","Name":"DisplayName","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"d3e652a3-299c-6205-ab69-671206afdd6c","Name":"ObjectStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"6c51988d-69fe-7f3c-d56f-70b761ed1a3b","Name":"AssetStatus","Type":7,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"8838bd0e-e9ca-ae96-0d1e-7da1291a772f","Name":"Notes","Type":8,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"47ea2d8d-a28f-161b-14e1-5cc98b736208","Name":"DeviceID","Type":3,"IsKey":true,"IsCaseSensitive":false,"CimName":"Name"},
+      {"Id":"03414ef5-5e89-39cc-c858-7a6751b10fdc","Name":"DeviceName","Type":3,"IsKey":false,"IsCaseSensitive":false},
+      {"Id":"648dd78a-1018-2201-dae8-68edaa186d83","Name":"PerfmonInstance","Type":3,"IsKey":false,"IsCaseSensitive":false,"CimName":"Name"}
+    ]
+  }
+]

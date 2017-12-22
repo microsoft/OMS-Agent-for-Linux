@@ -16,6 +16,7 @@ module Fluent
     config_param :interval, :time, :default => nil
     config_param :tag, :string, :default => "oms.omi"  
     config_param :omi_mapping_path, :string, :default => "/etc/opt/microsoft/omsagent/conf/omsagent.d/omi_mapping.json"
+    config_param :wlm_enabled, :bool, :default => false
 
     def configure (conf)
       super
@@ -46,8 +47,13 @@ module Fluent
     end
 
     def enumerate
+      wrapper = nil
       time = Time.now.to_f
-      wrapper = @omi_lib.enumerate(time)
+      if(!@wlm_enabled)
+        wrapper = @omi_lib.enumerate(time)
+      else
+        wrapper = @omi_lib.enumerate(time, "WLM_LINUX_PERF_DATA_BLOB", "WorkloadBaseOS", @wlm_enabled)
+      end
       router.emit(@tag, time, wrapper) if wrapper
     end
 
