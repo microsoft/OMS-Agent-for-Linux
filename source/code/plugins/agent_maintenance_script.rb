@@ -218,7 +218,7 @@ module MaintenanceModule
         log_error("Could not extract the update certificate endpoint.")
         return MISSING_CERT_UPDATE_ENDPOINT
       elsif update_attr.empty?
-        log_error("Could not find the updateCertificate tag in the heartbeat response")
+        log_error("Could not find the updateCertificate tag in the DSC AgentService heartbeat response")
         return ERROR_EXTRACTING_ATTRIBUTES
       end
 
@@ -352,10 +352,10 @@ module MaintenanceModule
         body_hb_xml = AgentTopologyRequestHandler.new.handle_request(@os_info, @omsadmin_conf_path,
             @AGENT_GUID, get_cert_server(@cert_path), @pid_path, telemetry=true)
         if !xml_contains_telemetry(body_hb_xml)
-          log_debug("No Telemetry data was appended to the heartbeat request")
+          log_debug("No Telemetry data was appended to the DSC AgentService heartbeat request")
         end
       rescue => e
-        log_error("Error when appending Telemetry to Heartbeat: #{e.message}")
+        log_error("Error when appending Telemetry to DSC AgentService Heartbeat: #{e.message}")
       end
 
       # Form headers
@@ -378,11 +378,11 @@ module MaintenanceModule
         res = nil
         res = http.start { |http_each| http.request(req) }
       rescue => e
-        log_error("Error sending the heartbeat: #{e.message}")
+        log_error("Error sending the AgentService heartbeat: #{e.message}")
       end
 
       if !res.nil?
-        log_info("Heartbeat response code: #{res.code}") if @verbose
+        log_info("DSC AgentService Heartbeat response code: #{res.code}") if @verbose
 
         if res.code == "200"
           cert_apply_res = apply_certificate_update_endpoint(res.body)
@@ -392,15 +392,15 @@ module MaintenanceModule
           elsif dsc_apply_res.class != String
             return dsc_apply_res
           else
-            log_info("Heartbeat success")
+            log_info("DSC AgentService Heartbeat success")
             return 0
           end
         else
-          log_error("Error sending the heartbeat. HTTP code #{res.code}")
+          log_error("Error sending the DSC AgentService heartbeat. HTTP code #{res.code}")
           return HTTP_NON_200
         end
       else
-        log_error("Error sending the heartbeat. No HTTP code")
+        log_error("Error sending the DSC AgentService heartbeat. No HTTP code")
         return ERROR_SENDING_HTTP
       end
     end
