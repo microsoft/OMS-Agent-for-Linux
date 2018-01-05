@@ -52,7 +52,7 @@ module Fluent
       if(!@wlm_enabled)
         wrapper = @omi_lib.enumerate(time)
       else
-        wrapper = @omi_lib.enumerate(time, "WLM_LINUX_PERF_DATA_BLOB", "WorkloadBaseOS", @wlm_enabled)
+        wrapper = @omi_lib.enumerate(time, "WLM_LINUX_PERF_DATA_BLOB", "InfrastructureInsights", @wlm_enabled)
       end
       router.emit(@tag, time, wrapper) if wrapper
     end
