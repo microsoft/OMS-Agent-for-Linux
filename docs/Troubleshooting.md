@@ -3,6 +3,7 @@ The following document provides a quick series of steps and procedures to diagno
 If none of these steps work for you the following channels for help are also available
 * Customers with Premier support can log a support case via [Premier](https://premier.microsoft.com/)
 * Customers with Azure support agreements can log support cases [in the Azure portal](https://manage.windowsazure.com/?getsupport=true)
+* Diagnosing OMI Problems with the [OMI troubleshooting guide](https://github.com/Microsoft/omi/blob/master/Unix/doc/diagnose-omi-problems.md)
 * File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues)
 * Feedback forum for ideas and bugs [http://aka.ms/opinsightsfeedback](http://aka.ms/opinsightsfeedback)
 
@@ -22,6 +23,7 @@ If none of these steps work for you the following channels for help are also ava
 - [I'm not seeing any Linux data in the OMS Portal](#im-not-seeing-any-linux-data-in-the-oms-portal)
 - [My portal side configuration for (Syslog/Linux Performance Counter) is not being applied](#my-portal-side-configuration-for-sysloglinux-performance-counter-is-not-being-applied)
 - [I'm not seeing my Custom Log Data in the OMS Potal](#im-not-seeing-my-custom-log-data-in-the-oms-portal)
+- [I'm re-onboarding to a new workspace](#im-re-onboarding-to-a-new-workspace)
 
 ## Important Log Locations and Log Collector Tool
 
@@ -268,3 +270,12 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 
 * There is a known issue with a Race Condition in OMS Agent for Linux version <1.1.0-217. After updating to the latest agent run the following command to get the latest version of the output plugin
  * `sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`
+
+### I'm re-onboarding to a new workspace
+When you try to re-onboard an agent to a new workspace, OMS Agent configuration needs to be cleaned up before re-onboarding. To clean up old configuration from the agent, run the shell bundle with `--purge` 
+
+```
+sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh --purge
+```
+
+You can continue re-onboarding after using the `--purge` option

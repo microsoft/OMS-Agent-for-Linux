@@ -196,6 +196,34 @@ SHARED_KEY=<Shared Key>
 
 
 # Viewing Linux Data
+## Viewing Heartbeat data
+From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar "search in (Heartbeat) *" to view all heartbeat data (for Kusto workspace).
+
+![](pictures/HearbearSearchView.PNG?raw=true)
+
+Heartbeat sent to OMS is implemented by `in_oms_heartbeat.rb` ruby plugin and is being sent every 5 min through the following fluentd configuration:
+
+```
+<source>
+  type oms_heartbeat
+  interval 5m
+</source>
+```
+
+Heartbeat sent to DSC AgentService is handled by `in_heartbeat_request.rb` plugin and is being sent to DSC AgentService every 20 mins through the following fluentd configuration:
+
+```
+<source>
+  type heartbeat_request
+  run_interval 20m
+  log_level info
+  omsadmin_conf_path /etc/opt/microsoft/omsagent/your_workspace_id/conf/omsadmin.conf
+  cert_path /etc/opt/microsoft/omsagent/your_workspace_id /certs/oms.crt
+  key_path /etc/opt/microsoft/omsagent/your_workspace_id /certs/oms.key
+  pid_path /var/opt/microsoft/omsagent/your_workspace_id /run/omsagent.pid
+</source>
+```
+
 ## Viewing Syslog events
 From within the Operations Management Suite portal, access the **Log Search** tile. Predefined syslog search queries can be found in the **Log Management** grouping.
 
