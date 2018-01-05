@@ -39,6 +39,7 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
 ## Supported Scenarios
+### [Heartbeat data collection](docs/OMS-Agent-for-Linux.md#viewing-heartbeat-data)
 ### [Syslog data collection](docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
 ### [Docker collection](docs/Docker-Instructions.md)
 ### [Performance data collection](docs/OMS-Agent-for-Linux.md#viewing-performance-data)
