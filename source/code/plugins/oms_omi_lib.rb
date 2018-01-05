@@ -84,10 +84,15 @@ class OmiOms
     return cim_to_oms
   end
 
-  def omi_to_oms_instance(omi_instance, timestamp)
+  def omi_to_oms_instance(omi_instance, timestamp, wlm_enabled=false)
     oms_instance = {}
     oms_instance["Timestamp"] = timestamp
-    oms_instance["Host"] = @hostname
+    if(!wlm_enabled)
+      oms_instance["Host"] = @hostname
+    else
+      oms_instance["Host"] = OMS::Common.get_fully_qualified_domain_name
+      oms_instance[@object_name] = omi_instance[@specific_mapping["InstanceProperty"]]
+    end
     oms_instance["ObjectName"] = @object_name
     # get the specific instance value given the instance property name (i.e. Name, InstanceId, etc. )
     oms_instance["InstanceName"] = omi_instance[@specific_mapping["InstanceProperty"]]
@@ -132,9 +137,8 @@ class OmiOms
     return oms_instance
   end
 
-  def enumerate(time)
+  def enumerate(time, data_type="LINUX_PERF_BLOB", ip_name="LogManagement", wlm_enabled=false)
     return nil if @conf_error
-
     namespace = @specific_mapping["Namespace"]
     cim_class_name = @specific_mapping["CimClassName"]
     items = [[namespace, cim_class_name]]
@@ -155,13 +159,13 @@ class OmiOms
     timestamp = OMS::Common.format_time(time)   
     # Convert instances to oms format
     instances.map!{ |instance| 
-      omi_to_oms_instance(instance, timestamp)
+      omi_to_oms_instance(instance, timestamp, wlm_enabled)
     }
 
     if instances.length > 0
       wrapper = {
-        "DataType"=>"LINUX_PERF_BLOB",
-        "IPName"=>"LogManagement",
+        "DataType"=>data_type,
+        "IPName"=>ip_name,
         "DataItems"=>instances
       }
       return wrapper

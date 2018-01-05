@@ -812,7 +812,7 @@ System | Users
 In order for the MySQL User to return performance data the user will need access to the following queries
 ```
 SHOW GLOBAL STATUS;
-SHOW GLOBAL VARIABLES:
+SHOW GLOBAL VARIABLES;
 ```
 
 In addition to these queries the MySQL user requires SELECT access to the following default tables: *information_schema, mysql*. These privileges can be granted by running the following grant commands.

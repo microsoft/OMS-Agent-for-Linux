@@ -47,7 +47,7 @@ module Fluent
         @install_status = check_install
 
         if @install_status == 1
-           router.emit(@tag, Time.now.to_f, {"message"=>"omconfig is not installed, OMS Portal \
+           router.emit(@tag, Time.now.to_f, {"message"=>"omsconfig is not installed, OMS Portal \
 configuration will not be applied and solutions such as Change Tracking and Update Assessment will \
 not function properly. omsconfig can be installed by rerunning the omsagent installation"})
         end

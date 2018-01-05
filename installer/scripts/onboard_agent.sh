@@ -6,9 +6,9 @@
 
 
 # Values to be updated upon each new release
-GITHUB_RELEASE="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_GA_v1.4.2-124/"
-BUNDLE_X64="omsagent-1.4.2-124.universal.x64.sh"
-BUNDLE_X86="omsagent-1.4.2-124.universal.x86.sh"
+GITHUB_RELEASE="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_GA_v1.4.2-125/"
+BUNDLE_X64="omsagent-1.4.2-125.universal.x64.sh"
+BUNDLE_X86="omsagent-1.4.2-125.universal.x86.sh"
 
 usage()
 {

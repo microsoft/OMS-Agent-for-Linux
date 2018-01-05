@@ -35,7 +35,7 @@ class DscMonitorTest < Test::Unit::TestCase
   end
 
   def test_dsc_install_failure_message
-    dsc_install_fail_message = "omconfig is not installed, OMS Portal \
+    dsc_install_fail_message = "omsconfig is not installed, OMS Portal \
 configuration will not be applied and solutions such as Change Tracking and Update Assessment will \
 not function properly. omsconfig can be installed by rerunning the omsagent installation" 
 
