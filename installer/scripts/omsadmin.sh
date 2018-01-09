@@ -691,6 +691,7 @@ onboard()
         echo $MULTI_HOMING_MARKER > $CONF_DIR/.multihoming_marker
     fi
 
+	#Initialize empty syslog daemon conf file with no default collection
     configure_syslog
 
     configure_monitor_agent
