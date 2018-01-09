@@ -319,13 +319,12 @@ sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py -enable
 ```
 
 ### Syslog events
-Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a local port the agent is listening on (by default port 25224). When the agent is installed, a default syslog configuration is applied. See [OMS syslog overview](https://blogs.technet.microsoft.com/msoms/2016/05/12/syslog-collection-in-operations-management-suite/). This can be found at:
-•	Rsyslog: `/etc/rsyslog.d/rsyslog-oms.conf`
+Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a local port the agent is listening on (by default port 25224). When the agent is installed, no default syslog configuration is applied. After syslog data is enabled in OMS workspace, syslog configuration file of syslog daemon is updated. It can be found at:
+•	Rsyslog: `/etc/rsyslog.d/95-omsagent.conf`
 •	Syslog-ng: `/etc/syslog-ng/syslog-ng.conf`
-The default OMS Agent syslog configuration uploads syslog events from all facilities with a severity of warning or higher. 
 *Note: if you edit the syslog configuration, the syslog daemon must be restarted for the changes to take effect.*
  
-The default syslog configuration for the OMS agent for Linux is:
+Here is an example of syslog configuration for the OMS agent for Linux:
 
 #### Rsyslog
 ```
@@ -350,7 +349,6 @@ local7.warning     @127.0.0.1:25224
 
 #### Syslog-ng
 ```
-#OMS_facility = all
 filter f_warning_oms { level(warning); };
 destination warning_oms { tcp("127.0.0.1" port(25224)); };
 log { source(src); filter(f_warning_oms); destination(warning_oms); };
