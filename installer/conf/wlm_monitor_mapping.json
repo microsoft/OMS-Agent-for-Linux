@@ -44,7 +44,7 @@
     },
     {
         "CimClassName": "SCX_MemoryStatisticalInformation",
-        "ObjectName": "Universal Linux Operating System",
+        "ObjectName": "Memory",
         "InstanceProperty": "Name",
         "Namespace": "root/scx",
         "CimProperties": [

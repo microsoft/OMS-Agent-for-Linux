@@ -162,14 +162,14 @@ module WLM
 
     def generate_xml(class_name)
       xml_buffer = StringIO.new
-      xml_buffer << "<DataItem type=System.DiscoveryData time=#{Time.now.strftime("%Y-%m-%dT%H:%M:%S.%7N%:z")} sourceHealthServiceId="+@source_health_service_id+">"
+      xml_buffer << "<DataItem type=\"System.DiscoveryData\" time=\"#{Time.now.strftime("%Y-%m-%dT%H:%M:%S.%7N%:z")}\" sourceHealthServiceId=\""+@source_health_service_id+"\">"
       xml_buffer << "<DiscoveryType>0</DiscoveryType>"
       xml_buffer << "<DiscoverySourceType>0</DiscoverySourceType>"
       xml_buffer << "<DiscoverySourceObjectId>{"+@rule_id+"}</DiscoverySourceObjectId>"
       xml_buffer << "<DiscoverySourceManagedEntity>{"+@root_managed_entity_id+"}</DiscoverySourceManagedEntity>" 
       xml_buffer << "<ClassInstances>"
       @instance_array.each do  |instance|
-        xml_buffer << "<ClassInstance TypeId={"+instance.get_class_id()+"}>"
+        xml_buffer << "<ClassInstance TypeId=\"{"+instance.get_class_id()+"}\">"
         xml_buffer << "<Settings>"
         property_map = instance.get_all_properties()            
         property_map.keys.each do |instance_property_key|
