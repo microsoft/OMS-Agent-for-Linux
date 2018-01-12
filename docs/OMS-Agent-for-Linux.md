@@ -154,6 +154,10 @@ The `-p` or `--proxy` argument to the omsagent installation bundle specifies the
 ```
 sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
 ```
+Or using the onboarding script
+```
+sudo sh ./onboard_agent.sh -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+```
 
 **Define the proxy configuration in a file**
 The proxy configuration is set in this file: `/etc/opt/microsoft/omsagent/proxy.conf` This file can be directly created or edited, but must be readable by the omsagent user. This file must be updated, and the omsagent daemon restarted, should the proxy configuration change. For example:
@@ -686,7 +690,7 @@ The default settings are
 ```
 
 # Uninstalling the OMS Agent for Linux
-The agent packages can be uninstalled using dpkg or rpm, or by running the bundle .sh file with the `--remove` argument. Additionally, if you want to completely remove all pieces of the OMS Agent for Linux you can run the bundle .sh file with the `--purge` arguement. 
+The agent packages can be uninstalled using dpkg or rpm, or by running the bundle .sh file with the `--remove` argument. Additionally, if you want to remove user data such as certificate and agent configurations of the OMS Agent for Linux you need to run the bundle .sh file (or onboard_agent.sh file) with the `--purge` argument.
 
 **Debian & Ubuntu:**
 ```

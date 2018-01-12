@@ -275,7 +275,12 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 When you try to re-onboard an agent to a new workspace, OMS Agent configuration needs to be cleaned up before re-onboarding. To clean up old configuration from the agent, run the shell bundle with `--purge` 
 
 ```
-sudo sh /opt/microsoft/omsagent/bin/omsadmin.sh --purge
+sudo sh ./omsagent-*.universal.x64.sh --purge
+```
+Or
+
+```
+sudo sh ./onboard_agent.sh --purge
 ```
 
 You can continue re-onboarding after using the `--purge` option
