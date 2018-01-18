@@ -213,12 +213,18 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 #### Probable Causes
 * Onboarding to the OMS Service failed
 * Connection to the OMS Service is blocked
+* VM was rebooted
+* OMI package was manually upgraded to a newer version compared to what was installed by OMS Agent package
+* DSC resource logs "class not found" error in omsconfig.log log file
 * OMS Agent for Linux data is backed up
 
 #### Resolutions
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
-* If using a proxy, check proxy troubleshooting steps aboce
+* If using a proxy, check proxy troubleshooting steps above
+* In some Azure distribution systems omid OMI server daemon does not start after Virtual machine is rebooted. Workaround is manually start omi server by running `sudo /opt/omi/bin/service_control restart`
+* After OMI package is manually upgraded to a newer version it has to be manually restarted for OMS Agent to conitnue functioning. Please run `sudo /opt/omi/bin/service_control restart` to restart OMI after upgrade.
+* If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`.
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`.
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
 
