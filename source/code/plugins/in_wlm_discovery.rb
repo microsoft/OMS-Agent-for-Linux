@@ -6,6 +6,8 @@ module Fluent
     def initialize
       super
       require 'base64'
+      require 'open-uri'
+      require 'json'
       require_relative 'oms_omi_lib'
       require_relative 'wlm_omi_discovery_lib'
       require_relative 'wlm_formatter'
@@ -19,6 +21,7 @@ module Fluent
     def configure (conf)
       super
       @default_timeout = 14400
+      @metadata_api_version = '2017-08-01'
     end
 
     def start
@@ -51,13 +54,14 @@ module Fluent
         instance["EncodedDataItem"] = Base64.strict_encode64(discovery_xml)
         wrapper = {
           "DataType"=>"WLM_LINUX_INSTANCE_DATA_BLOB",
-          "IPName"=>"WorkloadBaseOS",
+          "IPName"=>"InfrastructureInsights",
           "DataItems"=>[instance]
         }
         router.emit("oms.wlm.discovery", Time.now.to_f, wrapper)
       end # each
       update_discovery_time(Time.now.to_i)
       $log.debug "Discovery data for #{@omi_mapping_path} generated successfully"
+      get_vm_metadata()
     end # method discover
 
     def run_periodic
@@ -114,6 +118,25 @@ module Fluent
         return ""
       end # begin
     end # method get_last_discovery_time
+
+    def get_vm_metadata()
+      begin
+        url_metadata="http://169.254.169.254/metadata/instance?api-version=#{@metadata_api_version}"
+        metadata_json = JSON.parse(open(url_metadata,"Metadata"=>"true").read)
+        metadata_instance = { 
+          "EncodedVMMetadata" => Base64.strict_encode64(metadata_json.to_s),
+          "ApiVersion" => @metadata_api_version
+        }
+        wrapper = {
+          "DataType"=>"WLM_LINUX_VM_METADATA_BLOB",
+          "IPName"=>"InfrastructureInsights",
+          "DataItems"=>[metadata_instance]
+        }
+        router.emit("oms.wlm.vm.metadata", Time.now.to_f, wrapper)
+      rescue => e
+        $log.error "Error sending VM metadata #{e}"
+      end # begin
+    end # method get_vm_metadata
 
   end # class WLMOMIDiscovery
 

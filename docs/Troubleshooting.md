@@ -3,6 +3,7 @@ The following document provides a quick series of steps and procedures to diagno
 If none of these steps work for you the following channels for help are also available
 * Customers with Premier support can log a support case via [Premier](https://premier.microsoft.com/)
 * Customers with Azure support agreements can log support cases [in the Azure portal](https://manage.windowsazure.com/?getsupport=true)
+* Diagnosing OMI Problems with the [OMI troubleshooting guide](https://github.com/Microsoft/omi/blob/master/Unix/doc/diagnose-omi-problems.md)
 * File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues)
 * Feedback forum for ideas and bugs [http://aka.ms/opinsightsfeedback](http://aka.ms/opinsightsfeedback)
 
@@ -22,6 +23,7 @@ If none of these steps work for you the following channels for help are also ava
 - [I'm not seeing any Linux data in the OMS Portal](#im-not-seeing-any-linux-data-in-the-oms-portal)
 - [My portal side configuration for (Syslog/Linux Performance Counter) is not being applied](#my-portal-side-configuration-for-sysloglinux-performance-counter-is-not-being-applied)
 - [I'm not seeing my Custom Log Data in the OMS Potal](#im-not-seeing-my-custom-log-data-in-the-oms-portal)
+- [I'm re-onboarding to a new workspace](#im-re-onboarding-to-a-new-workspace)
 
 ## Important Log Locations and Log Collector Tool
 
@@ -30,7 +32,7 @@ If none of these steps work for you the following channels for help are also ava
  OMS Agent for Linux Log File | `/var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log `
  OMS Agent Configuration Log File | `/var/opt/microsoft/omsconfig/omsconfig.log`
  
- We recommend you to use our log collector tool to retrieve important logs for troubleshooting or before submitting a github issue. You can read more about the tool and how to run it [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/OMS_Linux_Agent_and_Container_Log_Collector.docx)
+ We recommend you to use our log collector tool to retrieve important logs for troubleshooting or before submitting a github issue. You can read more about the tool and how to run it [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/OMS_Linux_Agent_Log_Collector.md)
  
 ## Important Configuration Files
 
@@ -211,12 +213,18 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 #### Probable Causes
 * Onboarding to the OMS Service failed
 * Connection to the OMS Service is blocked
+* VM was rebooted
+* OMI package was manually upgraded to a newer version compared to what was installed by OMS Agent package
+* DSC resource logs "class not found" error in omsconfig.log log file
 * OMS Agent for Linux data is backed up
 
 #### Resolutions
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
-* If using a proxy, check proxy troubleshooting steps aboce
+* If using a proxy, check proxy troubleshooting steps above
+* In some Azure distribution systems omid OMI server daemon does not start after Virtual machine is rebooted. This will result in not seeing Audit, ChangeTracking or UpdateManagement solution related data. Workaround is manually start omi server by running `sudo /opt/omi/bin/service_control restart`
+* After OMI package is manually upgraded to a newer version it has to be manually restarted for OMS Agent to conitnue functioning. This step is required for some distros where OMI server does not automatically start after upgrade. Please run `sudo /opt/omi/bin/service_control restart` to restart OMI.
+* If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`.
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`.
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
 
@@ -268,3 +276,17 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 
 * There is a known issue with a Race Condition in OMS Agent for Linux version <1.1.0-217. After updating to the latest agent run the following command to get the latest version of the output plugin
  * `sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`
+
+### I'm re-onboarding to a new workspace
+When you try to re-onboard an agent to a new workspace, OMS Agent configuration needs to be cleaned up before re-onboarding. To clean up old configuration from the agent, run the shell bundle with `--purge` 
+
+```
+sudo sh ./omsagent-*.universal.x64.sh --purge
+```
+Or
+
+```
+sudo sh ./onboard_agent.sh --purge
+```
+
+You can continue re-onboarding after using the `--purge` option
