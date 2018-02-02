@@ -122,9 +122,9 @@ module Fluent
     def get_vm_metadata()
       begin
         url_metadata="http://169.254.169.254/metadata/instance?api-version=#{@metadata_api_version}"
-        metadata_json = JSON.parse(open(url_metadata,"Metadata"=>"true").read)
+        metadata_json = open(url_metadata,"Metadata"=>"true").read
         metadata_instance = { 
-          "EncodedVMMetadata" => Base64.strict_encode64(metadata_json.to_s),
+          "EncodedVMMetadata" => Base64.strict_encode64(metadata_json),
           "ApiVersion" => @metadata_api_version
         }
         wrapper = {

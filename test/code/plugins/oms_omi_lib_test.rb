@@ -55,7 +55,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
   end
   
   def test_get_specific_mapping_wlm
-    wlm_object_names = ['Processor', 'Logical Disk', 'Universal Linux Operating System', 'Physical Disk', 'Network Adapter', 'Apache HTTP Server Statistics',
+    wlm_object_names = ['Processor', 'Logical Disk', 'Memory', 'Physical Disk', 'Network Adapter', 'Apache HTTP Server Statistics',
                         'Apache HTTP Server', 'Apache Virtual Host', 'Apache Virtual Host Certificate']
     wlm_object_names.each { |name| validate_specific_mapping(name, @wlm_mapping_path) }
   end
