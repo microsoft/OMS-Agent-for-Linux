@@ -50,6 +50,7 @@ If none of these steps work for you the following channels for help are also ava
 
 | Error Code | Meaning |
 | --- | --- |
+| NOT_DEFINED | Because the necessary dependencies are not installed, the auoms auditd plugin will not be installed | Installation of auoms failed; Install package auditd |
 | 2 | Invalid option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
 | 3 | No option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
 | 4 | Invalid package type; `omsagent-*rpm*.sh` packages can only be installed on RPM-based systems, and `omsagent-*deb*.sh` packages can only be installed on Debian-based systems; We recommend that you use the universal installer from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
@@ -151,11 +152,11 @@ Below the output plugin, uncomment the following section by removing the `#` in 
 
 #### Resolutions
 * Check that the configuration in the OMS Portal for Syslog has all the facilities and the correct log levels
-  * **OMS Portal > Settings > Data > Syslog**
+  * **OMS Portal > Settings > Data > Syslog**, check also if checkbox **Apply below configuration to my machines** is enabled
 * Check that native syslog messaging daemons (`rsyslog`, `syslog-ng`) are able to recieve the forwarded messages
 * Check firewall settings on the Syslog server to ensure that messages are not being blocked
 * Simulate a Syslog message to OMS using `logger` command
-  * `logger -p local0.err "This is my test message"
+  * `logger -p local0.err "This is my test message"`
   
 ### I'm unable to connect through my proxy to OMS
 #### Probable Causes
@@ -219,6 +220,7 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * OMS Agent for Linux data is backed up
 
 #### Resolutions
+* Install all dependencies like auditd package
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
  * Re-onboard using the omsadmin.sh command line [instructions](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#onboarding-using-the-command-line)
 * If using a proxy, check proxy troubleshooting steps above
@@ -234,7 +236,6 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * The changed settings in the portal were not applied
 
 #### Resolutions
-
 **Background:** `omsconfig` is the OMS Agent for Linux configuration agent that looks for new portal side configuration every 5 minutes. This configuration is then applied to the OMS Agent for Linux configuration files located at /etc/opt/microsoft/omsagent/conf/omsagent.conf. 
 
 * In some cases the OMS Agent for Linux configuration agent might not be able to communicate with the portal configuration service resulting in latest configuration not being applied.
@@ -290,3 +291,32 @@ sudo sh ./onboard_agent.sh --purge
 ```
 
 You can continue re-onboarding after using the `--purge` option
+
+
+### OMS extension on Azure portal is marked as failed state: Provisioning failed
+#### Probable Causes
+* OMS Agent has been removed on OS side
+* OMS Agent service is down/disabled or not configured
+
+#### Resolution (step by step)
+* Remove extension from Azure portal
+* Install omsagent with [instructions](https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-quick-collect-linux-computer)
+* On-boarding:
+```
+ sudo /opt/microsoft/omsagent/bin/omsadmin.sh -w WORKSPACE_ID -s KEY -v
+```
+* Restart omsagent `sudo /opt/microsoft/omsagent/bin/service_control restart`
+* Wait for couple of hours, provisioning state would change to **Provisioning succeeded**
+
+
+### OMS Agent upgrade on-demand
+#### Probable Causes
+* OMS packages on the host are outdated 
+
+#### Resolution (step by step)
+* Check the latest relase on [page](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/)
+* Download install script (1.4.2-124 as example version) :
+```
+wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_GA_v1.4.2-124/omsagent-1.4.2-124.universal.x64.sh
+```
+* Upgrade packages by executing `sudo sh ./omsagent-*.universal.x64.sh --upgrade`
