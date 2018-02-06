@@ -61,7 +61,7 @@ endif
 # Need to use RUBY_COMPILE_FLAGS when compiling code that uses C Ruby interfaces
 # (Note that "-Wshadow -Wredundant-decls" don't work with Ruby v2.3.3)
 RUBY_COMPILE_FLAGS := $(DEBUG_FLAGS) -D_REENTRANT -fstack-protector-all -Wall -fno-nonansi-builtins -Woverloaded-virtual -Wformat -Wformat-security -Wcast-align -Wswitch-enum  -Wwrite-strings  -Werror -Wcast-qual -fPIC # -Wshadow -Wredundant-decls
-PLUGIN_LINK_LIBRARIES := -L$(OMI_LIBRARY_DIR) -lrt -pthread -lmiapi -lprotocol -lsock -lbase -lpal -lwsman
+PLUGIN_LINK_LIBRARIES := -Wl,-rpath=/opt/omi/lib -L$(OMI_LIBRARY_DIR) -lrt -pthread -lmi
 SHARED_FLAGS := -shared
 
 # Support for installbuilder
