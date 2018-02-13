@@ -8,6 +8,7 @@ module Fluent
     def initialize
       super
       require_relative 'heartbeat_lib'
+      require_relative 'oms_common'
     end
 
     config_param :interval, :time, :default => nil
@@ -45,6 +46,7 @@ module Fluent
     
       wrapper = @heartbeat_lib.enumerate(time)
       router.emit(@tag, time, wrapper) if wrapper
+      @log.info "Sending OMS Heartbeat succeeded at #{OMS::Common.format_time(time)}"
     end
 
     def run_periodic

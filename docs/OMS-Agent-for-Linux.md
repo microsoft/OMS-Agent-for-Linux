@@ -154,6 +154,10 @@ The `-p` or `--proxy` argument to the omsagent installation bundle specifies the
 ```
 sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
 ```
+Or using the onboarding script
+```
+sudo sh ./onboard_agent.sh -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
+```
 
 **Define the proxy configuration in a file**
 The proxy configuration is set in this file: `/etc/opt/microsoft/omsagent/proxy.conf` This file can be directly created or edited, but must be readable by the omsagent user. This file must be updated, and the omsagent daemon restarted, should the proxy configuration change. For example:
@@ -196,6 +200,34 @@ SHARED_KEY=<Shared Key>
 
 
 # Viewing Linux Data
+## Viewing Heartbeat data
+From within the Operations Management Suite portal, access the Log Search tile. Enter in the search bar "search in (Heartbeat) *" to view all heartbeat data (for Kusto workspace).
+
+![](pictures/HearbearSearchView.PNG?raw=true)
+
+Heartbeat sent to OMS is implemented by `in_oms_heartbeat.rb` ruby plugin and is being sent every 5 min through the following fluentd configuration:
+
+```
+<source>
+  type oms_heartbeat
+  interval 5m
+</source>
+```
+
+Heartbeat sent to DSC AgentService is handled by `in_heartbeat_request.rb` plugin and is being sent to DSC AgentService every 20 mins through the following fluentd configuration:
+
+```
+<source>
+  type heartbeat_request
+  run_interval 20m
+  log_level info
+  omsadmin_conf_path /etc/opt/microsoft/omsagent/your_workspace_id/conf/omsadmin.conf
+  cert_path /etc/opt/microsoft/omsagent/your_workspace_id /certs/oms.crt
+  key_path /etc/opt/microsoft/omsagent/your_workspace_id /certs/oms.key
+  pid_path /var/opt/microsoft/omsagent/your_workspace_id /run/omsagent.pid
+</source>
+```
+
 ## Viewing Syslog events
 From within the Operations Management Suite portal, access the **Log Search** tile. Predefined syslog search queries can be found in the **Log Management** grouping.
 
@@ -291,13 +323,12 @@ sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py -enable
 ```
 
 ### Syslog events
-Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a local port the agent is listening on (by default port 25224). When the agent is installed, a default syslog configuration is applied. See [OMS syslog overview](https://blogs.technet.microsoft.com/msoms/2016/05/12/syslog-collection-in-operations-management-suite/). This can be found at:
-•	Rsyslog: `/etc/rsyslog.d/rsyslog-oms.conf`
+Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a local port the agent is listening on (by default port 25224). When the agent is installed, no default syslog configuration is applied. After syslog data is enabled in OMS workspace, syslog configuration file of syslog daemon is updated. It can be found at:
+•	Rsyslog: `/etc/rsyslog.d/95-omsagent.conf`
 •	Syslog-ng: `/etc/syslog-ng/syslog-ng.conf`
-The default OMS Agent syslog configuration uploads syslog events from all facilities with a severity of warning or higher. 
 *Note: if you edit the syslog configuration, the syslog daemon must be restarted for the changes to take effect.*
  
-The default syslog configuration for the OMS agent for Linux is:
+Here is an example of syslog configuration for the OMS agent for Linux:
 
 #### Rsyslog
 ```
@@ -322,7 +353,6 @@ local7.warning     @127.0.0.1:25224
 
 #### Syslog-ng
 ```
-#OMS_facility = all
 filter f_warning_oms { level(warning); };
 destination warning_oms { tcp("127.0.0.1" port(25224)); };
 log { source(src); filter(f_warning_oms); destination(warning_oms); };
@@ -660,7 +690,7 @@ The default settings are
 ```
 
 # Uninstalling the OMS Agent for Linux
-The agent packages can be uninstalled using dpkg or rpm, or by running the bundle .sh file with the `--remove` argument. Additionally, if you want to completely remove all pieces of the OMS Agent for Linux you can run the bundle .sh file with the `--purge` arguement. 
+The agent packages can be uninstalled using dpkg or rpm, or by running the bundle .sh file with the `--remove` argument. Additionally, if you want to remove user data such as certificate and agent configurations of the OMS Agent for Linux you need to run the bundle .sh file (or onboard_agent.sh file) with the `--purge` argument.
 
 **Debian & Ubuntu:**
 ```
@@ -812,7 +842,7 @@ System | Users
 In order for the MySQL User to return performance data the user will need access to the following queries
 ```
 SHOW GLOBAL STATUS;
-SHOW GLOBAL VARIABLES:
+SHOW GLOBAL VARIABLES;
 ```
 
 In addition to these queries the MySQL user requires SELECT access to the following default tables: *information_schema, mysql*. These privileges can be granted by running the following grant commands.
