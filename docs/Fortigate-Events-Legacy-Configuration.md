@@ -38,7 +38,7 @@ Fortigate log parsing can have an impact on CPU utilization by the OMS agent, th
 
         ```
         #OMS_facility = local3
-        local4.debug       @127.0.0.1:25227
+        local3.debug       @127.0.0.1:25227
         ```
 	
         **If the agent machine has a syslog-ng daemon:**  
