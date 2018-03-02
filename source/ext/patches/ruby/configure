@@ -415,6 +415,29 @@ case "$1" in #(
 esac
 } # colorize_result
 
+# config_summary NAME, VAL
+# ------------------------
+# configuration summary
+config_summary ()
+{
+if test -z "$2"; then :
+
+else
+
+	$as_echo_n "   * $1:                     " | head -c26
+	if test "$FOLD"; then :
+
+	    echo "$2" | fold -s -w50 |
+	    sed '1!s/^/                          /;$!s/$/\\/'
+
+else
+  echo "$2"
+fi
+
+fi
+
+} # config_summary
+
 # as_fn_error STATUS ERROR [LINENO LOG_FD]
 # ----------------------------------------
 # Output "`basename $0`: error: ERROR" to stderr. If LINENO and LOG_FD are
@@ -715,10 +738,12 @@ debugflags
 optflags
 NULLCMD
 DLNOBJ
+INSTALL_STATIC_LIBRARY
 INSTALLDOC
 CAPITARGET
 RDOCTARGET
 LIBRUBY_A_OBJS
+DTRACE_OPT
 DTRACE_REBUILD
 DTRACE_OBJ
 DTRACE_EXT
@@ -793,10 +818,13 @@ ac_ct_OBJDUMP
 OBJDUMP
 ASFLAGS
 AS
+ARFLAGS
 AR
 RANLIB
 try_header
+CC_VERSION_MESSAGE
 CC_VERSION
+CSRCFLAG
 COUTFLAG
 OUTFLAG
 CPPOUTFILE
@@ -892,6 +920,7 @@ with_arch
 enable_load_relative
 with_newlib
 enable_werror
+with_compress_debug_sections
 with_opt_dir
 with_winnt_ver
 enable_pthread
@@ -916,6 +945,7 @@ with_setjmp_type
 enable_install_doc
 enable_install_rdoc
 enable_install_capi
+enable_install_static_library
 enable_dln
 enable_debug_env
 with_rubyarchprefix
@@ -1589,6 +1619,8 @@ Optional Features:
                           documents during install
   --disable-install-rdoc  do not install rdoc indexes during install
   --disable-install-capi  do not install C API documents during install
+  --disable-install-static-library
+                          do not install static ruby library
   --disable-dln           disable dynamic link feature
   --enable-debug-env      enable RUBY_DEBUG environment variable
   --disable-rubygems      disable rubygems by default
@@ -1607,6 +1639,8 @@ Optional Packages:
                           omitted entirely, then the package will be built
                           only for the target platform
   --with-newlib           uses newlib version of NativeClient SDK
+  --with-compress-debug-sections=type
+                          enable debug section compression
   --with-opt-dir=DIR-LIST add optional headers and libraries directories
                           separated by $PATH_SEPARATOR
   --with-winnt-ver=0xXXXX target Windows NT version (default to 0x0501)
@@ -2885,7 +2919,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
     if test "x${CONFIGURE_TTY}" = xyes -o -t 1; then :
 
 	msg_begin="`tput smso 2>/dev/null`"
-    	case "$msg_begin" in #(
+	case "$msg_begin" in #(
   '['*m) :
     msg_begin="`echo "$msg_begin" | sed 's/[0-9]*m$//'`"
 	    msg_checking="${msg_begin}33m"
@@ -2989,16 +3023,24 @@ fi
 
 
 
-eval `sed -n 's/^#define RUBY_API_VERSION_\([A-Z][A-Z_0-9]*\) \([0-9][0-9]*\)/\1=\2/p' $srcdir/include/ruby/version.h`
+eval `sed -n 's/^#define RUBY_API_VERSION_\([A-Z][A-Z_0-9]*\) \([0-9][0-9]*\)/API_\1=\2/p' $srcdir/include/ruby/version.h`
+RUBY_PROGRAM_VERSION=`sed -n 's/^#define RUBY_VERSION "\(.*\)"/\1/p' $srcdir/version.h`
+MAJOR=`echo $RUBY_PROGRAM_VERSION | cut -d. -f1`
+MINOR=`echo $RUBY_PROGRAM_VERSION | cut -d. -f2`
+TEENY=`echo $RUBY_PROGRAM_VERSION | cut -d. -f3`
 for v in MAJOR MINOR TEENY; do
     if eval "test \"\$$v\" = ''"; then
 	as_fn_error $? "could not determine $v number from version.h" "$LINENO" 5
     fi
 done
+if test "$MAJOR.$MINOR" != "$API_MAJOR.$API_MINOR"; then :
+
+    as_fn_error $? "API version $API_MAJOR.$API_MINOR differs from program version $MAJOR.$MINOR" "$LINENO" 5
+
+fi
 
 
 
-RUBY_PROGRAM_VERSION=`sed -n 's/^#define RUBY_VERSION "\(.*\)"/\1/p' $srcdir/version.h`
 
 RUBY_PATCHLEVEL=`sed -n 's/^#define RUBY_PATCHLEVEL //p' $srcdir/version.h`
 $as_echo "#define CANONICALIZATION_FOR_MATHN 1" >>confdefs.h
@@ -3089,29 +3131,7 @@ then
   as_fn_error $? "cached CC is different -- throw away $cache_file
 (it is also a good idea to do 'make clean' before compiling)" "$LINENO" 5
 fi
-case "$build_os" in #(
-  darwin1*.*) :
-
-    case "x$CC" in #(
-  xgcc-4.2|x/usr/bin/gcc-4.2) :
-    : ${CXX=g++-4.2} ;; #(
-  xgcc|x/usr/bin/gcc) :
-    : ${CXX=g++} ;; #(
-  xcc|x/usr/bin/cc) :
-    : ${CXX=c++} ;; #(
-  xicc) :
-    : ${CXX=icpc} ;; #(
-  xclang|x/usr/bin/clang) :
-    : ${CXX=clang++} ;; #(
-  *) :
-     ;;
-esac
-   ;; #(
-  *) :
-     ;;
-esac
 test -z "$CC" || ac_cv_prog_CC="$CC"
-test -z "$CXX" || ac_cv_prog_CXX="$CXX"
 
 if test "$program_prefix" = NONE; then
   program_prefix=
@@ -4687,6 +4707,30 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+
+case "$build_os" in #(
+  darwin1*.*) :
+
+    case "x$CC" in #(
+  xgcc-4.2|x/usr/bin/gcc-4.2) :
+    : ${CXX=g++-4.2} ;; #(
+  xgcc|x/usr/bin/gcc) :
+    : ${CXX=g++} ;; #(
+  xcc|x/usr/bin/cc) :
+    : ${CXX=c++} ;; #(
+  xicc) :
+    : ${CXX=icpc} ;; #(
+  xclang|x/usr/bin/clang) :
+    : ${CXX=clang++} ;; #(
+  *) :
+     ;;
+esac
+   ;; #(
+  *) :
+     ;;
+esac
+test -z "$CXX" || ac_cv_prog_CXX="$CXX"
+
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -5564,6 +5608,8 @@ fi
 
 : ${OUTFLAG='-o '}
 : ${COUTFLAG=${OUTFLAG}}
+: ${CSRCFLAG=''}
+
 
 
 
@@ -5584,8 +5630,11 @@ esac
      ;;
 esac
     cc_version='$(CC) '$option
+    break
 done
 CC_VERSION=$cc_version
+
+CC_VERSION_MESSAGE=$cc_version_message
 
 
 
@@ -6038,6 +6087,27 @@ done
 test -n "$AR" || AR="ar"
 
 fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $AR D option" >&5
+$as_echo_n "checking for $AR D option... " >&6; }
+if ${rb_cv_ar_D_option+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if $AR rcD conftest.a > /dev/null 2>&1 && rm conftest.a; then :
+  rb_cv_ar_D_option=yes
+else
+  rb_cv_ar_D_option=no
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_ar_D_option" >&5
+    colorize_result "$rb_cv_ar_D_option" ; }
+if test "$rb_cv_ar_D_option" = yes; then :
+  ARFLAGS='rcD '
+else
+  ARFLAGS='rcu '
+fi
+
 
 if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}as", so it can be a program name with args.
@@ -7554,6 +7624,8 @@ fi
 
 
 
+: ${DLDFLAGS="$LDFLAGS"}
+
 case $RUBY_PATCHLEVEL in #(
   -*) :
     particular_werror_flags=yes ;; #(
@@ -7573,13 +7645,18 @@ if test "$GCC:${warnflags+set}:no" = yes::no; then
     else
 	extra_warning=
     fi
-    if test $gcc_major -eq 5; then
+    if test $gcc_major -ge 5 -a $gcc_major -le 6; then
 	extra_warning="$extra_warning -Wno-maybe-uninitialized"
     fi
     for wflag in -Wno-unused-parameter -Wno-parentheses -Wno-long-long \
                  -diag-disable=2259 \
 		 -Wno-missing-field-initializers \
+		 -Wno-tautological-compare \
+		 -Wno-parentheses-equality \
+		 -Wno-constant-logical-operand \
+		 -Wno-self-assign \
 		 -Wunused-variable \
+		 -Werror=implicit-int \
 		 -Werror=pointer-arith \
 		 -Werror=write-strings \
 		 -Werror=declaration-after-statement \
@@ -7588,6 +7665,9 @@ if test "$GCC:${warnflags+set}:no" = yes::no; then
 		 -Werror=division-by-zero \
 		 -Werror=deprecated-declarations \
 		 -Wno-packed-bitfield-compat \
+		 -Wsuggest-attribute=noreturn \
+		 -Wsuggest-attribute=format \
+		 -Wimplicit-fallthrough=0 \
 		 $extra_warning \
 		 ; do
 	if test "$particular_werror_flags" != yes; then
@@ -7866,6 +7946,15 @@ _ACEOF
     fi
 done
 
+
+# Check whether --with-compress-debug-sections was given.
+if test "${with_compress_debug_sections+set}" = set; then :
+  withval=$with_compress_debug_sections; compress_debug_sections=$withval
+else
+  compress_debug_sections=
+fi
+
+
 if test "$GCC" = yes; then
     # NaCl's glibc build generates undefined references to __memset_chk.
     # TODO(sbc): Remove this once NaCl's glibc is fixed.
@@ -7906,7 +7995,7 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   # RUBY_APPEND_OPTION(XCFLAGS)
 	case " ${XCFLAGS-} " in #(
-  *' -D_FORTIFY_SOURCE=2 '*) :
+  *" -D_FORTIFY_SOURCE=2 "*) :
      ;; #(
   '  ') :
      XCFLAGS="-D_FORTIFY_SOURCE=2" ;; #(
@@ -8039,7 +8128,7 @@ fi
     if test "x$stack_protector" = xyes; then
 	# RUBY_APPEND_OPTION(XCFLAGS)
 	case " ${XCFLAGS-} " in #(
-  *' -fstack-protector '*) :
+  *" -fstack-protector "*) :
      ;; #(
   '  ') :
      XCFLAGS="-fstack-protector" ;; #(
@@ -8048,7 +8137,7 @@ fi
 esac
 	# RUBY_APPEND_OPTION(XLDFLAGS)
 	case " ${XLDFLAGS-} " in #(
-  *' -fstack-protector '*) :
+  *" -fstack-protector "*) :
      ;; #(
   '  ') :
      XLDFLAGS="-fstack-protector" ;; #(
@@ -8057,12 +8146,78 @@ esac
 esac
 	# RUBY_APPEND_OPTION(LDFLAGS)
 	case " ${LDFLAGS-} " in #(
-  *' -fstack-protector '*) :
+  *" -fstack-protector "*) :
      ;; #(
   '  ') :
      LDFLAGS="-fstack-protector" ;; #(
   *) :
      LDFLAGS="$LDFLAGS -fstack-protector" ;;
+esac
+    fi
+
+    case "${compress_debug_sections:-zlib}" in #(
+  none|no) :
+     ;; #(
+  *) :
+
+
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS ${linker_flag}--compress-debug-sections=${compress_debug_sections:-zlib}"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${linker_flag}--compress-debug-sections=${compress_debug_sections:-zlib} is accepted as LDFLAGS" >&5
+$as_echo_n "checking whether ${linker_flag}--compress-debug-sections=${compress_debug_sections:-zlib} is accepted as LDFLAGS... " >&6; }
+    save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  compress_debug_sections=${compress_debug_sections:-zlib}
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
+else
+  compress_debug_sections=no
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+    LDFLAGS="$save_LDFLAGS"
+    save_LDFLAGS=
+
+     ;;
+esac
+    if test "x$compress_debug_sections" != xno; then
+	# RUBY_APPEND_OPTION(DLDFLAGS)
+	case " ${DLDFLAGS-} " in #(
+  *" ${linker_flag}--compress-debug-sections=$compress_debug_sections "*) :
+     ;; #(
+  '  ') :
+     DLDFLAGS="${linker_flag}--compress-debug-sections=$compress_debug_sections" ;; #(
+  *) :
+     DLDFLAGS="$DLDFLAGS ${linker_flag}--compress-debug-sections=$compress_debug_sections" ;;
 esac
     fi
 
@@ -8082,7 +8237,7 @@ esac
   *) :
 
       # ANSI (no XCFLAGS because this is C only)
-	for ansi_options in -std=iso9899:1999 "-ansi -std=iso9899:199409"; do
+	for ansi_options in -std=gnu99; do
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${ansi_options} is accepted as CFLAGS" >&5
 $as_echo_n "checking whether ${ansi_options} is accepted as CFLAGS... " >&6; }
@@ -8182,7 +8337,7 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   # RUBY_APPEND_OPTION(XCFLAGS)
 	case " ${XCFLAGS-} " in #(
-  *' -fno-strict-overflow '*) :
+  *" -fno-strict-overflow "*) :
      ;; #(
   '  ') :
      XCFLAGS="-fno-strict-overflow" ;; #(
@@ -8398,7 +8553,7 @@ fi
     if test "$visibility_option" = yes; then
 	# RUBY_APPEND_OPTION(XCFLAGS)
 	case " ${XCFLAGS-} " in #(
-  *' -fvisibility=hidden '*) :
+  *" -fvisibility=hidden "*) :
      ;; #(
   '  ') :
      XCFLAGS="-fvisibility=hidden" ;; #(
@@ -8556,7 +8711,7 @@ fi
 	if test "$static_libgcc" = yes; then
 	    # RUBY_APPEND_OPTION(EXTLDFLAGS)
 	case " ${EXTLDFLAGS-} " in #(
-  *' -static-libgcc '*) :
+  *" -static-libgcc "*) :
      ;; #(
   '  ') :
      EXTLDFLAGS="-static-libgcc" ;; #(
@@ -8570,7 +8725,7 @@ esac
 esac
 
     # disable fast-math
-    for oflag in -fno-fast-math -fp-model\ precise; do
+    for oflag in -fno-fast-math; do
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $oflag is accepted as CFLAGS" >&5
 $as_echo_n "checking whether $oflag is accepted as CFLAGS... " >&6; }
@@ -8598,12 +8753,65 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   # RUBY_APPEND_OPTION(optflags)
 	case " ${optflags-} " in #(
-  *' $oflag '*) :
+  *" $oflag "*) :
      ;; #(
   '  ') :
      optflags="$oflag" ;; #(
   *) :
      optflags="$optflags $oflag" ;;
+esac
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    $as_echo "${msg_result_yes}yes${msg_reset}" ; }
+else
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+    $as_echo "${msg_result_no}no${msg_reset}" ; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+
+    done
+    for oflag in -fexcess-precision=standard -fp-model\ precise; do
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $oflag is accepted as CFLAGS" >&5
+$as_echo_n "checking whether $oflag is accepted as CFLAGS... " >&6; }
+    save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+    CFLAGS="$CFLAGS $oflag"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  # RUBY_APPEND_OPTION(XCFLAGS)
+	case " ${XCFLAGS-} " in #(
+  *" $oflag "*) :
+     ;; #(
+  '  ') :
+     XCFLAGS="$oflag" ;; #(
+  *) :
+     XCFLAGS="$XCFLAGS $oflag" ;;
 esac
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
     $as_echo "${msg_result_yes}yes${msg_reset}" ; }
@@ -8660,7 +8868,7 @@ case "$target_os" in #(
 
   # RUBY_APPEND_OPTION(CPPFLAGS)
 	case " ${CPPFLAGS-} " in #(
-  *' -D_WIN32_WINNT=$with_winnt_ver '*) :
+  *" -D_WIN32_WINNT=$with_winnt_ver "*) :
      ;; #(
   '  ') :
      CPPFLAGS="-D_WIN32_WINNT=$with_winnt_ver" ;; #(
@@ -8669,7 +8877,7 @@ case "$target_os" in #(
 esac
   # RUBY_APPEND_OPTION(CPPFLAGS)
 	case " ${CPPFLAGS-} " in #(
-  *' -D__MINGW_USE_VC2005_COMPAT '*) :
+  *" -D__MINGW_USE_VC2005_COMPAT "*) :
      ;; #(
   '  ') :
      CPPFLAGS="-D__MINGW_USE_VC2005_COMPAT" ;; #(
@@ -8744,7 +8952,7 @@ case "$target_os" in #(
   darwin*) :
     	# RUBY_PREPEND_OPTION(LIBS)
 	case " ${LIBS-} " in #(
-  *' -lobjc '*) :
+  *" -lobjc "*) :
      ;; #(
   '  ') :
      LIBS="-lobjc" ;; #(
@@ -8814,7 +9022,7 @@ esac
 		if test $gcc_major -lt 4 -o \( $gcc_major -eq 4 -a $gcc_minor -lt 3 \); then
 		    ac_cv_func___builtin_setjmp=no
 		fi
-                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for broken crypt with 8bit chars" >&5
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for broken crypt with 8bit chars" >&5
 $as_echo_n "checking for broken crypt with 8bit chars... " >&6; }
 if ${rb_cv_broken_crypt+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -8829,22 +9037,35 @@ else
 #include <unistd.h>
 #include <string.h>
 
+void
+broken_crypt(const char *salt, const char *buf1, const char *buf2)
+{
+#if 0
+    printf("%.2x%.2x: %s -> %s\n", (unsigned char)salt[0], (unsigned char)salt[1],
+	   buf1+2, buf2+2);
+#endif
+}
+
 int
 main()
 {
     int i;
+    char salt[2], buf[256], *s;
     for (i = 0; i < 128*128; i++) {
-	char salt[2], buf[256], *s;
 	salt[0] = 0x80 | (i & 0x7f);
 	salt[1] = 0x80 | (i >> 7);
 	strcpy(buf, crypt("", salt));
 	if (strcmp(buf, s = crypt("", salt))) {
-#if 0
-	    printf("%.2x%.2x: %s -> %s\n", (unsigned char)salt[0], (unsigned char)salt[1],
-		   buf+2, s+2);
-#endif
+	    broken_crypt(salt, buf, s);
 	    return 1;
 	}
+    }
+    salt[0] = salt[1] = ' ';
+    strcpy(buf, crypt("", salt));
+    salt[0] = salt[1] = 0x80 | ' ';
+    if (strcmp(buf, s = crypt("", salt))) {
+	broken_crypt(salt, buf, s);
+	return 1;
     }
     return 0;
 }
@@ -8862,10 +9083,10 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_broken_crypt" >&5
     colorize_result "$rb_cv_broken_crypt" ; }
-                if test "$rb_cv_broken_crypt" = yes; then
-                  $as_echo "#define BROKEN_CRYPT 1" >>confdefs.h
+		if test "$rb_cv_broken_crypt" = yes; then
+		   $as_echo "#define BROKEN_CRYPT 1" >>confdefs.h
 
-                fi
+		fi
 		for ac_prog in codesign
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -9054,6 +9275,17 @@ esac
 		 ;; #(
   cygwin*) :
     	ac_cv_header_langinfo_h=yes
+		# RUBY_APPEND_OPTIONS(CPPFLAGS)
+	for rb_opt in -D_XOPEN_SOURCE -D_GNU_SOURCE; do
+	case " ${CPPFLAGS-} " in #(
+  *" ${rb_opt} "*) :
+     ;; #(
+  '  ') :
+     CPPFLAGS="${rb_opt}" ;; #(
+  *) :
+     CPPFLAGS="$CPPFLAGS ${rb_opt}" ;;
+esac
+	done
 		for ac_func in cygwin_conv_path
 do :
   ac_fn_c_check_func "$LINENO" "cygwin_conv_path" "ac_cv_func_cygwin_conv_path"
@@ -9111,7 +9343,12 @@ esac
                 ac_cv_func_clock_gettime=yes
                 ac_cv_func_clock_getres=yes
 		ac_cv_func_malloc_usable_size=no
-		{ test "$target_cpu" = x64 && ac_cv_func___builtin_setjmp=no; }
+		if test "$target_cpu" = x64; then :
+
+		    ac_cv_func___builtin_setjmp=no
+		    ac_cv_func_round=no
+
+fi
 		ac_fn_c_check_type "$LINENO" "NET_LUID" "ac_cv_type_NET_LUID" "#include <winsock2.h>
 			      #include <iphlpapi.h>
 "
@@ -9185,7 +9422,7 @@ esac
   if test "${nacl_cv_build_variant}" = "newlib"; then
     # RUBY_APPEND_OPTION(CPPFLAGS)
 	case " ${CPPFLAGS-} " in #(
-  *' -DNACL_NEWLIB '*) :
+  *" -DNACL_NEWLIB "*) :
      ;; #(
   '  ') :
      CPPFLAGS="-DNACL_NEWLIB" ;; #(
@@ -9195,7 +9432,7 @@ esac
   else
     # RUBY_APPEND_OPTION(XCFLAGS)
 	case " ${XCFLAGS-} " in #(
-  *' -fPIC '*) :
+  *" -fPIC "*) :
      ;; #(
   '  ') :
      XCFLAGS="-fPIC" ;; #(
@@ -10048,6 +10285,18 @@ do :
 if test "x$ac_cv_header_sys_syscall_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_SYS_SYSCALL_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/sysmacros.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/sysmacros.h" "ac_cv_header_sys_sysmacros_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_sysmacros_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_SYSMACROS_H 1
 _ACEOF
 
 fi
@@ -11120,6 +11369,7 @@ fi
 
 
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of int" >&5
 $as_echo_n "checking size of int... " >&6; }
@@ -11128,20 +11378,28 @@ if ${ac_cv_sizeof_int+:} false; then :
 else
 
     unset ac_cv_sizeof_int
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef int ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_INT sizeof((*rbcv_ptr))
 "
 
-    unset cond
+	if ac_fn_c_compute_int "$LINENO" "SIZEOF_INT" "ac_cv_sizeof_int"        "$ac_includes_default
+$rbcv_sizeof_var"; then :
+
+else
+  ac_cv_sizeof_int=
+fi
+
+
+    unset rbcv_sizeof_cond
     test -z "${ac_cv_sizeof_int+set}" && {
-    for s in 32 64 128; do
-	for t in ILP; do
-	    cond="${cond}
-#${cond+el}if defined(__${t}${s}__) || defined(__${t}${s}) || defined(_${t}${s}) || defined(${t}${s})"
+    for rbcv_sizeof_size in 32 64 128; do
+	for rbcv_sizeof_type in ILP; do
+	    rbcv_sizeof_cond="${rbcv_sizeof_cond}
+#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})"
 	    hdr="
-#if defined(__${t}${s}__) || defined(__${t}${s}) || defined(_${t}${s}) || defined(${t}${s})
+#if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})
 # define HAVE_INT 1
 #else
 # define HAVE_INT 0
@@ -11168,11 +11426,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 $hdr
-				$rbcv_var
+				$rbcv_sizeof_var
 int
 main ()
 {
-static int test_array [1 - 2 * !(HAVE_INT == (SIZEOF_INT == ($[s / rb_cv_char_bit])))];
+static int test_array [1 - 2 * !(HAVE_INT == (SIZEOF_INT == ($rbcv_sizeof_size / $rb_cv_char_bit)))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -11181,30 +11439,56 @@ return test_array [0];
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_sizeof_int="${ac_cv_sizeof_int+${ac_cv_sizeof_int-} }${t}${s}"
+  ac_cv_sizeof_int="${ac_cv_sizeof_int+${ac_cv_sizeof_int-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"; continue
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+
+#if HAVE_INT
+$rbcv_sizeof_var
+#else
+#define SIZEOF_INT 0
+#endif
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(HAVE_INT == (SIZEOF_INT == (($rbcv_sizeof_size / $rb_cv_char_bit))))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sizeof_int="${ac_cv_sizeof_int+${ac_cv_sizeof_int-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	done
     done
     }
+    test "${ac_cv_sizeof_int#[1-9]}" = "${ac_cv_sizeof_int}" &&
     test "${ac_cv_sizeof_int#SIZEOF_}" = "${ac_cv_sizeof_int}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_INT" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_INT" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_INT
 #define SIZEOF_INT 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_int="${ac_cv_sizeof_int+${ac_cv_sizeof_int-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_int="${ac_cv_sizeof_int+${ac_cv_sizeof_int-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_int=0}
@@ -11213,25 +11497,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int" >&5
     colorize_result "$ac_cv_sizeof_int" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_int-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_int-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_INT $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_INT $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_INT $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_INT $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -11269,6 +11559,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of short" >&5
 $as_echo_n "checking size of short... " >&6; }
@@ -11277,32 +11568,41 @@ if ${ac_cv_sizeof_short+:} false; then :
 else
 
     unset ac_cv_sizeof_short
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef short ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_SHORT sizeof((*rbcv_ptr))
 "
 
-    unset cond
+	if ac_fn_c_compute_int "$LINENO" "SIZEOF_SHORT" "ac_cv_sizeof_short"        "$ac_includes_default
+$rbcv_sizeof_var"; then :
 
+else
+  ac_cv_sizeof_short=
+fi
+
+
+    unset rbcv_sizeof_cond
+
+    test "${ac_cv_sizeof_short#[1-9]}" = "${ac_cv_sizeof_short}" &&
     {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_SHORT" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_SHORT" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_SHORT
 #define SIZEOF_SHORT 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_short="${ac_cv_sizeof_short+${ac_cv_sizeof_short-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_short="${ac_cv_sizeof_short+${ac_cv_sizeof_short-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_short=0}
@@ -11311,25 +11611,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_short" >&5
     colorize_result "$ac_cv_sizeof_short" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_short-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_short-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_SHORT $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_SHORT $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_SHORT $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_SHORT $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -11367,6 +11673,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of long" >&5
 $as_echo_n "checking size of long... " >&6; }
@@ -11375,22 +11682,22 @@ if ${ac_cv_sizeof_long+:} false; then :
 else
 
     unset ac_cv_sizeof_long
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef long ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_LONG sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_long+set}" && {
-    for t in int; do
+    for rbcv_sizeof_type in int; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_LONG == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_LONG == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -11400,20 +11707,20 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_long=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_long=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
     test -z "${ac_cv_sizeof_long+set}" && {
-    for s in 32 64 128; do
-	for t in ILP LP; do
-	    cond="${cond}
-#${cond+el}if defined(__${t}${s}__) || defined(__${t}${s}) || defined(_${t}${s}) || defined(${t}${s})"
+    for rbcv_sizeof_size in 32 64 128; do
+	for rbcv_sizeof_type in ILP LP; do
+	    rbcv_sizeof_cond="${rbcv_sizeof_cond}
+#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})"
 	    hdr="
-#if defined(__${t}${s}__) || defined(__${t}${s}) || defined(_${t}${s}) || defined(${t}${s})
+#if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})
 # define HAVE_LONG 1
 #else
 # define HAVE_LONG 0
@@ -11440,11 +11747,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 $hdr
-				$rbcv_var
+				$rbcv_sizeof_var
 int
 main ()
 {
-static int test_array [1 - 2 * !(HAVE_LONG == (SIZEOF_LONG == ($[s / rb_cv_char_bit])))];
+static int test_array [1 - 2 * !(HAVE_LONG == (SIZEOF_LONG == ($rbcv_sizeof_size / $rb_cv_char_bit)))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -11453,30 +11760,56 @@ return test_array [0];
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_sizeof_long="${ac_cv_sizeof_long+${ac_cv_sizeof_long-} }${t}${s}"
+  ac_cv_sizeof_long="${ac_cv_sizeof_long+${ac_cv_sizeof_long-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"; continue
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+
+#if HAVE_LONG
+$rbcv_sizeof_var
+#else
+#define SIZEOF_LONG 0
+#endif
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(HAVE_LONG == (SIZEOF_LONG == (($rbcv_sizeof_size / $rb_cv_char_bit))))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sizeof_long="${ac_cv_sizeof_long+${ac_cv_sizeof_long-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	done
     done
     }
+    test "${ac_cv_sizeof_long#[1-9]}" = "${ac_cv_sizeof_long}" &&
     test "${ac_cv_sizeof_long#SIZEOF_}" = "${ac_cv_sizeof_long}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_LONG" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_LONG" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_LONG
 #define SIZEOF_LONG 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_long="${ac_cv_sizeof_long+${ac_cv_sizeof_long-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_long="${ac_cv_sizeof_long+${ac_cv_sizeof_long-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_long=0}
@@ -11485,25 +11818,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long" >&5
     colorize_result "$ac_cv_sizeof_long" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_long-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_long-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_LONG $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_LONG $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_LONG $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_LONG $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -11541,6 +11880,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of long long" >&5
 $as_echo_n "checking size of long long... " >&6; }
@@ -11549,32 +11889,41 @@ if ${ac_cv_sizeof_long_long+:} false; then :
 else
 
     unset ac_cv_sizeof_long_long
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef long long ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_LONG_LONG sizeof((*rbcv_ptr))
 "
 
-    unset cond
+	if ac_fn_c_compute_int "$LINENO" "SIZEOF_LONG_LONG" "ac_cv_sizeof_long_long"        "$ac_includes_default
+$rbcv_sizeof_var"; then :
 
+else
+  ac_cv_sizeof_long_long=
+fi
+
+
+    unset rbcv_sizeof_cond
+
+    test "${ac_cv_sizeof_long_long#[1-9]}" = "${ac_cv_sizeof_long_long}" &&
     {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_LONG_LONG" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_LONG_LONG" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_LONG_LONG
 #define SIZEOF_LONG_LONG 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_long_long="${ac_cv_sizeof_long_long+${ac_cv_sizeof_long_long-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_long_long="${ac_cv_sizeof_long_long+${ac_cv_sizeof_long_long-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_long_long=0}
@@ -11583,25 +11932,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_long_long" >&5
     colorize_result "$ac_cv_sizeof_long_long" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_long_long-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_long_long-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_LONG_LONG $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_LONG_LONG $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_LONG_LONG $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_LONG_LONG $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -11639,6 +11994,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of __int64" >&5
 $as_echo_n "checking size of __int64... " >&6; }
@@ -11647,32 +12003,134 @@ if ${ac_cv_sizeof___int64+:} false; then :
 else
 
     unset ac_cv_sizeof___int64
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef __int64 ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF___INT64 sizeof((*rbcv_ptr))
 "
+    test -z "${ac_cv_sizeof___int64+set}" && {
+    for rbcv_sizeof_type in 8; do
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-    unset cond
+		$rbcv_sizeof_var
 
-    {
+int
+main ()
+{
+static int test_array [1 - 2 * !(SIZEOF___INT64 == sizeof($rbcv_sizeof_type))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+		ac_cv_sizeof___int64=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
+		break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    done
+    }
+    unset rbcv_sizeof_cond
+    test -z "${ac_cv_sizeof___int64+set}" && {
+    for rbcv_sizeof_size in 32 64 128; do
+	for rbcv_sizeof_type in ILP LP; do
+	    rbcv_sizeof_cond="${rbcv_sizeof_cond}
+#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})"
+	    hdr="
+#if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})
+# define HAVE___INT64 1
+#else
+# define HAVE___INT64 0
+#endif
+"
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+int
+main ()
+{
+static int test_array [1 - 2 * !(!HAVE___INT64)];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  continue
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+				$rbcv_sizeof_var
+int
+main ()
+{
+static int test_array [1 - 2 * !(HAVE___INT64 == (SIZEOF___INT64 == ($rbcv_sizeof_size / $rb_cv_char_bit)))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sizeof___int64="${ac_cv_sizeof___int64+${ac_cv_sizeof___int64-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"; continue
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+
+#if HAVE___INT64
+$rbcv_sizeof_var
+#else
+#define SIZEOF___INT64 0
+#endif
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(HAVE___INT64 == (SIZEOF___INT64 == (8)))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sizeof___int64="${ac_cv_sizeof___int64+${ac_cv_sizeof___int64-} }${rbcv_sizeof_type}${rbcv_sizeof_size}:8"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	done
+    done
+    }
+    test "${ac_cv_sizeof___int64#[1-9]}" = "${ac_cv_sizeof___int64}" &&
+    test "${ac_cv_sizeof___int64#SIZEOF_}" = "${ac_cv_sizeof___int64}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF___INT64" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF___INT64" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF___INT64
 #define SIZEOF___INT64 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof___int64="${ac_cv_sizeof___int64+${ac_cv_sizeof___int64-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof___int64="${ac_cv_sizeof___int64+${ac_cv_sizeof___int64-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof___int64=0}
@@ -11681,25 +12139,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int64" >&5
     colorize_result "$ac_cv_sizeof___int64" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof___int64-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof___int64-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF___INT64 $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF___INT64 $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF___INT64 $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF___INT64 $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -11737,6 +12201,214 @@ _ACEOF
 
 fi
 
+
+if test "$universal_binary" = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of __int128" >&5
+$as_echo_n "checking size of __int128... " >&6; }
+if ${ac_cv_sizeof___int128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    unset ac_cv_sizeof___int128
+    rbcv_sizeof_var="
+typedef __int128 ac__type_sizeof_;
+static ac__type_sizeof_ *rbcv_ptr;
+#define SIZEOF___INT128 sizeof((*rbcv_ptr))
+"
+    test -z "${ac_cv_sizeof___int128+set}" && {
+    for rbcv_sizeof_type in 16; do
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+		$rbcv_sizeof_var
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(SIZEOF___INT128 == sizeof($rbcv_sizeof_type))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+		ac_cv_sizeof___int128=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
+		break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    done
+    }
+    unset rbcv_sizeof_cond
+    test -z "${ac_cv_sizeof___int128+set}" && {
+    for rbcv_sizeof_size in 32 64 128; do
+	for rbcv_sizeof_type in ILP LP; do
+	    rbcv_sizeof_cond="${rbcv_sizeof_cond}
+#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})"
+	    hdr="
+#if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})
+# define HAVE___INT128 1
+#else
+# define HAVE___INT128 0
+#endif
+"
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+int
+main ()
+{
+static int test_array [1 - 2 * !(!HAVE___INT128)];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  continue
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+				$rbcv_sizeof_var
+int
+main ()
+{
+static int test_array [1 - 2 * !(HAVE___INT128 == (SIZEOF___INT128 == ($rbcv_sizeof_size / $rb_cv_char_bit)))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sizeof___int128="${ac_cv_sizeof___int128+${ac_cv_sizeof___int128-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"; continue
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+
+#if HAVE___INT128
+$rbcv_sizeof_var
+#else
+#define SIZEOF___INT128 0
+#endif
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(HAVE___INT128 == (SIZEOF___INT128 == (16)))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sizeof___int128="${ac_cv_sizeof___int128+${ac_cv_sizeof___int128-} }${rbcv_sizeof_type}${rbcv_sizeof_size}:16"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	done
+    done
+    }
+    test "${ac_cv_sizeof___int128#[1-9]}" = "${ac_cv_sizeof___int128}" &&
+    test "${ac_cv_sizeof___int128#SIZEOF_}" = "${ac_cv_sizeof___int128}" && {
+    test "$universal_binary" = yes && cross_compiling=yes
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF___INT128" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
+#else}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
+#ifndef SIZEOF___INT128
+#define SIZEOF___INT128 0
+#endif"; then :
+
+else
+  rbcv_sizeof_type=0
+fi
+
+    test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof___int128="${ac_cv_sizeof___int128+${ac_cv_sizeof___int128-} }${rbcv_sizeof_type}"
+    fi
+    }
+    : ${ac_cv_sizeof___int128=0}
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int128" >&5
+    colorize_result "$ac_cv_sizeof___int128" ; }
+{
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof___int128-}; do
+	case "$rbcv_sizeof_type" in #(
+  [0-9]*|SIZEOF_*) :
+
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF___INT128 $rbcv_sizeof_type"
+	    break
+	     ;; #(
+  *) :
+
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF___INT128 $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
+	     ;;
+esac
+    done
+    ${rbcv_sizeof_cond+echo "#endif"}
+} >> confdefs.h
+else
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of __int128" >&5
+$as_echo_n "checking size of __int128... " >&6; }
+if ${ac_cv_sizeof___int128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (__int128))" "ac_cv_sizeof___int128"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type___int128" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (__int128)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof___int128=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof___int128" >&5
+    colorize_result "$ac_cv_sizeof___int128" ; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF___INT128 $ac_cv_sizeof___int128
+_ACEOF
+
+
+fi
+
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of off_t" >&5
 $as_echo_n "checking size of off_t... " >&6; }
@@ -11745,32 +12417,41 @@ if ${ac_cv_sizeof_off_t+:} false; then :
 else
 
     unset ac_cv_sizeof_off_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef off_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_OFF_T sizeof((*rbcv_ptr))
 "
 
-    unset cond
+	if ac_fn_c_compute_int "$LINENO" "SIZEOF_OFF_T" "ac_cv_sizeof_off_t"        "$ac_includes_default
+$rbcv_sizeof_var"; then :
 
+else
+  ac_cv_sizeof_off_t=
+fi
+
+
+    unset rbcv_sizeof_cond
+
+    test "${ac_cv_sizeof_off_t#[1-9]}" = "${ac_cv_sizeof_off_t}" &&
     {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_OFF_T" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_OFF_T" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_OFF_T
 #define SIZEOF_OFF_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_off_t="${ac_cv_sizeof_off_t+${ac_cv_sizeof_off_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_off_t="${ac_cv_sizeof_off_t+${ac_cv_sizeof_off_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_off_t=0}
@@ -11779,25 +12460,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_off_t" >&5
     colorize_result "$ac_cv_sizeof_off_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_off_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_off_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_OFF_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_OFF_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_OFF_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_OFF_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -11835,6 +12522,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of void*" >&5
 $as_echo_n "checking size of void*... " >&6; }
@@ -11843,22 +12531,22 @@ if ${ac_cv_sizeof_voidp+:} false; then :
 else
 
     unset ac_cv_sizeof_voidp
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef void* ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_VOIDP sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_voidp+set}" && {
-    for t in int long "long long"; do
+    for rbcv_sizeof_type in int long "long long"; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_VOIDP == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_VOIDP == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -11868,20 +12556,20 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_voidp=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_voidp=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
     test -z "${ac_cv_sizeof_voidp+set}" && {
-    for s in 32 64 128; do
-	for t in ILP LP LLP; do
-	    cond="${cond}
-#${cond+el}if defined(__${t}${s}__) || defined(__${t}${s}) || defined(_${t}${s}) || defined(${t}${s})"
+    for rbcv_sizeof_size in 32 64 128; do
+	for rbcv_sizeof_type in ILP LP LLP; do
+	    rbcv_sizeof_cond="${rbcv_sizeof_cond}
+#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})"
 	    hdr="
-#if defined(__${t}${s}__) || defined(__${t}${s}) || defined(_${t}${s}) || defined(${t}${s})
+#if defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}__) || defined(__${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(_${rbcv_sizeof_type}${rbcv_sizeof_size}) || defined(${rbcv_sizeof_type}${rbcv_sizeof_size})
 # define HAVE_VOIDP 1
 #else
 # define HAVE_VOIDP 0
@@ -11908,11 +12596,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 $hdr
-				$rbcv_var
+				$rbcv_sizeof_var
 int
 main ()
 {
-static int test_array [1 - 2 * !(HAVE_VOIDP == (SIZEOF_VOIDP == ($[s / rb_cv_char_bit])))];
+static int test_array [1 - 2 * !(HAVE_VOIDP == (SIZEOF_VOIDP == ($rbcv_sizeof_size / $rb_cv_char_bit)))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -11921,30 +12609,56 @@ return test_array [0];
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_sizeof_voidp="${ac_cv_sizeof_voidp+${ac_cv_sizeof_voidp-} }${t}${s}"
+  ac_cv_sizeof_voidp="${ac_cv_sizeof_voidp+${ac_cv_sizeof_voidp-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"; continue
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$hdr
+
+#if HAVE_VOIDP
+$rbcv_sizeof_var
+#else
+#define SIZEOF_VOIDP 0
+#endif
+
+int
+main ()
+{
+static int test_array [1 - 2 * !(HAVE_VOIDP == (SIZEOF_VOIDP == (($rbcv_sizeof_size / $rb_cv_char_bit))))];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sizeof_voidp="${ac_cv_sizeof_voidp+${ac_cv_sizeof_voidp-} }${rbcv_sizeof_type}${rbcv_sizeof_size}"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 	done
     done
     }
+    test "${ac_cv_sizeof_voidp#[1-9]}" = "${ac_cv_sizeof_voidp}" &&
     test "${ac_cv_sizeof_voidp#SIZEOF_}" = "${ac_cv_sizeof_voidp}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_VOIDP" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_VOIDP" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_VOIDP
 #define SIZEOF_VOIDP 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_voidp="${ac_cv_sizeof_voidp+${ac_cv_sizeof_voidp-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_voidp="${ac_cv_sizeof_voidp+${ac_cv_sizeof_voidp-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_voidp=0}
@@ -11953,25 +12667,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_voidp" >&5
     colorize_result "$ac_cv_sizeof_voidp" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_voidp-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_voidp-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_VOIDP $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_VOIDP $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_VOIDP $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_VOIDP $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -12009,6 +12729,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of float" >&5
 $as_echo_n "checking size of float... " >&6; }
@@ -12017,32 +12738,41 @@ if ${ac_cv_sizeof_float+:} false; then :
 else
 
     unset ac_cv_sizeof_float
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef float ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_FLOAT sizeof((*rbcv_ptr))
 "
 
-    unset cond
+	if ac_fn_c_compute_int "$LINENO" "SIZEOF_FLOAT" "ac_cv_sizeof_float"        "$ac_includes_default
+$rbcv_sizeof_var"; then :
 
+else
+  ac_cv_sizeof_float=
+fi
+
+
+    unset rbcv_sizeof_cond
+
+    test "${ac_cv_sizeof_float#[1-9]}" = "${ac_cv_sizeof_float}" &&
     {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_FLOAT" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_FLOAT" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_FLOAT
 #define SIZEOF_FLOAT 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_float="${ac_cv_sizeof_float+${ac_cv_sizeof_float-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_float="${ac_cv_sizeof_float+${ac_cv_sizeof_float-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_float=0}
@@ -12051,25 +12781,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_float" >&5
     colorize_result "$ac_cv_sizeof_float" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_float-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_float-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_FLOAT $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_FLOAT $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_FLOAT $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_FLOAT $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -12107,6 +12843,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of double" >&5
 $as_echo_n "checking size of double... " >&6; }
@@ -12115,32 +12852,41 @@ if ${ac_cv_sizeof_double+:} false; then :
 else
 
     unset ac_cv_sizeof_double
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef double ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_DOUBLE sizeof((*rbcv_ptr))
 "
 
-    unset cond
+	if ac_fn_c_compute_int "$LINENO" "SIZEOF_DOUBLE" "ac_cv_sizeof_double"        "$ac_includes_default
+$rbcv_sizeof_var"; then :
 
+else
+  ac_cv_sizeof_double=
+fi
+
+
+    unset rbcv_sizeof_cond
+
+    test "${ac_cv_sizeof_double#[1-9]}" = "${ac_cv_sizeof_double}" &&
     {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_DOUBLE" "t"        "$ac_includes_default
-${cond+$cond
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_DOUBLE" "rbcv_sizeof_type"        "$ac_includes_default
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_DOUBLE
 #define SIZEOF_DOUBLE 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_double="${ac_cv_sizeof_double+${ac_cv_sizeof_double-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_double="${ac_cv_sizeof_double+${ac_cv_sizeof_double-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_double=0}
@@ -12149,25 +12895,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_double" >&5
     colorize_result "$ac_cv_sizeof_double" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_double-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_double-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_DOUBLE $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_DOUBLE $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_DOUBLE $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_DOUBLE $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -12205,6 +12957,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of time_t" >&5
 $as_echo_n "checking size of time_t... " >&6; }
@@ -12213,22 +12966,22 @@ if ${ac_cv_sizeof_time_t+:} false; then :
 else
 
     unset ac_cv_sizeof_time_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef time_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_TIME_T sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_time_t+set}" && {
-    for t in long "long long"; do
+    for rbcv_sizeof_type in long "long long"; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <time.h>
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_TIME_T == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_TIME_T == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -12238,33 +12991,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_time_t=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_time_t=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_time_t#[1-9]}" = "${ac_cv_sizeof_time_t}" &&
     test "${ac_cv_sizeof_time_t#SIZEOF_}" = "${ac_cv_sizeof_time_t}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_TIME_T" "t"        "#include <time.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_TIME_T" "rbcv_sizeof_type"        "#include <time.h>
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_TIME_T
 #define SIZEOF_TIME_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_time_t="${ac_cv_sizeof_time_t+${ac_cv_sizeof_time_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_time_t="${ac_cv_sizeof_time_t+${ac_cv_sizeof_time_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_time_t=0}
@@ -12273,25 +13027,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_time_t" >&5
     colorize_result "$ac_cv_sizeof_time_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_time_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_time_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_TIME_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_TIME_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_TIME_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_TIME_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -12330,6 +13090,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of clock_t" >&5
 $as_echo_n "checking size of clock_t... " >&6; }
@@ -12338,33 +13099,43 @@ if ${ac_cv_sizeof_clock_t+:} false; then :
 else
 
     unset ac_cv_sizeof_clock_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef clock_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_CLOCK_T sizeof((*rbcv_ptr))
 "
 
-    unset cond
+	if ac_fn_c_compute_int "$LINENO" "SIZEOF_CLOCK_T" "ac_cv_sizeof_clock_t"        "#include <time.h>
 
+$rbcv_sizeof_var"; then :
+
+else
+  ac_cv_sizeof_clock_t=
+fi
+
+
+    unset rbcv_sizeof_cond
+
+    test "${ac_cv_sizeof_clock_t#[1-9]}" = "${ac_cv_sizeof_clock_t}" &&
     {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_CLOCK_T" "t"        "#include <time.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_CLOCK_T" "rbcv_sizeof_type"        "#include <time.h>
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_CLOCK_T
 #define SIZEOF_CLOCK_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_clock_t="${ac_cv_sizeof_clock_t+${ac_cv_sizeof_clock_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_clock_t="${ac_cv_sizeof_clock_t+${ac_cv_sizeof_clock_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_clock_t=0}
@@ -12373,25 +13144,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_clock_t" >&5
     colorize_result "$ac_cv_sizeof_clock_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_clock_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_clock_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_CLOCK_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_CLOCK_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_CLOCK_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_CLOCK_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -14065,12 +14842,12 @@ fi
 
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NORETURN function attribute" >&5
-$as_echo_n "checking for NORETURN function attribute... " >&6; }
-if ${rb_cv_func_noreturn+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CONSTFUNC function attribute" >&5
+$as_echo_n "checking for CONSTFUNC function attribute... " >&6; }
+if ${rb_cv_func___const__+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  rb_cv_func_noreturn=x
+  rb_cv_func___const__=x
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $rb_cv_warnflags"
 if test "${ac_c_werror_flag+set}"; then
@@ -14081,9 +14858,135 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((noreturn)) x" \
-    "x __attribute__ ((noreturn))" \
-    "__declspec(noreturn) x" \
+    "__attribute__ ((__const__)) x" \
+    "x __attribute__ ((__const__))" \
+    "__declspec(__const__) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define CONSTFUNC(x) $mac
+
+#define x int conftest_attribute_check(void)
+
+#define mesg ("")
+    CONSTFUNC(x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func___const__="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___const__" >&5
+    colorize_result "$rb_cv_func___const__" ; }
+if test "$rb_cv_func___const__" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define CONSTFUNC(x) $rb_cv_func___const__
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PUREFUNC function attribute" >&5
+$as_echo_n "checking for PUREFUNC function attribute... " >&6; }
+if ${rb_cv_func___pure__+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func___pure__=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((__pure__)) x" \
+    "x __attribute__ ((__pure__))" \
+    "__declspec(__pure__) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define PUREFUNC(x) $mac
+
+#define x int conftest_attribute_check(void)
+
+#define mesg ("")
+    PUREFUNC(x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func___pure__="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___pure__" >&5
+    colorize_result "$rb_cv_func___pure__" ; }
+if test "$rb_cv_func___pure__" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define PUREFUNC(x) $rb_cv_func___pure__
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NORETURN function attribute" >&5
+$as_echo_n "checking for NORETURN function attribute... " >&6; }
+if ${rb_cv_func___noreturn__+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func___noreturn__=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((__noreturn__)) x" \
+    "x __attribute__ ((__noreturn__))" \
+    "__declspec(__noreturn__) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14091,8 +14994,9 @@ for mac in \
 
 #define NORETURN(x) $mac
 
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     NORETURN(x);
 int
 main ()
@@ -14103,7 +15007,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  rb_cv_func_noreturn="$mac"; break
+  rb_cv_func___noreturn__="$mac"; break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 done
@@ -14116,11 +15020,11 @@ else
   unset ac_c_werror_flag
 fi
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_noreturn" >&5
-    colorize_result "$rb_cv_func_noreturn" ; }
-if test "$rb_cv_func_noreturn" != x; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___noreturn__" >&5
+    colorize_result "$rb_cv_func___noreturn__" ; }
+if test "$rb_cv_func___noreturn__" != x; then
         cat >>confdefs.h <<_ACEOF
-#define NORETURN(x) $rb_cv_func_noreturn
+#define NORETURN(x) $rb_cv_func___noreturn__
 _ACEOF
 
 fi
@@ -14129,10 +15033,10 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for DEPRECATED function attribute" >&5
 $as_echo_n "checking for DEPRECATED function attribute... " >&6; }
-if ${rb_cv_func_deprecated+:} false; then :
+if ${rb_cv_func___deprecated__+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  rb_cv_func_deprecated=x
+  rb_cv_func___deprecated__=x
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $rb_cv_warnflags"
 if test "${ac_c_werror_flag+set}"; then
@@ -14143,9 +15047,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((deprecated)) x" \
-    "x __attribute__ ((deprecated))" \
-    "__declspec(deprecated) x" \
+    "__attribute__ ((__deprecated__)) x" \
+    "x __attribute__ ((__deprecated__))" \
+    "__declspec(__deprecated__) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14153,8 +15057,9 @@ for mac in \
 
 #define DEPRECATED(x) $mac
 
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     DEPRECATED(x);
 int
 main ()
@@ -14165,7 +15070,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  rb_cv_func_deprecated="$mac"; break
+  rb_cv_func___deprecated__="$mac"; break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 done
@@ -14178,11 +15083,11 @@ else
   unset ac_c_werror_flag
 fi
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_deprecated" >&5
-    colorize_result "$rb_cv_func_deprecated" ; }
-if test "$rb_cv_func_deprecated" != x; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___deprecated__" >&5
+    colorize_result "$rb_cv_func___deprecated__" ; }
+if test "$rb_cv_func___deprecated__" != x; then
         cat >>confdefs.h <<_ACEOF
-#define DEPRECATED(x) $rb_cv_func_deprecated
+#define DEPRECATED(x) $rb_cv_func___deprecated__
 _ACEOF
 
 fi
@@ -14205,9 +15110,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((deprecated(\"by \"#n))) x" \
-    "x __attribute__ ((deprecated(\"by \"#n)))" \
-    "__declspec(deprecated(\"by \"#n)) x" \
+    "__attribute__ ((__deprecated__(\"by \"#n))) x" \
+    "x __attribute__ ((__deprecated__(\"by \"#n)))" \
+    "__declspec(__deprecated__(\"by \"#n)) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14215,8 +15120,9 @@ for mac in \
 
 #define DEPRECATED_BY(n,x) $mac
 
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     DEPRECATED_BY(n,x);
 int
 main ()
@@ -14267,9 +15173,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((deprecated mesg)) x" \
-    "x __attribute__ ((deprecated mesg))" \
-    "__declspec(deprecated mesg) x" \
+    "__attribute__ ((__deprecated__ mesg)) x" \
+    "x __attribute__ ((__deprecated__ mesg))" \
+    "__declspec(__deprecated__ mesg) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14279,8 +15185,8 @@ for mac in \
 
 
 #define x struct conftest_attribute_check {int i;}
-#define mesg ("")
 
+#define mesg ("")
     DEPRECATED_TYPE(mesg,x);
 int
 main ()
@@ -14317,10 +15223,10 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for NOINLINE function attribute" >&5
 $as_echo_n "checking for NOINLINE function attribute... " >&6; }
-if ${rb_cv_func_noinline+:} false; then :
+if ${rb_cv_func___noinline__+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  rb_cv_func_noinline=x
+  rb_cv_func___noinline__=x
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $rb_cv_warnflags"
 if test "${ac_c_werror_flag+set}"; then
@@ -14331,9 +15237,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((noinline)) x" \
-    "x __attribute__ ((noinline))" \
-    "__declspec(noinline) x" \
+    "__attribute__ ((__noinline__)) x" \
+    "x __attribute__ ((__noinline__))" \
+    "__declspec(__noinline__) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14341,8 +15247,9 @@ for mac in \
 
 #define NOINLINE(x) $mac
 
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     NOINLINE(x);
 int
 main ()
@@ -14353,7 +15260,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  rb_cv_func_noinline="$mac"; break
+  rb_cv_func___noinline__="$mac"; break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 done
@@ -14366,11 +15273,326 @@ else
   unset ac_c_werror_flag
 fi
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func_noinline" >&5
-    colorize_result "$rb_cv_func_noinline" ; }
-if test "$rb_cv_func_noinline" != x; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___noinline__" >&5
+    colorize_result "$rb_cv_func___noinline__" ; }
+if test "$rb_cv_func___noinline__" != x; then
         cat >>confdefs.h <<_ACEOF
-#define NOINLINE(x) $rb_cv_func_noinline
+#define NOINLINE(x) $rb_cv_func___noinline__
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ALWAYS_INLINE function attribute" >&5
+$as_echo_n "checking for ALWAYS_INLINE function attribute... " >&6; }
+if ${rb_cv_func___always_inline__+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func___always_inline__=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((__always_inline__)) x" \
+    "x __attribute__ ((__always_inline__))" \
+    "__declspec(__always_inline__) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define ALWAYS_INLINE(x) $mac
+
+#define x int conftest_attribute_check(void)
+
+#define mesg ("")
+    ALWAYS_INLINE(x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func___always_inline__="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___always_inline__" >&5
+    colorize_result "$rb_cv_func___always_inline__" ; }
+if test "$rb_cv_func___always_inline__" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define ALWAYS_INLINE(x) $rb_cv_func___always_inline__
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for WARN_UNUSED_RESULT function attribute" >&5
+$as_echo_n "checking for WARN_UNUSED_RESULT function attribute... " >&6; }
+if ${rb_cv_func___warn_unused_result__+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func___warn_unused_result__=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((__warn_unused_result__)) x" \
+    "x __attribute__ ((__warn_unused_result__))" \
+    "__declspec(__warn_unused_result__) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define WARN_UNUSED_RESULT(x) $mac
+
+#define x int conftest_attribute_check(void)
+
+#define mesg ("")
+    WARN_UNUSED_RESULT(x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func___warn_unused_result__="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___warn_unused_result__" >&5
+    colorize_result "$rb_cv_func___warn_unused_result__" ; }
+if test "$rb_cv_func___warn_unused_result__" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define WARN_UNUSED_RESULT(x) $rb_cv_func___warn_unused_result__
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for MAYBE_UNUSED function attribute" >&5
+$as_echo_n "checking for MAYBE_UNUSED function attribute... " >&6; }
+if ${rb_cv_func___unused__+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func___unused__=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((__unused__)) x" \
+    "x __attribute__ ((__unused__))" \
+    "__declspec(__unused__) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define MAYBE_UNUSED(x) $mac
+
+#define x int conftest_attribute_check(void)
+
+#define mesg ("")
+    MAYBE_UNUSED(x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func___unused__="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___unused__" >&5
+    colorize_result "$rb_cv_func___unused__" ; }
+if test "$rb_cv_func___unused__" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define MAYBE_UNUSED(x) $rb_cv_func___unused__
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ERRORFUNC function attribute" >&5
+$as_echo_n "checking for ERRORFUNC function attribute... " >&6; }
+if ${rb_cv_func___error__+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func___error__=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((__error__ mesg)) x" \
+    "x __attribute__ ((__error__ mesg))" \
+    "__declspec(__error__ mesg) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define ERRORFUNC(mesg,x) $mac
+
+#define x int conftest_attribute_check(void)
+
+#define mesg ("")
+    ERRORFUNC(mesg,x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func___error__="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___error__" >&5
+    colorize_result "$rb_cv_func___error__" ; }
+if test "$rb_cv_func___error__" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define ERRORFUNC(mesg,x) $rb_cv_func___error__
+_ACEOF
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for WARNINGFUNC function attribute" >&5
+$as_echo_n "checking for WARNINGFUNC function attribute... " >&6; }
+if ${rb_cv_func___warning__+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  rb_cv_func___warning__=x
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $rb_cv_warnflags"
+if test "${ac_c_werror_flag+set}"; then
+  rb_c_werror_flag="$ac_c_werror_flag"
+else
+  unset rb_c_werror_flag
+fi
+ac_c_werror_flag=yes
+
+for mac in \
+    "__attribute__ ((__warning__ mesg)) x" \
+    "x __attribute__ ((__warning__ mesg))" \
+    "__declspec(__warning__ mesg) x" \
+    x; do
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define WARNINGFUNC(mesg,x) $mac
+
+#define x int conftest_attribute_check(void)
+
+#define mesg ("")
+    WARNINGFUNC(mesg,x);
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_func___warning__="$mac"; break
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+done
+
+CFLAGS="$save_CFLAGS"
+save_CFLAGS=
+if test "${rb_c_werror_flag+set}"; then
+  ac_c_werror_flag="$rb_c_werror_flag"
+else
+  unset ac_c_werror_flag
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_func___warning__" >&5
+    colorize_result "$rb_cv_func___warning__" ; }
+if test "$rb_cv_func___warning__" != x; then
+        cat >>confdefs.h <<_ACEOF
+#define WARNINGFUNC(mesg,x) $rb_cv_func___warning__
 _ACEOF
 
 fi
@@ -14393,9 +15615,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((weak)) x" \
-    "x __attribute__ ((weak))" \
-    "__declspec(weak) x" \
+    "__attribute__ ((__weak__)) x" \
+    "x __attribute__ ((__weak__))" \
+    "__declspec(__weak__) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14403,8 +15625,9 @@ for mac in \
 
 #define WEAK(x) $mac
 
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     WEAK(x);
 int
 main ()
@@ -14444,9 +15667,9 @@ if test "$rb_cv_func_weak" != x; then
 fi
 
 if_i386=${universal_binary+defined __i386__}
-         rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdcall function attribute" >&5
-$as_echo_n "checking for stdcall function attribute... " >&6; }
+        rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FUNC_STDCALL function attribute" >&5
+$as_echo_n "checking for FUNC_STDCALL function attribute... " >&6; }
 if ${rb_cv_func_stdcall+:} false; then :
   $as_echo_n "(cached) " >&6
 else
@@ -14461,9 +15684,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((stdcall)) x" \
-    "x __attribute__ ((stdcall))" \
-    "__declspec(stdcall) x" \
+    "__attribute__ ((__stdcall__)) x" \
+    "x __attribute__ ((__stdcall__))" \
+    "__declspec(__stdcall__) x" \
     x; do
   mac="$mac"${rbcv_cond+" /* only if $rbcv_cond */"}
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14473,8 +15696,9 @@ ${rbcv_cond+#if $rbcv_cond}
 ${rbcv_cond+#else}
 ${rbcv_cond+#define FUNC_STDCALL(x) x}
 ${rbcv_cond+#endif}
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     FUNC_STDCALL(x);
 int
 main ()
@@ -14514,9 +15738,9 @@ EOH
 fi
 unset rbcv_cond
 
-         rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for cdecl function attribute" >&5
-$as_echo_n "checking for cdecl function attribute... " >&6; }
+        rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FUNC_CDECL function attribute" >&5
+$as_echo_n "checking for FUNC_CDECL function attribute... " >&6; }
 if ${rb_cv_func_cdecl+:} false; then :
   $as_echo_n "(cached) " >&6
 else
@@ -14531,9 +15755,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((cdecl)) x" \
-    "x __attribute__ ((cdecl))" \
-    "__declspec(cdecl) x" \
+    "__attribute__ ((__cdecl__)) x" \
+    "x __attribute__ ((__cdecl__))" \
+    "__declspec(__cdecl__) x" \
     x; do
   mac="$mac"${rbcv_cond+" /* only if $rbcv_cond */"}
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14543,8 +15767,9 @@ ${rbcv_cond+#if $rbcv_cond}
 ${rbcv_cond+#else}
 ${rbcv_cond+#define FUNC_CDECL(x) x}
 ${rbcv_cond+#endif}
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     FUNC_CDECL(x);
 int
 main ()
@@ -14584,9 +15809,9 @@ EOH
 fi
 unset rbcv_cond
 
-         rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fastcall function attribute" >&5
-$as_echo_n "checking for fastcall function attribute... " >&6; }
+        rbcv_cond="${if_i386}"; test "$rbcv_cond" || unset rbcv_cond
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FUNC_FASTCALL function attribute" >&5
+$as_echo_n "checking for FUNC_FASTCALL function attribute... " >&6; }
 if ${rb_cv_func_fastcall+:} false; then :
   $as_echo_n "(cached) " >&6
 else
@@ -14601,9 +15826,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((fastcall)) x" \
-    "x __attribute__ ((fastcall))" \
-    "__declspec(fastcall) x" \
+    "__attribute__ ((__fastcall__)) x" \
+    "x __attribute__ ((__fastcall__))" \
+    "__declspec(__fastcall__) x" \
     x; do
   mac="$mac"${rbcv_cond+" /* only if $rbcv_cond */"}
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14613,8 +15838,9 @@ ${rbcv_cond+#if $rbcv_cond}
 ${rbcv_cond+#else}
 ${rbcv_cond+#define FUNC_FASTCALL(x) x}
 ${rbcv_cond+#endif}
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     FUNC_FASTCALL(x);
 int
 main ()
@@ -14671,9 +15897,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((optimize(\"O0\"))) x" \
-    "x __attribute__ ((optimize(\"O0\")))" \
-    "__declspec(optimize(\"O0\")) x" \
+    "__attribute__ ((__optimize__(\"O0\"))) x" \
+    "x __attribute__ ((__optimize__(\"O0\")))" \
+    "__declspec(__optimize__(\"O0\")) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14681,8 +15907,9 @@ for mac in \
 
 #define FUNC_UNOPTIMIZED(x) $mac
 
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     FUNC_UNOPTIMIZED(x);
 int
 main ()
@@ -14733,9 +15960,9 @@ fi
 ac_c_werror_flag=yes
 
 for mac in \
-    "__attribute__ ((optimize(\"-Os\",\"-fomit-frame-pointer\"))) x" \
-    "x __attribute__ ((optimize(\"-Os\",\"-fomit-frame-pointer\")))" \
-    "__declspec(optimize(\"-Os\",\"-fomit-frame-pointer\")) x" \
+    "__attribute__ ((__optimize__(\"-Os\",\"-fomit-frame-pointer\"))) x" \
+    "x __attribute__ ((__optimize__(\"-Os\",\"-fomit-frame-pointer\")))" \
+    "__declspec(__optimize__(\"-Os\",\"-fomit-frame-pointer\")) x" \
     x; do
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14743,8 +15970,9 @@ for mac in \
 
 #define FUNC_MINIMIZED(x) $mac
 
-#define x void conftest_attribute_check(void)
+#define x int conftest_attribute_check(void)
 
+#define mesg ("")
     FUNC_MINIMIZED(x);
 int
 main ()
@@ -14965,7 +16193,7 @@ else
 fi
 ac_c_werror_flag=yes
 
-for mac in '__attribute__ ((visibility("default")))' '__declspec(dllexport)'; do
+for mac in '__attribute__ ((__visibility__("default")))' '__declspec(dllexport)'; do
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #define RUBY_FUNC_EXPORTED $mac extern
@@ -15003,7 +16231,7 @@ fi
 
 # RUBY_APPEND_OPTION(XCFLAGS)
 	case " ${XCFLAGS-} " in #(
-  *' -DRUBY_EXPORT '*) :
+  *" -DRUBY_EXPORT "*) :
      ;; #(
   '  ') :
      XCFLAGS="-DRUBY_EXPORT" ;; #(
@@ -15220,6 +16448,7 @@ else
   as_fn_error $? "size_t is signed" "$LINENO" 5
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of size_t" >&5
 $as_echo_n "checking size of size_t... " >&6; }
@@ -15228,22 +16457,22 @@ if ${ac_cv_sizeof_size_t+:} false; then :
 else
 
     unset ac_cv_sizeof_size_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef size_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_SIZE_T sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_size_t+set}" && {
-    for t in int long void*; do
+    for rbcv_sizeof_type in int long void*; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/types.h>
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_SIZE_T == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_SIZE_T == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -15253,33 +16482,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_size_t=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_size_t=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_size_t#[1-9]}" = "${ac_cv_sizeof_size_t}" &&
     test "${ac_cv_sizeof_size_t#SIZEOF_}" = "${ac_cv_sizeof_size_t}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_SIZE_T" "t"        "#include <sys/types.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_SIZE_T" "rbcv_sizeof_type"        "#include <sys/types.h>
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_SIZE_T
 #define SIZEOF_SIZE_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_size_t="${ac_cv_sizeof_size_t+${ac_cv_sizeof_size_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_size_t="${ac_cv_sizeof_size_t+${ac_cv_sizeof_size_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_size_t=0}
@@ -15288,25 +16518,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_size_t" >&5
     colorize_result "$ac_cv_sizeof_size_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_size_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_size_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_SIZE_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_SIZE_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_SIZE_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_SIZE_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -15345,6 +16581,7 @@ _ACEOF
 
 fi
 
+
 if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of ptrdiff_t" >&5
 $as_echo_n "checking size of ptrdiff_t... " >&6; }
@@ -15353,22 +16590,22 @@ if ${ac_cv_sizeof_ptrdiff_t+:} false; then :
 else
 
     unset ac_cv_sizeof_ptrdiff_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef ptrdiff_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_PTRDIFF_T sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_ptrdiff_t+set}" && {
-    for t in size_t; do
+    for rbcv_sizeof_type in size_t; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stddef.h>
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_PTRDIFF_T == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_PTRDIFF_T == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -15378,33 +16615,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_ptrdiff_t=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_ptrdiff_t=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_ptrdiff_t#[1-9]}" = "${ac_cv_sizeof_ptrdiff_t}" &&
     test "${ac_cv_sizeof_ptrdiff_t#SIZEOF_}" = "${ac_cv_sizeof_ptrdiff_t}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_PTRDIFF_T" "t"        "#include <stddef.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_PTRDIFF_T" "rbcv_sizeof_type"        "#include <stddef.h>
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_PTRDIFF_T
 #define SIZEOF_PTRDIFF_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_ptrdiff_t="${ac_cv_sizeof_ptrdiff_t+${ac_cv_sizeof_ptrdiff_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_ptrdiff_t="${ac_cv_sizeof_ptrdiff_t+${ac_cv_sizeof_ptrdiff_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_ptrdiff_t=0}
@@ -15413,25 +16651,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ptrdiff_t" >&5
     colorize_result "$ac_cv_sizeof_ptrdiff_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_ptrdiff_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_ptrdiff_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_PTRDIFF_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_PTRDIFF_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_PTRDIFF_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_PTRDIFF_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -15657,6 +16901,7 @@ fi
 
 
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of struct stat.st_size" >&5
 $as_echo_n "checking size of struct stat.st_size... " >&6; }
 if ${ac_cv_sizeof_struct_stat_st_size+:} false; then :
@@ -15664,22 +16909,22 @@ if ${ac_cv_sizeof_struct_stat_st_size+:} false; then :
 else
 
     unset ac_cv_sizeof_struct_stat_st_size
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef struct stat ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_STRUCT_STAT_ST_SIZE sizeof((*rbcv_ptr).st_size)
 "
     test -z "${ac_cv_sizeof_struct_stat_st_size+set}" && {
-    for t in off_t int long "long long"; do
+    for rbcv_sizeof_type in off_t int long "long long"; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/stat.h>
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_STRUCT_STAT_ST_SIZE == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_STRUCT_STAT_ST_SIZE == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -15689,33 +16934,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_struct_stat_st_size=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_struct_stat_st_size=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_struct_stat_st_size#[1-9]}" = "${ac_cv_sizeof_struct_stat_st_size}" &&
     test "${ac_cv_sizeof_struct_stat_st_size#SIZEOF_}" = "${ac_cv_sizeof_struct_stat_st_size}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_STAT_ST_SIZE" "t"        "#include <sys/stat.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_STAT_ST_SIZE" "rbcv_sizeof_type"        "#include <sys/stat.h>
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_STRUCT_STAT_ST_SIZE
 #define SIZEOF_STRUCT_STAT_ST_SIZE 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_struct_stat_st_size="${ac_cv_sizeof_struct_stat_st_size+${ac_cv_sizeof_struct_stat_st_size-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_struct_stat_st_size="${ac_cv_sizeof_struct_stat_st_size+${ac_cv_sizeof_struct_stat_st_size-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_struct_stat_st_size=0}
@@ -15724,29 +16970,36 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_stat_st_size" >&5
     colorize_result "$ac_cv_sizeof_struct_stat_st_size" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_struct_stat_st_size-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_struct_stat_st_size-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_STRUCT_STAT_ST_SIZE $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_STRUCT_STAT_ST_SIZE $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_STRUCT_STAT_ST_SIZE $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_STRUCT_STAT_ST_SIZE $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 
 
 if test "$ac_cv_member_struct_stat_st_blocks" = yes; then
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of struct stat.st_blocks" >&5
 $as_echo_n "checking size of struct stat.st_blocks... " >&6; }
@@ -15755,22 +17008,22 @@ if ${ac_cv_sizeof_struct_stat_st_blocks+:} false; then :
 else
 
     unset ac_cv_sizeof_struct_stat_st_blocks
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef struct stat ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_STRUCT_STAT_ST_BLOCKS sizeof((*rbcv_ptr).st_blocks)
 "
     test -z "${ac_cv_sizeof_struct_stat_st_blocks+set}" && {
-    for t in off_t int long "long long"; do
+    for rbcv_sizeof_type in off_t int long "long long"; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/stat.h>
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_STRUCT_STAT_ST_BLOCKS == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_STRUCT_STAT_ST_BLOCKS == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -15780,33 +17033,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_struct_stat_st_blocks=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_struct_stat_st_blocks=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_struct_stat_st_blocks#[1-9]}" = "${ac_cv_sizeof_struct_stat_st_blocks}" &&
     test "${ac_cv_sizeof_struct_stat_st_blocks#SIZEOF_}" = "${ac_cv_sizeof_struct_stat_st_blocks}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_STAT_ST_BLOCKS" "t"        "#include <sys/stat.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_STAT_ST_BLOCKS" "rbcv_sizeof_type"        "#include <sys/stat.h>
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_STRUCT_STAT_ST_BLOCKS
 #define SIZEOF_STRUCT_STAT_ST_BLOCKS 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_struct_stat_st_blocks="${ac_cv_sizeof_struct_stat_st_blocks+${ac_cv_sizeof_struct_stat_st_blocks-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_struct_stat_st_blocks="${ac_cv_sizeof_struct_stat_st_blocks+${ac_cv_sizeof_struct_stat_st_blocks-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_struct_stat_st_blocks=0}
@@ -15815,29 +17069,36 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_stat_st_blocks" >&5
     colorize_result "$ac_cv_sizeof_struct_stat_st_blocks" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_struct_stat_st_blocks-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_struct_stat_st_blocks-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_STRUCT_STAT_ST_BLOCKS $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_STRUCT_STAT_ST_BLOCKS $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_STRUCT_STAT_ST_BLOCKS $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_STRUCT_STAT_ST_BLOCKS $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 
 
 fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of struct stat.st_ino" >&5
 $as_echo_n "checking size of struct stat.st_ino... " >&6; }
@@ -15846,22 +17107,22 @@ if ${ac_cv_sizeof_struct_stat_st_ino+:} false; then :
 else
 
     unset ac_cv_sizeof_struct_stat_st_ino
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef struct stat ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_STRUCT_STAT_ST_INO sizeof((*rbcv_ptr).st_ino)
 "
     test -z "${ac_cv_sizeof_struct_stat_st_ino+set}" && {
-    for t in long "long long"; do
+    for rbcv_sizeof_type in long "long long"; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/stat.h>
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_STRUCT_STAT_ST_INO == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_STRUCT_STAT_ST_INO == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -15871,33 +17132,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_struct_stat_st_ino=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_struct_stat_st_ino=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_struct_stat_st_ino#[1-9]}" = "${ac_cv_sizeof_struct_stat_st_ino}" &&
     test "${ac_cv_sizeof_struct_stat_st_ino#SIZEOF_}" = "${ac_cv_sizeof_struct_stat_st_ino}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_STAT_ST_INO" "t"        "#include <sys/stat.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_STAT_ST_INO" "rbcv_sizeof_type"        "#include <sys/stat.h>
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_STRUCT_STAT_ST_INO
 #define SIZEOF_STRUCT_STAT_ST_INO 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_struct_stat_st_ino="${ac_cv_sizeof_struct_stat_st_ino+${ac_cv_sizeof_struct_stat_st_ino-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_struct_stat_st_ino="${ac_cv_sizeof_struct_stat_st_ino+${ac_cv_sizeof_struct_stat_st_ino-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_struct_stat_st_ino=0}
@@ -15906,25 +17168,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_stat_st_ino" >&5
     colorize_result "$ac_cv_sizeof_struct_stat_st_ino" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_struct_stat_st_ino-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_struct_stat_st_ino-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_STRUCT_STAT_ST_INO $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_STRUCT_STAT_ST_INO $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_STRUCT_STAT_ST_INO $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_STRUCT_STAT_ST_INO $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 
 
@@ -16048,6 +17316,7 @@ fi
 
 if test "${ac_cv_type_struct_timeval}" = yes; then
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of struct timeval.tv_sec" >&5
 $as_echo_n "checking size of struct timeval.tv_sec... " >&6; }
 if ${ac_cv_sizeof_struct_timeval_tv_sec+:} false; then :
@@ -16055,13 +17324,13 @@ if ${ac_cv_sizeof_struct_timeval_tv_sec+:} false; then :
 else
 
     unset ac_cv_sizeof_struct_timeval_tv_sec
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef struct timeval ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_STRUCT_TIMEVAL_TV_SEC sizeof((*rbcv_ptr).tv_sec)
 "
     test -z "${ac_cv_sizeof_struct_timeval_tv_sec+set}" && {
-    for t in time_t long "long long"; do
+    for rbcv_sizeof_type in time_t long "long long"; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #ifdef HAVE_TIME_H
@@ -16070,12 +17339,12 @@ static ac__type_sizeof_ *rbcv_ptr;
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_STRUCT_TIMEVAL_TV_SEC == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_STRUCT_TIMEVAL_TV_SEC == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -16085,38 +17354,39 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_struct_timeval_tv_sec=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_struct_timeval_tv_sec=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_struct_timeval_tv_sec#[1-9]}" = "${ac_cv_sizeof_struct_timeval_tv_sec}" &&
     test "${ac_cv_sizeof_struct_timeval_tv_sec#SIZEOF_}" = "${ac_cv_sizeof_struct_timeval_tv_sec}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_TIMEVAL_TV_SEC" "t"        "#ifdef HAVE_TIME_H
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_STRUCT_TIMEVAL_TV_SEC" "rbcv_sizeof_type"        "#ifdef HAVE_TIME_H
 #include <time.h>
 #endif
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_STRUCT_TIMEVAL_TV_SEC
 #define SIZEOF_STRUCT_TIMEVAL_TV_SEC 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_struct_timeval_tv_sec="${ac_cv_sizeof_struct_timeval_tv_sec+${ac_cv_sizeof_struct_timeval_tv_sec-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_struct_timeval_tv_sec="${ac_cv_sizeof_struct_timeval_tv_sec+${ac_cv_sizeof_struct_timeval_tv_sec-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_struct_timeval_tv_sec=0}
@@ -16125,25 +17395,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_struct_timeval_tv_sec" >&5
     colorize_result "$ac_cv_sizeof_struct_timeval_tv_sec" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_struct_timeval_tv_sec-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_struct_timeval_tv_sec-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_STRUCT_TIMEVAL_TV_SEC $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_STRUCT_TIMEVAL_TV_SEC $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_STRUCT_TIMEVAL_TV_SEC $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_STRUCT_TIMEVAL_TV_SEC $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 
 
@@ -16266,8 +17542,10 @@ else
      rb_cv_type_int8_t="long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_int8_t="long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_int8_t="__int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_int8_t="__int128" ;; #(
   *) :
      rb_cv_type_int8_t=no ;;
 esac
@@ -16277,6 +17555,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int8_t" >&5
     colorize_result "$rb_cv_type_int8_t" ; }
 if test "${rb_cv_type_int8_t}" != no; then
+    rb_defint_type="${rb_cv_type_int8_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_INT8_T 1" >>confdefs.h
 
     if test "${rb_cv_type_int8_t}" = yes; then
@@ -16320,10 +17615,11 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INT8_T SIZEOF_`$as_echo "$rb_cv_type_int8_t" | $as_tr_cpp`
+#define SIZEOF_INT8_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for uint8_t" >&5
@@ -16357,8 +17653,10 @@ else
      rb_cv_type_uint8_t="unsigned long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_uint8_t="unsigned long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_uint8_t="unsigned __int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_uint8_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint8_t=no ;;
 esac
@@ -16368,6 +17666,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint8_t" >&5
     colorize_result "$rb_cv_type_uint8_t" ; }
 if test "${rb_cv_type_uint8_t}" != no; then
+    rb_defint_type="${rb_cv_type_uint8_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_UINT8_T 1" >>confdefs.h
 
     if test "${rb_cv_type_uint8_t}" = yes; then
@@ -16411,10 +17726,11 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_UINT8_T SIZEOF_`$as_echo "$rb_cv_type_uint8_t" | $as_tr_cpp`
+#define SIZEOF_UINT8_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for int16_t" >&5
@@ -16448,8 +17764,10 @@ else
      rb_cv_type_int16_t="long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_int16_t="long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_int16_t="__int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_int16_t="__int128" ;; #(
   *) :
      rb_cv_type_int16_t=no ;;
 esac
@@ -16459,6 +17777,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int16_t" >&5
     colorize_result "$rb_cv_type_int16_t" ; }
 if test "${rb_cv_type_int16_t}" != no; then
+    rb_defint_type="${rb_cv_type_int16_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_INT16_T 1" >>confdefs.h
 
     if test "${rb_cv_type_int16_t}" = yes; then
@@ -16502,10 +17837,11 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INT16_T SIZEOF_`$as_echo "$rb_cv_type_int16_t" | $as_tr_cpp`
+#define SIZEOF_INT16_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for uint16_t" >&5
@@ -16539,8 +17875,10 @@ else
      rb_cv_type_uint16_t="unsigned long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_uint16_t="unsigned long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_uint16_t="unsigned __int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_uint16_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint16_t=no ;;
 esac
@@ -16550,6 +17888,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint16_t" >&5
     colorize_result "$rb_cv_type_uint16_t" ; }
 if test "${rb_cv_type_uint16_t}" != no; then
+    rb_defint_type="${rb_cv_type_uint16_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_UINT16_T 1" >>confdefs.h
 
     if test "${rb_cv_type_uint16_t}" = yes; then
@@ -16593,10 +17948,11 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_UINT16_T SIZEOF_`$as_echo "$rb_cv_type_uint16_t" | $as_tr_cpp`
+#define SIZEOF_UINT16_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for int32_t" >&5
@@ -16630,8 +17986,10 @@ else
      rb_cv_type_int32_t="long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_int32_t="long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_int32_t="__int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_int32_t="__int128" ;; #(
   *) :
      rb_cv_type_int32_t=no ;;
 esac
@@ -16641,6 +17999,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int32_t" >&5
     colorize_result "$rb_cv_type_int32_t" ; }
 if test "${rb_cv_type_int32_t}" != no; then
+    rb_defint_type="${rb_cv_type_int32_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_INT32_T 1" >>confdefs.h
 
     if test "${rb_cv_type_int32_t}" = yes; then
@@ -16684,10 +18059,11 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INT32_T SIZEOF_`$as_echo "$rb_cv_type_int32_t" | $as_tr_cpp`
+#define SIZEOF_INT32_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for uint32_t" >&5
@@ -16721,8 +18097,10 @@ else
      rb_cv_type_uint32_t="unsigned long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_uint32_t="unsigned long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_uint32_t="unsigned __int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_uint32_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint32_t=no ;;
 esac
@@ -16732,6 +18110,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint32_t" >&5
     colorize_result "$rb_cv_type_uint32_t" ; }
 if test "${rb_cv_type_uint32_t}" != no; then
+    rb_defint_type="${rb_cv_type_uint32_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_UINT32_T 1" >>confdefs.h
 
     if test "${rb_cv_type_uint32_t}" = yes; then
@@ -16775,10 +18170,11 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_UINT32_T SIZEOF_`$as_echo "$rb_cv_type_uint32_t" | $as_tr_cpp`
+#define SIZEOF_UINT32_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for int64_t" >&5
@@ -16812,8 +18208,10 @@ else
      rb_cv_type_int64_t="long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_int64_t="long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_int64_t="__int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_int64_t="__int128" ;; #(
   *) :
      rb_cv_type_int64_t=no ;;
 esac
@@ -16823,6 +18221,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int64_t" >&5
     colorize_result "$rb_cv_type_int64_t" ; }
 if test "${rb_cv_type_int64_t}" != no; then
+    rb_defint_type="${rb_cv_type_int64_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_INT64_T 1" >>confdefs.h
 
     if test "${rb_cv_type_int64_t}" = yes; then
@@ -16866,10 +18281,11 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INT64_T SIZEOF_`$as_echo "$rb_cv_type_int64_t" | $as_tr_cpp`
+#define SIZEOF_INT64_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for uint64_t" >&5
@@ -16903,8 +18319,10 @@ else
      rb_cv_type_uint64_t="unsigned long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_uint64_t="unsigned long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_uint64_t="unsigned __int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_uint64_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uint64_t=no ;;
 esac
@@ -16914,6 +18332,23 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint64_t" >&5
     colorize_result "$rb_cv_type_uint64_t" ; }
 if test "${rb_cv_type_uint64_t}" != no; then
+    rb_defint_type="${rb_cv_type_uint64_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_UINT64_T 1" >>confdefs.h
 
     if test "${rb_cv_type_uint64_t}" = yes; then
@@ -16957,10 +18392,233 @@ _ACEOF
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_UINT64_T SIZEOF_`$as_echo "$rb_cv_type_uint64_t" | $as_tr_cpp`
+#define SIZEOF_UINT64_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for int128_t" >&5
+$as_echo_n "checking for int128_t... " >&6; }
+if ${rb_cv_type_int128_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+typedef int128_t t; int s = sizeof(t) == 42;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_type_int128_t=yes
+else
+  case 16 in #(
+  "1") :
+     rb_cv_type_int128_t="signed char" ;; #(
+  "$ac_cv_sizeof_short") :
+     rb_cv_type_int128_t="short" ;; #(
+  "$ac_cv_sizeof_int") :
+     rb_cv_type_int128_t="int" ;; #(
+  "$ac_cv_sizeof_long") :
+     rb_cv_type_int128_t="long" ;; #(
+  "$ac_cv_sizeof_long_long") :
+     rb_cv_type_int128_t="long long" ;; #(
+  "${ac_cv_sizeof___int64#*:}") :
+     rb_cv_type_int128_t="__int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_int128_t="__int128" ;; #(
+  *) :
+     rb_cv_type_int128_t=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_int128_t" >&5
+    colorize_result "$rb_cv_type_int128_t" ; }
+if test "${rb_cv_type_int128_t}" != no; then
+    rb_defint_type="${rb_cv_type_int128_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
+    $as_echo "#define HAVE_INT128_T 1" >>confdefs.h
+
+    if test "${rb_cv_type_int128_t}" = yes; then
+	# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of int128_t" >&5
+$as_echo_n "checking size of int128_t... " >&6; }
+if ${ac_cv_sizeof_int128_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (int128_t))" "ac_cv_sizeof_int128_t"        "$ac_includes_default
+"; then :
+
+else
+  if test "$ac_cv_type_int128_t" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (int128_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_int128_t=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_int128_t" >&5
+    colorize_result "$ac_cv_sizeof_int128_t" ; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_INT128_T $ac_cv_sizeof_int128_t
+_ACEOF
+
+
+    else
+	cat >>confdefs.h <<_ACEOF
+#define int128_t $rb_cv_type_int128_t
+_ACEOF
+
+	cat >>confdefs.h <<_ACEOF
+#define SIZEOF_INT128_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
+_ACEOF
+
+    fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uint128_t" >&5
+$as_echo_n "checking for uint128_t... " >&6; }
+if ${rb_cv_type_uint128_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+typedef uint128_t t; int s = sizeof(t) == 42;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  rb_cv_type_uint128_t=yes
+else
+  case 16 in #(
+  "1") :
+     rb_cv_type_uint128_t="unsigned char" ;; #(
+  "$ac_cv_sizeof_short") :
+     rb_cv_type_uint128_t="unsigned short" ;; #(
+  "$ac_cv_sizeof_int") :
+     rb_cv_type_uint128_t="unsigned int" ;; #(
+  "$ac_cv_sizeof_long") :
+     rb_cv_type_uint128_t="unsigned long" ;; #(
+  "$ac_cv_sizeof_long_long") :
+     rb_cv_type_uint128_t="unsigned long long" ;; #(
+  "${ac_cv_sizeof___int64#*:}") :
+     rb_cv_type_uint128_t="unsigned __int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_uint128_t="unsigned __int128" ;; #(
+  *) :
+     rb_cv_type_uint128_t=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uint128_t" >&5
+    colorize_result "$rb_cv_type_uint128_t" ; }
+if test "${rb_cv_type_uint128_t}" != no; then
+    rb_defint_type="${rb_cv_type_uint128_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
+    $as_echo "#define HAVE_UINT128_T 1" >>confdefs.h
+
+    if test "${rb_cv_type_uint128_t}" = yes; then
+	# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of uint128_t" >&5
+$as_echo_n "checking size of uint128_t... " >&6; }
+if ${ac_cv_sizeof_uint128_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (uint128_t))" "ac_cv_sizeof_uint128_t"        "$ac_includes_default
+"; then :
+
+else
+  if test "$ac_cv_type_uint128_t" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (uint128_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_uint128_t=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uint128_t" >&5
+    colorize_result "$ac_cv_sizeof_uint128_t" ; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_UINT128_T $ac_cv_sizeof_uint128_t
+_ACEOF
+
+
+    else
+	cat >>confdefs.h <<_ACEOF
+#define uint128_t $rb_cv_type_uint128_t
+_ACEOF
+
+	cat >>confdefs.h <<_ACEOF
+#define SIZEOF_UINT128_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
+_ACEOF
+
+    fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for intptr_t" >&5
@@ -16994,8 +18652,10 @@ else
      rb_cv_type_intptr_t="long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_intptr_t="long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_intptr_t="__int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_intptr_t="__int128" ;; #(
   *) :
      rb_cv_type_intptr_t=no ;;
 esac
@@ -17005,10 +18665,28 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_intptr_t" >&5
     colorize_result "$rb_cv_type_intptr_t" ; }
 if test "${rb_cv_type_intptr_t}" != no; then
+    rb_defint_type="${rb_cv_type_intptr_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_INTPTR_T 1" >>confdefs.h
 
     if test "${rb_cv_type_intptr_t}" = yes; then
-	if test "$universal_binary" = yes; then
+
+if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of intptr_t" >&5
 $as_echo_n "checking size of intptr_t... " >&6; }
 if ${ac_cv_sizeof_intptr_t+:} false; then :
@@ -17016,22 +18694,22 @@ if ${ac_cv_sizeof_intptr_t+:} false; then :
 else
 
     unset ac_cv_sizeof_intptr_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef intptr_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_INTPTR_T sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_intptr_t+set}" && {
-    for t in void*; do
+    for rbcv_sizeof_type in void*; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 $ac_includes_default
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_INTPTR_T == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_INTPTR_T == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -17041,33 +18719,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_intptr_t=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_intptr_t=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_intptr_t#[1-9]}" = "${ac_cv_sizeof_intptr_t}" &&
     test "${ac_cv_sizeof_intptr_t#SIZEOF_}" = "${ac_cv_sizeof_intptr_t}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_INTPTR_T" "t"        "$ac_includes_default
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_INTPTR_T" "rbcv_sizeof_type"        "$ac_includes_default
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_INTPTR_T
 #define SIZEOF_INTPTR_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_intptr_t="${ac_cv_sizeof_intptr_t+${ac_cv_sizeof_intptr_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_intptr_t="${ac_cv_sizeof_intptr_t+${ac_cv_sizeof_intptr_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_intptr_t=0}
@@ -17076,25 +18755,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_intptr_t" >&5
     colorize_result "$ac_cv_sizeof_intptr_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_intptr_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_intptr_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_INTPTR_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_INTPTR_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_INTPTR_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_INTPTR_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -17139,10 +18824,11 @@ fi
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_INTPTR_T SIZEOF_`$as_echo "$rb_cv_type_intptr_t" | $as_tr_cpp`
+#define SIZEOF_INTPTR_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for uintptr_t" >&5
@@ -17176,8 +18862,10 @@ else
      rb_cv_type_uintptr_t="unsigned long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_uintptr_t="unsigned long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_uintptr_t="unsigned __int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_uintptr_t="unsigned __int128" ;; #(
   *) :
      rb_cv_type_uintptr_t=no ;;
 esac
@@ -17187,10 +18875,28 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_uintptr_t" >&5
     colorize_result "$rb_cv_type_uintptr_t" ; }
 if test "${rb_cv_type_uintptr_t}" != no; then
+    rb_defint_type="${rb_cv_type_uintptr_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_UINTPTR_T 1" >>confdefs.h
 
     if test "${rb_cv_type_uintptr_t}" = yes; then
-	if test "$universal_binary" = yes; then
+
+if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of uintptr_t" >&5
 $as_echo_n "checking size of uintptr_t... " >&6; }
 if ${ac_cv_sizeof_uintptr_t+:} false; then :
@@ -17198,22 +18904,22 @@ if ${ac_cv_sizeof_uintptr_t+:} false; then :
 else
 
     unset ac_cv_sizeof_uintptr_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef uintptr_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_UINTPTR_T sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_uintptr_t+set}" && {
-    for t in void*; do
+    for rbcv_sizeof_type in void*; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 $ac_includes_default
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_UINTPTR_T == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_UINTPTR_T == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -17223,33 +18929,34 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_uintptr_t=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_uintptr_t=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_uintptr_t#[1-9]}" = "${ac_cv_sizeof_uintptr_t}" &&
     test "${ac_cv_sizeof_uintptr_t#SIZEOF_}" = "${ac_cv_sizeof_uintptr_t}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_UINTPTR_T" "t"        "$ac_includes_default
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_UINTPTR_T" "rbcv_sizeof_type"        "$ac_includes_default
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_UINTPTR_T
 #define SIZEOF_UINTPTR_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_uintptr_t="${ac_cv_sizeof_uintptr_t+${ac_cv_sizeof_uintptr_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_uintptr_t="${ac_cv_sizeof_uintptr_t+${ac_cv_sizeof_uintptr_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_uintptr_t=0}
@@ -17258,25 +18965,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_uintptr_t" >&5
     colorize_result "$ac_cv_sizeof_uintptr_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_uintptr_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_uintptr_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_UINTPTR_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_UINTPTR_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_UINTPTR_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_UINTPTR_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -17321,10 +19034,11 @@ fi
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_UINTPTR_T SIZEOF_`$as_echo "$rb_cv_type_uintptr_t" | $as_tr_cpp`
+#define SIZEOF_UINTPTR_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ssize_t" >&5
@@ -17359,8 +19073,10 @@ else
      rb_cv_type_ssize_t="long" ;; #(
   "$ac_cv_sizeof_long_long") :
      rb_cv_type_ssize_t="long long" ;; #(
-  "$ac_cv_sizeof___int64") :
+  "${ac_cv_sizeof___int64#*:}") :
      rb_cv_type_ssize_t="__int64" ;; #(
+  "${ac_cv_sizeof___int128#*:}") :
+     rb_cv_type_ssize_t="__int128" ;; #(
   *) :
      rb_cv_type_ssize_t=no ;;
 esac
@@ -17370,10 +19086,28 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_type_ssize_t" >&5
     colorize_result "$rb_cv_type_ssize_t" ; }
 if test "${rb_cv_type_ssize_t}" != no; then
+    rb_defint_type="${rb_cv_type_ssize_t##unsigned }"
+    if test "$rb_defint_type" != yes && eval 'test -n "${ac_cv_sizeof_'$rb_defint_type'+set}"'; then :
+
+	eval rb_defint_cond='"${ac_cv_sizeof_'$rb_defint_type'}"'
+	case $rb_defint_cond in #(
+  *:*) :
+
+	    rb_defint_cond=`$as_echo "$rb_defint_type" | $as_tr_cpp`
+	    echo "#if defined SIZEOF_"$rb_defint_cond" && SIZEOF_"$rb_defint_cond" > 0" >> confdefs.h
+	 ;; #(
+  *) :
+    rb_defint_cond= ;;
+esac
+
+else
+  rb_defint_cond=
+fi
     $as_echo "#define HAVE_SSIZE_T 1" >>confdefs.h
 
     if test "${rb_cv_type_ssize_t}" = yes; then
-	if test "$universal_binary" = yes; then
+
+if test "$universal_binary" = yes; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of ssize_t" >&5
 $as_echo_n "checking size of ssize_t... " >&6; }
 if ${ac_cv_sizeof_ssize_t+:} false; then :
@@ -17381,23 +19115,23 @@ if ${ac_cv_sizeof_ssize_t+:} false; then :
 else
 
     unset ac_cv_sizeof_ssize_t
-    rbcv_var="
+    rbcv_sizeof_var="
 typedef ssize_t ac__type_sizeof_;
 static ac__type_sizeof_ *rbcv_ptr;
 #define SIZEOF_SSIZE_T sizeof((*rbcv_ptr))
 "
     test -z "${ac_cv_sizeof_ssize_t+set}" && {
-    for t in size_t; do
+    for rbcv_sizeof_type in size_t; do
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <sys/types.h>
 
-		$rbcv_var
+		$rbcv_sizeof_var
 
 int
 main ()
 {
-static int test_array [1 - 2 * !(SIZEOF_SSIZE_T == sizeof($t))];
+static int test_array [1 - 2 * !(SIZEOF_SSIZE_T == sizeof($rbcv_sizeof_type))];
 test_array [0] = 0;
 return test_array [0];
 
@@ -17407,34 +19141,35 @@ return test_array [0];
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-		ac_cv_sizeof_ssize_t=`$as_echo "SIZEOF_$t" | $as_tr_cpp`
+		ac_cv_sizeof_ssize_t=`$as_echo "SIZEOF_$rbcv_sizeof_type" | $as_tr_cpp`
 		break
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     done
     }
-    unset cond
+    unset rbcv_sizeof_cond
 
+    test "${ac_cv_sizeof_ssize_t#[1-9]}" = "${ac_cv_sizeof_ssize_t}" &&
     test "${ac_cv_sizeof_ssize_t#SIZEOF_}" = "${ac_cv_sizeof_ssize_t}" && {
     test "$universal_binary" = yes && cross_compiling=yes
-    if ac_fn_c_compute_int "$LINENO" "SIZEOF_SSIZE_T" "t"        "#include <sys/types.h>
+    if ac_fn_c_compute_int "$LINENO" "SIZEOF_SSIZE_T" "rbcv_sizeof_type"        "#include <sys/types.h>
 
 
-${cond+$cond
+${rbcv_sizeof_cond+$rbcv_sizeof_cond
 #else}
-$rbcv_var
-${cond+#endif}
+$rbcv_sizeof_var
+${rbcv_sizeof_cond+#endif}
 #ifndef SIZEOF_SSIZE_T
 #define SIZEOF_SSIZE_T 0
 #endif"; then :
 
 else
-  t=0
+  rbcv_sizeof_type=0
 fi
 
     test "$universal_binary" = yes && cross_compiling=$real_cross_compiling
-    if test ${t-0} != 0; then
-	ac_cv_sizeof_ssize_t="${ac_cv_sizeof_ssize_t+${ac_cv_sizeof_ssize_t-} }${t}"
+    if test ${rbcv_sizeof_type-0} != 0; then
+	ac_cv_sizeof_ssize_t="${ac_cv_sizeof_ssize_t+${ac_cv_sizeof_ssize_t-} }${rbcv_sizeof_type}"
     fi
     }
     : ${ac_cv_sizeof_ssize_t=0}
@@ -17443,25 +19178,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ssize_t" >&5
     colorize_result "$ac_cv_sizeof_ssize_t" ; }
 {
-    unset cond
-    for t in ${ac_cv_sizeof_ssize_t-}; do
-	case "$t" in #(
+    unset rbcv_sizeof_cond
+    for rbcv_sizeof_type in ${ac_cv_sizeof_ssize_t-}; do
+	case "$rbcv_sizeof_type" in #(
   [0-9]*|SIZEOF_*) :
 
-	    ${cond+echo "#else"}
-	    echo "#define SIZEOF_SSIZE_T $t"
+	    ${rbcv_sizeof_cond+echo "#else"}
+	    echo "#define SIZEOF_SSIZE_T $rbcv_sizeof_type"
 	    break
 	     ;; #(
   *) :
 
-	    s=`expr $t : '.*[^0-9]\([0-9][0-9]*\)$'`
-	    echo "#${cond+el}if defined(__${t}__) || defined(__${t}) || defined(_${t}) || defined($t)"
-	    echo "#define SIZEOF_SSIZE_T $[s / rb_cv_char_bit]"
-	    cond=1
+	    rbcv_sizeof_size=`expr $rbcv_sizeof_type : '.*[^0-9]\([0-9][0-9]*\)$'`
+	    case $rbcv_sizeof_type in #(
+  *:*) :
+    rbcv_sizeof_type="${rbcv_sizeof_type%:*}" ;; #(
+  *) :
+    rbcv_sizeof_size=`expr $rbcv_sizeof_size / $rb_cv_char_bit` ;;
+esac
+	    echo "#${rbcv_sizeof_cond+el}if defined(__${rbcv_sizeof_type}__) || defined(__${rbcv_sizeof_type}) || defined(_${rbcv_sizeof_type}) || defined($rbcv_sizeof_type)"
+	    echo "#define SIZEOF_SSIZE_T $rbcv_sizeof_size"
+	    rbcv_sizeof_cond=1
 	     ;;
 esac
     done
-    ${cond+echo "#endif"}
+    ${rbcv_sizeof_cond+echo "#endif"}
 } >> confdefs.h
 else
 # The cast to long int works around a bug in the HP C Compiler
@@ -17507,10 +19248,11 @@ fi
 _ACEOF
 
 	cat >>confdefs.h <<_ACEOF
-#define SIZEOF_SSIZE_T SIZEOF_`$as_echo "$rb_cv_type_ssize_t" | $as_tr_cpp`
+#define SIZEOF_SSIZE_T SIZEOF_`$as_echo "$rb_defint_type" | $as_tr_cpp`
 _ACEOF
 
     fi
+    test -n "$rb_defint_cond" && echo "#endif /* $rb_defint_cond */" >> confdefs.h
 fi
 
 case "${host_os}" in #(
@@ -18896,28 +20638,17 @@ done
 		# used for AC_ARG_WITH(setjmp-type)
 # we don't use _setjmp if _longjmp doesn't exist.
 test x$ac_cv_func__longjmp = xno && ac_cv_func__setjmp=no
-for ac_func in _setjmp
+for ac_func in arc4random_buf
 do :
-  ac_fn_c_check_func "$LINENO" "_setjmp" "ac_cv_func__setjmp"
-if test "x$ac_cv_func__setjmp" = xyes; then :
+  ac_fn_c_check_func "$LINENO" "arc4random_buf" "ac_cv_func_arc4random_buf"
+if test "x$ac_cv_func_arc4random_buf" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE__SETJMP 1
+#define HAVE_ARC4RANDOM_BUF 1
 _ACEOF
 
 fi
 done
-			# used for AC_ARG_WITH(setjmp-type)
-for ac_func in _setjmpex
-do :
-  ac_fn_c_check_func "$LINENO" "_setjmpex" "ac_cv_func__setjmpex"
-if test "x$ac_cv_func__setjmpex" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE__SETJMPEX 1
-_ACEOF
 
-fi
-done
-		# used for AC_ARG_WITH(setjmp-type)
 for ac_func in atan2l atan2f
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
@@ -18969,6 +20700,17 @@ do :
 if test "x$ac_cv_func_cosh" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_COSH 1
+_ACEOF
+
+fi
+done
+
+for ac_func in crypt_r
+do :
+  ac_fn_c_check_func "$LINENO" "crypt_r" "ac_cv_func_crypt_r"
+if test "x$ac_cv_func_crypt_r" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CRYPT_R 1
 _ACEOF
 
 fi
@@ -19689,6 +21431,17 @@ _ACEOF
 fi
 done
 
+for ac_func in qsort_s
+do :
+  ac_fn_c_check_func "$LINENO" "qsort_s" "ac_cv_func_qsort_s"
+if test "x$ac_cv_func_qsort_s" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QSORT_S 1
+_ACEOF
+
+fi
+done
+
 for ac_func in readlink
 do :
   ac_fn_c_check_func "$LINENO" "readlink" "ac_cv_func_readlink"
@@ -20222,6 +21975,35 @@ fi
 
 fi
 
+if test "$ac_cv_func_crypt_r" = yes; then :
+  for ac_header in crypt.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "crypt.h" "ac_cv_header_crypt_h" "$ac_includes_default"
+if test "x$ac_cv_header_crypt_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CRYPT_H 1
+_ACEOF
+
+fi
+
+done
+
+fi
+if test "$ac_cv_func_crypt_r:$ac_cv_header_crypt_h" = yes:yes; then :
+  ac_fn_c_check_member "$LINENO" "struct crypt_data" "initialized" "ac_cv_member_struct_crypt_data_initialized" "#include <crypt.h>
+
+"
+if test "x$ac_cv_member_struct_crypt_data_initialized" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_CRYPT_DATA_INITIALIZED 1
+_ACEOF
+
+
+fi
+
+fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_bswap16" >&5
 $as_echo_n "checking for __builtin_bswap16... " >&6; }
@@ -20313,6 +22095,66 @@ if test "${rb_cv_builtin___builtin_bswap64}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_BSWAP64 1" >>confdefs.h
 
 fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_popcount" >&5
+$as_echo_n "checking for __builtin_popcount... " >&6; }
+if ${rb_cv_builtin___builtin_popcount+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+__builtin_popcount(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  rb_cv_builtin___builtin_popcount=yes
+else
+  rb_cv_builtin___builtin_popcount=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_popcount" >&5
+    colorize_result "$rb_cv_builtin___builtin_popcount" ; }
+if test "${rb_cv_builtin___builtin_popcount}" != no; then
+  $as_echo "#define HAVE_BUILTIN___BUILTIN_POPCOUNT 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_popcountll" >&5
+$as_echo_n "checking for __builtin_popcountll... " >&6; }
+if ${rb_cv_builtin___builtin_popcountll+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+__builtin_popcountll(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  rb_cv_builtin___builtin_popcountll=yes
+else
+  rb_cv_builtin___builtin_popcountll=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_popcountll" >&5
+    colorize_result "$rb_cv_builtin___builtin_popcountll" ; }
+if test "${rb_cv_builtin___builtin_popcountll}" != no; then
+  $as_echo "#define HAVE_BUILTIN___BUILTIN_POPCOUNTLL 1" >>confdefs.h
+
+fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_clz" >&5
 $as_echo_n "checking for __builtin_clz... " >&6; }
 if ${rb_cv_builtin___builtin_clz+:} false; then :
@@ -20401,6 +22243,96 @@ fi
     colorize_result "$rb_cv_builtin___builtin_clzll" ; }
 if test "${rb_cv_builtin___builtin_clzll}" != no; then
   $as_echo "#define HAVE_BUILTIN___BUILTIN_CLZLL 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_ctz" >&5
+$as_echo_n "checking for __builtin_ctz... " >&6; }
+if ${rb_cv_builtin___builtin_ctz+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+__builtin_ctz(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  rb_cv_builtin___builtin_ctz=yes
+else
+  rb_cv_builtin___builtin_ctz=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_ctz" >&5
+    colorize_result "$rb_cv_builtin___builtin_ctz" ; }
+if test "${rb_cv_builtin___builtin_ctz}" != no; then
+  $as_echo "#define HAVE_BUILTIN___BUILTIN_CTZ 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_ctzll" >&5
+$as_echo_n "checking for __builtin_ctzll... " >&6; }
+if ${rb_cv_builtin___builtin_ctzll+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+__builtin_ctzll(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  rb_cv_builtin___builtin_ctzll=yes
+else
+  rb_cv_builtin___builtin_ctzll=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_ctzll" >&5
+    colorize_result "$rb_cv_builtin___builtin_ctzll" ; }
+if test "${rb_cv_builtin___builtin_ctzll}" != no; then
+  $as_echo "#define HAVE_BUILTIN___BUILTIN_CTZLL 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_constant_p" >&5
+$as_echo_n "checking for __builtin_constant_p... " >&6; }
+if ${rb_cv_builtin___builtin_constant_p+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+__builtin_constant_p(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  rb_cv_builtin___builtin_constant_p=yes
+else
+  rb_cv_builtin___builtin_constant_p=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_builtin___builtin_constant_p" >&5
+    colorize_result "$rb_cv_builtin___builtin_constant_p" ; }
+if test "${rb_cv_builtin___builtin_constant_p}" != no; then
+  $as_echo "#define HAVE_BUILTIN___BUILTIN_CONSTANT_P 1" >>confdefs.h
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __builtin_choose_expr" >&5
@@ -20643,14 +22575,14 @@ fi
 
 if test "x$ac_cv_func_lgamma_r" = xyes; then :
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether lgamma_r handles -0.0" >&5
-$as_echo_n "checking whether lgamma_r handles -0.0... " >&6; }
-if ${rb_cv_lgamma_r_m0+:} false; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether lgamma_r handles +0.0 and -0.0" >&5
+$as_echo_n "checking whether lgamma_r handles +0.0 and -0.0... " >&6; }
+if ${rb_cv_lgamma_r_pm0+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
 	if test "$cross_compiling" = yes; then :
-  rb_cv_lgamma_r_m0=yes
+  rb_cv_lgamma_r_pm0=yes
 
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -20670,21 +22602,27 @@ else
 int
 main(int argc, char **argv)
 {
-    int sign;
+    int sign = 0;
     double x = lgamma_r(-0.0, &sign);
 
     /* should be [+inf, -1] */
     if (x <= 0) return EXIT_FAILURE;
     if (!isinf(x)) return EXIT_FAILURE;
     if (sign != -1) return EXIT_FAILURE;
+
+    /* should be [+inf, 1] */
+    x = lgamma_r(+0.0, &sign);
+    if (x <= 0) return EXIT_FAILURE;
+    if (!isinf(x)) return EXIT_FAILURE;
+    if (sign != 1) return EXIT_FAILURE;
     return EXIT_SUCCESS;
 }
 
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
-  rb_cv_lgamma_r_m0=yes
+  rb_cv_lgamma_r_pm0=yes
 else
-  rb_cv_lgamma_r_m0=no
+  rb_cv_lgamma_r_pm0=no
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
@@ -20692,10 +22630,10 @@ fi
 
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_lgamma_r_m0" >&5
-    colorize_result "$rb_cv_lgamma_r_m0" ; }
-    if test "x$rb_cv_lgamma_r_m0" = xno; then :
-  $as_echo "#define LGAMMA_R_M0_FIX 1" >>confdefs.h
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_lgamma_r_pm0" >&5
+    colorize_result "$rb_cv_lgamma_r_pm0" ; }
+    if test "x$rb_cv_lgamma_r_pm0" = xno; then :
+  $as_echo "#define LGAMMA_R_PM0_FIX 1" >>confdefs.h
 
 fi
 
@@ -20800,33 +22738,7 @@ if test "$rb_cv_unsetenv_return_value" = no; then
 fi
 
 # used for AC_ARG_WITH(setjmp-type)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sigsetjmp as a macro or function" >&5
-$as_echo_n "checking for sigsetjmp as a macro or function... " >&6; }
-if ${ac_cv_func_sigsetjmp+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 
-#include <setjmp.h>
-
-int
-main ()
-{
-sigjmp_buf env; sigsetjmp(env,1);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_func_sigsetjmp=yes
-else
-  ac_cv_func_sigsetjmp=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_sigsetjmp" >&5
-    colorize_result "$ac_cv_func_sigsetjmp" ; }
 
 
 
@@ -20953,7 +22865,11 @@ if ${rb_cv_member_struct_tm_tm_gmtoff+:} false; then :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
+#define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #include <time.h>
+
 int
 main ()
 {
@@ -21357,6 +23273,18 @@ fi
 
   fi
 fi
+
+ac_fn_c_check_type "$LINENO" "sig_t" "ac_cv_type_sig_t" "#include <signal.h>
+"
+if test "x$ac_cv_type_sig_t" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SIG_T 1
+_ACEOF
+
+
+fi
+
 
 if test "$ac_cv_func_getpgid" = no; then
   # AC_FUNC_GETPGRP fails when cross-compiling with old autoconf.
@@ -22299,7 +24227,7 @@ $as_echo_n "checking whether OS depend dynamic link works... " >&6; }
       # installed in the /usr/local tree.
       # RUBY_APPEND_OPTION(CCDLFLAGS)
 	case " ${CCDLFLAGS-} " in #(
-  *' -fno-common '*) :
+  *" -fno-common "*) :
      ;; #(
   '  ') :
      CCDLFLAGS="-fno-common" ;; #(
@@ -22312,7 +24240,7 @@ esac ;; #(
 
       # RUBY_APPEND_OPTION(CCDLFLAGS)
 	case " ${CCDLFLAGS-} " in #(
-  *' -fPIC '*) :
+  *" -fPIC "*) :
      ;; #(
   '  ') :
      CCDLFLAGS="-fPIC" ;; #(
@@ -23087,7 +25015,7 @@ else
 
 	# RUBY_APPEND_OPTION(XLDFLAGS)
 	case " ${XLDFLAGS-} " in #(
-  *' -Wl,-u,_objc_msgSend '*) :
+  *" -Wl,-u,_objc_msgSend "*) :
      ;; #(
   '  ') :
      XLDFLAGS="-Wl,-u,_objc_msgSend" ;; #(
@@ -23459,7 +25387,7 @@ fi
 
 LIBRUBY_LDSHARED=$LDSHARED
 LIBRUBY_DLDFLAGS=$DLDFLAGS
-LIBRUBY_SO='lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR).$(TEENY)'
+LIBRUBY_SO='lib$(RUBY_SO_NAME).so.$(RUBY_PROGRAM_VERSION)'
 LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so'
 ENABLE_SHARED=no
 
@@ -23555,7 +25483,7 @@ fi
        if test "no_undefined" = yes; then
 	  # RUBY_APPEND_OPTION(EXTLDFLAGS)
 	case " ${EXTLDFLAGS-} " in #(
-  *' ${linker_flag}--no-undefined '*) :
+  *" ${linker_flag}--no-undefined "*) :
      ;; #(
   '  ') :
      EXTLDFLAGS="${linker_flag}--no-undefined" ;; #(
@@ -23574,7 +25502,17 @@ esac
 	 ;; #(
   linux* | gnu* | k*bsd*-gnu | atheos* | kopensolaris*-gnu | haiku*) :
 
-	LIBRUBY_DLDFLAGS='-Wl,-soname,lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR)'" $LDFLAGS_OPTDIR"
+	# RUBY_APPEND_OPTIONS(LIBRUBY_DLDFLAGS)
+	for rb_opt in '-Wl,-soname,lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR)' "$LDFLAGS_OPTDIR"; do
+	case " ${LIBRUBY_DLDFLAGS-} " in #(
+  *" ${rb_opt} "*) :
+     ;; #(
+  '  ') :
+     LIBRUBY_DLDFLAGS="${rb_opt}" ;; #(
+  *) :
+     LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS ${rb_opt}" ;;
+esac
+	done
 	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR) lib$(RUBY_SO_NAME).so'
 	if test "$load_relative" = yes; then
 	    libprefix="'\$\${ORIGIN}/../${libdir_basename}'"
@@ -23595,7 +25533,17 @@ esac
 
 	SOLIBS='$(LIBS)'
 	LIBRUBY_SO='lib$(RUBY_SO_NAME).so.$(MAJOR)$(MINOR).$(TEENY)'
-	LIBRUBY_DLDFLAGS='-Wl,-soname,lib$(RUBY_SO_NAME).so.$(MAJOR)$(MINOR)'" $LDFLAGS_OPTDIR"
+	# RUBY_APPEND_OPTIONS(LIBRUBY_DLDFLAGS)
+	for rb_opt in '-Wl,-soname,lib$(RUBY_SO_NAME).so.$(MAJOR)$(MINOR)' "$LDFLAGS_OPTDIR"; do
+	case " ${LIBRUBY_DLDFLAGS-} " in #(
+  *" ${rb_opt} "*) :
+     ;; #(
+  '  ') :
+     LIBRUBY_DLDFLAGS="${rb_opt}" ;; #(
+  *) :
+     LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS ${rb_opt}" ;;
+esac
+	done
 	if test "$rb_cv_binary_elf" = yes; then # ELF platforms
 	   LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR)$(MINOR) lib$(RUBY_SO_NAME).so'
 	else	# a.out platforms
@@ -23611,7 +25559,7 @@ esac
 
 	SOLIBS='$(LIBS)'
 	LIBRUBY_SO='lib$(RUBY_SO_NAME).so.$(MAJOR)'
-	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(MAJOR).$(MINOR).$(TEENY) lib$(RUBY_SO_NAME).so'
+	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).so.$(RUBY_PROGRAM_VERSION) lib$(RUBY_SO_NAME).so'
 	if test "$GCC" = yes; then
 	    LIBRUBY_DLDFLAGS="$DLDFLAGS "'-Wl,-h,$(@F)'
 	else
@@ -23622,26 +25570,36 @@ esac
   hpux*) :
 
 	XLDFLAGS="$XLDFLAGS "'-Wl,+s,+b,$(libdir)'
-	LIBRUBY_SO='lib$(RUBY_SO_NAME).sl.$(MAJOR).$(MINOR).$(TEENY)'
+	LIBRUBY_SO='lib$(RUBY_SO_NAME).sl.$(RUBY_PROGRAM_VERSION)'
 	LIBRUBY_ALIASES='lib$(RUBY_SO_NAME).sl.$(MAJOR).$(MINOR) lib$(RUBY_SO_NAME).sl'
 	 ;; #(
   aix*) :
 
-	LIBRUBY_DLDFLAGS="${linker_flag}-bnoentry $XLDFLAGS $LDFLAGS_OPTDIR"
+	# RUBY_APPEND_OPTIONS(LIBRUBY_DLDFLAGS)
+	for rb_opt in "${linker_flag}-bnoentry" "$XLDFLAGS" "$LDFLAGS_OPTDIR"; do
+	case " ${LIBRUBY_DLDFLAGS-} " in #(
+  *" ${rb_opt} "*) :
+     ;; #(
+  '  ') :
+     LIBRUBY_DLDFLAGS="${rb_opt}" ;; #(
+  *) :
+     LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS ${rb_opt}" ;;
+esac
+	done
 	LIBRUBYARG_SHARED='-L${libdir} -l${RUBY_SO_NAME}'
 	SOLIBS='-lm -lc'
 	 ;; #(
   darwin*) :
 
-	RUBY_SO_NAME="$RUBY_SO_NAME"'.$(MAJOR).$(MINOR).$(TEENY)'
+	RUBY_SO_NAME="$RUBY_SO_NAME"'.$(RUBY_PROGRAM_VERSION)'
 	LIBRUBY_LDSHARED='$(CC) -dynamiclib'
 	if test "$load_relative" = yes; then
 	    libprefix="@executable_path/../${libdir_basename}"
 	    LIBRUBY_RELATIVE=yes
 	fi
 	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-install_name '${libprefix}'/$(LIBRUBY_SO)'
-	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-current_version $(MAJOR).$(MINOR).$(TEENY)'
-	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-compatibility_version $(RUBY_PROGRAM_VERSION)'
+	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-compatibility_version $(MAJOR).$(MINOR)'
+	LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-current_version $(RUBY_PROGRAM_VERSION)'
 	if test "$visibility_option" = ld; then
 	    LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-Wl,-unexported_symbol,_Init_*'
 	    LIBRUBY_DLDFLAGS="$LIBRUBY_DLDFLAGS "'-Wl,-unexported_symbol,_ruby_static_id_*'
@@ -23787,7 +25745,7 @@ fi
 	if test "x$pie" != x; then
 	  # RUBY_APPEND_OPTION(XCFLAGS)
 	case " ${XCFLAGS-} " in #(
-  *' -fPIE '*) :
+  *" -fPIE "*) :
      ;; #(
   '  ') :
      XCFLAGS="-fPIE" ;; #(
@@ -23796,7 +25754,7 @@ fi
 esac
 	  # RUBY_APPEND_OPTION(XLDFLAGS)
 	case " ${XLDFLAGS-} " in #(
-  *' $pie '*) :
+  *" $pie "*) :
      ;; #(
   '  ') :
      XLDFLAGS="$pie" ;; #(
@@ -23870,70 +25828,27 @@ else
 fi
 
 
-if test "${enable_dtrace}" = "auto"; then
-    if test x"$DTRACE" != x -a x"$cross_compiling" != xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether dtrace USDT is available" >&5
-$as_echo_n "checking whether dtrace USDT is available... " >&6; }
-if ${rb_cv_dtrace_available+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    echo "provider conftest{ probe fire(); };" > conftest_provider.d
-    if $DTRACE -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null; then
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "conftest_provider.h"
-int
-main ()
-{
-CONFTEST_FIRE();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-	# DTrace is available on the system
-	rb_cv_dtrace_available=yes
-
-else
-  rb_cv_dtrace_available=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    else
-      # DTrace is not available while dtrace command exists
-      # for example FreeBSD 8 or FreeBSD 9 without DTrace build option
-      rb_cv_dtrace_available=no
-    fi
-    rm -f conftest.co conftest_provider.dho
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dtrace_available" >&5
-    colorize_result "$rb_cv_dtrace_available" ; }
-
-        enable_dtrace=$rb_cv_dtrace_available
-    else
-        enable_dtrace=no
-    fi
-fi
-
 LIBRUBY_A_OBJS='$(OBJS)'
 DTRACE_REBUILD=
-if test "${enable_dtrace}" = "yes"; then
-    if test -z "$DTRACE"; then
-        as_fn_error $? "dtrace(1) is missing" "$LINENO" 5
-    elif test "$cross_compiling" = yes; then
-        as_fn_error $? "--enable-dtrace, however, cross compiling" "$LINENO" 5
-    else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether dtrace USDT is available" >&5
+case "${enable_dtrace}" in #(
+  yes|auto) :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether dtrace USDT is available" >&5
 $as_echo_n "checking whether dtrace USDT is available... " >&6; }
 if ${rb_cv_dtrace_available+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
     echo "provider conftest{ probe fire(); };" > conftest_provider.d
-    if $DTRACE -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null; then
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    rb_cv_dtrace_available=no
+    for rb_dtrace_opt in "-xnolibs" ""
+do :
+  	if $DTRACE $rb_dtrace_opt -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null; then :
+
+else
+  continue
+fi
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "conftest_provider.h"
 int
@@ -23946,28 +25861,48 @@ CONFTEST_FIRE();
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-	# DTrace is available on the system
-	rb_cv_dtrace_available=yes
-
 else
-  rb_cv_dtrace_available=no
+  continue
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    else
-      # DTrace is not available while dtrace command exists
-      # for example FreeBSD 8 or FreeBSD 9 without DTrace build option
-      rb_cv_dtrace_available=no
-    fi
+	# DTrace is available on the system
+	rb_cv_dtrace_available=yes${rb_dtrace_opt:+"($rb_dtrace_opt)"}
+	break
+
+done
     rm -f conftest.co conftest_provider.dho
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_dtrace_available" >&5
     colorize_result "$rb_cv_dtrace_available" ; }
+case "$rb_cv_dtrace_available" in #(
+  "yes("*")") :
+    DTRACE_OPT=`expr "$rb_cv_dtrace_available" : "yes(\(.*\))"` ;; #(
+  *) :
+     ;;
+esac
 
-        enable_dtrace=$rb_cv_dtrace_available
-        if test "${enable_dtrace}" = "no"; then
-            as_fn_error $? "--enable-dtrace, however, USDT is not available" "$LINENO" 5
-        fi
+ ;; #(
+  *) :
+
+    rb_cv_dtrace_available=no
+ ;;
+esac
+if test "${enable_dtrace}" = yes; then :
+      if test -z "$DTRACE"; then :
+  	as_fn_error $? "dtrace(1) is missing" "$LINENO" 5
+
+elif test "$cross_compiling" = yes; then :
+  	as_fn_error $? "--enable-dtrace, however, cross compiling" "$LINENO" 5
+
+elif test "${rb_cv_dtrace_available}" = "no"; then :
+         as_fn_error $? "--enable-dtrace, however, USDT is not available" "$LINENO" 5
+
+fi
+
+fi
+case $rb_cv_dtrace_available in #(
+  yes*) :
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $DTRACE needs post processing" >&5
 $as_echo_n "checking whether $DTRACE needs post processing... " >&6; }
 if ${rb_cv_prog_dtrace_g+:} false; then :
@@ -23981,7 +25916,7 @@ else
       probe fire();
     };
 _PROBES
-    $DTRACE -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null &&
+    $DTRACE ${DTRACE_OPT} -h -o conftest_provider.h -s conftest_provider.d >/dev/null 2>/dev/null &&
     :
   }; then
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -23999,7 +25934,7 @@ if ac_fn_c_try_compile "$LINENO"; then :
 
 	if {
 	    cp -p conftest.${ac_objext} conftest.${ac_objext}.save &&
-	    $DTRACE -G -s conftest_provider.d conftest.${ac_objext} 2>/dev/null &&
+	    $DTRACE ${DTRACE_OPT} -G -s conftest_provider.d conftest.${ac_objext} 2>/dev/null &&
 	    :
 	}; then
 	    if cmp -s conftest.o conftest.${ac_objext}.save; then
@@ -24017,27 +25952,31 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $rb_cv_prog_dtrace_g" >&5
     colorize_result "$rb_cv_prog_dtrace_g" ; }
 
-        if test "$rb_cv_prog_dtrace_g" != 'no'; then
-            DTRACE_OBJ='probes.$(OBJEXT)'
-        fi
-        if test "$rb_cv_prog_dtrace_g" = 'rebuild'; then
-            DTRACE_REBUILD=yes
-            LIBRUBY_A_OBJS='$(DTRACE_GLOMMED_OBJ)'
-        fi
-        case "${target_os}" in #(
-  freebsd*) :
+    if test "$rb_cv_prog_dtrace_g" != no; then :
+  	DTRACE_OBJ='probes.$(OBJEXT)'
 
+fi
+    if test "$rb_cv_prog_dtrace_g" = rebuild; then :
+  	DTRACE_REBUILD=yes
+	LIBRUBY_A_OBJS='$(DTRACE_GLOMMED_OBJ)'
+
+fi
+    case "${target_os}" in #(
+  freebsd*) :
             # FreeBSD's dtrace requires libelf
-            LIBS="-lelf $LIBS"
-         ;; #(
+        LIBS="-lelf $LIBS"
+     ;; #(
   *) :
      ;;
 esac
-    fi
     DTRACE_EXT=d
-else
+ ;; #(
+  *) :
+        enable_dtrace=no
     DTRACE_EXT=dmyh
-fi
+ ;;
+esac
+
 
 
 
@@ -24069,6 +26008,9 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #include <setjmp.h>
 	    #include <stdio.h>
 	    jmp_buf jb;
+	    #ifdef NORETURN
+	    NORETURN(void t(void));
+	    #endif
 	    void t(void) {__builtin_longjmp($cast jb, 1);}
 	    int jump(void) {(void)(__builtin_setjmp($cast jb) ? 1 : 0); return 0;}
 int
@@ -24100,6 +26042,121 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func___builtin_setjmp" >&5
     colorize_result "$ac_cv_func___builtin_setjmp" ; }
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for _setjmpex as a macro or function" >&5
+$as_echo_n "checking for _setjmpex as a macro or function... " >&6; }
+if ${ac_cv_func__setjmpex+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <setjmp.h>
+#include <setjmpex.h>
+
+#define JMPARGS_1 env
+#define JMPARGS_2 env,1
+#define JMPARGS JMPARGS_1
+
+int
+main ()
+{
+jmp_buf env; _setjmpex(JMPARGS);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_func__setjmpex=yes
+else
+  ac_cv_func__setjmpex=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func__setjmpex" >&5
+    colorize_result "$ac_cv_func__setjmpex" ; }
+if test "$ac_cv_func__setjmpex" = yes; then :
+  $as_echo "#define HAVE__SETJMPEX 1" >>confdefs.h
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for _setjmp as a macro or function" >&5
+$as_echo_n "checking for _setjmp as a macro or function... " >&6; }
+if ${ac_cv_func__setjmp+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <setjmp.h>
+$ac_includes_default
+#define JMPARGS_1 env
+#define JMPARGS_2 env,1
+#define JMPARGS JMPARGS_1
+
+int
+main ()
+{
+jmp_buf env; _setjmp(JMPARGS);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_func__setjmp=yes
+else
+  ac_cv_func__setjmp=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func__setjmp" >&5
+    colorize_result "$ac_cv_func__setjmp" ; }
+if test "$ac_cv_func__setjmp" = yes; then :
+  $as_echo "#define HAVE__SETJMP 1" >>confdefs.h
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sigsetjmp as a macro or function" >&5
+$as_echo_n "checking for sigsetjmp as a macro or function... " >&6; }
+if ${ac_cv_func_sigsetjmp+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <setjmp.h>
+$ac_includes_default
+#define JMPARGS_1 env
+#define JMPARGS_2 env,1
+#define JMPARGS JMPARGS_2
+
+int
+main ()
+{
+sigjmp_buf env; sigsetjmp(JMPARGS);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_func_sigsetjmp=yes
+else
+  ac_cv_func_sigsetjmp=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_sigsetjmp" >&5
+    colorize_result "$ac_cv_func_sigsetjmp" ; }
+if test "$ac_cv_func_sigsetjmp" = yes; then :
+  $as_echo "#define HAVE_SIGSETJMP 1" >>confdefs.h
+
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for setjmp type" >&5
 $as_echo_n "checking for setjmp type... " >&6; }
@@ -24179,6 +26236,12 @@ cat >>confdefs.h <<_ACEOF
 #define RUBY_JMP_BUF ${setjmp_sigmask+${setjmp_prefix}}jmp_buf
 _ACEOF
 
+if test x$setjmp_suffix = xex; then :
+  cat >>confdefs.h <<_ACEOF
+#define RUBY_USE_SETJMPEX 1
+_ACEOF
+
+fi
 
 }
 { # build section
@@ -24234,6 +26297,19 @@ case "$RDOCTARGET:$CAPITARGET" in #(
 esac
 
 
+# Check whether --enable-install-static-library was given.
+if test "${enable_install_static_library+set}" = set; then :
+  enableval=$enable_install_static_library; INSTALL_STATIC_LIBRARY=$enableval
+else
+  if test x"$enable_shared" = xyes; then :
+  INSTALL_STATIC_LIBRARY=no
+else
+  INSTALL_STATIC_LIBRARY=yes
+fi
+fi
+
+
+
 if test "$rb_with_pthread" = "yes"; then
     THREAD_MODEL=pthread
 fi
@@ -24287,7 +26363,7 @@ case "$target_os" in #(
 
 	# RUBY_APPEND_OPTION(CFLAGS)
 	case " ${CFLAGS-} " in #(
-  *' -pipe '*) :
+  *" -pipe "*) :
      ;; #(
   '  ') :
      CFLAGS="-pipe" ;; #(
@@ -24299,7 +26375,7 @@ esac
 
 	# RUBY_APPEND_OPTION(CFLAGS)
 	case " ${CFLAGS-} " in #(
-  *' -pipe '*) :
+  *" -pipe "*) :
      ;; #(
   '  ') :
      CFLAGS="-pipe" ;; #(
@@ -24308,7 +26384,7 @@ esac
 esac
 	# RUBY_APPEND_OPTION(XLDFLAGS)
 	case " ${XLDFLAGS-} " in #(
-  *' -framework CoreFoundation '*) :
+  *" -framework CoreFoundation "*) :
      ;; #(
   '  ') :
      XLDFLAGS="-framework CoreFoundation" ;; #(
@@ -24317,7 +26393,7 @@ esac
 esac
 	# RUBY_APPEND_OPTION(LIBRUBYARG_STATIC)
 	case " ${LIBRUBYARG_STATIC-} " in #(
-  *' -framework CoreFoundation '*) :
+  *" -framework CoreFoundation "*) :
      ;; #(
   '  ') :
      LIBRUBYARG_STATIC="-framework CoreFoundation" ;; #(
@@ -24346,7 +26422,7 @@ esac
 	 ;; #(
   cygwin*|mingw*) :
 
-	RUBY_SO_NAME="${RUBY_SO_NAME}"'$(MAJOR)$(MINOR)$(TEENY)'
+	RUBY_SO_NAME="${RUBY_SO_NAME}"'$(MAJOR)$(MINOR)0'
 	LIBRUBY_DLDFLAGS="${DLDFLAGS}"' -Wl,--out-implib=$(LIBRUBY)'
 	case "$target_os" in #(
   cygwin*) :
@@ -24633,8 +26709,8 @@ if test "${ARCH_FLAG}"; then
     LDFLAGS=`echo "$LDFLAGS" | sed "s| *$archflagpat"'||'`
 fi
 warnflags="$rb_cv_warnflags"
-cflags="$orig_cflags "'${optflags} ${debugflags} ${warnflags}'
-cxxflags="$orig_cxxflags "'${optflags} ${debugflags} ${warnflags}'
+cflags="${orig_cflags:+$orig_cflags }"'${optflags} ${debugflags} ${warnflags}'
+cxxflags="${orig_cxxflags:+$orig_cxxflags }"'${optflags} ${debugflags} ${warnflags}'
 
 
 
@@ -24741,11 +26817,9 @@ if test ${RUBY_LIB_VERSION_STYLE+set}; then
     echo "#define RUBY_LIB_VERSION_STYLE $RUBY_LIB_VERSION_STYLE"
     echo '#define STRINGIZE(x) x'
     test -f revision.h -o -f "${srcdir}/revision.h" || echo '#define RUBY_REVISION 0'
-    echo '#include "verconf.h"'
     echo '#include "version.h"'
     echo 'ruby_version=RUBY_LIB_VERSION'
     } > conftest.c
-    test -f verconf.h || > verconf.h
     ruby_version="`$CPP -I. -I"${srcdir}" -I"${srcdir}/include" conftest.c | sed '/^ruby_version=/!d;s/ //g'`"
     eval $ruby_version
 elif test -z "${ruby_version}"; then
@@ -26254,10 +28328,12 @@ which seems to be undefined.  Please make sure it is defined" >&2;}
 	    :
 	elif svn info "$srcdir" > /dev/null 2>&1; then
 	    VCS='svn'
-	elif test -d "$srcdir/.git/svn"; then
-	    VCS='git svn'
-	elif test -d "$srcdir/.git"; then
-	    VCS='git'
+	elif git_dir=`git --work-tree="$srcdir" --git-dir="$srcdir/.git" rev-parse --git-dir 2>/dev/null`; then
+	    if test -d "$git_dir/svn"; then
+		VCS='git svn'
+	    else
+		VCS='git'
+	    fi
 	else
 	    VCS='echo cannot'
 	fi
@@ -26271,7 +28347,12 @@ which seems to be undefined.  Please make sure it is defined" >&2;}
   *) :
     VCSUP='$(VCS)' ;;
 esac
-	sed -n 's/^#define \(RUBY_RELEASE_DATE\) "\(.*\)"/\1 = \2/p' "$srcdir/version.h"
+	sed -n \
+	    -e '/^#define \(RUBY_RELEASE_[A-Z]*\) \([0-9][0-9]*\)/{' \
+	    -e   's//\1 = \2/' \
+	    -e   's/ \([0-9]\)$/ 0\1/' \
+	    -e   p \
+	    -e '}' "$srcdir/version.h"
 	sed '/^MISSING/s/\$U\././g;/^VCS *=/s#@VCS@#'"$VCS"'#;/^VCSUP *=/s#@VCSUP@#'"$VCSUP"'#' Makefile
 	echo; test x"$EXEEXT" = x || echo 'miniruby: miniruby$(EXEEXT)'
 	if test "$gnumake" != yes; then
@@ -26346,3 +28427,47 @@ fi
 
 }
 }
+
+if ${FOLD+:} false; then :
+
+else
+
+if test "`echo abcdefg hijklmno | fold -s -w10 | sed 1d`" = hijklmno; then :
+  FOLD="fold"
+else
+  FOLD=
+fi
+
+fi
+
+
+echo "---"
+echo "Configuration summary for $RUBY_BASE_NAME version $RUBY_PROGRAM_VERSION"
+echo ""
+config_summary "Installation prefix" "$prefix"
+config_summary "exec prefix"         "$exec_prefix"
+config_summary "arch"                "$arch"
+config_summary "site arch"           "$sitearch"
+config_summary "RUBY_BASE_NAME"      "$RUBY_BASE_NAME"
+config_summary "enable shared"       "$enable_shared"
+config_summary "ruby lib prefix"     "$rubylibprefix"
+config_summary "site libraries path" "$rubysitearchprefix"
+config_summary "vendor path"         "$vendordir"
+config_summary "target OS"           "$target_os"
+config_summary "compiler"            "$CC"
+config_summary "with pthread"        "$enable_pthread"
+config_summary "enable shared libs"  "$ENABLE_SHARED"
+config_summary "dynamic library ext" "$DLEXT"
+config_summary "CFLAGS"              "$cflags"
+config_summary "CPPFLAGS"            "$cppflags"
+config_summary "LDFLAGS"             "$LDFLAGS"
+config_summary "optflags"            "$optflags"
+config_summary "debugflags"          "$debugflags"
+config_summary "warnflags"           "$warnflags"
+config_summary "strip command"       "$STRIP"
+config_summary "install doc"         "$install_doc"
+config_summary "man page type"       "$MANTYPE"
+config_summary "search path"         "$search_path"
+config_summary "static-linked-ext"   ${EXTSTATIC:+"yes"}
+echo ""
+echo "---"
