@@ -93,6 +93,7 @@ class NPMDServerTest < Test::Unit::TestCase
         _d.instance.omsagentUID = Process.euid
         _d.instance.do_capability_check = false
         _d.instance.dsc_resource_version = "TEST"
+        _d.instance.networkAgentState = nil
         _d
     end
 
@@ -846,6 +847,63 @@ class NPMDServerTest < Test::Unit::TestCase
         d.instance.omsadmin_conf_path = "/etc/opt/microsoft/omsagent/#{test_ws_id}abcsd/conf/omsadmin.conf"
         _result = d.instance.get_workspace_id()
         assert_equal(nil, _result, "The result should be nil when ws id is not of guid length")
+    end
+
+    # Test02: Check if emit is working properly
+    # Sequence:
+    # 1. Register run post condition as:
+    #   (a) Wait for emitted data has both path data and agent data
+    # 2. Run the driver
+    # 3. Assert that path data has Computer key
+    # 4. Assert that there is no agent data
+    def test_method_dontupload_agent_data_if_present_in_state
+        # Step 1
+        d = create_driver
+        d.register_run_post_condition {
+            (1..ONE_MIN_IN_MSEC).each do
+                sleep(ONE_MSEC) unless (d.instance.num_path_data > 0 and d.instance.num_agent_data > 0)
+            end
+
+            assert(d.instance.num_path_data > 0, "Num path data should be greater than 0")
+            assert(d.instance.num_agent_data > 0, "Num agent data should be greater than 0")
+            true
+        }
+
+        # Step 2
+        d.run
+        emits = d.emits
+        assert(emits.length > 0, "There should be at least 1 emitted item by now")
+        path_data = nil
+        agent_data = nil
+        emits.each do |x|
+            if x.last.key?("DataItems")
+                x.last["DataItems"].each do |z|
+                    if z.key?("SubType")
+                        if z["SubType"] == "NetworkPath"
+                            path_data ||= []
+                            path_data << z
+                        elsif z["SubType"] == "NetworkAgent"
+                            agent_data ||= []
+                            agent_data << z
+                        end
+                    end
+                end
+            end
+        end
+
+        # Step 3
+        assert(!path_data.nil?, "Path data should not be nil")
+        assert(path_data.length > 0, "There should be at least 1 path data element")
+        path_data.each do |x|
+            assert(x.key?("Computer"), "All path data elements should have Computer key appended")
+        end
+
+        # Step 4
+        assert(!agent_data.nil?, "Agent data should not be nil")
+        assert(agent_data.length == 1, "There should be only 1 agent data element")
+        agent_data.each do |x|
+            assert(x.key?("AgentId"), "All agent data elements should have AgentId key appended")
+        end
     end
 
 end

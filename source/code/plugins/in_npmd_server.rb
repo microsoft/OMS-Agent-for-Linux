@@ -98,6 +98,7 @@ module Fluent
         attr_accessor :do_capability_check
         attr_accessor :npmd_state_dir
         attr_accessor :dsc_resource_version
+        attr_accessor :networkAgentState
 
         def start
             # Fetch parameters related to instance
@@ -125,6 +126,8 @@ module Fluent
             @npmdIntendedStop = false
             @stderrFileNameHash = Hash.new
             @stop_sync = Mutex.new
+            @networkAgentState = nil
+            @netWorkAgentSync = Mutex.new
 
             # Parameters for restart backoffs
             @agent_restart_count = 0
@@ -309,7 +312,11 @@ module Fluent
                                     elsif !@agentId.nil? and item["SubType"] == "NetworkAgent"
                                         @num_agent_data += 1 unless @num_agent_data.nil?
                                         item["AgentId"] = @agentId
-                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                        if shouldUploadNetworkAgentInfo(item)
+                                            _validUploadDataItems << item if is_valid_dataitem(item)
+                                        else
+                                            Logger::logInfo "Network Agent data upload is skipped because it hasnt changed from the last time"
+                                        end
                                     end
                                 end
                             end
@@ -373,6 +380,30 @@ module Fluent
                 _record["DataItems"] = _dataitem
                 router.emit(@tag, Engine.now, _record)
             end
+        end
+
+        def shouldUploadNetworkAgentInfo(item)
+            _retVal = false
+            if(@networkAgentState == nil || @networkAgentState["SubnetId"] == nil || @networkAgentState["AgentIP"] == nil || @networkAgentState["AgentFqdn"] == nil || @networkAgentState["TimeGenerated"] == nil) 
+                _retVal = true
+            end
+            _timeDiff = 0
+            if(@networkAgentState != nil && @networkAgentState["TimeGenerated"] != nil && item["TimeGenerated"] != nil)
+                _timeDiff = Time.parse(item["TimeGenerated"]) - Time.parse(@networkAgentState["TimeGenerated"])
+                _timeDiff /= 3600
+            end
+            if(!_retVal && _timeDiff > 6 || _timeDiff < 0)
+                _retVal = true
+            end
+            if(!_retVal && (@networkAgentState["SubnetId"] != item["SubnetId"] || @networkAgentState["AgentIP"] != item["AgentIP"] || @networkAgentState["AgentFqdn"] != item["AgentFqdn"]))
+                _retVal = true
+            end
+            if(_retVal)
+                @netWorkAgentSync.synchronize do
+                    @networkAgentState = item
+                end
+            end
+            return _retVal
         end
 
         def emit_diag_log_dataitems_of_agent(dataitems)
