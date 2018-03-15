@@ -127,7 +127,6 @@ module Fluent
             @stderrFileNameHash = Hash.new
             @stop_sync = Mutex.new
             @networkAgentState = nil
-            @netWorkAgentSync = Mutex.new
 
             # Parameters for restart backoffs
             @agent_restart_count = 0
@@ -384,24 +383,38 @@ module Fluent
 
         def shouldUploadNetworkAgentInfo(item)
             _retVal = false
-            if(@networkAgentState == nil || @networkAgentState["SubnetId"] == nil || @networkAgentState["AgentIP"] == nil || @networkAgentState["AgentFqdn"] == nil || @networkAgentState["TimeGenerated"] == nil) 
+            if(@networkAgentState == nil ||
+                @networkAgentState["SubnetId"] == nil ||
+                @networkAgentState["AgentIP"] == nil ||
+                @networkAgentState["AgentFqdn"] == nil ||
+                @networkAgentState["TimeGenerated"] == nil
+                ) 
                 _retVal = true
             end
             _timeDiff = 0
-            if(@networkAgentState != nil && @networkAgentState["TimeGenerated"] != nil && item["TimeGenerated"] != nil)
+            if(@networkAgentState != nil &&
+                @networkAgentState["TimeGenerated"] != nil &&
+                item["TimeGenerated"] != nil
+                )
                 _timeDiff = Time.parse(item["TimeGenerated"]) - Time.parse(@networkAgentState["TimeGenerated"])
                 _timeDiff /= 3600
             end
-            if(!_retVal && _timeDiff > 6 || _timeDiff < 0)
+            if(!_retVal &&
+                _timeDiff > 6 ||
+                _timeDiff < 0
+                )
                 _retVal = true
             end
-            if(!_retVal && (@networkAgentState["SubnetId"] != item["SubnetId"] || @networkAgentState["AgentIP"] != item["AgentIP"] || @networkAgentState["AgentFqdn"] != item["AgentFqdn"]))
+            if(!_retVal &&
+                (@networkAgentState["SubnetId"] != item["SubnetId"] ||
+                    @networkAgentState["AgentIP"] != item["AgentIP"] ||
+                    @networkAgentState["AgentFqdn"] != item["AgentFqdn"]
+                    )
+                )
                 _retVal = true
             end
             if(_retVal)
-                @netWorkAgentSync.synchronize do
-                    @networkAgentState = item
-                end
+                @networkAgentState = item
             end
             return _retVal
         end
