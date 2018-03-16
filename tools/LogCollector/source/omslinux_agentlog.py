@@ -407,6 +407,9 @@ def copyCommonFiles(omsLinuxType):
     cmd='cp /var/opt/microsoft/omsconfig/omsconfig* /tmp/omslogs'
     out=execCommand(cmd)
     writeLogCommand(cmd)
+    cmd='cp /var/opt/omi/log/omi* /tmp/omslogs'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
     cmd='cp /var/opt/microsoft/scx/log/scx* /tmp/omslogs'
     out=execCommand2(cmd)
     writeLogCommand(cmd)

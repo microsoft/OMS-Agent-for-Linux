@@ -36,6 +36,7 @@ class NPMDTest
     def upload_fake_data
         @clientSock.puts FAKE_AGENT_DATA
         @clientSock.puts FAKE_PATH_DATA
+        @clientSock.puts FAKE_AGENT_DATA
     end
 end
 
