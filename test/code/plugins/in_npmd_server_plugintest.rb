@@ -1,5 +1,6 @@
 require 'fluent/test'
 require_relative '../../../source/code/plugins/in_npmd_server'
+require_relative '../../../source/code/plugins/oms_diag_lib'
 require 'socket'
 require 'securerandom'
 
@@ -15,6 +16,9 @@ class Logger
 end
 
 class NPMDServerTest < Test::Unit::TestCase
+    class OMS::Diag
+        @@DiagSupported = true
+    end
 
     TMP_DIR = "tmp_npmd_test"
     FAKE_ADMIN_CONF_LOCATION = "#{TMP_DIR}/omsadmin.conf"
@@ -88,6 +92,8 @@ class NPMDServerTest < Test::Unit::TestCase
         _d.instance.is_purged = false
         _d.instance.omsagentUID = Process.euid
         _d.instance.do_capability_check = false
+        _d.instance.dsc_resource_version = "TEST"
+        _d.instance.networkAgentState = nil
         _d
     end
 
@@ -122,6 +128,46 @@ class NPMDServerTest < Test::Unit::TestCase
             end
         end
         _count
+    end
+
+    def parse_diag_logs_from_emits(emits)
+        error_logs = nil
+        assert(emits.length > 0, "At least some data should have been emitted by now")
+        emits.each do |x|
+            if x.last.key?(OMS::Diag::DI_KEY_LOGMESSAGE)
+                error_logs ||= []
+                error_logs << x.last[OMS::Diag::DI_KEY_LOGMESSAGE]
+            end
+        end
+        error_logs
+    end
+
+    def check_presence_of_error_log(error_logs, test_log)
+        found_test_log = false
+        unless error_logs.nil?
+            assert(error_logs.is_a?(Array), "Error logs should be an array")
+            error_logs.each do |x|
+                if x == test_log
+                    found_test_log = true
+                    break
+                end
+            end
+        end
+        found_test_log
+    end
+
+    def check_presence_of_error_log_beginning_with(error_logs, test_prefix)
+        found_test_log = false
+        unless error_logs.nil?
+            assert(error_logs.is_a?(Array), "Error logs should be an array")
+            error_logs.each do |x|
+                if x.start_with?(test_prefix)
+                    found_test_log = true
+                    break
+                end
+            end
+        end
+        found_test_log
     end
 
     # Test01: Check if multiple stale instances are getting killed or not
@@ -308,31 +354,10 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 2
         d.run
-        emits = d.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d.emits)
 
         # Step 3
-        assert(!error_logs.nil?, "There should have been at least some error logs")
-        assert(error_logs.is_a?(Array), "Error logs should be an array")
-        assert(error_logs.length > 0, "There should be at least some error logs")
-        found_sent_log = false
-        error_logs.each do |x|
-            if x.key?("Message") and x["Message"] == "dsc:#{TEST_ERROR_LOG_EMIT}"
-                found_sent_log = true
-                break
-            end
-        end
+        found_sent_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_EMIT)
         assert(found_sent_log, "Sent log in test should have been seen");
     end
 
@@ -408,31 +433,10 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 3
         d.run
-        emits = d.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d.emits)
 
         # Step 4
-        assert(!error_logs.nil?, "There should have been at least some error logs")
-        assert(error_logs.is_a?(Array), "Error logs should be an array")
-        assert(error_logs.length > 0, "There should be at least some error logs")
-        found_binary_absent_log = false
-        error_logs.each do |x|
-            if x.key?("Message") and x["Message"] == TEST_ERROR_LOG_BINARY_ABSENT
-                found_binary_absent_log = true
-                break
-            end
-        end
+        found_binary_absent_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_ABSENT)
         assert_equal(true, found_binary_absent_log, "Binary absent log in test should have been seen");
     end
 
@@ -585,31 +589,10 @@ class NPMDServerTest < Test::Unit::TestCase
 
         # Step 4
         d.run
-        emits = d.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d.emits)
 
         # Step 5
-        assert(!error_logs.nil?, "There should have been at least some error logs")
-        assert(error_logs.is_a?(Array), "Error logs should be an array")
-        assert(error_logs.length > 0, "There should be at least some error logs")
-        found_binary_duplicate_log = false
-        error_logs.each do |x|
-            if x.key?("Message") and x["Message"] == TEST_ERROR_LOG_BINARY_DUPLICATE
-                found_binary_duplicate_log = true
-                break
-            end
-        end
+        found_binary_duplicate_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_DUPLICATE)
         assert_equal(true, found_binary_duplicate_log, "Binary duplicate log in test should have been seen");
     end
 
@@ -647,31 +630,8 @@ class NPMDServerTest < Test::Unit::TestCase
         d.run
 
         # Step 4
-        emits = d.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
-
-        found_invalid_user_log = false
-        unless error_logs.nil?
-            assert(error_logs.is_a?(Array), "Error logs should be an array")
-            assert(error_logs.length > 0, "There should be at least some error logs")
-            error_logs.each do |x|
-                if x.key?("Message") and x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
-                    found_invalid_user_log = true
-                    break
-                end
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d.emits)
+        found_invalid_user_log = check_presence_of_error_log_beginning_with(error_logs, TEST_ERROR_LOG_INVALID_USER)
 
         # Step 5
         assert_equal(false, found_invalid_user_log , "Invalid user log should not be seen");
@@ -686,29 +646,8 @@ class NPMDServerTest < Test::Unit::TestCase
         d.run
 
         # Step 8
-        emits = d.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
-        assert(!error_logs.nil?, "There should have been at least some error logs")
-        assert(error_logs.is_a?(Array), "Error logs should be an array")
-        assert(error_logs.length > 0, "There should be at least some error logs")
-        found_invalid_user_log = false
-        error_logs.each do |x|
-            if x.key?("Message") and x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
-                found_invalid_user_log = true
-                break
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d.emits)
+        found_invalid_user_log = check_presence_of_error_log_beginning_with(error_logs, TEST_ERROR_LOG_INVALID_USER)
 
         # Step 9
         assert_equal(true, found_invalid_user_log , "Invalid user log should have been seen");
@@ -762,30 +701,9 @@ class NPMDServerTest < Test::Unit::TestCase
         d1.run
 
         # Step 5
-        emits = d1.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
-        assert(!error_logs.nil?, "There should have been at least some error logs")
-        assert(error_logs.is_a?(Array), "Error logs should be an array")
-        assert(error_logs.length > 0, "There should be at least some error logs")
-        found_invalid_user_log = false
-        found_error_emit_log = false
-        error_logs.each do |x|
-            if x.key?("Message")
-                found_invalid_user_log = true if x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
-                found_error_emit_log = true if x["Message"].include?(TEST_ERROR_LOG_EMIT)
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d1.emits)
+        found_invalid_user_log = check_presence_of_error_log_beginning_with(error_logs, TEST_ERROR_LOG_INVALID_USER)
+        found_error_emit_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_EMIT)
         assert_equal(false, found_error_emit_log, "Error emit log should not seen when sent via non omsagent user")
 
         # Step 6
@@ -810,30 +728,9 @@ class NPMDServerTest < Test::Unit::TestCase
         d2.run
 
         # Step 10
-        emits = d2.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
-        assert(!error_logs.nil?, "There should have been at least some error logs")
-        assert(error_logs.is_a?(Array), "Error logs should be an array")
-        assert(error_logs.length > 0, "There should be at least some error logs")
-        found_invalid_user_log = false
-        found_error_emit_log = false
-        error_logs.each do |x|
-            if x.key?("Message")
-                found_invalid_user_log = true if x["Message"].include?(TEST_ERROR_LOG_INVALID_USER)
-                found_error_emit_log = true if x["Message"].include?(TEST_ERROR_LOG_EMIT)
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d2.emits)
+        found_invalid_user_log = check_presence_of_error_log_beginning_with(error_logs, TEST_ERROR_LOG_INVALID_USER)
+        found_error_emit_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_EMIT)
         assert_equal(true, found_error_emit_log, "Error emit log should be seen when sent via omsagent user")
 
         # Step 11
@@ -882,29 +779,8 @@ class NPMDServerTest < Test::Unit::TestCase
         assert_equal(true, File.exist?(npmdVersionFile), "Error the default npm_version file should be present")
 
         # Step 8
-        emits = d.emits
-        error_logs = nil
-        assert(emits.length > 0, "At least some data should have been emitted by now")
-        emits.each do |x|
-            if x.last.key?("DataItems")
-                x.last["DataItems"].each do |z|
-                    if z.key?("Message")
-                        error_logs ||= []
-                        error_logs << z
-                    end
-                end
-            end
-        end
-        assert(!error_logs.nil?, "There should have been at least some error logs")
-        assert(error_logs.is_a?(Array), "Error logs should be an array")
-        assert(error_logs.length > 0, "There should be at least some error logs")
-        found_cap_not_supported_log = false
-        error_logs.each do |x|
-            if x.key?("Message") and x["Message"].include?(TEST_ERROR_LOG_CAP_NOT_SUPPORTED)
-                found_cap_not_supported_log = true
-                break
-            end
-        end
+        error_logs = parse_diag_logs_from_emits(d.emits)
+        found_cap_not_supported_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_CAP_NOT_SUPPORTED)
         assert_equal(true, found_cap_not_supported_log, "Error should have seen filesystem capability not supported distro log")
     end
 
@@ -950,58 +826,6 @@ class NPMDServerTest < Test::Unit::TestCase
     end
 
 
-    # Method test 01: Checking agent id read from guid file
-    # Now the omsagent agentid is being moved to a different file
-    # with the intention of having a single id for entire computer
-    # Checking different cases for agent id read from this file
-    def test_method_get_agent_id_from_guid_file
-
-        test_ws_id = SecureRandom.uuid
-        test_guid = SecureRandom.uuid
-        test_guid_file = Fluent::NPM::OMS_AGENTGUID_FILE
-
-        d = create_driver
-
-        # Case 1: When ws id and guid file are valid
-        d.instance.define_singleton_method(:get_workspace_id) do
-            test_ws_id
-        end
-        File.open(test_guid_file, "w") do |f|
-            f.write(test_guid)
-        end
-        _result = d.instance.get_agent_id_from_guid_file()
-        assert_equal("#{test_guid}##{test_ws_id}", _result, "The result for valid case should be ComputerId#WorkspaceId")
-
-        # Case 2: When guid is invalid
-        File.open(test_guid_file, "w") do |f|
-            f.write(test_guid[0..-2])
-        end
-        _result = d.instance.get_agent_id_from_guid_file()
-        assert_equal(nil, _result, "The result for when guid is invalid should be nil")
-
-        # Case 3: When guid has garbage at end
-        File.open(test_guid_file, "w") do |f|
-            f.write("#{test_guid}123445564523123213")
-        end
-        _result = d.instance.get_agent_id_from_guid_file()
-        assert_equal("#{test_guid}##{test_ws_id}", _result, "The result when guid has garbage appended should be ComputerId#WorkspaceId")
-
-        # Case 4: When guid file does not exist
-        File.unlink(test_guid_file)
-        _result = d.instance.get_agent_id_from_guid_file()
-        assert_equal(nil, _result, "The result for when guid file is missing should be nil")
-
-        # case 5: When ws id is invalid
-        d.instance.define_singleton_method(:get_workspace_id) do
-            nil
-        end
-        File.open(test_guid_file, "w") do |f|
-            f.write(test_guid)
-        end
-        _result = d.instance.get_agent_id_from_guid_file()
-        assert_equal(nil, _result, "The result for when ws id is nil should be nil")
-    end
-
     # Method test 02: Checking reading of workspace id from omsadmin conf path
     # The workspace id will be needed to single out instances running under a
     # particular computer id. Checking different cases for same
@@ -1023,6 +847,63 @@ class NPMDServerTest < Test::Unit::TestCase
         d.instance.omsadmin_conf_path = "/etc/opt/microsoft/omsagent/#{test_ws_id}abcsd/conf/omsadmin.conf"
         _result = d.instance.get_workspace_id()
         assert_equal(nil, _result, "The result should be nil when ws id is not of guid length")
+    end
+
+    # Test02: Check if emit is working properly
+    # Sequence:
+    # 1. Register run post condition as:
+    #   (a) Wait for emitted data has both path data and agent data
+    # 2. Run the driver
+    # 3. Assert that path data has Computer key
+    # 4. Assert that there is no agent data
+    def test_method_dontupload_agent_data_if_present_in_state
+        # Step 1
+        d = create_driver
+        d.register_run_post_condition {
+            (1..ONE_MIN_IN_MSEC).each do
+                sleep(ONE_MSEC) unless (d.instance.num_path_data > 0 and d.instance.num_agent_data > 0)
+            end
+
+            assert(d.instance.num_path_data > 0, "Num path data should be greater than 0")
+            assert(d.instance.num_agent_data > 0, "Num agent data should be greater than 0")
+            true
+        }
+
+        # Step 2
+        d.run
+        emits = d.emits
+        assert(emits.length > 0, "There should be at least 1 emitted item by now")
+        path_data = nil
+        agent_data = nil
+        emits.each do |x|
+            if x.last.key?("DataItems")
+                x.last["DataItems"].each do |z|
+                    if z.key?("SubType")
+                        if z["SubType"] == "NetworkPath"
+                            path_data ||= []
+                            path_data << z
+                        elsif z["SubType"] == "NetworkAgent"
+                            agent_data ||= []
+                            agent_data << z
+                        end
+                    end
+                end
+            end
+        end
+
+        # Step 3
+        assert(!path_data.nil?, "Path data should not be nil")
+        assert(path_data.length > 0, "There should be at least 1 path data element")
+        path_data.each do |x|
+            assert(x.key?("Computer"), "All path data elements should have Computer key appended")
+        end
+
+        # Step 4
+        assert(!agent_data.nil?, "Agent data should not be nil")
+        assert(agent_data.length == 1, "There should be only 1 agent data element")
+        agent_data.each do |x|
+            assert(x.key?("AgentId"), "All agent data elements should have AgentId key appended")
+        end
     end
 
 end
