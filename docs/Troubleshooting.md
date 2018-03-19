@@ -216,8 +216,9 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * Connection to the OMS Service is blocked
 * VM was rebooted
 * OMI package was manually upgraded to a newer version compared to what was installed by OMS Agent package
-* DSC resource logs "class not found" error in omsconfig.log log file
+* DSC resource logs "class not found" error in `omsconfig.log` log file
 * OMS Agent for Linux data is backed up
+* DSC logs "Current configuration does not exist. Execute Start-DscConfiguration command with -Path parameter to specify a configuration file and create a current configuration first." in `omsconfig.log` log file, but no log message exists about `PerformRequiredConfigurationChecks` operations.
 
 #### Resolutions
 * Install all dependencies like auditd package
@@ -229,6 +230,32 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`.
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`.
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
+* If `omsconfig.log` log file does not indicate that `PerformRequiredConfigurationChecks` operations are running periodically on the system, there might be a problem with the cron job/service. Make sure cron job exists under `/etc/cron.d/OMSConsistencyInvoker`. Also, make sure the cron service is running. You can use `service cron status` (Debian, Ubuntu, SUSE) or `service crond status` (RHEL, CentOS) to check the status of this service. If the service does not exist, you can install the binaries and start the service using the following:
+
+##### On Ubuntu/Debian:
+```
+# To Install the service binaries
+sudo apt-get install -y cron
+# To start the service
+sudo service cron start
+```
+
+##### On SUSE:
+```
+# To Install the service binaries
+sudo zypper in cron -y
+# To start the service
+sudo systemctl enable cron
+sudo systemctl start cron
+```
+
+##### On RHEL/CeonOS:
+```
+# To Install the service binaries
+sudo yum install -y crond
+# To start the service
+sudo service crond start
+```
 
 ### My portal side configuration for (Syslog/Linux Performance Counter) is not being applied
 #### Probable Causes
