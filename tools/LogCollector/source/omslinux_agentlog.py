@@ -141,6 +141,12 @@ def copyContainerFiles(omsContainerName, omsLinuxType):
     cmd='docker cp omsagent:' + '/var/opt/microsoft/omsconfig/omsconfig.log ' + '/tmp/omslogs/container'
     out=execCommand(cmd)
     writeLogCommand(cmd)
+    cmd='docker cp omsagent:' + '/var/opt/microsoft/scx/log/scx.log ' + '/tmp/omslogs/container'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    cmd='docker cp omsagent:' + '/etc/opt/microsoft/omsagent/* ' + '/tmp/omslogs/container/WSData'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
     if(omsLinuxType == 'Ubuntu'):
        cmd='docker cp omsagent:' + '/var/log/syslog /tmp/omslogs/container'
     else:
@@ -401,10 +407,22 @@ def copyCommonFiles(omsLinuxType):
     cmd='cp /var/opt/microsoft/omsconfig/omsconfig* /tmp/omslogs'
     out=execCommand(cmd)
     writeLogCommand(cmd)
+    cmd='cp /var/opt/omi/log/omi* /tmp/omslogs'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    cmd='cp /var/opt/microsoft/scx/log/scx* /tmp/omslogs'
+    out=execCommand2(cmd)
+    writeLogCommand(cmd)
     cmd='mkdir -p /tmp/omslogs/dscconfiguration'
     out=execCommand(cmd)
     writeLogCommand(cmd)
     cmd='cp -rf /etc/opt/omi/conf/omsconfig/configuration/* /tmp/omslogs/dscconfiguration'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    cmd='mkdir -p /tmp/omslogs/WSData'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    cmd='cp -rf /etc/opt/microsoft/omsagent/* /tmp/omslogs/WSData'
     out=execCommand(cmd)
     writeLogCommand(cmd)
     if(omsLinuxType == 'Ubuntu'):
@@ -459,7 +477,10 @@ def estCommonFileSize(omsLinuxType):
     reqSize=0
     folderName='/var/opt/microsoft/omsagent/log/'
     reqSize+=getFolderSize(folderName)
+    folderName='/etc/opt/microsoft/omsagent/'
+    reqSize+=getFolderSize(folderName)
     reqSize+=os.path.getsize('/var/opt/microsoft/omsconfig/omsconfig.log')
+    reqSize+=os.path.getsize('/var/opt/microsoft/scx/log/scx.log')
     if(omsLinuxType == 'Ubuntu'):
        reqSize+=os.path.getsize('/var/log/syslog')
     else:
@@ -787,6 +808,10 @@ try:
        out=execCommand(cmd)
        writeLogCommand(cmd)
        writeLogOutput(out)
+       cmd='mkdir -p ' + outDir + '/container/WSData'
+       out=execCommand(cmd)
+       writeLogCommand(cmd)
+       writeLogOutput(out)
        omsContainerID=getOMSAgentContainerID()
        omsContainerName=getOMSAgentContainerName()
        estSize=estCommonFileSize(linuxType)
@@ -852,6 +877,16 @@ try:
     '''
     if(omsInstallType == 1 or omsInstallType == 2):
        runCommonCommands()
+
+    '''
+    Run DSC diagnostics commands
+    '''
+    cmd='chmod +x ./dscDiagnostics.sh'
+    out=execCommand(cmd)
+    cmd='bash ./dscDiagnostics.sh ' + outDir + '/dscdiagnostics-' + str(datetime.datetime.utcnow().isoformat())
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    writeLogOutput(out)
         
     '''
     Logic to capture IOError or OSError in above logic

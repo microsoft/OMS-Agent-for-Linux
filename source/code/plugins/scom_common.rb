@@ -130,6 +130,10 @@ module Fluent
     config_param :event_id, :string, :default => nil
     desc 'event description to be sent to SCOM'
     config_param :event_desc, :string, :default => nil
+    desc 'Disable upper limit on timer'
+    config_param :disable_timer_limit, :bool, :default => false
+    
+    @@timer_limit = 3600
   
     def initialize()
       super
@@ -150,6 +154,10 @@ module Fluent
       super
       raise ConfigError, "Configuration does not have corresponding event ID" unless @event_id
       raise ConfigError, "Configuration does not have a time interval" unless (@time_interval > 0)
+      if (!disable_timer_limit) && (@time_interval > @@timer_limit)
+        @time_interval = @@timer_limit
+        $log.info "Given time interval is greater than timer limit. Setting time interval to #{@time_interval}"
+      end
     end
     
     def flip_state()

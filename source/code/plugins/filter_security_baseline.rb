@@ -30,9 +30,11 @@ module Fluent
         security_baseline = OMS::SecurityBaseline.new(@log)
         security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(record, @hostname, time)
 
-        # Send Security Baseline Summary to FuentD pipeline.
-        # The data is formatted in correct ODS format and no more handling  is required
-        Fluent::Engine.emit("oms.security_baseline_summary", time, security_baseline_summary_blob)
+        if !security_baseline_summary_blob.nil?
+            # Send Security Baseline Summary to FuentD pipeline.
+            # The data is formatted in correct ODS format and no more handling  is required
+            Fluent::Engine.emit("oms.security_baseline_summary", time, security_baseline_summary_blob)
+        end
 
         return security_baseline_blob
     end # filter

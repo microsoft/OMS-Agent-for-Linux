@@ -67,10 +67,19 @@ class BaselineLibTest < Test::Unit::TestCase
         baseline_results_json = nil
       
         security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)
-        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
+        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", 0)
         
-        assert_equal(nil, security_baseline_blob, "Incorrect error case support") 
-        assert_equal(nil, security_baseline_summary_blob, "Incorrect error case support") 
+        assert_equal(nil, security_baseline_summary_blob, "Incorrect error case support")
+        
+        assert_equal("OPERATION_BLOB", security_baseline_blob["DataType"], "Incorrect 'DataType' value")
+        assert_equal("LogManagement", security_baseline_blob["IPName"], "Incorrect 'IPName' value")
+        item_0 = security_baseline_blob["DataItems"][0]
+        assert_equal("1970-01-01T00:00:00.000Z", item_0["Timestamp"], "Incorrect 'Timestamp' value")
+        assert_equal("Error", item_0["OperationStatus"], "Incorrect 'OperationStatus' value")
+        assert_equal("test_host", item_0["Computer"], "Incorrect 'Computer' value")
+        assert_equal("Security Baseline", item_0["Category"], "Incorrect 'Category' value")
+        assert_equal("Security", item_0["Solution"], "Incorrect 'Solution' value")
+        assert_equal("Security Baseline Assessment failed: Empty output", item_0["Detail"], "Incorrect 'Detail' value")
     end
 
     def test_baseline_with_bad_input
@@ -78,9 +87,39 @@ class BaselineLibTest < Test::Unit::TestCase
         baseline_results_json = JSON.parse(baseline_results_str)
 
         security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)        
-        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", "")        
+        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", 0)        
         
-        assert_equal(nil, security_baseline_blob, "Incorrect error case support") 
-        assert_equal(nil, security_baseline_summary_blob, "Incorrect error case support") 
+        assert_equal(nil, security_baseline_summary_blob, "Incorrect error case support")
+        
+        assert_equal("OPERATION_BLOB", security_baseline_blob["DataType"], "Incorrect 'DataType' value")
+        assert_equal("LogManagement", security_baseline_blob["IPName"], "Incorrect 'IPName' value")
+        item_0 = security_baseline_blob["DataItems"][0]
+        assert_equal("1970-01-01T00:00:00.000Z", item_0["Timestamp"], "Incorrect 'Timestamp' value")
+        assert_equal("Error", item_0["OperationStatus"], "Incorrect 'OperationStatus' value")
+        assert_equal("test_host", item_0["Computer"], "Incorrect 'Computer' value")
+        assert_equal("Security Baseline", item_0["Category"], "Incorrect 'Category' value")
+        assert_equal("Security", item_0["Solution"], "Incorrect 'Solution' value")
+        assert_equal("Security Baseline Assessment failed: Unknown error", item_0["Detail"], "Incorrect 'Detail' value")
+    end
+
+    def test_baseline_with_error_input
+        baseline_results_str = '{ "error": "test error" }'
+        baseline_results_json = JSON.parse(baseline_results_str)
+
+        security_baseline = OMS::SecurityBaseline.new(OMS::MockLog.new)        
+        security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(baseline_results_json, "test_host", 0)
+
+        assert_equal(nil, security_baseline_summary_blob, "Incorrect error case support")
+        
+        assert_equal("OPERATION_BLOB", security_baseline_blob["DataType"], "Incorrect 'DataType' value")
+        assert_equal("LogManagement", security_baseline_blob["IPName"], "Incorrect 'IPName' value")
+        item_0 = security_baseline_blob["DataItems"][0]
+        assert_equal("1970-01-01T00:00:00.000Z", item_0["Timestamp"], "Incorrect 'Timestamp' value")
+        assert_equal("Error", item_0["OperationStatus"], "Incorrect 'OperationStatus' value")
+        assert_equal("test_host", item_0["Computer"], "Incorrect 'Computer' value")
+        assert_equal("Security Baseline", item_0["Category"], "Incorrect 'Category' value")
+        assert_equal("Security", item_0["Solution"], "Incorrect 'Solution' value")
+        assert_equal("Security Baseline Assessment failed: test error", item_0["Detail"], "Incorrect 'Detail' value")
+        
     end
 end

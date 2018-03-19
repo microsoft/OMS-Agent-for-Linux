@@ -12,7 +12,7 @@
 - Untar the archive file to extract OMS Log Collector source files:
 
    ```
-   tar -xvzf omslinux_agentlog.tgz
+   tar -xvf omslinux_agentlog.tgz
    ```
 - Make sure the following files are extracted successfully:
     - omslinux_agentlog.sh

@@ -206,6 +206,12 @@ save_config()
     chown_omsagent "$CONF_OMSADMIN"
 }
 
+update_azure_resource_id()
+{
+    sed -i "s,\(AZURE_RESOURCE_ID=\)\(.*\),\1$AZURE_RESOURCE_ID," $CONF_OMSADMIN
+    echo "Azure Resource ID updated."
+}
+
 cleanup()
 {
     rm "$BODY_ONBOARD" "$RESP_ONBOARD" "$ENDPOINT_FILE" > /dev/null 2>&1 || true
@@ -525,6 +531,10 @@ onboard()
         log_error "The Workspace ID is not valid"
         clean_exit $INVALID_CONFIG_PROVIDED
     fi
+
+    if [ ! -z "$AZURE_RESOURCE_ID" ]; then
+        update_azure_resource_id
+    fi
     
     # If a test is not in progress then call service_control to check on the workspace status 
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
@@ -691,6 +701,7 @@ onboard()
         echo $MULTI_HOMING_MARKER > $CONF_DIR/.multihoming_marker
     fi
 
+	#Initialize empty syslog daemon conf file with no default collection
     configure_syslog
 
     configure_monitor_agent
@@ -1138,7 +1149,6 @@ copy_no_port_omsagent_d_conf()
     cp -p $SYSCONF_DIR/omsagent.d/heartbeat.conf $1
     cp -p $SYSCONF_DIR/omsagent.d/operation.conf $1
     cp -p $SYSCONF_DIR/omi_mapping.json $1
-    cp -p $SYSCONF_DIR/omsagent.d/oms_audits.xml $1
     cp -p $SYSCONF_DIR/omsagent.d/container.conf $1 2> /dev/null
 
     update_path $1/heartbeat.conf

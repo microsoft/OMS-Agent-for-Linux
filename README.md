@@ -35,10 +35,11 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * Oracle Linux 5,6, and 7 (x86/x64)
 * Red Hat Enterprise Linux Server 5,6 and 7 (x86/x64)
 * Debian GNU/Linux 6, 7, and 8 (x86/x64)
-* Ubuntu 12.04 LTS, 14.04 LTS, 15.04, 15.10, 16.04 LTS (x86/x64)
+* Ubuntu 12.04 LTS, 14.04 LTS, 16.04 LTS (x86/x64)
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
 ## Supported Scenarios
+### [Heartbeat data collection](docs/OMS-Agent-for-Linux.md#viewing-heartbeat-data)
 ### [Syslog data collection](docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
 ### [Docker collection](docs/Docker-Instructions.md)
 ### [Performance data collection](docs/OMS-Agent-for-Linux.md#viewing-performance-data)

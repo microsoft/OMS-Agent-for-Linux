@@ -209,11 +209,13 @@ fi
 # Parameter: patch file path (like /etc/clear_options.patch)
 # Parameter: file to patch (like /etc/file_to_be_changed)
 apply_patch() {
-    patch -p0 -N --dry-run --silent < $1 2>/dev/null 1>&2
+    local patch_file=$1
+    local file_to_patch=$2
+    patch -p0 -N --dry-run --silent $file_to_patch $patch_file 2>/dev/null 1>&2
     if [ $? -eq 0 ]; then
-        patch -p0 -N $2 < $1
+        patch -p0 -N $file_to_patch $patch_file
     else
-        echo "Patch $1 already applied"
+        echo "Patch $patch_file already applied"
     fi
 }
 
@@ -246,9 +248,17 @@ fi
 # And we need our local SSL directories to be able to deal with ULINUX
 
 if [ $ULINUX -eq 1 ]; then
-    if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 ]; then
-        echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
-        exit 1
+    if [ `uname -m` = "x86_64" ]; then
+    # We only build openssl 1.1 for x64 bit
+        if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 -o ! -d /usr/local_ssl_1.1.0 ]; then
+            echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
+            exit 1
+        fi
+    else
+        if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 ]; then
+            echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
+            exit 1
+        fi
     fi
 fi
 
@@ -259,7 +269,7 @@ if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then
     echo "ULINUX build (--enable-ulinux) on this system." >& 2
     echo "" >& 2
     echo "If you really do not want a universal (ULINUX) build, then run:" >& 2
-    echo "    sudo rm -rf /usr/local_ssl_0.9.8 /usr/local_ssl_1.0.0" >& 2
+    echo "    sudo rm -rf /usr/local_ssl_0.9.8 /usr/local_ssl_1.0.0 /usr/local_ssl_1.1.0" >& 2
     echo "and then re-run configure. IMPORTANT: Only try this on a private system," >& 2
     echo "Do NOT do this on a shared system without consulting your team!" >& 2
     exit 1
@@ -434,6 +444,10 @@ if [ "$ULINUX" = "1" ]; then
     ssl_100_dirpath=/usr/local_ssl_1.0.0
     ruby_configure_quals_100=( --with-openssl-dir=$ssl_100_dirpath
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
+
+    ssl_110_dirpath=/usr/local_ssl_1.1.0
+    ruby_configure_quals_110=( --with-openssl-dir=$ssl_110_dirpath
+        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 fi
 
 # Do we have a version file from the super project? If not, make one
@@ -479,14 +493,20 @@ RUBY_TEST_DIRECTORY="$ruby_test_directory"
 EOF
 
 if [ "$ULINUX" = "1" ]; then
-    # SSL "lib" directory name can vary based on platform AND OpenSSL version ...
+    # SSL "lib" directory name can vary based on platform AND OpenSSL version ...OpenSSL 1.1 is supported only for x64 bit
     ssl_098_libpath=`eval echo ${ssl_098_dirpath}/lib*`
     ssl_100_libpath=`eval echo ${ssl_100_dirpath}/lib*`
-
+    if [ `uname -m` = "x86_64" ]; then
+        ssl_110_libpath=`eval echo ${ssl_110_dirpath}/lib*`
+    fi
     echo "SSL_098_LIBPATH=${ssl_098_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_098=( ${ruby_configure_quals_098[@]} )" >> config.mak
     echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
+    if [ `uname -m` = "x86_64" ]; then
+        echo "SSL_110_LIBPATH=${ssl_110_libpath}" >> config.mak
+        echo "RUBY_CONFIGURE_QUALS_110=( ${ruby_configure_quals_110[@]} )" >> config.mak
+    fi
 fi
 
 # Fix permissions in case they aren't executable - and then configure AUOMS

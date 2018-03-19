@@ -134,9 +134,20 @@ notification_exit()
 
 # End Lower Level Utilities
 
+should_check_omsadmin_conf()
+{
+    local ws_id
+    for ws_id in $NON_OMS_WS
+    do
+        if [ "$1" = "$ws_id" ]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
 setup_variables()
 {
-
     local initial_conf_dir=
     if [ -z "$1" ]; then
         initial_conf_dir="$ETC_DIR/conf/omsadmin.conf"
@@ -144,13 +155,9 @@ setup_variables()
         initial_conf_dir="$ETC_DIR/$1/conf/omsadmin.conf"
     fi
 
-    WS_STATUS=0
-    check_omsadmin_conf $initial_conf_dir
+    WS_STATUS=0    
+    . $initial_conf_dir
     WS_STATUS=$?
-    if [ "$WS_STATUS" -eq "0" ]; then
-        . $initial_conf_dir
-        WS_STATUS=$?
-    fi
 
     if [ "$WS_STATUS" -eq "0" ]; then
 
@@ -191,7 +198,7 @@ check_omsadmin_conf()
         if ! check_file_has_line_pattern $_fs "OMS_ENDPOINT=.*";                then ec=$(expr $ec + 1); fi
         if ! check_file_has_line_pattern $_fs "AZURE_RESOURCE_ID=.*";           then ec=$(expr $ec + 1); fi
         if ! check_file_has_line_pattern $_fs "OMSCLOUD_ID=.*";                 then ec=$(expr $ec + 1); fi
-        if ! check_file_has_line_pattern $_fs "UUID=$REGEX_UUID";               then ec=$(expr $ec + 1); fi
+        if ! check_file_has_line_pattern $_fs "UUID=.*";                        then ec=$(expr $ec + 1); fi
         return $ec
     else
         echo "ERROR:  OMS Admin configuration file $_fs NOT Found!" >&2
