@@ -535,8 +535,8 @@ onboard()
     if [ ! -z "$AZURE_RESOURCE_ID" ]; then
         update_azure_resource_id
     fi
-    
-    # If a test is not in progress then call service_control to check on the workspace status 
+
+    # If a test is not in progress then call service_control to check on the workspace status
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         $SERVICE_CONTROL is-running $WORKSPACE_ID > /dev/null 2>&1
         if [ $? -eq 1 ]; then
@@ -593,7 +593,7 @@ onboard()
     CERT_SERVER=`cat $FILE_CRT | awk 'NR>2 { print line } { line = $0 }'`
 
     # append telemetry to $BODY_ONBOARD
-    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"` 
+    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"`
     [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding."
 
     cat /dev/null > "$SHARED_KEY_FILE"
@@ -628,6 +628,15 @@ onboard()
         esac
     fi
 
+    #This is a temporary fix for Systems with Curl versions using HTTP\2 as default
+    #Since 7.47.0, the curl tool enables HTTP/2 by default for HTTPS connections. This fix runs curl with --http1.1 on systems with version above 7.47.0
+    #Curl http2 Docs Link: https://curl.haxx.se/docs/http2.html
+    CURL_VERSION_WITH_DEFAULT_HTTP2="7470"
+    CURL_VERSION_SYSTEM=`curl --version | head -c11 | awk '{print $2}' | tr --delete .`
+    if [ $CURL_VERSION_SYSTEM -gt $CURL_VERSION_WITH_DEFAULT_HTTP2 ]; then
+      CURL_HTTP_COMMAND="--http1.1"
+    fi
+
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
@@ -635,6 +644,7 @@ onboard()
         --header "User-Agent: $USER_AGENT" \
         --header "Accept-Language: en-US" \
         --insecure \
+        $CURL_HTTP_COMMAND \
         --data-binary @$BODY_ONBOARD \
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
@@ -708,9 +718,9 @@ onboard()
 
     configure_logrotate
 
-    # If a test is not in progress then register omsagent as a service and start the agent 
+    # If a test is not in progress then register omsagent as a service and start the agent
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
-        $SERVICE_CONTROL start $WORKSPACE_ID 
+        $SERVICE_CONTROL start $WORKSPACE_ID
 
         if [ -z "$MULTI_HOMING_MARKER" ]; then
             # Configure omsconfig when the workspace is primary
@@ -728,7 +738,7 @@ onboard()
             else
                 $METACONFIG_PY > /dev/null || error=$?
             fi
-    
+
             if [ $error -eq 0 ]; then
                 log_info "Configured omsconfig"
             elif [ ! -f $METACONFIG_PY ]; then
@@ -781,7 +791,7 @@ reset_default_workspace()
 {
     if [ -h $DF_CONF_DIR -a ! -d $DF_CONF_DIR ]; then
         # default conf folder is removed, remove the symlinks
-        rm "$DF_TMP_DIR" "$DF_RUN_DIR" "$DF_STATE_DIR" "$DF_LOG_DIR" "$DF_CERT_DIR" "$DF_CONF_DIR" > /dev/null 2>&1 
+        rm "$DF_TMP_DIR" "$DF_RUN_DIR" "$DF_STATE_DIR" "$DF_LOG_DIR" "$DF_CERT_DIR" "$DF_CONF_DIR" > /dev/null 2>&1
     fi
 }
 
@@ -827,7 +837,7 @@ show_workspace_status()
     if [ -f ${ws_conf_dir}/.multihoming_marker ]; then
         mh_marker="(`cat ${ws_conf_dir}/.multihoming_marker`)"
     fi
-    
+
     if [ ${is_primary} -eq 1 ]; then
         echo "Primary Workspace: ${ws_id}    Status: ${status}"
     else
@@ -1199,9 +1209,9 @@ find_available_port()
             port=$((port+1))
         done
     else
-        log_info "netstat tool is not available. Default port defined in omsadmin.sh will be used."		
+        log_info "netstat tool is not available. Default port defined in omsadmin.sh will be used."
     fi
-    
+
     eval $result="${port}"
 }
 
@@ -1234,7 +1244,7 @@ configure_logrotate()
     # Label omsagent log files according to selinux policy module for logrotate if selinux is present
     SEPKG_DIR_OMSAGENT=/usr/share/selinux/packages/omsagent-logrotate
     if [ -e /usr/sbin/semodule -a -d "$SEPKG_DIR_OMSAGENT" ]; then
-        # Label omsagent log file for this $WORKSPACE_ID 
+        # Label omsagent log file for this $WORKSPACE_ID
         /sbin/restorecon -R $VAR_DIR/*/log > /dev/null 2>&1
     fi
 }
@@ -1301,9 +1311,9 @@ main()
     fi
 
     # If we reach this point, onboarding was successful, we can remove the
-    # onboard conf to prevent accidentally re-onboarding 
+    # onboard conf to prevent accidentally re-onboarding
     [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
-  
+
     clean_exit 0
 }
 
