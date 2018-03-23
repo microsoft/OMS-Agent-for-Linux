@@ -3,6 +3,7 @@ require "cgi"
 
 require_relative 'changetracking_lib'
 require_relative 'oms_common'
+require_relative 'omslog'
 
 module Fluent
   class ChangeTrackingFilter < Filter
@@ -32,7 +33,7 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      @log.debug "ChangeTracking: Got new data to send"
+      OMS::Log.info_once("ChangeTracking: Got new data to send")
       return record
     end # filter
   end # class

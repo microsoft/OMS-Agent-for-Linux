@@ -2,23 +2,14 @@ require 'rexml/document'
 require 'cgi'
 require 'digest'
 require 'set'
-require 'logger'
 
 require_relative 'oms_common'
+require_relative 'omslog'
 
 class ChangeTracking
 
     PREV_HASH = "PREV_HASH"
     LAST_UPLOAD_TIME = "LAST_UPLOAD_TIME"
-
-    @@log =  Logger.new(STDERR) #nil
-    @@log.formatter = proc do |severity, time, progname, msg|
-        "#{severity} #{msg}\n"
-    end
-
-    # def self.log= (value)
-    #     @@log = value
-    # end
 
     @@force_send_last_upload = Time.now
     @@lastInventorySnapshotTime = Time.now
@@ -123,7 +114,7 @@ class ChangeTracking
         instanceXML.attributes['CLASSNAME'] == 'MSFT_nxFileInventoryResource'
     end
 
-    def self.transform(inventoryXMLstr, log = nil, isInventorySnapshot = false)
+    def self.transform(inventoryXMLstr, isInventorySnapshot = false)
         # Extract the instances in xml format
         inventoryXML = strToXML(inventoryXMLstr)
         instancesXML = getInstancesXML(inventoryXML)
@@ -224,7 +215,7 @@ class ChangeTracking
 
     def self.wrap (inventory_hash, host, time)
         timestamp = OMS::Common.format_time(time)
-        @@log.debug "The keys in inventory_hash - #{inventory_hash.keys}"        
+        OMS::Log.info_once("The keys in inventory_hash - #{inventory_hash.keys}")
         wrapper = {
                     "DataType"=>"CONFIG_CHANGE_BLOB",
                     "IPName"=>"changetracking",
@@ -264,9 +255,9 @@ class ChangeTracking
         if wrapper["DataItems"].size == 1
             return wrapper
         elsif wrapper["DataItems"].size > 1
-            @@log.warn "Multiple change types found. Incorrect inventory xml generated.\n 
+            OMS::Log.warn_once("Multiple change types found. Incorrect inventory xml generated.\n 
                         The inventory XML should only have one change type, but this XML had -
-                        #{inventory_hash.keys}"
+                        #{inventory_hash.keys}")
             return {} # Returning null.
         else
             return {} # Returning null.
@@ -276,7 +267,7 @@ class ChangeTracking
     def self.getHash(file_path)
             ret = {}
             if File.exist?(file_path) # If file exists
-                @@log.debug "Found the file {file_path}. Fetching the Hash"
+                OMS::Log.info_once("Found the file {file_path}. Fetching the Hash")
                 File.open(file_path, "r") do |f| # Open file
                         f.each_line do |line|
                         line.split(/\r?\n/).reject{ |l|
@@ -288,7 +279,7 @@ class ChangeTracking
                 end
                 return ret
             else
-                @@log.debug "Could not find the file #{file_path}"
+                OMS::Log.warn_once("Could not find the file #{file_path}")
                 return nil
             end
     end
@@ -320,7 +311,7 @@ class ChangeTracking
 
     def self.transform_and_wrap(inventoryFile, inventoryHashFile, inventoryTimestampFile)
         if File.exist?(inventoryFile)                       
-            @@log.debug ("Found the change tracking inventory file.")
+            OMS::Log.info_once("Found the change tracking inventory file.")
             # Get the parameters ready.
             time = Time.now
             force_send_run_interval_hours = 10
@@ -339,7 +330,7 @@ class ChangeTracking
                isInventorySnapshot = true
             end
 
-            transformed_hash_map = ChangeTracking.transform(xml_string, @@log, isInventorySnapshot)
+            transformed_hash_map = ChangeTracking.transform(xml_string, isInventorySnapshot)
 
             if isInventorySnapshot 
                output = ChangeTracking.wrap(transformed_hash_map, @hostname, time)
@@ -355,7 +346,7 @@ class ChangeTracking
                   previous_inventory_checksum = JSON.parse(previousSnapshot[PREV_HASH])
                 end
             rescue 
-                @@log.warn ("Error parsing previous hash file")
+                OMS::Log.warn_once("Error parsing previous hash file")
                 previousSnapshot = nil
             end
 
@@ -374,7 +365,7 @@ class ChangeTracking
                return {}
             end
         else
-            @@log.warn ("The ChangeTracking inventory xml file does not exists")
+            OMS::Log.warn_once("The ChangeTracking inventory xml file does not exists")
             return {}
         end 
     end
