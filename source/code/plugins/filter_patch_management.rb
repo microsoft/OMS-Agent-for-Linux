@@ -3,6 +3,7 @@ require "cgi"
 
 require_relative 'patch_management_lib'
 require_relative 'oms_common'
+require_relative 'omslog'
 
 module Fluent
   class LinuxUpdatesFilter < Filter
@@ -30,7 +31,7 @@ module Fluent
 
     def filter(tag, time, record)
       xml_string = record['xml']
-      @log.debug "LinuxUpdates : Filtering xml size=#{xml_string.size}"
+      OMS::Log.info_once("LinuxUpdates : Filtering xml size=#{xml_string.size}")
       linuxUpdates = LinuxUpdates.new(@log)
       return linuxUpdates.transform_and_wrap(xml_string, @hostname, time)
     end # filter
