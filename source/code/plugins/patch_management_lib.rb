@@ -21,10 +21,6 @@ class LinuxUpdates
     SCHEDULE_NAME_VARIABLE = "SCHEDULE_NAME"
     APT_GET_START_DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-    def initialize(log)
-        @log = log
-     end
-
     def getAgentId()
         return OMS::Configuration.agent_id
     end
@@ -43,7 +39,7 @@ class LinuxUpdates
                 end
             end
             else
-                @log.debug "Could not find the file #{SCX_RELEASE_FILE}"
+                OMS::Log.info_once("Could not find the file #{SCX_RELEASE_FILE}")
                 @@os_details = {}
             end
         end
@@ -233,7 +229,7 @@ class LinuxUpdates
 
         # Do not send duplicate data if we are not forced to
         hash = Digest::SHA256.hexdigest(inventoryXMLstr)
-        @log.debug "LinuxUpdates : Sending available updates information data. Hash=#{hash[0..5]}"
+        OMS::Log.info_once("LinuxUpdates : Sending available updates information data. Hash=#{hash[0..5]}")
 
         # Extract the instances in xml format
         inventoryXML = strToXML(inventoryXMLstr)
@@ -278,8 +274,8 @@ class LinuxUpdates
                     "OSFullName" => osFullName,
                     "Collections"=> collections
                 }]}
-          @log.debug "LinuxUpdates : installedPackages x #{installedPackages.size}, 
-                                        availableUpdates x #{availableUpdates.size}"
+          OMS::Log.info_once("LinuxUpdates : installedPackages x #{installedPackages.size}, 
+                                        availableUpdates x #{availableUpdates.size}")
           return wrapper
     end
 	
