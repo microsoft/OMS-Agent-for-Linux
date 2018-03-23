@@ -117,6 +117,11 @@ echo "ls -al /opt/omi/lib/Scripts " | tee -a ${log_file}
 echo '-------------------------------------------------' | tee -a ${log_file}
 ls -al /opt/omi/lib/Scripts | tee -a ${log_file}
 echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /tmp " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /tmp | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
 echo '=================================================' | tee -a ${log_file}
 
 tar -cvf $output_path.tar.gz ./$output_path
