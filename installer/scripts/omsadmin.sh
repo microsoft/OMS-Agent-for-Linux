@@ -733,6 +733,11 @@ onboard()
                 echo "*/15 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
             fi
 
+            if [ ! -f $METACONFIG_PY ]; then
+                log_error "MetaConfig generation script not available at $METACONFIG_PY"
+                return $ERROR_METACONFIG_PY_NOT_PRESENT
+            fi
+
             if [ "$USER_ID" -eq "0" ]; then
                 su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
             else
@@ -741,11 +746,8 @@ onboard()
 
             if [ $error -eq 0 ]; then
                 log_info "Configured omsconfig"
-            elif [ ! -f $METACONFIG_PY ]; then
-                log_error "MetaConfig generation script not available at $METACONFIG_PY"
-                return $ERROR_METACONFIG_PY_NOT_PRESENT
             else
-                log_error "Error configuring omsconfig"
+                log_error "Error configuring omsconfig. Error: $error"
                 return $ERROR_GENERATING_METACONFIG
             fi
         fi
