@@ -36,7 +36,7 @@ The Operations Management Suite Agent for Linux comprises multiple packages. The
 ----------- | ----------- | --------------
 omsagent | 1.1.0 | The Operations Management Suite Agent for Linux
 omsconfig | 1.1.1 | Configuration agent for the OMS Agent
-omi | 1.0.8.3 | Open Management Infrastructure (OMI) -- a lightweight CIM Server
+omi | 1.0.8.3 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
 scx | 1.6.2 | OMI CIM Providers for operating system performance metrics
 apache-cimprov | 1.0.0 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
 mysql-cimprov | 1.0.0 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
