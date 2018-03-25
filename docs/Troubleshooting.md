@@ -19,6 +19,8 @@ If none of these steps work for you the following channels for help are also ava
 - [I'm unable to connect through my proxy to OMS](#im-unable-to-connect-through-my-proxy-to-oms)
 - [I'm getting a 403 when I'm trying to onboard!](#im-getting-a-403-when-im-trying-to-onboard)
 - [I'm seeing a 500 Error and 404 Error in the log file right after onboarding](#im-seeing-a-500-error-and-404-error-in-the-log-file-right-after-onboarding)
+- [I'm getting Errno address already in use in omsagent log file](#im-getting-errno-address-already-in-use-in-omsagent-log-file)
+- [I'm unable to uninstall omsagent using purge option](#im-unable-to-uninstall-omsagent-using-purge-option)
 - [My Nagios data is not showing up in the OMS Portal!](#my-nagios-data-is-not-showing-up-in-the-oms-portal)
 - [I'm not seeing any Linux data in the OMS Portal](#im-not-seeing-any-linux-data-in-the-oms-portal)
 - [My portal side configuration for (Syslog/Linux Performance Counter) is not being applied](#my-portal-side-configuration-for-sysloglinux-performance-counter-is-not-being-applied)
@@ -188,6 +190,29 @@ ods.systemcenteradvisor.com | Port 443
 
 ### I'm seeing a 500 Error and 404 Error in the log file right after onboarding
 This is a known issue an occurs on first upload of Linux data into an OMS workspace. This does not affect data being sent or service experience.
+
+### I'm getting Errno address already in use in omsagent log file
+If you see `[error]: unexpected error error_class=Errno::EADDRINUSE error=#<Errno::EADDRINUSE: Address already in use - bind(2) for "127.0.0.1" port 25224>` in omsagent.log, it would mean that Linux Diagnostic extension (LAD) is installed side by side with OMS linux extension, and it is using same port for syslog data collection as omsagent.
+* As root execute the following commands (note that 25224 is an example and it is possible that in your environment you see a different port number used by LAD):
+```
+/opt/microsoft/omsagent/bin/configure_syslog.sh configure LAD 25229
+
+sed -i -e 's/25224/25229/' /etc/opt/microsoft/omsagent/LAD/conf/omsagent.d/syslog.conf
+```
+The user will then have to edit the correct rsyslogd or syslog_ng config file and change the LAD-related configuration to write to port 25229.
+* If the VM is running rsyslogd, the file to be modified is  `/etc/rsyslog.d/95-omsagent.conf` (if it exists, else `/etc/rsyslog`)
+* If the VM is running syslog_ng, the file to be modified is `/etc/syslog-ng/syslog-ng.conf`
+* Restart omsagent `sudo /opt/microsoft/omsagent/bin/service_control restart`
+* Restart syslog service
+
+### I'm unable to uninstall omsagent using purge option
+#### Probable Causes
+* Linux diagnostic extension is installed
+* Linux diagnostic extension was installed and uninstalled but you still see an error about omsagent being used by mdsd and can not be removed.
+
+#### Resolution
+* Uninstall LAD extension.
+* Remove LAD files from the machine if they present in the following location: `/var/lib/waagent/Microsoft.Azure.Diagnostics.LinuxDiagnostic-<version>/` and `/var/opt/microsoft/omsagent/LAD/`
 
 ### My Nagios data is not showing up in the OMS Portal!
 #### Probable Causes
