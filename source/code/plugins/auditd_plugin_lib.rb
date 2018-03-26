@@ -47,6 +47,9 @@ module OMS
                 record["AuditID"] = event["Timestamp"] + ":" + event["SerialNumber"].to_s
                 record["SerialNumber"] = event["SerialNumber"]
                 record["Computer"] = hostname
+                if event.has_key?("ProcessFlags")
+                    record["ProcessFlags"] = event["ProcessFlags"]
+                end
                 records.push(record)
             end
 
