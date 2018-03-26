@@ -35,7 +35,7 @@ do
 		echo "target_process_pid for " $target_process " is unset or set to an empty string" | tee -a ${log_file}
 		continue
 	fi
-	
+
 	for target_process_pid in $target_process_pid_array
 	do
 		:
@@ -73,5 +73,55 @@ do
 
 	echo '=================================================' | tee -a ${log_file}
 done
+
+echo '=================================================' | tee -a ${log_file}
+echo "************* File Permission Info *************" | tee -a ${log_file}
+echo '=================================================' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /etc/opt/omi/conf/omiregister/ " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /etc/opt/omi/conf/omiregister/ | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /etc/opt/omi/conf/omiregister/root-omi " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /etc/opt/omi/conf/omiregister/root-omi | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /etc/opt/omi/conf/omiregister/root-oms " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /etc/opt/omi/conf/omiregister/root-oms | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /etc/opt/omi/conf/omiregister/root-scx " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /etc/opt/omi/conf/omiregister/root-scx | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /etc/opt/omi/conf/omsconfig/ " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /etc/opt/omi/conf/omsconfig/ | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /etc/opt/omi/conf/omsconfig/configuration " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /etc/opt/omi/conf/omsconfig/configuration | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /opt/omi/lib " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /opt/omi/lib | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /opt/omi/lib/Scripts " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /opt/omi/lib/Scripts | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -al /tmp " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -al /tmp | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo '=================================================' | tee -a ${log_file}
 
 tar -cvf $output_path.tar.gz ./$output_path
