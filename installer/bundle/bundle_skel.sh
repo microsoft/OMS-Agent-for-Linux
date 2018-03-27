@@ -51,6 +51,8 @@ INVALID_PACKAGE_TYPE=4
 RUN_AS_ROOT=5
 INVALID_PACKAGE_ARCH=6
 # Accompanying packages issues:
+OMS_INSTALL_FAILED=17
+DSC_INSTALL_FAILED=18
 OMI_INSTALL_FAILED=19
 SCX_INSTALL_FAILED=20
 SCX_KITS_INSTALL_FAILED=21
@@ -323,33 +325,15 @@ install_if_program_does_not_exist_on_system()
 
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed (for future compatibility)
-pkg_add_list()
+pkg_add()
 {
     pkg_filename=$1
     pkg_name=$2
 
-    ulinux_detect_openssl_version
-    pkg_filename=$TMPBINDIR/$pkg_filename
-
-    echo "----- Installing package: $2 ($1) -----"
-    if [ "$INSTALLER" = "DPKG" ]; then
-        add_list="${add_list} ${pkg_filename}.deb"
-    else
-        add_list="${add_list} ${pkg_filename}.rpm"
-    fi
-}
-
-# $1 - The filename of the package to be installed
-# $2 - The package name of the package to be installed (for future compatibility)
-pkg_install()
-{
-    pkg_filename=$1
-    pkg_name=$2
+    echo "----- Installing package: $pkg_name ($pkg_filename) -----"
 
     ulinux_detect_openssl_version
     pkg_filename=$TMPBINDIR/$pkg_filename
-
-    echo "----- Installing package: $2 ($1) -----"
 
     if [ "$INSTALLER" = "DPKG" ]; then
         [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
@@ -410,34 +394,6 @@ pkg_upd() {
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         rpm --upgrade $FORCE ${pkg_filename}.rpm
         return $?
-    fi
-}
-
-# $1 - The filename of the package to be installed
-# $2 - The package name of the package to be installed
-# $3 - Okay to upgrade the package? (Optional)
-pkg_upd_list()
-{
-    pkg_filename=$1
-    pkg_name=$2
-    pkg_allowed=$3
-
-    echo "----- Checking package: $2 ($1) -----"
-
-    if [ -z "${forceFlag}" -a -n "$3" ]; then
-        if [ $3 -ne 0 ]; then
-            echo "Skipping package since existing version >= version available"
-            return 0
-        fi
-    fi
-
-    ulinux_detect_openssl_version
-    pkg_filename=$TMPBINDIR/$pkg_filename
-
-    if [ "$INSTALLER" = "DPKG" ]; then
-        upd_list="${upd_list} ${pkg_filename}.deb"
-    else
-        upd_list="${upd_list} ${pkg_filename}.rpm"
     fi
 }
 
@@ -577,39 +533,20 @@ remove_and_install()
 
     local temp_status=0
 
-    if [ "$installMode" = "I" ]; then
-        pkg_install $OMI_PKG omi
-        temp_status=$?
+    pkg_add $OMI_PKG omi
+    temp_status=$?
 
-        if [ $temp_status -ne 0 ]; then
-            echo "$OMI_PKG package failed to install and exited with status $temp_status"
-            return $OMI_INSTALL_FAILED
-        fi
+    if [ $temp_status -ne 0 ]; then
+        echo "$OMI_PKG package failed to install and exited with status $temp_status"
+        return $OMI_INSTALL_FAILED
+    fi
 
-        pkg_install $SCX_PKG scx
-        temp_status=$?
+    pkg_add $SCX_PKG scx
+    temp_status=$?
 
-        if [ $temp_status -ne 0 ]; then
-            echo "$SCX_PKG package failed to install and exited with status $temp_status"
-            return $SCX_INSTALL_FAILED
-        fi
-    else
-        pkg_upd $OMI_PKG omi
-        temp_status=$?
-
-        if [ $temp_status -ne 0 ]; then
-            echo "$OMI_PKG package failed to upgrade and exited with status $temp_status"
-            return $OMI_INSTALL_FAILED
-        fi
-
-        pkg_upd $SCX_PKG scx
-        temp_status=$?
-
-        if [ $temp_status -ne 0 ]; then
-            echo "$SCX_PKG package failed to upgrade and exited with status $temp_status"
-            return $SCX_INSTALL_FAILED
-        fi
-
+    if [ $temp_status -ne 0 ]; then
+        echo "$SCX_PKG package failed to install and exited with status $temp_status"
+        return $SCX_INSTALL_FAILED
     fi
 
     return 0
@@ -1096,23 +1033,18 @@ case "$installMode" in
         omi_installed=$?
 
         if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
-            echo "Installing OMS agent ..."
-
-            pkg_add_list $OMS_PKG omsagent
-
-            if shouldInstall_omsconfig; then pkg_add_list $DSC_PKG omsconfig; fi
 
             # Install OMI
             shouldInstall_omi
             if [ $? -eq 0 ]; then
-                pkg_install ${OMI_PKG} omi
+                pkg_add ${OMI_PKG} omi
                 OMI_EXIT_STATUS=$?
             fi
 
             # Install SCX
             shouldInstall_scx
             if [ $? -eq 0 ]; then
-                pkg_install ${SCX_PKG} scx
+                pkg_add ${SCX_PKG} scx
                 SCX_EXIT_STATUS=$?
             fi
 
@@ -1126,18 +1058,22 @@ case "$installMode" in
                 fi
             fi
 
-            # Now actually install of the "queued" packages
-            if [ -n "${add_list}" ]; then
-                if [ "$INSTALLER" = "DPKG" ]; then
-                    [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
-                    dpkg ${DPKG_CONF_QUALS} --install $FORCE ${add_list}
-                else
-                    [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-                    rpm -ivh $FORCE ${add_list}
+            # Install OMS Agent
+            pkg_add ${OMS_PKG} omsagent
+            TEMP_STATUS=$?
+            if [ $TEMP_STATUS -ne 0 ]; then
+               echo "$OMS_PKG package failed to install and exited with status $TEMP_STATUS"
+               cleanup_and_exit $OMS_INSTALL_FAILED
+            fi
+
+            # Install DSC
+            if shouldInstall_omsconfig; then
+                pkg_add ${DSC_PKG} omsconfig
+                TEMP_STATUS=$?
+                if [ $TEMP_STATUS -ne 0 ]; then
+                    echo "$DSC_PKG package failed to install and exited with status $TEMP_STATUS"
+                    cleanup_and_exit $DSC_INSTALL_FAILED
                 fi
-                KIT_STATUS=$?
-            else
-                echo "----- No base kits to install -----"
             fi
 
             # Install bundled providers
@@ -1187,14 +1123,6 @@ case "$installMode" in
         ;;
 
     U)
-        echo "Updating OMS agent ..."
-
-        shouldInstall_omsagent
-        pkg_upd_list $OMS_PKG omsagent $?
-
-        shouldInstall_omsconfig
-        pkg_upd_list $DSC_PKG omsconfig $?
-
         # Install OMI
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
@@ -1216,20 +1144,24 @@ case "$installMode" in
             fi
         fi
 
-        # Now actually install of the "queued" packages
-        if [ -n "${upd_list}" ]; then
-            if [ "$INSTALLER" = "DPKG" ]; then
-                [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
-                dpkg ${DPKG_CONF_QUALS} --install $FORCE ${upd_list}
-            else
-                [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-                rpm -Uvh $FORCE ${upd_list}
-            fi
-            KIT_STATUS=$?
-        else
-            echo "----- No base kits to update -----"
+        # Update OMS Agent
+        shouldInstall_omsagent
+        pkg_upd $OMS_PKG omsagent $?
+        TEMP_STATUS=$?
+        if [ $TEMP_STATUS -ne 0 ]; then
+            echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            cleanup_and_exit $OMS_INSTALL_FAILED
         fi
-		
+
+        # Update DSC
+        shouldInstall_omsconfig
+        pkg_upd $DSC_PKG omsconfig $?
+        TEMP_STATUS=$?
+        if [ $TEMP_STATUS -ne 0 ]; then
+            echo "$DSC_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            cleanup_and_exit $DSC_INSTALL_FAILED
+        fi
+
         if [ $KIT_STATUS -eq 0 ]; then
             # Remove fluentd conf for OMSConsistencyInvoker upon upgrade, if it exists
             rm -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
