@@ -6,7 +6,7 @@
 - Download the tool and copy to any directory of your choice:
 
    ```
-   wget https://github.com/Microsoft/OMS-Agent-for-Linux/raw/master/tools/LogCollector/download/v1/omslinux_agentlog.tgz
+   wget https://github.com/Microsoft/OMS-Agent-for-Linux/raw/master/tools/LogCollector/download/v2/omslinux_agentlog.tgz
    ```  
    Recommendation is to copy the tool to the user’s home directory (/home/user)
 - Untar the archive file to extract OMS Log Collector source files:
@@ -70,13 +70,16 @@ sudo python omslinux_agentlog.py -s SR1234567890
 
 ### Files / Directories Contained:
 * OMS Linux Agent Type:
-    * GitHub
+    * Installed using omsagent*.universal*.sh bundle direcly
         * /tmp/omslogs/
             * messages
             * omsagent.log
             * omsconfig.log
             * omslinux.out
-    * Azure VM Extension
+            * scx*.log
+            * omi*.log
+            * WSData/
+    * Addtional logs if it is installed through Azure VM extension
         * /tmp/omslogs/
             * extension/
             * vmagent/
@@ -120,6 +123,14 @@ https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshootin
  
 
 ## APPENDIX:
+### How to publish new version of Log collector
+- After your code review is merged, create a tgz file by navigating to `/home/your_working_directory/OMS-Agent-for-Linux/tools/LogCollector/source` and run:
+   ```
+   tar -cvzf omslinux_agentlog.tgz ./*
+   ```  
+- Create a new folder with the version number under download folder. Example `https://github.com/Microsoft/OMS-Agent-for-Linux/tree/master/tools/LogCollector/download/v2`
+- Update documentation with the new changes: `https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/OMS_Linux_Agent_Log_Collector.md`
+- Publish new version of omslinux_agent.tgz to download folder.
 ### Sample output for GitHub OMS Linux Agent:
 
 ![ExampleLogCollectorScriptOutputGitHub](pictures/ExampleLogCollectorScriptOutputGitHub.png?raw=true)
