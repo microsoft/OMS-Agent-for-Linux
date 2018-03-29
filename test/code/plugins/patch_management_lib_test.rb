@@ -27,7 +27,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @inventoryPath = File.join(File.dirname(__FILE__), 'InventoryWithUpdates.xml')
     LinuxUpdates.prev_hash = nil
 
-    @linuxUpdatesInstance = LinuxUpdates.new(OMS::MockLog.new)
+    @linuxUpdatesInstance = LinuxUpdates.new()
     @fakeUpdateRunName = "Fake_Update_Run_Name"
     @fakeAgentId ="Fake_Agent_ID"
     @myExpectedHeartbeatItem = {
