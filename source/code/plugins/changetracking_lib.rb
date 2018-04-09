@@ -64,6 +64,7 @@ class ChangeTracking
     def self.fileInventoryXMLtoHash(fileInventoryXML, isInventorySnapshot = false)
         fileInventoryHash = instanceXMLtoHash(fileInventoryXML)
         ret = {}
+        ret["FileContentChecksum"] = fileInventoryHash["Checksum"]
         ret["FileSystemPath"] = fileInventoryHash["DestinationPath"]
         ret["CollectionName"] = fileInventoryHash["DestinationPath"]
         ret["Size"] = fileInventoryHash["FileSize"]
