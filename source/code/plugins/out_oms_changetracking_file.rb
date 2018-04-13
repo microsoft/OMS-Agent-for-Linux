@@ -306,11 +306,15 @@ module Fluent
                 if !@@ContentlocationUri.nil? and !@@ContentlocationUri.empty? and !collection.empty?
                    key = collection["CollectionName"]
                    date = collection["DateModified"]
-                   fileName = date + '-' + File.basename(key)
-                   uri = @@ContentlocationUri + '/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + fileName
-                   if collection["FileContentBlobLink"] == " " or (@@LastContentLocationUri.eql?(@@ContentlocationUri) == false)
-                      modifiedcollections[key] = uri
-                   end
+		   contentLength = collection["ContentLength"].to_i
+		   fileSize = collection["Size"].to_i
+		   if contentLength != "0" and contentLength >= fileSize
+                      fileName = date + '-' + File.basename(key)
+                      uri = @@ContentlocationUri + '/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + fileName
+                      if collection["FileContentBlobLink"] == " " or (@@LastContentLocationUri.eql?(@@ContentlocationUri) == false)
+                         modifiedcollections[key] = uri
+                      end
+		   end
                 end
              }
           @@LastContentLocationUri = @@ContentlocationUri
