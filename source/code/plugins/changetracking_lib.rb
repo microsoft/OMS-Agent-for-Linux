@@ -71,7 +71,7 @@ class ChangeTracking
         ret["Owner"] = fileInventoryHash["Owner"]
         ret["Group"] = fileInventoryHash["Group"]
         ret["Mode"] = fileInventoryHash["Mode"]
-        ret["Contents"] = fileInventoryHash["Contents"]
+        ret["ContentLength"] = fileInventoryHash["ContentLength"]
         ret["DateModified"] = OMS::Common.format_time_str(fileInventoryHash["ModifiedDate"])
         ret["DateCreated"] = OMS::Common.format_time_str(fileInventoryHash["CreatedDate"])
 
