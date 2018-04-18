@@ -255,7 +255,14 @@ The user will then have to edit the correct rsyslogd or syslog_ng config file an
 * If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`.
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`.
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
-* If `omsconfig.log` log file does not indicate that `PerformRequiredConfigurationChecks` operations are running periodically on the system, there might be a problem with the cron job/service. Make sure cron job exists under `/etc/cron.d/OMSConsistencyInvoker`. Also, make sure the cron service is running. You can use `service cron status` (Debian, Ubuntu, SUSE) or `service crond status` (RHEL, CentOS) to check the status of this service. If the service does not exist, you can install the binaries and start the service using the following:
+* If `omsconfig.log` log file does not indicate that `PerformRequiredConfigurationChecks` operations are running periodically on the system, there might be a problem with the cron job/service. Make sure cron job exists under `/etc/cron.d/OMSConsistencyInvoker`. If needed run the following commands to create the cron job:
+
+```
+mkdir -p /etc/cron.d/
+echo "*/15 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" | sudo tee /etc/cron.d/OMSConsistencyInvoker
+```
+
+Also, make sure the cron service is running. You can use `service cron status` (Debian, Ubuntu, SUSE) or `service crond status` (RHEL, CentOS, Oracle Linux) to check the status of this service. If the service does not exist, you can install the binaries and start the service using the following:
 
 ##### On Ubuntu/Debian:
 ```
@@ -278,6 +285,14 @@ sudo systemctl start cron
 ```
 # To Install the service binaries
 sudo yum install -y crond
+# To start the service
+sudo service crond start
+```
+
+##### On Oracle Linux:
+```
+# To Install the service binaries
+sudo yum install -y cronie
 # To start the service
 sudo service crond start
 ```
