@@ -87,11 +87,6 @@ DEFAULT_MONITOR_AGENT_PORT=25324
 SYSLOG_PORT=$DEFAULT_SYSLOG_PORT
 MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 
-DF_OMSAGENT_PROC_LIMIT=75
-MIN_OMSAGENT_PROC_LIMIT=5
-PROC_LIMIT_CONF=/etc/security/limits.conf
-LIMIT_LINE_REGEX="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+-?[0-9]+[[:space:]]*$"
-
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
 OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
@@ -152,18 +147,6 @@ usage()
     echo
     echo "Azure resource ID:"
     echo "$basename -a <Azure resource ID>"
-    echo
-    echo "Show the configured process limit in $PROC_LIMIT_CONF for user $AGENT_USER."
-    echo "$basename -c"
-    echo
-    echo "Set process limit for OMSAgent:"
-    echo "$basename -n <specific number limit>"
-    echo
-    echo "Set process limit for OMSAgent to default value:"
-    echo "$basename -N"
-    echo
-    echo "Remove the process limit for OMSAgent:"
-    echo "$basename -r"
     echo
     echo "Detect if omiserver is listening to SCOM port:"
     echo "$basename -o"
@@ -251,7 +234,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrcn:oR" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:oR" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -298,23 +281,11 @@ parse_args()
         m)
             MULTI_HOMING_MARKER=$OPTARG
             ;;
-        n)
-            NEW_OMSAGENT_PROC_LIMIT=$OPTARG
-            ;;
-        N)
-            NEW_OMSAGENT_PROC_LIMIT=$DF_OMSAGENT_PROC_LIMIT
-            ;;
-        r)
-            UNSET_OMSAGENT_PROC_LIMIT=1
-            ;;
         o)
             DETECT_SCOM=1
             ;;
         R)
             RECONSTRUCT_WORKSPACE_STATE=1
-            ;;
-        c)
-            show_omsagent_proc_limit
             ;;
         esac
     done
@@ -382,56 +353,6 @@ set_proxy_setting()
         PROXY_SETTING="--proxy $conf_proxy_content"
         log_info "Using proxy settings from '$CONF_PROXY'"
     fi
-}
-
-insert_new_omsagent_proc_limit()
-{
-    new_omsagent_line=$1
-
-    LASTLINESTOPRESERVE=2
-    TOTALLINES=`wc -l $PROC_LIMIT_CONF | awk '{print $1}'`
-    insertlineno=$( expr $TOTALLINES - $LASTLINESTOPRESERVE )
-
-    sed -i "${insertlineno}a $new_omsagent_line" $PROC_LIMIT_CONF
-}
-
-set_omsagent_proc_limit()
-{
-    if echo "$NEW_OMSAGENT_PROC_LIMIT" | grep -Eqv '^[0-9]+'; then
-        log_error "New process limit must be a positive numerical value"
-        clean_exit $INVALID_CONFIG_PROVIDED
-    elif [ $NEW_OMSAGENT_PROC_LIMIT -lt $MIN_OMSAGENT_PROC_LIMIT ]; then
-        log_error "New process limit must be at least $MIN_OMSAGENT_PROC_LIMIT"
-        clean_exit $INVALID_CONFIG_PROVIDED
-    fi
-
-    log_info "Setting process limit for the $AGENT_USER user in $PROC_LIMIT_CONF to $NEW_OMSAGENT_PROC_LIMIT..."
-    local new_omsagent_line="$AGENT_USER  hard  nproc  $NEW_OMSAGENT_PROC_LIMIT"
-    get_current_omsagent_proc_limit > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1`
-        sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
-    else
-        insert_new_omsagent_proc_limit "$new_omsagent_line"
-    fi
-}
-
-unset_omsagent_proc_limit()
-{
-    get_current_omsagent_proc_limit > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        # Remove all lines for the omsagent from the limit file
-        log_info "Removing process limit for the $AGENT_USER user in $PROC_LIMIT_CONF..."
-        cp $PROC_LIMIT_CONF $PROC_LIMIT_CONF.bak
-        # sed does not handle the complex/extended regex in older versions, but grep does
-        cat $PROC_LIMIT_CONF.bak | grep -Ev "$LIMIT_LINE_REGEX"  > $PROC_LIMIT_CONF
-    fi
-}
-
-get_current_omsagent_proc_limit()
-{
-    cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX"
-    return $?
 }
 
 is_scom_port_open()
@@ -847,36 +768,6 @@ show_workspace_status()
     fi
 }
 
-show_omsagent_proc_limit()
-{
-    local result_limit="No Limit"
-    if [ ! -f $PROC_LIMIT_CONF ]; then
-        log_error "Limits configuration file '$PROC_LIMIT_CONF' missing!"
-        return 1
-    fi
-    local count=`get_current_omsagent_proc_limit | wc -l`
-
-    if [ "$count" -eq "0" ]; then
-        log_info "There is NO present limit to number of processes for $AGENT_USER."
-    else
-        if [ "$count" -gt "1" ]; then
-            log_info "$count $AGENT_USER entries found in $PROC_LIMIT_CONF."
-            log_info ">>Last entry should apply<<" # NOTE:  This will not pick up -1 entries.
-            get_current_omsagent_proc_limit
-            log_info "End of the $count duplicate entry info Message"
-        fi
-        result_limit=`get_current_omsagent_proc_limit | tail -1 | awk '{print $4}'`
-        if [ "$result_limit" -eq "-1" ]; then
-            result_limit="No Limit"
-            log_info "The number of processes for $AGENT_USER is unlimited."
-        elif [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
-            log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
-        fi
-    fi
-    echo $result_limit
-    return 0
-}
-
 list_scom_workspace()
 {
     ls -1 $ETC_DIR | grep -w scom > /dev/null 2>&1
@@ -1273,14 +1164,6 @@ main()
             usage
             clean_exit $INVALID_OPTION_PROVIDED
         fi
-    fi
-
-    if [ -n "$NEW_OMSAGENT_PROC_LIMIT" ]; then
-        set_omsagent_proc_limit || clean_exit $?
-    fi
-
-    if [ "$UNSET_OMSAGENT_PROC_LIMIT" = "1" ]; then
-        unset_omsagent_proc_limit || clean_exit $?
     fi
 
     if [ "$DETECT_SCOM" = "1" ]; then

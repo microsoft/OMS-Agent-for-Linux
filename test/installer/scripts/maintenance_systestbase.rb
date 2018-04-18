@@ -19,7 +19,6 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     @omsadmin_test_dir_ws2 = nil
     @omsadmin_script = nil
     @proxy_conf = nil
-    @proc_limits_conf = nil
     prep_omsadmin
   end
 
@@ -59,7 +58,6 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
     assert_equal(true, File.file?(@omsadmin_script), "'#{@omsadmin_script}' does not exist!")
     assert_equal(true, File.executable?(@omsadmin_script), "'#{@omsadmin_script}' is not executable.")
     @proxy_conf = "#{@omsadmin_test_dir}/proxy.conf"
-    @proc_limits_conf = "#{@omsadmin_test_dir}/limits.conf"
   end
 
   def prep_proxy(proxy_setting)
