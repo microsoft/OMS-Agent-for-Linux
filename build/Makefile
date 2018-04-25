@@ -6,6 +6,7 @@
 SHELL=/bin/bash
 BASE_DIR := $(subst /build,,$(CURDIR))
 OMI_ROOT := $(shell cd ../../omi/Unix; pwd -P)
+OMI_KITS := $(shell cd ../../omi-kits; pwd -P)
 SCX_CORE_KITS := $(shell cd ../../scxcore-kits; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
@@ -382,7 +383,32 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
-	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
+
+	# Extract SCX bundle script
+	$(RMDIR) $(INTERMEDIATE_DIR)/scxbundle.*
+	cd $(INTERMEDIATE_DIR); $(SHELL) scx-*.sh --extract
+
+	# Gather SCX packages
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 098/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 110/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+
+	# Gather apache and mysql cimprov bundle scripts from SCX
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
+
+	# Gather OMI packages from omi-kits
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_098.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+
+	# Remove ssl_098, ssl_100 and ssl_110 from omi filenames
+	cd $(INTERMEDIATE_DIR)/098; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_098\./\./g"`
+	cd $(INTERMEDIATE_DIR)/098; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_098\./\./g"`
+	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
+	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
+	cd $(INTERMEDIATE_DIR)/110; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_110\./\./g"`
+	cd $(INTERMEDIATE_DIR)/110; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_110\./\./g"`
 
 	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
 
@@ -437,7 +463,28 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
-	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
+
+	# Extract SCX bundle script
+	$(RMDIR) $(INTERMEDIATE_DIR)/scxbundle.*
+	cd $(INTERMEDIATE_DIR); $(SHELL) scx-*.sh --extract
+
+	# Gather SCX packages
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 098/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+
+	# Gather apache and mysql cimprov bundle scripts from SCX
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
+
+	# Gather OMI packages from omi-kits
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_098.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+
+	# Remove ssl_098, ssl_100 from omi filenames
+	cd $(INTERMEDIATE_DIR)/098; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_098\./\./g"`
+	cd $(INTERMEDIATE_DIR)/098; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_098\./\./g"`
+	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
+	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
 
 	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
 

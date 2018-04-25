@@ -3,7 +3,6 @@ SHELL_HEADER:            '#!/bin/sh'
 OMSHOME:                 '/opt/microsoft/omsagent'
 CONF_DIR:                '/etc/opt/microsoft/omsagent/conf'
 SYSCONF_DIR:             '/etc/opt/microsoft/omsagent/sysconf'
-PROC_LIMIT_CONF:         '/etc/security/limits.conf'
 SHORT_NAME:              'omsagent'
 SHORT_NAME_PREFIX:       'MSFT'
 LONG_NAME:               'Microsoft Operations Management Suite for UNIX/Linux agent'
@@ -172,13 +171,6 @@ chown -R omsagent:root /opt/microsoft/omsagent/plugin
 %Postinstall_200
 # Migrate to multi-homing config and structure, as well as update omsagent config files
 /opt/microsoft/omsagent/bin/omsadmin.sh -U
-# Set default process limit for the omsagent user, if none is already set
-cat ${{PROC_LIMIT_CONF}} | grep -E '^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$' > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    /opt/microsoft/omsagent/bin/omsadmin.sh -N
-else
-    echo "Process limit has already been set in ${PROC_LIMIT_CONF}"
-fi
 
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then

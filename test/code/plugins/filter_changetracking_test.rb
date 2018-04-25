@@ -231,9 +231,10 @@ class ChangeTrackingTest < Test::Unit::TestCase
     }
 
  expectedHash = {"CollectionName"=>"/etc/yum.conf",
- "Contents"=>"",
+ "ContentLength"=>"",
  "DateCreated"=>"2016-08-20T21:12:22.000Z",
  "DateModified"=>"2016-08-20T21:12:22.000Z",
+ "FileContentChecksum"=>"1471727542",
  "FileSystemPath"=>"/etc/yum.conf",
  "Group"=>"root",
  "InventoryChecksum"=>
@@ -315,7 +316,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     expectedHash = {"DataItems"=>
     [{"Collections"=>
        [{"CollectionName"=>"/etc/yum.conf",
-         "Contents"=>"",
+         "ContentLength"=>"",
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
          "DateModified"=>"2016-08-20T21:12:22.000Z",
          "FileSystemPath"=>"/etc/yum.conf",
@@ -325,7 +326,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
          "Owner"=>"root",
          "Size"=>"835"},
        {"CollectionName"=>"/etc/yum1.conf",
-         "Contents"=>"",
+         "ContentLength"=>"",
          "DateCreated"=>"2016-08-20T21:12:22.000Z",
          "DateModified"=>"2016-08-20T21:12:22.000Z",
          "FileSystemPath"=>"/etc/yum1.conf",
@@ -362,10 +363,11 @@ class ChangeTrackingTest < Test::Unit::TestCase
     expectedHash = {"DataItems"=>
   [{"Collections"=>
      [{"CollectionName"=>"/etc/yum.conf",
-       "Contents"=>"",
+       "ContentLength"=>"",
        "DateCreated"=>"2016-08-20T21:12:22.000Z",
        "DateModified"=>"2016-08-20T21:12:22.000Z",
        "FileContentBlobLink"=>" ",
+       "FileContentChecksum"=>"1471727542",
        "FileSystemPath"=>"/etc/yum.conf",
        "Group"=>"root",
        "IsInventorySnapshot"=>false,
@@ -373,9 +375,10 @@ class ChangeTrackingTest < Test::Unit::TestCase
        "Owner"=>"root",
        "Size"=>"835"},
       {"CollectionName"=>"/etc/yum1.conf",
-       "Contents"=>"",
+       "ContentLength"=>"",
        "DateCreated"=>"2016-08-20T21:12:22.000Z",
        "DateModified"=>"2016-08-20T21:12:22.000Z",
+       "FileContentChecksum"=>"1471727542",
        "FileSystemPath"=>"/etc/yum1.conf",
        "Group"=>"root",
        "IsInventorySnapshot"=>false,

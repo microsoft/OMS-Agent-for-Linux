@@ -36,7 +36,8 @@ OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 TAR_FILE=<TAR_FILE>
 OMS_PKG=<OMS_PKG>
 DSC_PKG=<DSC_PKG>
-SCX_INSTALLER=<SCX_INSTALLER>
+OMI_PKG=<OMI_PKG>
+SCX_PKG=<SCX_PKG>
 INSTALL_TYPE=<INSTALL_TYPE>
 SCRIPT_LEN=<SCRIPT_LEN>
 SCRIPT_LEN_PLUS_ONE=<SCRIPT_LEN+1>
@@ -50,6 +51,9 @@ INVALID_PACKAGE_TYPE=4
 RUN_AS_ROOT=5
 INVALID_PACKAGE_ARCH=6
 # Accompanying packages issues:
+OMS_INSTALL_FAILED=17
+DSC_INSTALL_FAILED=18
+OMI_INSTALL_FAILED=19
 SCX_INSTALL_FAILED=20
 SCX_KITS_INSTALL_FAILED=21
 BUNDLED_INSTALL_FAILED=22
@@ -321,19 +325,24 @@ install_if_program_does_not_exist_on_system()
 
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed (for future compatibility)
-pkg_add_list()
+pkg_add()
 {
     pkg_filename=$1
     pkg_name=$2
 
+    echo "----- Installing package: $pkg_name ($pkg_filename) -----"
+
     ulinux_detect_openssl_version
     pkg_filename=$TMPBINDIR/$pkg_filename
 
-    echo "----- Installing package: $2 ($1) -----"
     if [ "$INSTALLER" = "DPKG" ]; then
-        add_list="${add_list} ${pkg_filename}.deb"
+        [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
+        dpkg ${DPKG_CONF_QUALS} --install $FORCE ${pkg_filename}.deb
+        return $?
     else
-        add_list="${add_list} ${pkg_filename}.rpm"
+        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+        rpm -ivh $FORCE ${pkg_filename}.rpm
+        return $?
     fi
 }
 
@@ -355,19 +364,19 @@ pkg_rm()
     fi
 }
 
+
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed
 # $3 - Okay to upgrade the package? (Optional)
-pkg_upd_list()
-{
+pkg_upd() {
     pkg_filename=$1
     pkg_name=$2
     pkg_allowed=$3
 
-    echo "----- Checking package: $2 ($1) -----"
+    echo "----- Upgrading package: $pkg_name ($pkg_filename) -----"
 
-    if [ -z "${forceFlag}" -a -n "$3" ]; then
-        if [ $3 -ne 0 ]; then
+    if [ -z "${forceFlag}" -a -n "$pkg_allowed" ]; then
+        if [ $pkg_allowed -ne 0 ]; then
             echo "Skipping package since existing version >= version available"
             return 0
         fi
@@ -376,10 +385,15 @@ pkg_upd_list()
     ulinux_detect_openssl_version
     pkg_filename=$TMPBINDIR/$pkg_filename
 
-    if [ "$INSTALLER" = "DPKG" ]; then
-        upd_list="${upd_list} ${pkg_filename}.deb"
+    if [ "$INSTALLER" = "DPKG" ]
+    then
+        [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
+        dpkg ${DPKG_CONF_QUALS} --install $FORCE ${pkg_filename}.deb
+        return $?
     else
-        upd_list="${upd_list} ${pkg_filename}.rpm"
+        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+        rpm --upgrade $FORCE ${pkg_filename}.rpm
+        return $?
     fi
 }
 
@@ -474,6 +488,68 @@ shouldInstall_omsconfig()
     else
         return 1
     fi
+}
+
+shouldInstall_omi()
+{
+    local versionInstalled=`getInstalledVersion omi`
+    [ "$versionInstalled" = "None" ] && return 0
+    local versionAvailable=`getVersionNumber $OMI_PKG omi-`
+
+    check_version_installable $versionInstalled $versionAvailable
+}
+
+shouldInstall_scx()
+{
+    local versionInstalled=`getInstalledVersion scx`
+    [ "$versionInstalled" = "None" ] && return 0
+    local versionAvailable=`getVersionNumber $SCX_PKG scx-`
+
+    check_version_installable $versionInstalled $versionAvailable
+}
+
+
+remove_and_install()
+{
+
+    if [ -f /opt/microsoft/scx/bin/uninstall ]; then
+
+        /opt/microsoft/scx/bin/uninstall R force
+    else
+        check_if_pkg_is_installed apache-cimprov
+        if [ $? -eq 0 ]; then
+            pkg_rm apache-cimprov
+        fi
+
+        check_if_pkg_is_installed mysql-cimprov
+        if [ $? -eq 0 ]; then
+            pkg_rm mysql-cimprov
+        fi
+
+        pkg_rm scx
+        pkg_rm omi
+
+    fi
+
+    local temp_status=0
+
+    pkg_add $OMI_PKG omi
+    temp_status=$?
+
+    if [ $temp_status -ne 0 ]; then
+        echo "$OMI_PKG package failed to install and exited with status $temp_status"
+        return $OMI_INSTALL_FAILED
+    fi
+
+    pkg_add $SCX_PKG scx
+    temp_status=$?
+
+    if [ $temp_status -ne 0 ]; then
+        echo "$SCX_PKG package failed to install and exited with status $temp_status"
+        return $SCX_INSTALL_FAILED
+    fi
+
+    return 0
 }
 
 install_extra_package()
@@ -641,7 +717,9 @@ do
             ;;
 
         --enable-opsmgr)
-            enableOMFlag=true
+            if [ ! -f /etc/scxagent-enable-port ]; then
+                touch /etc/scxagent-enable-port
+            fi
             shift 1
             ;;
 
@@ -888,8 +966,6 @@ then
 fi
 
 if [ -n "${checkVersionAndCleanUp}" ]; then
-    # scx (and omi) (this will print out the header)
-    ./bundles/$SCX_INSTALLER --version-check
 
     # OMS agent itself
     versionInstalled=`getInstalledVersion omsagent`
@@ -902,6 +978,34 @@ if [ -n "${checkVersionAndCleanUp}" ]; then
     versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`    
     if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No"; fi
     printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
+
+    # OMI package
+    versionInstalled=`getInstalledVersion omi`
+    versionAvailable=`getVersionNumber $OMI_PKG omi-`
+    if shouldInstall_omi; then shouldInstall="Yes"; else shouldInstall="No"; fi
+    printf '%-15s%-15s%-15s%-15s\n' omi $versionInstalled $versionAvailable $shouldInstall
+
+    # SCX package
+    versionInstalled=`getInstalledVersion scx`
+    versionAvailable=`getVersionNumber $SCX_PKG scx-`
+    if shouldInstall_scx; then shouldInstall="Yes"; else shouldInstall="No"; fi
+    printf '%-15s%-15s%-15s%-15s\n' scx $versionInstalled $versionAvailable $shouldInstall
+
+    # Apache provider
+    if [ -f ./oss-kits/apache-cimprov-*.sh ]; then
+        ./oss-kits/apache-cimprov-*.sh --version-check | tail -1
+    fi
+
+    # MySQL provider
+    if [ -f ./oss-kits/mysql-cimprov-*.sh ]; then
+        ./oss-kits/mysql-cimprov-*.sh --version-check | tail -1
+    fi
+
+    # Docker provider
+    if [ -f ./oss-kits/docker-cimprov-*.sh ]; then
+        ./oss-kits/docker-cimprov-*.sh --version-check | tail -1
+    fi
+
     cleanup_and_exit 0
 fi
 
@@ -911,6 +1015,8 @@ fi
 
 KIT_STATUS=0
 BUNDLE_EXIT_STATUS=0
+OMI_EXIT_STATUS=0
+SCX_EXIT_STATUS=0
 
 # Now do our installation work (or just exit)
 
@@ -927,33 +1033,47 @@ case "$installMode" in
         omi_installed=$?
 
         if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
-            echo "Installing OMS agent ..."
 
-            pkg_add_list $OMS_PKG omsagent
-
-            if shouldInstall_omsconfig; then pkg_add_list $DSC_PKG omsconfig; fi
-
-            # Install SCX (and OMI)
-            [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-            [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
-            [ -n "${enableOMFlag}" ] && ENABLE_OM="--enable-opsmgr" || ENABLE_OM=""
-            ./bundles/${SCX_INSTALLER} --install $FORCE $DEBUG $ENABLE_OM
-            TEMP_STATUS=$?
-            if [ $TEMP_STATUS -ne 0 ]; then
-                echo "$SCX_INSTALLER package failed to install and exited with status $TEMP_STATUS"
-                cleanup_and_exit $SCX_INSTALL_FAILED
+            # Install OMI
+            shouldInstall_omi
+            if [ $? -eq 0 ]; then
+                pkg_add ${OMI_PKG} omi
+                OMI_EXIT_STATUS=$?
             fi
 
-            # Now actually install of the "queued" packages
-            if [ -n "${add_list}" ]; then
-                if [ "$INSTALLER" = "DPKG" ]; then
-                    dpkg ${DPKG_CONF_QUALS} --install --refuse-downgrade ${add_list}
-                else
-                    rpm -ivh ${add_list}
+            # Install SCX
+            shouldInstall_scx
+            if [ $? -eq 0 ]; then
+                pkg_add ${SCX_PKG} scx
+                SCX_EXIT_STATUS=$?
+            fi
+
+            # Try to re-install if any of OMI or SCX install failed
+            if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then
+                remove_and_install
+                TEMP_STATUS=$?
+                if [ $TEMP_STATUS -ne 0 ]; then
+                    echo "Install failed"
+                    cleanup_and_exit $TEMP_STATUS
                 fi
-                KIT_STATUS=$?
-            else
-                echo "----- No base kits to install -----"
+            fi
+
+            # Install OMS Agent
+            pkg_add ${OMS_PKG} omsagent
+            TEMP_STATUS=$?
+            if [ $TEMP_STATUS -ne 0 ]; then
+               echo "$OMS_PKG package failed to install and exited with status $TEMP_STATUS"
+               cleanup_and_exit $OMS_INSTALL_FAILED
+            fi
+
+            # Install DSC
+            if shouldInstall_omsconfig; then
+                pkg_add ${DSC_PKG} omsconfig
+                TEMP_STATUS=$?
+                if [ $TEMP_STATUS -ne 0 ]; then
+                    echo "$DSC_PKG package failed to install and exited with status $TEMP_STATUS"
+                    cleanup_and_exit $DSC_INSTALL_FAILED
+                fi
             fi
 
             # Install bundled providers
@@ -1003,39 +1123,45 @@ case "$installMode" in
         ;;
 
     U)
-        echo "Updating OMS agent ..."
+        # Install OMI
+        shouldInstall_omi
+        pkg_upd ${OMI_PKG} omi $?
+        OMI_EXIT_STATUS=$?
 
+        # Install SCX
+        shouldInstall_scx
+        pkg_upd $SCX_PKG scx $?
+        SCX_EXIT_STATUS=$?
+
+        # Try to re-update if any of OMI or SCX update failed
+        if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then
+
+            remove_and_install
+            TEMP_STATUS=$?
+            if [ $TEMP_STATUS -ne 0 ]; then
+                echo "Upgrade failed"
+                cleanup_and_exit $TEMP_STATUS
+            fi
+        fi
+
+        # Update OMS Agent
         shouldInstall_omsagent
-        pkg_upd_list $OMS_PKG omsagent $?
-
-        shouldInstall_omsconfig
-        pkg_upd_list $DSC_PKG omsconfig $?
-
-        # Install SCX (and OMI)
-        [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        [ -n "${debugMode}" ] && DEBUG="--debug" || DEBUG=""
-        [ -n "${enableOMFlag}" ] && ENABLE_OM="--enable-opsmgr" || ENABLE_OM=""
-        ./bundles/${SCX_INSTALLER} --upgrade $FORCE $DEBUG $ENABLE_OM
+        pkg_upd $OMS_PKG omsagent $?
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$SCX_INSTALLER package failed to upgrade and exited with status $TEMP_STATUS"
-            cleanup_and_exit $SCX_INSTALL_FAILED
+            echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            cleanup_and_exit $OMS_INSTALL_FAILED
         fi
 
-        # Now actually install of the "queued" packages
-        if [ -n "${upd_list}" ]; then
-            if [ "$INSTALLER" = "DPKG" ]; then
-                [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
-                dpkg ${DPKG_CONF_QUALS} --install $FORCE ${upd_list}
-            else
-                [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-                rpm -Uvh $FORCE ${upd_list}
-            fi
-            KIT_STATUS=$?
-        else
-            echo "----- No base kits to update -----"
+        # Update DSC
+        shouldInstall_omsconfig
+        pkg_upd $DSC_PKG omsconfig $?
+        TEMP_STATUS=$?
+        if [ $TEMP_STATUS -ne 0 ]; then
+            echo "$DSC_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            cleanup_and_exit $DSC_INSTALL_FAILED
         fi
-		
+
         if [ $KIT_STATUS -eq 0 ]; then
             # Remove fluentd conf for OMSConsistencyInvoker upon upgrade, if it exists
             rm -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf

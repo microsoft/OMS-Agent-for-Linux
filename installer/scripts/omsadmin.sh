@@ -87,11 +87,6 @@ DEFAULT_MONITOR_AGENT_PORT=25324
 SYSLOG_PORT=$DEFAULT_SYSLOG_PORT
 MONITOR_AGENT_PORT=$DEFAULT_MONITOR_AGENT_PORT
 
-DF_OMSAGENT_PROC_LIMIT=75
-MIN_OMSAGENT_PROC_LIMIT=5
-PROC_LIMIT_CONF=/etc/security/limits.conf
-LIMIT_LINE_REGEX="^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+-?[0-9]+[[:space:]]*$"
-
 # SCOM variables
 SCX_SSL_CONFIG=/opt/microsoft/scx/bin/tools/scxsslconfig
 OMI_CONF_FILE=/etc/opt/omi/conf/omiserver.conf
@@ -152,18 +147,6 @@ usage()
     echo
     echo "Azure resource ID:"
     echo "$basename -a <Azure resource ID>"
-    echo
-    echo "Show the configured process limit in $PROC_LIMIT_CONF for user $AGENT_USER."
-    echo "$basename -c"
-    echo
-    echo "Set process limit for OMSAgent:"
-    echo "$basename -n <specific number limit>"
-    echo
-    echo "Set process limit for OMSAgent to default value:"
-    echo "$basename -N"
-    echo
-    echo "Remove the process limit for OMSAgent:"
-    echo "$basename -r"
     echo
     echo "Detect if omiserver is listening to SCOM port:"
     echo "$basename -o"
@@ -251,7 +234,7 @@ parse_args()
 {
     local OPTIND opt
 
-    while getopts "h?s:w:d:vp:u:a:lx:XUm:Nrcn:oR" opt; do
+    while getopts "h?s:w:d:vp:u:a:lx:XUm:oR" opt; do
         case "$opt" in
         h|\?)
             usage
@@ -298,23 +281,11 @@ parse_args()
         m)
             MULTI_HOMING_MARKER=$OPTARG
             ;;
-        n)
-            NEW_OMSAGENT_PROC_LIMIT=$OPTARG
-            ;;
-        N)
-            NEW_OMSAGENT_PROC_LIMIT=$DF_OMSAGENT_PROC_LIMIT
-            ;;
-        r)
-            UNSET_OMSAGENT_PROC_LIMIT=1
-            ;;
         o)
             DETECT_SCOM=1
             ;;
         R)
             RECONSTRUCT_WORKSPACE_STATE=1
-            ;;
-        c)
-            show_omsagent_proc_limit
             ;;
         esac
     done
@@ -382,56 +353,6 @@ set_proxy_setting()
         PROXY_SETTING="--proxy $conf_proxy_content"
         log_info "Using proxy settings from '$CONF_PROXY'"
     fi
-}
-
-insert_new_omsagent_proc_limit()
-{
-    new_omsagent_line=$1
-
-    LASTLINESTOPRESERVE=2
-    TOTALLINES=`wc -l $PROC_LIMIT_CONF | awk '{print $1}'`
-    insertlineno=$( expr $TOTALLINES - $LASTLINESTOPRESERVE )
-
-    sed -i "${insertlineno}a $new_omsagent_line" $PROC_LIMIT_CONF
-}
-
-set_omsagent_proc_limit()
-{
-    if echo "$NEW_OMSAGENT_PROC_LIMIT" | grep -Eqv '^[0-9]+'; then
-        log_error "New process limit must be a positive numerical value"
-        clean_exit $INVALID_CONFIG_PROVIDED
-    elif [ $NEW_OMSAGENT_PROC_LIMIT -lt $MIN_OMSAGENT_PROC_LIMIT ]; then
-        log_error "New process limit must be at least $MIN_OMSAGENT_PROC_LIMIT"
-        clean_exit $INVALID_CONFIG_PROVIDED
-    fi
-
-    log_info "Setting process limit for the $AGENT_USER user in $PROC_LIMIT_CONF to $NEW_OMSAGENT_PROC_LIMIT..."
-    local new_omsagent_line="$AGENT_USER  hard  nproc  $NEW_OMSAGENT_PROC_LIMIT"
-    get_current_omsagent_proc_limit > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        old_omsagent_line=`cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX" | tail -1`
-        sed -i s,"$old_omsagent_line","$new_omsagent_line",1 $PROC_LIMIT_CONF
-    else
-        insert_new_omsagent_proc_limit "$new_omsagent_line"
-    fi
-}
-
-unset_omsagent_proc_limit()
-{
-    get_current_omsagent_proc_limit > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        # Remove all lines for the omsagent from the limit file
-        log_info "Removing process limit for the $AGENT_USER user in $PROC_LIMIT_CONF..."
-        cp $PROC_LIMIT_CONF $PROC_LIMIT_CONF.bak
-        # sed does not handle the complex/extended regex in older versions, but grep does
-        cat $PROC_LIMIT_CONF.bak | grep -Ev "$LIMIT_LINE_REGEX"  > $PROC_LIMIT_CONF
-    fi
-}
-
-get_current_omsagent_proc_limit()
-{
-    cat $PROC_LIMIT_CONF | grep -E "$LIMIT_LINE_REGEX"
-    return $?
 }
 
 is_scom_port_open()
@@ -535,8 +456,8 @@ onboard()
     if [ ! -z "$AZURE_RESOURCE_ID" ]; then
         update_azure_resource_id
     fi
-    
-    # If a test is not in progress then call service_control to check on the workspace status 
+
+    # If a test is not in progress then call service_control to check on the workspace status
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         $SERVICE_CONTROL is-running $WORKSPACE_ID > /dev/null 2>&1
         if [ $? -eq 1 ]; then
@@ -593,7 +514,7 @@ onboard()
     CERT_SERVER=`cat $FILE_CRT | awk 'NR>2 { print line } { line = $0 }'`
 
     # append telemetry to $BODY_ONBOARD
-    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"` 
+    `$RUBY $TOPOLOGY_REQ_SCRIPT -t "$BODY_ONBOARD" "$OS_INFO" "$CONF_OMSADMIN" "$AGENT_GUID" "$CERT_SERVER" "$RUN_DIR/omsagent.pid"`
     [ $? -ne 0 ] && log_error "Error appending Telemetry during Onboarding."
 
     cat /dev/null > "$SHARED_KEY_FILE"
@@ -628,6 +549,15 @@ onboard()
         esac
     fi
 
+    #This is a temporary fix for Systems with Curl versions using HTTP\2 as default
+    #Since 7.47.0, the curl tool enables HTTP/2 by default for HTTPS connections. This fix runs curl with --http1.1 on systems with version above 7.47.0
+    #Curl http2 Docs Link: https://curl.haxx.se/docs/http2.html
+    CURL_VERSION_WITH_DEFAULT_HTTP2="7470"
+    CURL_VERSION_SYSTEM=`curl --version | head -c11 | awk '{print $2}' | tr --delete .`
+    if [ $CURL_VERSION_SYSTEM -gt $CURL_VERSION_WITH_DEFAULT_HTTP2 ]; then
+      CURL_HTTP_COMMAND="--http1.1"
+    fi
+
     RET_CODE=`curl --header "x-ms-Date: $REQ_DATE" \
         --header "x-ms-version: August, 2014" \
         --header "x-ms-SHA256_Content: $CONTENT_HASH" \
@@ -635,6 +565,7 @@ onboard()
         --header "User-Agent: $USER_AGENT" \
         --header "Accept-Language: en-US" \
         --insecure \
+        $CURL_HTTP_COMMAND \
         --data-binary @$BODY_ONBOARD \
         --cert "$FILE_CRT" --key "$FILE_KEY" \
         --output "$RESP_ONBOARD" $CURL_VERBOSE \
@@ -708,9 +639,9 @@ onboard()
 
     configure_logrotate
 
-    # If a test is not in progress then register omsagent as a service and start the agent 
+    # If a test is not in progress then register omsagent as a service and start the agent
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
-        $SERVICE_CONTROL start $WORKSPACE_ID 
+        $SERVICE_CONTROL start $WORKSPACE_ID
 
         if [ -z "$MULTI_HOMING_MARKER" ]; then
             # Configure omsconfig when the workspace is primary
@@ -723,19 +654,21 @@ onboard()
                 echo "*/15 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
             fi
 
+            if [ ! -f $METACONFIG_PY ]; then
+                log_error "MetaConfig generation script not available at $METACONFIG_PY"
+                return $ERROR_METACONFIG_PY_NOT_PRESENT
+            fi
+
             if [ "$USER_ID" -eq "0" ]; then
                 su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
             else
                 $METACONFIG_PY > /dev/null || error=$?
             fi
-    
+
             if [ $error -eq 0 ]; then
                 log_info "Configured omsconfig"
-            elif [ ! -f $METACONFIG_PY ]; then
-                log_error "MetaConfig generation script not available at $METACONFIG_PY"
-                return $ERROR_METACONFIG_PY_NOT_PRESENT
             else
-                log_error "Error configuring omsconfig"
+                log_error "Error configuring omsconfig. Error: $error"
                 return $ERROR_GENERATING_METACONFIG
             fi
         fi
@@ -781,7 +714,7 @@ reset_default_workspace()
 {
     if [ -h $DF_CONF_DIR -a ! -d $DF_CONF_DIR ]; then
         # default conf folder is removed, remove the symlinks
-        rm "$DF_TMP_DIR" "$DF_RUN_DIR" "$DF_STATE_DIR" "$DF_LOG_DIR" "$DF_CERT_DIR" "$DF_CONF_DIR" > /dev/null 2>&1 
+        rm "$DF_TMP_DIR" "$DF_RUN_DIR" "$DF_STATE_DIR" "$DF_LOG_DIR" "$DF_CERT_DIR" "$DF_CONF_DIR" > /dev/null 2>&1
     fi
 }
 
@@ -827,42 +760,12 @@ show_workspace_status()
     if [ -f ${ws_conf_dir}/.multihoming_marker ]; then
         mh_marker="(`cat ${ws_conf_dir}/.multihoming_marker`)"
     fi
-    
+
     if [ ${is_primary} -eq 1 ]; then
         echo "Primary Workspace: ${ws_id}    Status: ${status}"
     else
         echo "Workspace${mh_marker}: ${ws_id}    Status: ${status}"
     fi
-}
-
-show_omsagent_proc_limit()
-{
-    local result_limit="No Limit"
-    if [ ! -f $PROC_LIMIT_CONF ]; then
-        log_error "Limits configuration file '$PROC_LIMIT_CONF' missing!"
-        return 1
-    fi
-    local count=`get_current_omsagent_proc_limit | wc -l`
-
-    if [ "$count" -eq "0" ]; then
-        log_info "There is NO present limit to number of processes for $AGENT_USER."
-    else
-        if [ "$count" -gt "1" ]; then
-            log_info "$count $AGENT_USER entries found in $PROC_LIMIT_CONF."
-            log_info ">>Last entry should apply<<" # NOTE:  This will not pick up -1 entries.
-            get_current_omsagent_proc_limit
-            log_info "End of the $count duplicate entry info Message"
-        fi
-        result_limit=`get_current_omsagent_proc_limit | tail -1 | awk '{print $4}'`
-        if [ "$result_limit" -eq "-1" ]; then
-            result_limit="No Limit"
-            log_info "The number of processes for $AGENT_USER is unlimited."
-        elif [ "$result_limit" -lt "$MIN_OMSAGENT_PROC_LIMIT" ]; then
-            log_warning "$AGENT_USER process limit setting of '$result_limit' is less than minimum of $MIN_OMSAGENT_PROC_LIMIT."
-        fi
-    fi
-    echo $result_limit
-    return 0
 }
 
 list_scom_workspace()
@@ -1199,9 +1102,9 @@ find_available_port()
             port=$((port+1))
         done
     else
-        log_info "netstat tool is not available. Default port defined in omsadmin.sh will be used."		
+        log_info "netstat tool is not available. Default port defined in omsadmin.sh will be used."
     fi
-    
+
     eval $result="${port}"
 }
 
@@ -1234,7 +1137,7 @@ configure_logrotate()
     # Label omsagent log files according to selinux policy module for logrotate if selinux is present
     SEPKG_DIR_OMSAGENT=/usr/share/selinux/packages/omsagent-logrotate
     if [ -e /usr/sbin/semodule -a -d "$SEPKG_DIR_OMSAGENT" ]; then
-        # Label omsagent log file for this $WORKSPACE_ID 
+        # Label omsagent log file for this $WORKSPACE_ID
         /sbin/restorecon -R $VAR_DIR/*/log > /dev/null 2>&1
     fi
 }
@@ -1261,14 +1164,6 @@ main()
             usage
             clean_exit $INVALID_OPTION_PROVIDED
         fi
-    fi
-
-    if [ -n "$NEW_OMSAGENT_PROC_LIMIT" ]; then
-        set_omsagent_proc_limit || clean_exit $?
-    fi
-
-    if [ "$UNSET_OMSAGENT_PROC_LIMIT" = "1" ]; then
-        unset_omsagent_proc_limit || clean_exit $?
     fi
 
     if [ "$DETECT_SCOM" = "1" ]; then
@@ -1301,9 +1196,9 @@ main()
     fi
 
     # If we reach this point, onboarding was successful, we can remove the
-    # onboard conf to prevent accidentally re-onboarding 
+    # onboard conf to prevent accidentally re-onboarding
     [ "$ONBOARD_FROM_FILE" = "1" ] && rm "$FILE_ONBOARD" > /dev/null 2>&1 || true
-  
+
     clean_exit 0
 }
 
