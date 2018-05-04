@@ -306,7 +306,7 @@ module Fluent
                 if !@@ContentlocationUri.nil? and !@@ContentlocationUri.empty? and !collection.empty?
                    key = collection["CollectionName"]
                    date = collection["DateModified"]
-		   contentLength = collection["ContentLength"].to_i
+		   contentLength = collection["Contents"].to_i
 		   fileSize = collection["Size"].to_i
 		   if contentLength != "0" and contentLength >= fileSize
                       fileName = date + '-' + File.basename(key)
