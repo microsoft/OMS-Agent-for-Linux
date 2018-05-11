@@ -1,4 +1,4 @@
-# Operations Management Suite Agent for Linux (2017-08)
+# Operations Management Suite Agent for Linux (2018-05)
 
 ## Overview
 Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
@@ -17,9 +17,9 @@ If you are an Azure customer, we have an Azure VM Extension that allows you to o
 
 ### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 
-## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_GA_v1.4.1-45/omsagent-1.4.1-45.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.6.0-42/omsagent-1.6.0-42.universal.x64.sh)
 
-## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_GA_v1.4.1-45/omsagent-1.4.1-45.universal.x86.sh)
+## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.6.0-42/omsagent-1.6.0-42.universal.x86.sh)
 
 ## Feedback
 
@@ -30,11 +30,11 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * **Elite Linux customer panel:** If you are a die-hard OMS Linux user and want to join our weekly calls and talk directly to the product team apply through this **[survey](https://www.surveymonkey.com/r/6MTHN3P).**
 
 ## Supported Linux Operating Systems
-* Amazon Linux 2012.09 --> 2015.09 (x86/x64)
+* Amazon Linux 2012.09 --> 2017 (x86/x64)
 * CentOS Linux 5,6, and 7 (x86/x64)
 * Oracle Linux 5,6, and 7 (x86/x64)
 * Red Hat Enterprise Linux Server 5,6 and 7 (x86/x64)
-* Debian GNU/Linux 6, 7, and 8 (x86/x64)
+* Debian GNU/Linux 6, 7, 8, and 9 (x86/x64)
 * Ubuntu 12.04 LTS, 14.04 LTS, 16.04 LTS (x86/x64)
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
