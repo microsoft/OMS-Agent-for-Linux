@@ -58,8 +58,10 @@ If none of these steps work for you the following channels for help are also ava
 | 4 | Invalid package type; `omsagent-*rpm*.sh` packages can only be installed on RPM-based systems, and `omsagent-*deb*.sh` packages can only be installed on Debian-based systems; We recommend that you use the universal installer from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
 | 5 | The shell bundle must be executed as root; Run your command using `sudo` |
 | 6 | Invalid package architecture; `omsagent-*x64.sh` packages can only be installed on 64-bit systems, and `omsagent-*x86.sh` packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
-| 20 | Installation of SCX/OMI failed; Look through the command output for the root failure |
-| 21 | Installation of SCX/Provider kits failed; Look through the command output for the root failure |
+| 17 | Installation of OMS package failed; Look through the command output for the root failure |
+| 19 | Installation of OMI package failed; Look through the command output for the root failure |
+| 20 | Installation of SCX package failed; Look through the command output for the root failure |
+| 21 | Installation of Provider kits failed; Look through the command output for the root failure |
 | 22 | Installation of bundled package failed; Look through the command output for the root failure |
 | 23 | SCX or OMI package already installed; Use `--upgrade` instead of `--install` to install the shell bundle |
 | 30 | Internal bundle error; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
