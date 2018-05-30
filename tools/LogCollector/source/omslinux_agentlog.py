@@ -547,7 +547,7 @@ Check the type (Github, Extension, Container) of agent running in Linux machine
 '''
 def chkOMSAgentInstallType():
     omsInstallType=0
-    cmd='ls /var/lib/waagent | grep -i Microsoft.EnterpriseCloud.Monitoring.OmsAgentForLinux-'
+    cmd='ls /var/lib/waagent | grep -i Microsoft.EnterpriseCloud.Monitoring.Edp.OmsAgentForLinux-'
     file=execCommand2(cmd)
     if(file == 1):
       omsExtension = False
