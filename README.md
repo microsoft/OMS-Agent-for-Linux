@@ -38,6 +38,8 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * Ubuntu 12.04 LTS, 14.04 LTS, 16.04 LTS (x86/x64)
 * SUSE Linux Enteprise Server 11 and 12 (x86/x64)
 
+**Note:** Openssl 1.1.0 is only supported on x86_64 platforms (64-bit).
+
 ## Supported Scenarios
 ### [Heartbeat data collection](docs/OMS-Agent-for-Linux.md#viewing-heartbeat-data)
 ### [Syslog data collection](docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
