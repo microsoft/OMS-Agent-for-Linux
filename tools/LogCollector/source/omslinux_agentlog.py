@@ -457,6 +457,27 @@ def copyExtensionFiles():
     return 0
 
 '''
+Copy Update Management Solution logs into /tmp/updatelogs
+'''
+def copyUpdateFiles(omsLinuxType):
+    cmd='mkdir -p /tmp/omslogs/updateMgmtlogs'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+
+    cmd='cp /var/opt/microsoft/omsagent/log/urp.log /tmp/omslogs/updateMgmtlogs'
+    out=execCommand2(cmd)
+    writeLogCommand(cmd)
+
+    cmd='cp /etc/opt/omi/conf/omsconfig/configuration/CompletePackageInventory.xml* /tmp/omslogs/updateMgmtlogs'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    
+    cmd='cp /etc/opt/microsoft/omsagent/run/automationworker/omsupdatemgmt.log /tmp/omslogs'
+    out=execCommand(cmd)
+    writeLogCommand(cmd)
+    return 0
+
+'''
 Remove temporary files under /tmp/omslogs once it is archived
 '''
 def removeTempFiles():
