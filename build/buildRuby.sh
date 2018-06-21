@@ -177,7 +177,7 @@ touch configure
 echo "========================= Performing Repairing Ruby sources"
 
 # RUBY_REPAIR_LIST is set reletive to the Ruby source directory
-RUBY_REPAIR_LIST="enc/unicode/9.0.0/name2ctype.h enc/jis/props.h"
+RUBY_REPAIR_LIST="enc/unicode/9.0.0/name2ctype.h"
 
 cd ${RUBY_SRCDIR}
 git checkout -- ${RUBY_REPAIR_LIST}
