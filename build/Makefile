@@ -126,13 +126,13 @@ all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
 
-sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp 
-  
+sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp
+
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
 
 	# On Debian, installer staging directory has root permissions, so sudo elevate
-	sudo $(RMDIR) $(STAGING_DIR) $(INSTALLER_TMPDIR) $(BASE_DIR)/target 
+	sudo $(RMDIR) $(STAGING_DIR) $(INSTALLER_TMPDIR) $(BASE_DIR)/target
 
 	# Until we can build Ruby under installation dir, clean it here
 	sudo $(RMDIR) $(RUBY_TEST_DIRECTORY)
@@ -245,7 +245,7 @@ endif
 #--------------------------------------------------------------------------------
 # Build AUOMS project
 
-$(AUOMS_TARGET_DIR)/auoms-bundle-test.sh : 
+$(AUOMS_TARGET_DIR)/auoms-bundle-test.sh :
 	$(MAKE) -C $(AUOMS_DIR)/build all
 
 #--------------------------------------------------------------------------------
@@ -271,8 +271,8 @@ ifeq ($(ULINUX),1)
 	@$(ECHO) "========================= Performing Building Ruby for SSL v1.0.0 ..."
 	$(BASE_DIR)/build/buildRuby.sh 100
 ifeq ($(PF_ARCH),x64)
-	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..." 
-	$(BASE_DIR)/build/buildRuby.sh 110 
+	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
+	$(BASE_DIR)/build/buildRuby.sh 110
 endif
 else
 	@$(ECHO) "========================= Performing Building Ruby"
@@ -325,7 +325,7 @@ $(IN_PLUGINS_LIB) : $(STATIC_PLUGINS_OBJFILES)
 ifeq ($(ULINUX),1)
 
 kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh $(TARGET_DIR)/dsc \
-      $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh 
+      $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh
 
 $(TARGET_DIR)/dsc : $(DSC_TARGET_DIR)
 	@echo "========================= Performing Copying DSC resources"
@@ -416,7 +416,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} 110/*.{deb,rpm} oss-kits/* bundles/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm 
+	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm
 
 	@echo "========================= Performing Building RPM .tar file"
 
@@ -492,7 +492,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/* bundles/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm 
+	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm
 
 	@echo "========================= Performing Building RPM .tar file"
 
