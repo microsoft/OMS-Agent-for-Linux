@@ -6,8 +6,9 @@ require_relative 'oms_common'
 module OMS
     class SecurityBaseline
 
-        def initialize(log)
+        def initialize(log, baselineType = "Linux")
             @log = log
+	    @baselineType = baselineType
         end
 
         # ------------------------------------------------------
@@ -134,7 +135,7 @@ module OMS
                         "PercentageOfPassedRules" => percentage_of_passed_rules,
                         "AssessmentId" => assessment_id,
                         "OSName" => "Linux",
-                        "BaselineType" => "Linux"
+                        "BaselineType" => @baselineType
                     }
                 ] 
             }
@@ -155,7 +156,7 @@ module OMS
                 "OSName" => "Linux",
                 "RuleType" => "Command",
                 "RuleId" => asm_baseline_result["ruleId"],
-                "BaselineType" => "Linux",
+                "BaselineType" => @baselineType,
                 "ActualResult" => asm_baseline_result["error_text"]
             }
             return oms
