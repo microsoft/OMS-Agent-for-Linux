@@ -207,7 +207,7 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
    # If multi-workspace scenario
    for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
     do
-        echo "Deleting certs and conf directories for workspace $ws_id if empty..."
+        echo "Deleting certs and conf directories for workspace $ws_id if empty..." | tee -a /var/log/omsbundle.log
         rmdir $ETC_DIR/$ws_id/certs/ 2> /dev/null
         rmdir $ETC_DIR/$ws_id/conf/ 2> /dev/null
 
@@ -217,7 +217,7 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
         rmdir $VAR_DIR/$ws_id/state/ 2> /dev/null
         # /var/opt/microsoft/omsagent/<wkspc>/run/ and log/ should be left for later service start
     done
-   
+
    # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
    rm -f $ETC_DIR/sysconf/installinfo.txt*
    rmdir $ETC_DIR/sysconf 2> /dev/null
@@ -259,4 +259,3 @@ ${{SHELL_HEADER}}
 ${{SHELL_HEADER}}
 %Postuninstall_0
 ${{SHELL_HEADER}}
-

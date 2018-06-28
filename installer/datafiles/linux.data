@@ -63,14 +63,14 @@ SudoSupportsIncludeDirective() {
 # (Can't use useradd with -U since that doesn't exist on older systems)
 egrep -q "^omsagent:" /etc/group
 if [ $? -ne 0 ]; then
-    echo "Creating omsagent group ..."
+    echo "Creating omsagent group ..." | tee -a /var/log/omsbundle.log
     groupadd -r omsagent
 fi
 
 # Add the 'omsagent' service account if it does not already exist
 egrep -q "^omsagent:" /etc/passwd
 if [ $? -ne 0 ]; then
-    echo "Creating omsagent service account ..."
+    echo "Creating omsagent service account ..." | tee -a /var/log/omsbundle.log
     useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -g omsagent -s /bin/bash omsagent
 fi
 
@@ -81,14 +81,14 @@ fi
 # (Can't use useradd with -U since that doesn't exist on older systems)
 egrep -q "^nxautomation:" /etc/group
 if [ $? -ne 0 ]; then
-    echo "Creating nxautomation group ..."
+    echo "Creating nxautomation group ..." | tee -a /var/log/omsbundle.log
     groupadd -r nxautomation
 fi
 
 # Add the 'nxautomation' service account if it does not already exist
 egrep -q "^nxautomation:" /etc/passwd
 if [ $? -ne 0 ]; then
-    echo "Creating nxautomation service account ..."
+    echo "Creating nxautomation service account ..." | tee -a /var/log/omsbundle.log
     useradd -r -c "nxOMSAutomation" -d /var/opt/microsoft/omsagent/run -g nxautomation -s /bin/bash nxautomation
 fi
 
@@ -155,21 +155,21 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
     RemoveSudoersSupport
 
     # Remove the service accounts
-    echo "Deleting nxautomation service account ..."
+    echo "Deleting nxautomation service account ..." | tee -a /var/log/omsbundle.log
     userdel nxautomation 2> /dev/null
-    echo "Deleting omsagent service account ..."
+    echo "Deleting omsagent service account ..." | tee -a /var/log/omsbundle.log
     userdel omsagent 2> /dev/null
 
     if [ $? -eq 0 ]; then
         # Depending on system settings, the groups may not have been deleted
         egrep -q "^nxautomation:" /etc/group
         if [ $? -eq 0 ]; then
-            echo "Deleting nxautomation group ..."
+            echo "Deleting nxautomation group ..." | tee -a /var/log/omsbundle.log
             groupdel nxautomation
         fi
         egrep -q "^omsagent:" /etc/group
         if [ $? -eq 0 ]; then
-            echo "Deleting omsagent group ..."
+            echo "Deleting omsagent group ..." | tee -a /var/log/omsbundle.log
             groupdel omsagent
         fi
     fi

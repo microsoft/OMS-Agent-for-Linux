@@ -21,6 +21,8 @@ case $0 in
         ;;
 esac
 
+touch /var/log/omsbundle.log
+
 SCRIPT_DIR="`(cd \"$SCRIPT_INDIRECT\"; pwd -P)`"
 SCRIPT="$SCRIPT_DIR/`basename $0`"
 EXTRACT_DIR="`pwd -P`/omsbundle.$$"
@@ -117,7 +119,7 @@ cleanup_and_exit()
     fi
 
     if [ -n "$1" ]; then
-        echo "Shell bundle exiting with code $1"
+        echo "Shell bundle exiting with code $1" | tee -a /var/log/omsbundle.log
         exit $1
     else
         exit 0
@@ -135,7 +137,7 @@ check_version_installable()
     #   Available: "x.y.z.b" (like "4.2.2.135"), for major.minor.patch.build versions
 
     if [ $# -ne 2 ]; then
-        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_version_installable" >&2
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_version_installable" >&2 | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INTERNAL_ERROR
     fi
 
@@ -192,7 +194,7 @@ getVersionNumber()
     # Parameter 2: prefix to remove ("mumble-" in above example)
 
     if [ $# -ne 2 ]; then
-        echo "INTERNAL ERROR: Incorrect number of parameters passed to getVersionNumber" >&2
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to getVersionNumber" >&2 | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INTERNAL_ERROR
     fi
 
@@ -202,7 +204,7 @@ getVersionNumber()
 verifyNoInstallationOption()
 {
     if [ -n "${installMode}" ]; then
-        echo "$0: Conflicting qualifiers, exiting" >&2
+        echo "$0: Conflicting qualifiers, exiting" >&2 | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INVALID_OPTION_PROVIDED
     fi
 
@@ -213,12 +215,12 @@ verifyPrivileges()
 {
     # Parameter: desired operation (for meaningful output)
     if [ -z "$1" ]; then
-        echo "INTERNAL ERROR: verifyPrivileges missing required parameter (operation)" 1>& 2
+        echo "INTERNAL ERROR: verifyPrivileges missing required parameter (operation)" 1>& 2 | tee -a /var/log/omsbundle.log
         exit $INTERNAL_ERROR
     fi
 
     if [ `id -u` -ne 0 ]; then
-        echo "Must have root privileges to be able to perform $1 operation" 1>& 2
+        echo "Must have root privileges to be able to perform $1 operation" 1>& 2 | tee -a /var/log/omsbundle.log
         exit $RUN_AS_ROOT
     fi
 }
@@ -238,9 +240,9 @@ ulinux_detect_openssl_version()
     elif [ $OPENSSL_SYSTEM_VERSION_110 = 0 ]; then
         TMPBINDIR=110
     else
-        echo "Error: This system does not have a supported version of OpenSSL installed."
-        echo "This system's OpenSSL version: $OPENSSL_SYSTEM_VERSION_FULL"
-        echo "Supported versions: 0.9.8*, 1.0.*, 1.1.*"
+        echo "Error: This system does not have a supported version of OpenSSL installed." | tee -a /var/log/omsbundle.log
+        echo "This system's OpenSSL version: $OPENSSL_SYSTEM_VERSION_FULL" | tee -a /var/log/omsbundle.log
+        echo "Supported versions: 0.9.8*, 1.0.*, 1.1.*" | tee -a /var/log/omsbundle.log
         cleanup_and_exit $UNSUPPORTED_OPENSSL
     fi
 }
@@ -275,7 +277,7 @@ check_if_program_in_path()
     # Parameter: name of program to check
     # Returns: 0 if program is in path, non-zero if not
     if [ $# -ne 1 ]; then
-        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_if_program_in_path" >&2
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_if_program_in_path" >&2 | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INTERNAL_ERROR
     fi
     which $1 > /dev/null 2>&1
@@ -287,7 +289,7 @@ check_if_program_exists_on_system()
     # Parameters: $1 - name of program to check
     # Returns: 0 if program is in system or installed as a package, 1 if not
     if [ $# -ne 1 ]; then
-        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_if_program_exists_on_system" >&2
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to check_if_program_exists_on_system" >&2 | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INTERNAL_ERROR
     fi
     local exists=1
@@ -411,11 +413,11 @@ compare_arch()
     #check if the user is trying to install the correct bundle (x64 vs. x86)
     echo "Checking host architecture ..."
     HOST_ARCH=$(get_arch)
-    
+
     case $OMS_PKG in
-        *"$HOST_ARCH") 
+        *"$HOST_ARCH")
             ;;
-        *)         
+        *)
             echo "Cannot install $OMS_PKG on ${HOST_ARCH} platform"
             cleanup_and_exit $INVALID_PACKAGE_ARCH
             ;;
@@ -423,8 +425,8 @@ compare_arch()
 }
 
 compare_install_type()
-{   
-    # If the bundle has an INSTALL_TYPE, check if the bundle being installed 
+{
+    # If the bundle has an INSTALL_TYPE, check if the bundle being installed
     # matches the installer on the machine (rpm vs.dpkg)
     if [ ! -z "$INSTALL_TYPE" ]; then
         if [ $INSTALLER != $INSTALL_TYPE ]; then
@@ -437,8 +439,8 @@ compare_install_type()
 python_ctypes_installed()
 {
     # Check for Python ctypes library (required for omsconfig)
-    hasCtypes=1    
-	
+    hasCtypes=1
+
     # Attempt to run python with the single import command
     python -c "import ctypes" > /dev/null 2>&1
     [ $? -eq 0 ] && hasCtypes=0
@@ -518,16 +520,16 @@ remove_and_install()
     else
         check_if_pkg_is_installed apache-cimprov
         if [ $? -eq 0 ]; then
-            pkg_rm apache-cimprov
+            pkg_rm apache-cimprov | tee -a /var/log/omsbundle.log
         fi
 
         check_if_pkg_is_installed mysql-cimprov
         if [ $? -eq 0 ]; then
-            pkg_rm mysql-cimprov
+            pkg_rm mysql-cimprov | tee -a /var/log/omsbundle.log
         fi
 
-        pkg_rm scx
-        pkg_rm omi
+        pkg_rm scx | tee -a /var/log/omsbundle.log
+        pkg_rm omi | tee -a /var/log/omsbundle.log
 
     fi
 
@@ -557,7 +559,7 @@ install_extra_package()
     # Parameter: package name to install
     # Returns: 0 on success, 1 on failure
     if [ $# -ne 1 ]; then
-        echo "INTERNAL ERROR: Incorrect number of parameters passed to install_extra_package" >&2
+        echo "INTERNAL ERROR: Incorrect number of parameters passed to install_extra_package"
         cleanup_and_exit $INTERNAL_ERROR
     fi
 
@@ -666,12 +668,12 @@ do
             ;;
 
         --source-references)
-            source_references
+            source_references | tee -a /var/log/omsbundle.log
             cleanup_and_exit 0
             ;;
 
         --version)
-            echo "Version: `getVersionNumber $OMS_PKG omsagent-`"
+            echo "Version: `getVersionNumber $OMS_PKG omsagent-`" | tee -a /var/log/omsbundle.log
             exit 0
             ;;
 
@@ -694,13 +696,13 @@ do
             ;;
 
         --debug)
-            echo "Starting shell debug mode." >&2
-            echo "" >&2
-            echo "SCRIPT_INDIRECT: $SCRIPT_INDIRECT" >&2
-            echo "SCRIPT_DIR:      $SCRIPT_DIR" >&2
-            echo "EXTRACT_DIR:     $EXTRACT_DIR" >&2
-            echo "SCRIPT:          $SCRIPT" >&2
-            echo >&2
+            echo "Starting shell debug mode." >&2 | tee -a /var/log/omsbundle.log
+            echo "" >&2 | tee -a /var/log/omsbundle.log
+            echo "SCRIPT_INDIRECT: $SCRIPT_INDIRECT" >&2 | tee -a /var/log/omsbundle.log
+            echo "SCRIPT_DIR:      $SCRIPT_DIR" >&2 | tee -a /var/log/omsbundle.log
+            echo "EXTRACT_DIR:     $EXTRACT_DIR" >&2 | tee -a /var/log/omsbundle.log
+            echo "SCRIPT:          $SCRIPT" >&2 | tee -a /var/log/omsbundle.log
+            echo >&2 | tee -a /var/log/omsbundle.log
             debugMode=true
             set -x
             shift 1
@@ -724,20 +726,20 @@ do
             ;;
 
         -\? | -h | --help)
-            usage `basename $0` >&2
+            usage `basename $0` >&2 | tee -a /var/log/omsbundle.log
             cleanup_and_exit 0
             ;;
 
          *)
-            echo "Unknown argument: '$1'" >&2
-            echo "Use -h or --help for usage" >&2
+            echo "Unknown argument: '$1'" >&2 | tee -a /var/log/omsbundle.log
+            echo "Use -h or --help for usage" >&2 | tee -a /var/log/omsbundle.log
             cleanup_and_exit $INVALID_OPTION_PROVIDED
             ;;
     esac
 done
 
 if [ -z "${installMode}" ]; then
-    echo "$0: No options specified, specify --help for help" >&2
+    echo "$0: No options specified, specify --help for help" >&2 | tee -a /var/log/omsbundle.log
     cleanup_and_exit $NO_OPTION_PROVIDED
 fi
 
@@ -747,7 +749,7 @@ ONBOARD_ERROR=0
 [ -n "$onboardID" -a -z "$onboardKey" ] && ONBOARD_ERROR=1
 
 if [ "$ONBOARD_ERROR" -ne 0 ]; then
-    echo "Must specify both workspace ID (--id) and key (--shared) to onboard" 1>& 2
+    echo "Must specify both workspace ID (--id) and key (--shared) to onboard" 1>& 2 | tee -a /var/log/omsbundle.log
     exit $INVALID_OPTION_PROVIDED
 fi
 
@@ -791,22 +793,22 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
     rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
     rm -f "$ONBOARD_FILE" > /dev/null 2>&1
     if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
-        /opt/microsoft/omsagent/bin/uninstall $installMode
+        /opt/microsoft/omsagent/bin/uninstall $installMode | tee -a /var/log/omsbundle.log
     else
-        echo "---------- WARNING WARNING WARNING ----------"
-        echo "Using new shell bundle to remove older kit."
-        echo "Using fallback code to perform kit removal."
-        echo "---------- WARNING WARNING WARNING ----------"
+        echo "---------- WARNING WARNING WARNING ----------" | tee -a /var/log/omsbundle.log
+        echo "Using new shell bundle to remove older kit." | tee -a /var/log/omsbundle.log
+        echo "Using fallback code to perform kit removal." | tee -a /var/log/omsbundle.log
+        echo "---------- WARNING WARNING WARNING ----------" | tee -a /var/log/omsbundle.log
         echo
 
         # If bundled auoms is installed, then remove it
         check_if_pkg_is_installed auoms
         if [ $? -eq 0 ]; then
-            pkg_rm auoms
+            pkg_rm auoms | tee -a /var/log/omsbundle.log
         fi
 
-        pkg_rm omsconfig
-        pkg_rm omsagent
+        pkg_rm omsconfig | tee -a /var/log/omsbundle.log
+        pkg_rm omsagent | tee -a /var/log/omsbundle.log
 
         # If MDSD is installed and we're just removing (not purging), leave SCX
         MDSD_INSTALLED=1
@@ -817,32 +819,32 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
 
         if [ $MDSD_INSTALLED -ne 0 -o "$installMode" = "P" ]; then
             if [ -f /opt/microsoft/scx/bin/uninstall ]; then
-                /opt/microsoft/scx/bin/uninstall $installMode
+                /opt/microsoft/scx/bin/uninstall $installMode | tee -a /var/log/omsbundle.log
             else
                 for i in /opt/microsoft/*-cimprov; do
                     PKG_NAME=`basename $i`
                     if [ "$PKG_NAME" != "*-cimprov" ]; then
-                        echo "Removing ${PKG_NAME} ..."
-                        pkg_rm ${PKG_NAME}
+                        echo "Removing ${PKG_NAME} ..." | tee -a /var/log/omsbundle.log
+                        pkg_rm ${PKG_NAME} | tee -a /var/log/omsbundle.log
                     fi
                 done
 
                 # Now just simply pkg_rm scx and omi
-                pkg_rm scx
-                pkg_rm omi
+                pkg_rm scx | tee -a /var/log/omsbundle.log
+                pkg_rm omi | tee -a /var/log/omsbundle.log
             fi
         else
-            echo "--- MDSD detected; not removing SCX or OMI packages ---"
+            echo "--- MDSD detected; not removing SCX or OMI packages ---" | tee -a /var/log/omsbundle.log
         fi
 
         # If bundled auoms is installed, then remove it
         check_if_pkg_is_installed auoms
         if [ $? -eq 0 ]; then
-            pkg_rm auoms
+            pkg_rm auoms | tee -a /var/log/omsbundle.log
         fi
 
         if [ "$installMode" = "P" ]; then
-            echo "Purging all files in cross-platform agent ..."
+            echo "Purging all files in cross-platform agent ..." | tee -a /var/log/omsbundle.log
 
             #
             # Be careful to not remove files if dependent packages are still using them
@@ -896,52 +898,53 @@ fi
 # Pre-flight if omsconfig installation will fail ...
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
-    compare_install_type
-    compare_arch
+    echo
+    compare_install_type | tee -a /var/log/omsbundle.log
+    compare_arch | tee -a /var/log/omsbundle.log
 
     python_ctypes_installed
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
-            echo "Error: Python is not configured or Python does not support ctypes on this system, installation cannot continue." >&2
-            echo "Please install the ctypes package (python-ctypes)or upgrade Python to a newer version of python that comes with the ctypes module." >&2
-            echo "You can check if the ctypes module is installed by starting python and running the command: 'import ctypes'." >&2
-            echo "You can run this shell bundle with --force; in this case, we will install omsagent," >&2
-            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed." >&2
+            echo "Error: Python is not configured or Python does not support ctypes on this system, installation cannot continue." >&2 | tee -a /var/log/omsbundle.log
+            echo "Please install the ctypes package (python-ctypes)or upgrade Python to a newer version of python that comes with the ctypes module." >&2 | tee -a /var/log/omsbundle.log
+            echo "You can check if the ctypes module is installed by starting python and running the command: 'import ctypes'." >&2 | tee -a /var/log/omsbundle.log
+            echo "You can run this shell bundle with --force; in this case, we will install omsagent," >&2 | tee -a /var/log/omsbundle.log
+            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed." >&2 | tee -a /var/log/omsbundle.log
             cleanup_and_exit $INSTALL_PYTHON_CTYPES
         else
-            echo "Python is not configured or it does not support ctypes on this system, please upgrade Python to a newer version that comes with the ctypes module and re-install omsconfig later."
-            echo "Installation will continue without installing omsconfig."
+            echo "Python is not configured or it does not support ctypes on this system, please upgrade Python to a newer version that comes with the ctypes module and re-install omsconfig later." | tee -a /var/log/omsbundle.log
+            echo "Installation will continue without installing omsconfig." | tee -a /var/log/omsbundle.log
         fi
     fi
 
-    install_if_program_does_not_exist_on_system tar
+    install_if_program_does_not_exist_on_system tar | tee -a /var/log/omsbundle.log
     if [ $? -ne 0 ]; then
-        echo "tar was not installed, installation cannot continue. Please install tar."
+        echo "tar was not installed, installation cannot continue. Please install tar." | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INSTALL_TAR
     fi
 
-    install_if_program_does_not_exist_on_system sed
+    install_if_program_does_not_exist_on_system sed | tee -a /var/log/omsbundle.log
     if [ $? -ne 0 ]; then
-        echo "sed was not installed, installation cannot continue. Please install sed."
+        echo "sed was not installed, installation cannot continue. Please install sed." | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INSTALL_SED
     fi
 
-    install_if_program_does_not_exist_on_system curl
+    install_if_program_does_not_exist_on_system curl | tee -a /var/log/omsbundle.log
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
-            echo "Error: curl was not installed, installation cannot continue."
-            echo "You can run this shell bundle with --force; in this case, we will install omsagent,"
-            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed."
+            echo "Error: curl was not installed, installation cannot continue." | tee -a /var/log/omsbundle.log
+            echo "You can run this shell bundle with --force; in this case, we will install omsagent," | tee -a /var/log/omsbundle.log
+            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed." | tee -a /var/log/omsbundle.log
             cleanup_and_exit $INSTALL_CURL
         else
-            echo "curl was not installed, please install curl and re-install omsconfig (DSC configuration) later."
-            echo "Installation will continue without installing omsconfig."
+            echo "curl was not installed, please install curl and re-install omsconfig (DSC configuration) later." | tee -a /var/log/omsbundle.log
+            echo "Installation will continue without installing omsconfig." | tee -a /var/log/omsbundle.log
         fi
     fi
 
     check_if_program_exists_on_system gpg
     if [ $? -ne 0 ]; then
-        echo "gpg is not installed, installation cannot continue."
+        echo "gpg is not installed, installation cannot continue." | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INSTALL_GPG
     fi
 fi
@@ -950,18 +953,18 @@ fi
 # Extract the binary here.
 #
 
-echo "Extracting..."
+echo "Extracting..." | tee -a /var/log/omsbundle.log
 
 tail -n +${SCRIPT_LEN_PLUS_ONE} "${SCRIPT}" | tar xzf -
 STATUS=$?
 if [ ${STATUS} -eq 127 ]
 then
-    echo "Failed: could not extract the install bundle. Exit code: 127"
-    echo "Please make sure that tar is installed."
+    echo "Failed: could not extract the install bundle. Exit code: 127" | tee -a /var/log/omsbundle.log
+    echo "Please make sure that tar is installed." | tee -a /var/log/omsbundle.log
     cleanup_and_exit $INSTALL_TAR
 elif [ ${STATUS} -ne 0 ]
 then
-    echo "Failed: could not extract the install bundle."
+    echo "Failed: could not extract the install bundle." | tee -a /var/log/omsbundle.log
     cleanup_and_exit ${STATUS}
 fi
 
@@ -971,25 +974,25 @@ if [ -n "${checkVersionAndCleanUp}" ]; then
     versionInstalled=`getInstalledVersion omsagent`
     versionAvailable=`getVersionNumber $OMS_PKG omsagent-`
     if shouldInstall_omsagent; then shouldInstall="Yes"; else shouldInstall="No"; fi
-    printf '%-15s%-15s%-15s%-15s\n' omsagent $versionInstalled $versionAvailable $shouldInstall
+    printf '%-15s%-15s%-15s%-15s\n' omsagent $versionInstalled $versionAvailable $shouldInstall | tee -a /var/log/omsbundle.log
 
     # omsconfig
     versionInstalled=`getInstalledVersion omsconfig`
-    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`    
+    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
     if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No"; fi
-    printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
+    printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall" | tee -a /var/log/omsbundle.log
 
     # OMI package
     versionInstalled=`getInstalledVersion omi`
     versionAvailable=`getVersionNumber $OMI_PKG omi-`
     if shouldInstall_omi; then shouldInstall="Yes"; else shouldInstall="No"; fi
-    printf '%-15s%-15s%-15s%-15s\n' omi $versionInstalled $versionAvailable $shouldInstall
+    printf '%-15s%-15s%-15s%-15s\n' omi $versionInstalled $versionAvailable $shouldInstall | tee -a /var/log/omsbundle.log
 
     # SCX package
     versionInstalled=`getInstalledVersion scx`
     versionAvailable=`getVersionNumber $SCX_PKG scx-`
     if shouldInstall_scx; then shouldInstall="Yes"; else shouldInstall="No"; fi
-    printf '%-15s%-15s%-15s%-15s\n' scx $versionInstalled $versionAvailable $shouldInstall
+    printf '%-15s%-15s%-15s%-15s\n' scx $versionInstalled $versionAvailable $shouldInstall | tee -a /var/log/omsbundle.log
 
     # Apache provider
     if [ -f ./oss-kits/apache-cimprov-*.sh ]; then
@@ -1037,48 +1040,48 @@ case "$installMode" in
             # Install OMI
             shouldInstall_omi
             if [ $? -eq 0 ]; then
-                pkg_add ${OMI_PKG} omi
+                pkg_add ${OMI_PKG} omi | tee -a /var/log/omsbundle.log
                 OMI_EXIT_STATUS=$?
             fi
 
             # Install SCX
             shouldInstall_scx
             if [ $? -eq 0 ]; then
-                pkg_add ${SCX_PKG} scx
+                pkg_add ${SCX_PKG} scx | tee -a /var/log/omsbundle.log
                 SCX_EXIT_STATUS=$?
             fi
 
             # Try to re-install if any of OMI or SCX install failed
             if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then
-                remove_and_install
+                remove_and_install | tee -a /var/log/omsbundle.log
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "Install failed"
+                    echo "Install failed" | tee -a /var/log/omsbundle.log
                     cleanup_and_exit $TEMP_STATUS
                 fi
             fi
 
             # Install OMS Agent
-            pkg_add ${OMS_PKG} omsagent
+            pkg_add ${OMS_PKG} omsagent | tee -a /var/log/omsbundle.log
             TEMP_STATUS=$?
             if [ $TEMP_STATUS -ne 0 ]; then
-               echo "$OMS_PKG package failed to install and exited with status $TEMP_STATUS"
+               echo "$OMS_PKG package failed to install and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
                cleanup_and_exit $OMS_INSTALL_FAILED
             fi
 
             # Install DSC
             if shouldInstall_omsconfig; then
-                pkg_add ${DSC_PKG} omsconfig
+                pkg_add ${DSC_PKG} omsconfig | tee -a /var/log/omsbundle.log
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$DSC_PKG package failed to install and exited with status $TEMP_STATUS"
+                    echo "$DSC_PKG package failed to install and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
                     cleanup_and_exit $DSC_INSTALL_FAILED
                 fi
             fi
 
             # Install bundled providers
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-            echo "----- Installing bundled packages -----"
+            echo "----- Installing bundled packages -----" | tee -a /var/log/omsbundle.log
             for i in oss-kits/*-oss-test.sh; do
                 # If filespec didn't expand, break out of loop
                 [ ! -f $i ] && break
@@ -1089,10 +1092,10 @@ case "$installMode" in
 
                 ./$i
                 if [ $? -eq 0 ]; then
-                    ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
+                    ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies | tee -a /var/log/omsbundle.log
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
-                        echo "$OSS_BUNDLE provider package failed to install and exited with status $TEMP_STATUS"
+                        echo "$OSS_BUNDLE provider package failed to install and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
                         BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
                     fi
                 fi
@@ -1107,17 +1110,17 @@ case "$installMode" in
 
                 ./$i
                 if [ $? -eq 0 ]; then
-                    ./bundles/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
+                    ./bundles/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies | tee -a /var/log/omsbundle.log
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
-                        echo "$BUNDLE package failed to install and exited with status $TEMP_STATUS"
+                        echo "$BUNDLE package failed to install and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
                         BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
                     fi
                 fi
             done
         else
-            echo "The omi or scx package is already installed. Please run the" >&2
-            echo "installer with --upgrade (instead of --install) to continue." >&2
+            echo "The omi or scx package is already installed. Please run the" >&2 | tee -a /var/log/omsbundle.log
+            echo "installer with --upgrade (instead of --install) to continue." >&2 | tee -a /var/log/omsbundle.log
             KIT_STATUS=$USE_UPGRADE
         fi
         ;;
@@ -1125,40 +1128,40 @@ case "$installMode" in
     U)
         # Install OMI
         shouldInstall_omi
-        pkg_upd ${OMI_PKG} omi $?
+        pkg_upd ${OMI_PKG} omi $? | tee -a /var/log/omsbundle.log
         OMI_EXIT_STATUS=$?
 
         # Install SCX
         shouldInstall_scx
-        pkg_upd $SCX_PKG scx $?
+        pkg_upd $SCX_PKG scx $? | tee -a /var/log/omsbundle.log
         SCX_EXIT_STATUS=$?
 
         # Try to re-update if any of OMI or SCX update failed
         if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then
 
-            remove_and_install
+            remove_and_install | tee -a /var/log/omsbundle.log
             TEMP_STATUS=$?
             if [ $TEMP_STATUS -ne 0 ]; then
-                echo "Upgrade failed"
+                echo "Upgrade failed" | tee -a /var/log/omsbundle.log
                 cleanup_and_exit $TEMP_STATUS
             fi
         fi
 
         # Update OMS Agent
         shouldInstall_omsagent
-        pkg_upd $OMS_PKG omsagent $?
+        pkg_upd $OMS_PKG omsagent $? | tee -a /var/log/omsbundle.log
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
             cleanup_and_exit $OMS_INSTALL_FAILED
         fi
 
         # Update DSC
         shouldInstall_omsconfig
-        pkg_upd $DSC_PKG omsconfig $?
+        pkg_upd $DSC_PKG omsconfig $? | tee -a /var/log/omsbundle.log
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$DSC_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            echo "$DSC_PKG package failed to upgrade and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
             cleanup_and_exit $DSC_INSTALL_FAILED
         fi
 
@@ -1168,14 +1171,14 @@ case "$installMode" in
 
             # In case --upgrade is run without -w <id> and -s <key>
             if [ ! -f "$OMS_CONSISTENCY_INVOKER" ]; then
-                echo "*/15 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
+                echo "*/15 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER | tee -a /var/log/omsbundle.log
             fi
-            /opt/omi/bin/service_control restart
+            /opt/omi/bin/service_control restart | tee -a /var/log/omsbundle.log
         fi
 
         # Upgrade bundled providers
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        echo "----- Updating bundled packages -----"
+        echo "----- Updating bundled packages -----" | tee -a /var/log/omsbundle.log
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
@@ -1186,10 +1189,10 @@ case "$installMode" in
 
             ./$i
             if [ $? -eq 0 ]; then
-                ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies
+                ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies | tee -a /var/log/omsbundle.log
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$OSS_BUNDLE provider package failed to upgrade and exited with status $TEMP_STATUS"
+                    echo "$OSS_BUNDLE provider package failed to upgrade and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
                     BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
                 fi
             fi
@@ -1204,10 +1207,10 @@ case "$installMode" in
 
             ./$i
             if [ $? -eq 0 ]; then
-                ./bundles/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
+                ./bundles/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies | tee -a /var/log/omsbundle.log
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$BUNDLE package failed to upgrade and exited with status $TEMP_STATUS"
+                    echo "$BUNDLE package failed to upgrade and exited with status $TEMP_STATUS" | tee -a /var/log/omsbundle.log
                     BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
                 fi
             fi
@@ -1215,7 +1218,7 @@ case "$installMode" in
         ;;
 
     *)
-        echo "$0: Invalid setting of variable \$installMode, exiting" >&2
+        echo "$0: Invalid setting of variable \$installMode, exiting" >&2 | tee -a /var/log/omsbundle.log
         cleanup_and_exit $INTERNAL_ERROR
 esac
 
