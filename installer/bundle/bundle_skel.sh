@@ -62,6 +62,7 @@ USE_UPGRADE=23
 INTERNAL_ERROR=30
 # Package pre-requisites fail
 UNSUPPORTED_OPENSSL=60
+UNSUPPORTED_PACKAGE=51
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
 INSTALL_SED=63
@@ -226,21 +227,18 @@ verifyPrivileges()
 ulinux_detect_openssl_version()
 {
     TMPBINDIR=
-    # the system OpenSSL version is 0.9.8.  Likewise with OPENSSL_SYSTEM_VERSION_100 or OPENSSL_SYSTEM_VERSION_110
+    # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_110
     OPENSSL_SYSTEM_VERSION_FULL=`openssl version | awk '{print $2}'`
-    OPENSSL_SYSTEM_VERSION_098=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^0.9.8'; echo $?`
     OPENSSL_SYSTEM_VERSION_100=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
     OPENSSL_SYSTEM_VERSION_110=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.1.'; echo $?`
-    if [ $OPENSSL_SYSTEM_VERSION_098 = 0 ]; then
-        TMPBINDIR=098
-    elif [ $OPENSSL_SYSTEM_VERSION_100 = 0 ]; then
+    if [ $OPENSSL_SYSTEM_VERSION_100 = 0 ]; then
         TMPBINDIR=100
     elif [ $OPENSSL_SYSTEM_VERSION_110 = 0 ]; then
         TMPBINDIR=110
     else
         echo "Error: This system does not have a supported version of OpenSSL installed."
         echo "This system's OpenSSL version: $OPENSSL_SYSTEM_VERSION_FULL"
-        echo "Supported versions: 0.9.8*, 1.0.*, 1.1.*"
+        echo "Supported versions: 1.0.*, 1.1.*"
         cleanup_and_exit $UNSUPPORTED_OPENSSL
     fi
 }
@@ -254,7 +252,15 @@ ulinux_detect_installer()
     if [ $? -eq 0 ]; then
         INSTALLER=DPKG
     else
+      check_if_program_in_path rpm
+      if [ $? -eq 0 ]; then
         INSTALLER=RPM
+      else
+        #Exit with code 51 if system is not deb or rpm
+        echo "Error: This system does not have supported package manager"
+        echo "Supported Sytems: 'DPKG' & 'RPM'"
+        cleanup_and_exit $UNSUPPORTED_PACKAGE
+      fi
     fi
 }
 
@@ -411,11 +417,11 @@ compare_arch()
     #check if the user is trying to install the correct bundle (x64 vs. x86)
     echo "Checking host architecture ..."
     HOST_ARCH=$(get_arch)
-    
+
     case $OMS_PKG in
-        *"$HOST_ARCH") 
+        *"$HOST_ARCH")
             ;;
-        *)         
+        *)
             echo "Cannot install $OMS_PKG on ${HOST_ARCH} platform"
             cleanup_and_exit $INVALID_PACKAGE_ARCH
             ;;
@@ -423,8 +429,8 @@ compare_arch()
 }
 
 compare_install_type()
-{   
-    # If the bundle has an INSTALL_TYPE, check if the bundle being installed 
+{
+    # If the bundle has an INSTALL_TYPE, check if the bundle being installed
     # matches the installer on the machine (rpm vs.dpkg)
     if [ ! -z "$INSTALL_TYPE" ]; then
         if [ $INSTALLER != $INSTALL_TYPE ]; then
@@ -437,8 +443,8 @@ compare_install_type()
 python_ctypes_installed()
 {
     # Check for Python ctypes library (required for omsconfig)
-    hasCtypes=1    
-	
+    hasCtypes=1
+
     # Attempt to run python with the single import command
     python -c "import ctypes" > /dev/null 2>&1
     [ $? -eq 0 ] && hasCtypes=0
@@ -975,7 +981,7 @@ if [ -n "${checkVersionAndCleanUp}" ]; then
 
     # omsconfig
     versionInstalled=`getInstalledVersion omsconfig`
-    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`    
+    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
     if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No"; fi
     printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
 
