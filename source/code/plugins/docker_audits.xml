@@ -1,5 +1,5 @@
 <data>
-  <audits BaselineId="OMS.Docker.Linux.1" BaseOrigId="1">
+  <audits BaselineId="OMS.Docker.Linux.1" BaseOrigId="1" Dependencies="ServiceStatus:docker|running">
      <audit
       description="Ensure docker version is up-to-date"
       msid="1.3"
