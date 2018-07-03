@@ -284,6 +284,12 @@ module Fluent
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.notify_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
     end # notify_blob_upload_complete
+    
+    def write_status_file(success, message)
+      fn = '/var/opt/microsoft/omsagent/log/ODSIngestionBlob.status'
+      status = '{ "operation": "ODSIngestionBlob", "success": "%s", "message": "%s" }' % [success, message]
+      File.open(fn,'w') { |file| file.write(status) }
+    end
 
     # parse the tag to get the settings and append the message to blob
     # parameters:
@@ -336,16 +342,17 @@ module Fluent
       notify_blob_upload_complete(blob_uri, data_type, custom_data_type, blob_size, dataSize, etag)
       time = Time.now - start
       @log.trace "Success notify the data to BLOB #{time.round(3)}s"
-
+      write_status_file("true","Sending success")
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."
       @log.debug "Error:'#{e}'"
-      
+      write_status_file("false", "Retryable exception")
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
       # it must be generic exception, otherwise, fluentd will stuck.
       raise e.message
     rescue => e
-      OMS::Log.error_once("Unexpecting exception, dropping data. Error:'#{e}'")
+      OMS::Log.error_once("Unexpected exception, dropping data. Error:'#{e}'")
+      write_status_file("false", "Unexpected exception")
     end # handle_record
 
     # This method is called when an event reaches to Fluentd.
