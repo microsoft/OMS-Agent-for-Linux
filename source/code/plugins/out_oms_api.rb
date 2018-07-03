@@ -94,6 +94,12 @@ module Fluent
 
       return 0
     end # post_data
+    
+    def write_status_file(success, message)
+      fn = '/var/opt/microsoft/omsagent/log/ODSIngestionAPI.status'
+      status = '{ "operation": "ODSIngestionAPI", "success": "%s", "message": "%s" }' % [success, message]
+      File.open(fn,'w') { |file| file.write(status) }
+    end
 
     # parse the tag to get the settings and append the message to blob
     # parameters:
@@ -126,6 +132,7 @@ module Fluent
           dataSize = post_data(log_type, time_generated_field_name, records, request_id)
           time = Time.now - start
           @log.trace "Success sending #{dataSize} bytes of data through API #{time.round(3)}s"
+          write_status_file("true", "Sending success")
         else
           raise "The log type '#{log_type}' is not valid. it should match #{@logtype_regex}"
         end
@@ -137,12 +144,14 @@ module Fluent
       OMS::Log.error_once("Error for Request-ID: #{request_id} Error: #{e}")
       @log.debug "Error:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
+      write_status_file("false", "Retryable exception")
       raise e.message, "Request-ID: #{request_id}"
     rescue => e
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously
       # try and fail to resend it. (Infinite failure loop)
       OMS::Log.error_once("Unexpected exception, dropping data. Error:'#{e}'")
+      write_status_file("false", "Unexpected exception")
     end # handle_record
 
     # This method is called when an event reaches to Fluentd.
