@@ -31,8 +31,8 @@ usage()
     echo "only on Linux, and only for universal installations. As such, package names"
     echo "are determined via directory lookups."
     echo
-    echo "Note that the \"directory\" parameter must contain \"098\" and \"100\" and \"110\""
-    echo "directories (for SSL 0.9.8 and SSL 1.0.0 and SSL 1.1.0), so that we have .rpm and .deb"
+    echo "Note that the \"directory\" parameter must contain \"100\" and \"110\""
+    echo "directories (for SSL 1.0.0 and SSL 1.1.0), so that we have .rpm and .deb"
     echo "files for each of the SSL-sensitive files."
     exit 1
 }
@@ -90,7 +90,7 @@ fi
 INTERMEDIATE_DIR=`(cd $INTERMEDIATE; pwd -P)`
 
 # Switch to one of the output directories to avoid directory prefixes
-cd $INTERMEDIATE/098
+cd $INTERMEDIATE/100
 
 OMS_PACKAGE=`ls omsagent-*.rpm | sed 's/.rpm$//' | tail -1`
 DSC_PACKAGE=`ls omsconfig-*.rpm | sed 's/.rpm$//' | tail -1`
