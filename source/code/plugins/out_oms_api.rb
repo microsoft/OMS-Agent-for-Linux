@@ -98,7 +98,11 @@ module Fluent
     def write_status_file(success, message)
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestionAPI.status'
       status = '{ "operation": "ODSIngestionAPI", "success": "%s", "message": "%s" }' % [success, message]
-      File.open(fn,'w') { |file| file.write(status) }
+      begin
+        File.open(fn,'w') { |file| file.write(status) }
+      rescue => e
+        @log.debug "Error:'#{e}'"
+      end
     end
 
     # parse the tag to get the settings and append the message to blob
