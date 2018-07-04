@@ -62,12 +62,12 @@ USE_UPGRADE=23
 INTERNAL_ERROR=30
 # Package pre-requisites fail
 UNSUPPORTED_OPENSSL=60
-UNSUPPORTED_PACKAGE=51
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
 INSTALL_SED=63
 INSTALL_CURL=64
 INSTALL_GPG=65
+UNSUPPORTED_PKG_INSTALLER=66
 
 usage()
 {
@@ -259,7 +259,7 @@ ulinux_detect_installer()
         #Exit with code 51 if system is not deb or rpm
         echo "Error: This system does not have supported package manager"
         echo "Supported Sytems: 'DPKG' & 'RPM'"
-        cleanup_and_exit $UNSUPPORTED_PACKAGE
+        cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
       fi
     fi
 }
