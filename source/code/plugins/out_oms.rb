@@ -42,7 +42,11 @@ module Fluent
     def write_status_file(success, message)
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestion.status'
       status = '{ "operation": "ODSIngestion", "success": "%s", "message": "%s" }' % [success, message]
-      File.open(fn,'w') { |file| file.write(status) }
+      begin
+        File.open(fn,'w') { |file| file.write(status) }
+      rescue => e
+        @log.debug "Error:'#{e}'"
+      end
     end
 
     def handle_record(key, record)
