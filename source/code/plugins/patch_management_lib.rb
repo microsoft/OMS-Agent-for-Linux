@@ -30,7 +30,7 @@ class LinuxUpdates
     end
 
     def getHostOSDetails()
-        if(@@os_details.nil?)    
+        if(@@os_details.nil?)
            if File.exist?(SCX_RELEASE_FILE) # If file exists
             File.open(SCX_RELEASE_FILE, "r") do |f| # Open file
 			@@os_details={}
@@ -51,7 +51,7 @@ class LinuxUpdates
         return @@os_details
     end
 
-    # This temporary fix is for version management for cache lookup.                        
+    # This temporary fix is for version management for cache lookup.
     def getOSShortName(os_short_name = nil, os_version=nil)
         version = ""
         hostOSDetailsMap = getHostOSDetails()
@@ -71,8 +71,8 @@ class LinuxUpdates
             @os_major_version = os_version[MAJOR_MINOR_VERSION_REGEX, 1] unless os_version.nil?
             @os_minor_version = os_version[MAJOR_MINOR_VERSION_REGEX, 2] unless os_version.nil?
             @default_version = os_version
-        end 
-        
+        end
+
         case osName
         when "Ubuntu"
             if @os_major_version == "12" || @os_major_version == "13"
@@ -86,7 +86,7 @@ class LinuxUpdates
             end
         when "CentOS"
             if @os_major_version == "5"
-                version = "5.0" 
+                version = "5.0"
             elsif  @os_major_version == "6"
                 version = "6.0"
             elsif  @os_major_version == "7"
@@ -96,7 +96,7 @@ class LinuxUpdates
             end
         when "RHEL"
             if @os_major_version == "5"
-                version = "5.0" 
+                version = "5.0"
             elsif  @os_major_version == "6"
                 version = "6.0"
             elsif  @os_major_version == "7"
@@ -106,7 +106,7 @@ class LinuxUpdates
             end
         when "SUSE"
             if @os_major_version == "11"
-                version = "11.0" 
+                version = "11.0"
             elsif  @os_major_version == "12"
                 version = "12.0"
             else
@@ -146,7 +146,7 @@ class LinuxUpdates
     def availableUpdatesXMLtoHash(availableUpdatesXML, os_short_name)
         availableUpdatesHash = instanceXMLtoHash(availableUpdatesXML)
         ret = {}
-        ret["CollectionName"] = availableUpdatesHash["Name"] + @@delimiter + 
+        ret["CollectionName"] = availableUpdatesHash["Name"] + @@delimiter +
                                 availableUpdatesHash["Version"] + @@delimiter + os_short_name
         ret["PackageName"] = availableUpdatesHash["Name"]
         ret["Architecture"] = availableUpdatesHash.key?("Architecture") ? availableUpdatesHash["Architecture"] : nil
@@ -160,28 +160,28 @@ class LinuxUpdates
         ret
     end
 
-    def availableHeartbeatItem()        
+    def availableHeartbeatItem()
         ret = {}
-        ret["CollectionName"] = "HeartbeatData" + @@delimiter + 
+        ret["CollectionName"] = "HeartbeatData" + @@delimiter +
                                 "0.0.UpdateManagement.0"+ @@delimiter + "Heartbeat"
         ret["PackageName"] = "UpdateManagementHeartbeat"
         ret["Architecture"] = "all"
         ret["PackageVersion"] = nil
         ret["Repository"] = nil
         ret["Installed"] = false
-        ret["UpdateState"] = "NotNeeded"        
+        ret["UpdateState"] = "NotNeeded"
         ret
     end
 
     def installedPackageXMLtoHash(packageXML, os_short_name)
         packageHash = instanceXMLtoHash(packageXML)
         ret = {}
-        
-        ret["CollectionName"] = packageHash["Name"] + @@delimiter + 
+
+        ret["CollectionName"] = packageHash["Name"] + @@delimiter +
                                 packageHash["Version"] + @@delimiter + os_short_name
         ret["PackageName"] = packageHash["Name"]
         ret["Architecture"] = packageHash.key?("Architecture") ? packageHash["Architecture"] : nil
-        ret["PackageVersion"] = packageHash["Version"]  
+        ret["PackageVersion"] = packageHash["Version"]
         ret["Size"] = packageHash["Size"]
         ret["Repository"] = packageHash.key?("Repository") ? packageHash["Repository"] : nil
         ret["Installed"] = true
@@ -213,18 +213,18 @@ class LinuxUpdates
     end
 
     def transform_and_wrap(
-        inventoryXMLstr, 
-        host, 
-        time, 
+        inventoryXMLstr,
+        host,
+        time,
         force_send_run_interval = 86400,
-        osNameParam = nil, 
+        osNameParam = nil,
         osFullNameParam = nil,
-        osVersionParam = nil, 
+        osVersionParam = nil,
         osShortNameParam = nil)
 
         agentId = getAgentId()
         hostOSDetailsMap = getHostOSDetails()
-       
+
         # Taking the parameters - Helps in mocking, in the case of tests.
         osName =  (osNameParam == nil) ? hostOSDetailsMap["OSName"] : osNameParam
         osVersion = (osVersionParam == nil) ? hostOSDetailsMap["OSVersion"] : osVersionParam
@@ -239,7 +239,7 @@ class LinuxUpdates
         inventoryXML = strToXML(inventoryXMLstr)
         instancesXML = getInstancesXML(inventoryXML)
 
-        # Split installedPackages from services 
+        # Split installedPackages from services
         installedPackagesXML = instancesXML.select { |instanceXML| isInstalledPackageInstanceXML(instanceXML) }
         availableUpdatesXML = instancesXML.select { |instanceXML| isAvailableUpdateInstanceXML(instanceXML) }
 
@@ -250,16 +250,16 @@ class LinuxUpdates
         # Remove duplicate services because duplicate CollectionNames are not supported. TODO implement ordinal solution
         installedPackages = removeDuplicateCollectionNames(installedPackages)
         availableUpdates = removeDuplicateCollectionNames(availableUpdates)
-        #Today the agent doesn't send any data if the machine is not missing any available updates. 
-        #This leads to uncertainty whether the machine is really up to date or it is not sending data eventhough updates are missing. 
-        #with this change,the agent will send heartbeat item whether the machine is missing updates or not.     
+        #Today the agent doesn't send any data if the machine is not missing any available updates.
+        #This leads to uncertainty whether the machine is really up to date or it is not sending data eventhough updates are missing.
+        #with this change,the agent will send heartbeat item whether the machine is missing updates or not.
         heartbeatItem = availableHeartbeatItem()
         collections = [heartbeatItem]
-        
+
         if (installedPackages.size > 0)
             collections += installedPackages
         end
-        
+
         if  (availableUpdates.size > 0)
             collections += availableUpdates
         end
@@ -278,9 +278,9 @@ class LinuxUpdates
                     "OSFullName" => osFullName,
                     "Collections"=> collections
                 }]}
-          @log.debug "LinuxUpdates : installedPackages x #{installedPackages.size}, 
+          @log.debug "LinuxUpdates : installedPackages x #{installedPackages.size},
                                         availableUpdates x #{availableUpdates.size}"
           return wrapper
     end
-	
+
 end

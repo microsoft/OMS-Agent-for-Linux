@@ -14,7 +14,7 @@ module HeartbeatModule
   class Heartbeat
     require 'json'
     require_relative 'oms_common'
-  
+
     def initialize(error_handler)
       @error_handler = error_handler
     end

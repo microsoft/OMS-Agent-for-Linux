@@ -11,7 +11,7 @@ class StrongTypedClass
       end
       @#{name}=value
     end")
-    
+
     # getter
     self.class_eval("def #{name};@#{name};end")
   end
@@ -45,15 +45,15 @@ class AgentTopologyRequestOperatingSystem < StrongTypedClass
   strongtyped_accessor :K8SVersion, String
   strongtyped_accessor :Telemetry, AgentTopologyRequestOperatingSystemTelemetry
 end
- 
+
 class AgentTopologyRequest < StrongTypedClass
-   
+
   strongtyped_accessor :FullyQualfiedDomainName, String
   strongtyped_accessor :EntityTypeId, String
   strongtyped_accessor :AuthenticationCertificate, String
-  strongtyped_accessor :OperatingSystem, AgentTopologyRequestOperatingSystem    
+  strongtyped_accessor :OperatingSystem, AgentTopologyRequestOperatingSystem
 
-  
+
   def get_telemetry_data(os_info, conf_omsadmin, pid_file)
     os = AgentTopologyRequestOperatingSystem.new
     telemetry = AgentTopologyRequestOperatingSystemTelemetry.new
@@ -72,7 +72,7 @@ class AgentTopologyRequest < StrongTypedClass
         os.IsAKSEnvironment = "True"
       end
       k8sversionfile = "/var/opt/microsoft/docker-cimprov/state/kubeletversion"
-      if File.exist?(k8sversionfile) && File.readable?(k8sversionfile) 
+      if File.exist?(k8sversionfile) && File.readable?(k8sversionfile)
         os.K8SVersion = File.read(k8sversionfile)
       end
     else
@@ -95,7 +95,7 @@ class AgentTopologyRequest < StrongTypedClass
         telemetry.PercentUsedMemory = line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
       end
     end
-    
+
        # Get OS info from scx-release
     File.open(os_info).each_line do |line|
       os.Name = line.sub("OSName=","").strip if line =~ /OSName/
@@ -120,9 +120,9 @@ def obj_to_hash(obj)
   obj.instance_variables.each { |var|
     val = obj.instance_variable_get(var)
     next if val.nil?
-    if val.is_a?(AgentTopologyRequestOperatingSystemTelemetry) 
-      # Put properties of Telemetry class into :attributes["Telemetry"] 
-      # so that Gyoku can convert these to attributes for <Telemetry></Telemetry> 
+    if val.is_a?(AgentTopologyRequestOperatingSystemTelemetry)
+      # Put properties of Telemetry class into :attributes["Telemetry"]
+      # so that Gyoku can convert these to attributes for <Telemetry></Telemetry>
       telemetry_hash = {"Telemetry" => "", :attributes! => {"Telemetry" => obj_to_hash(val)} }
       hash.update(telemetry_hash)
     elsif val.is_a? StrongTypedClass
@@ -185,14 +185,14 @@ def xml_contains_telemetry(xmlstring)
 
   return false
 end
-              
+
 if __FILE__ == $0
   options = {}
   OptionParser.new do |opts|
     opts.on("-t", "--[no-]telemetry") do |t|
-      options[:telemetry] = t 
+      options[:telemetry] = t
     end
-  end.parse!  
+  end.parse!
 
   topology_request_xml = AgentTopologyRequestHandler.new.handle_request(ARGV[1], ARGV[2],
       ARGV[3], ARGV[4], ARGV[5], options[:telemetry])

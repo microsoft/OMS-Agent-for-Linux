@@ -4,7 +4,7 @@ require_relative ENV['BASE_DIR'] + '/source/code/plugins/out_oms_api'
 require_relative 'omstestlib'
 require_relative 'out_oms_systestbase'
 
-class OutOMSApiTest < OutOMSSystemTestBase 
+class OutOMSApiTest < OutOMSSystemTestBase
 
   def test_send_data
     # Onboard to create cert and key
@@ -24,8 +24,8 @@ class OutOMSApiTest < OutOMSSystemTestBase
     records = [
     {
       'id'=> 1,
-      'ts'=> "#{Time.now.utc}", 
-      'msg'=> 'Message 1' 
+      'ts'=> "#{Time.now.utc}",
+      'msg'=> 'Message 1'
     },
     {
       'id'=> 2,

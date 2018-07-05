@@ -32,8 +32,8 @@ class MaintenanceSystemTestBase < Test::Unit::TestCase
 
   def check_test_keys
     keys = [TEST_WORKSPACE_ID, TEST_SHARED_KEY, TEST_WORKSPACE_ID_2, TEST_SHARED_KEY_2]
-    keys.each_with_index {|key, index| 
-      assert(key != nil, "Keys[#{index}] should be set by the environment for this test to run.") 
+    keys.each_with_index {|key, index|
+      assert(key != nil, "Keys[#{index}] should be set by the environment for this test to run.")
       assert(key.empty? == false, "Keys[#{index}] should not be empty.")
     }
   end

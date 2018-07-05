@@ -33,7 +33,7 @@ module Fluent
     #The interval time between periodic program runs.
     config_param :run_interval, :time, default: nil
 
-    #Start to read the log from the head of file.  
+    #Start to read the log from the head of file.
     config_param :read_from_head, :bool, default: false
 
     BASE_DIR = File.dirname(File.expand_path('..', __FILE__))
@@ -45,19 +45,19 @@ module Fluent
       unless @path
         raise ConfigError, "'path' parameter is not set to a 'tail' source."
       end
-      
+
       unless @pos_file
         raise ConfigError, "'pos_file' is required to keep track of file"
-      end 
+      end
 
-      unless @tag 
+      unless @tag
         raise ConfigError, "'tag' is required on sudo tail"
       end
 
       unless @run_interval
-        raise ConfigError, "'run_interval' is required for periodic tailing"      
+        raise ConfigError, "'run_interval' is required for periodic tailing"
       end
- 
+
       @parser = Plugin.new_parser(conf['format'])
       @parser.configure(conf)
     end
@@ -68,11 +68,11 @@ module Fluent
     end
 
     def shutdown
-      @finished = true 
+      @finished = true
       @thread.join
     end
 
-    def receive_data(line) 
+    def receive_data(line)
       es = MultiEventStream.new
       begin
         line.chomp!  # remove \n
@@ -98,7 +98,7 @@ module Fluent
       $log.error "#{line}" if line.start_with?('ERROR')
       $log.info "#{line}" if line.start_with?('INFO')
     end
- 
+
     def readable_path(path)
       if system("sudo test -r #{path}")
         OMS::Log.info_once("Following tail of #{path}")
@@ -149,7 +149,7 @@ module Fluent
             while line = errio.gets
               receive_log(line)
             end
-            
+
             wait_thread.value #wait until child process terminates
           }
         rescue

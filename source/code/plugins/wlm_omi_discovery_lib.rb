@@ -3,7 +3,7 @@ module WLM
     require 'json'
     require_relative 'oms_common'
     require_relative 'omslog'
-    
+
     def initialize(omi_mapping_path, omi_interface=nil)
       begin
         file = File.read(omi_mapping_path)
@@ -28,7 +28,7 @@ module WLM
       @omi_interface.connect
       @conf_error = false
     end
-    
+
     def enumerate(specific_mapping)
       return nil if @conf_error
 
@@ -40,7 +40,7 @@ module WLM
 
       # Filter based on instance names
       begin
-        instances.select!{ |instance| 
+        instances.select!{ |instance|
           /#{specific_mapping["InstanceRegex"]}/.match(instance[specific_mapping["InstanceProperty"]])
         }
       rescue => e
@@ -49,7 +49,7 @@ module WLM
       end # begin
       return instances
     end # method enumerate
-    
+
     def get_cim_data(instances,specific_mapping)
       cim_data = []
       instances.each do |instance|
@@ -57,7 +57,7 @@ module WLM
       end # each
       return cim_data
     end # method get_cim_data
-    
+
     def get_cim_values(instance,specific_mapping)
       cim_values = []
       cim_properties = specific_mapping["CimProperties"]
@@ -70,7 +70,7 @@ module WLM
       end # each
       return cim_values
     end # method get_cim_values
-    
+
     def get_specific_discovery(specific_mapping)
       discovery_data = {}
       discovery_data["discovery_id"] = specific_mapping["DiscoveryID"]

@@ -3,31 +3,31 @@ module SCOM
   class Configuration
     require 'openssl'
     require 'uri'
-        
+
     require_relative 'oms_configuration'
     require_relative 'omslog'
     require_relative 'oms_common'
-        
+
     @@configuration_loaded = false
     @@scom_conf_path = '/etc/opt/microsoft/omsagent/scom/conf/omsadmin.conf'
     @@cert_path = '/etc/opt/microsoft/omsagent/scom/certs/scom-cert.pem'
-    @@key_path =  '/etc/opt/microsoft/omsagent/scom/certs/scom-key.pem'     
-  
+    @@key_path =  '/etc/opt/microsoft/omsagent/scom/certs/scom-key.pem'
+
     @@cert = nil
     @@key = nil
-        
+
     @@scom_endpoint = nil
     @@scom_event_endpoint = nil
     @@scom_perf_endpoint = nil
-    
+
     @@monitoring_id = nil
     @@fqdn = nil
-    @@enable_server_auth = false   
-      
+    @@enable_server_auth = false
+
     def self.load_scom_configuration(enable_server_auth)
       return true if @@configuration_loaded
-      return false if !OMS::Configuration.test_onboard_file(@@scom_conf_path) or !OMS::Configuration.test_onboard_file(@@cert_path) or !OMS::Configuration.test_onboard_file(@@key_path) 
-            
+      return false if !OMS::Configuration.test_onboard_file(@@scom_conf_path) or !OMS::Configuration.test_onboard_file(@@cert_path) or !OMS::Configuration.test_onboard_file(@@key_path)
+
       begin
         scom_endpoint_url = get_value_from_conf("SCOM_ENDPOINT")
         if(!scom_endpoint_url)
@@ -42,7 +42,7 @@ module SCOM
         OMS::Log.error_once("Error parsing endpoint url. #{e}")
         return false
       end # begin
-      
+
       begin
         @@monitoring_id = get_value_from_conf("MONITORING_ID")
         if(!monitoring_id)
@@ -52,7 +52,7 @@ module SCOM
         OMS::Log.error_once("Error parsing monitoring id. #{e}")
         return false
       end # begin
-             
+
       begin
         raw = File.read @@cert_path
         @@cert = OpenSSL::X509::Certificate.new raw
@@ -62,18 +62,18 @@ module SCOM
         OMS::Log.error_once("Failed to read certificate or key from #{@@cert_path} #{@@key_path}")
         return false
       end # begin
-       
+
       @@fqdn = OMS::Common.get_fully_qualified_domain_name
       if(!@@fqdn)
         return false
       end # if
-      
+
       @@enable_server_auth = enable_server_auth
-       
+
       @@configuration_loaded = true
       return true
     end # method load_configuration
-    
+
     def self.get_value_from_conf(key)
       lines = IO.readlines(@@scom_conf_path).select{ |line| line.start_with?(key)}
       if lines.size == 0
@@ -104,7 +104,7 @@ module SCOM
     def self.scom_perf_endpoint
       @@scom_perf_endpoint
     end
-    
+
     def self.fqdn
       @@fqdn
     end

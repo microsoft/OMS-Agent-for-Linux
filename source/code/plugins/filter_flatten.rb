@@ -28,7 +28,7 @@ module Fluent
     def filter_stream(tag, es)
       mes = MultiEventStream.new
 
-      es.each do |time, record| 
+      es.each do |time, record|
         @flattenjson_lib.select_split_flatten(time, record, @select, mes)
       end
 

@@ -23,7 +23,7 @@ class OMIInput < Input
     def enumerate
         time = Time.now.to_f
         record_txt = @omi_interface.enumerate(@items)
-        
+
         begin
             record = JSON.parse record_txt
         rescue => e

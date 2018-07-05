@@ -12,7 +12,7 @@ module Fluent
     end
 
     config_param :interval, :time, :default => nil
-    config_param :tag, :string, :default => "oms.heartbeat"  
+    config_param :tag, :string, :default => "oms.heartbeat"
 
     def configure (conf)
       super
@@ -43,7 +43,7 @@ module Fluent
 
     def enumerate
       time = Time.now.to_f
-    
+
       wrapper = @heartbeat_lib.enumerate(time)
       router.emit(@tag, time, wrapper) if wrapper
       @log.info "Sending OMS Heartbeat succeeded at #{OMS::Common.format_time(time)}"

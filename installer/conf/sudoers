@@ -1,6 +1,6 @@
 # Begin sudo configuration for omsagent
 Defaults:omsagent !requiretty
-Defaults:omsagent lecture = never 
+Defaults:omsagent lecture = never
 
 #update and restart syslog
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSRsyslog.post.sh

@@ -1,14 +1,14 @@
 #! /bin/bash
 
-# This script will generate a ruby.data file based on SOURCE_DIR 
+# This script will generate a ruby.data file based on SOURCE_DIR
 # Ruby content. Ruby.data file is consumed
-# by InstallBuilder, to enject Ruby to a native RPM 
+# by InstallBuilder, to enject Ruby to a native RPM
 # or DEB installation package during the build/make process.
 #
 # It is necessary to regenerate this file if new packages have been
 # installed into Ruby, and those new packages should be deployed
 # on customer systems during OMS installation.
-# The output of this script that contains new ruby.data will be 
+# The output of this script that contains new ruby.data will be
 # serialized in OUTPUT_RESULTS.
 
 # For running this script, you must be running on a 64-bit system!

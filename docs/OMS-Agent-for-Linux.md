@@ -8,7 +8,7 @@
 	- [Configuring the agent for use with an HTTP proxy server](#configuring-the-agent-for-use-with-an-http-proxy-server)
 - [Onboarding with Operations Management Suite](#onboarding-with-operations-management-suite)
   - [Onboarding using the command line](#onboarding-using-the-command-line)
-  - [Onboarding using a file](#onboarding-using-a-file)	
+  - [Onboarding using a file](#onboarding-using-a-file)
 - [Viewing Linux Data](#viewing-linux-data)
 - [Configuring Data Collection](#configuring-data-collection)
 	- [Configuring Syslog collection from the OMS portal](#configuring-syslog-collection-from-the-oms-portal)
@@ -24,7 +24,7 @@
 - [Known Limitations](#known-limitations)
 - [Appendices](#appendices)
 	- [Appendix: Available Performance Metrics](#appendix-available-performance-metrics)
-	- [Appendix B: Database Permissions Required for MySQL Performance Counters](#appendix-b-database-permissions-required-for-mysql-performance-counters)	
+	- [Appendix B: Database Permissions Required for MySQL Performance Counters](#appendix-b-database-permissions-required-for-mysql-performance-counters)
 	- [Appendix C: Managing MySQL monitoring credentials in the authentication file](#appendix-c-managing-mysql-monitoring-credentials-in-the-authentication-file)
 
 # Getting Started
@@ -52,11 +52,11 @@ After installing the OMS agent for Linux packages, the following additional syst
 ## Package Requirements
  **Required package** 	| **Description** 	| **Minimum version**
 --------------------- | --------------------- | -------------------
-Glibc |	GNU C Library	| 2.5-12 
+Glibc |	GNU C Library	| 2.5-12
 Openssl	| OpenSSL Libraries | 0.9.8e or 1.0
 Curl | cURL web client | 7.15.5
-Python-ctypes | | 
-PAM | Pluggable Authentication Modules	 | 
+Python-ctypes | |
+PAM | Pluggable Authentication Modules	 |
 
 **Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog.
 
@@ -66,7 +66,7 @@ Upgrade from prior versions (>1.0.0-47) is supported in this release. Performing
 
 
 ## Steps to install the OMS Agent for Linux
-The OMS agent for Linux is provided in a self-extracting and installable shell script bundle. This bundle contains Debian and RPM packages for each of the agent components and can be installed directly or extracted to retrieve the individual packages. One bundle is provided for x64 architectures and one for x86 architectures. 
+The OMS agent for Linux is provided in a self-extracting and installable shell script bundle. This bundle contains Debian and RPM packages for each of the agent components and can be installed directly or extracted to retrieve the individual packages. One bundle is provided for x64 architectures and one for x86 architectures.
 
 **Installing the agent**
 
@@ -112,7 +112,7 @@ Options:
   --version              Version of this shell bundle.
   --version-check        Check versions already installed to see if upgradable.
   --debug                use shell debug mode.
-  
+
   -w id, --id id         Use workspace ID <id> for automatic onboarding.
   -s key, --shared key   Use <key> as the shared key for automatic onboarding.
   -d dmn, --domain dmn   Use <dmn> as the OMS domain for onboarding. Optional.
@@ -126,7 +126,7 @@ Options:
 ```
 
 ## Configuring the agent for use with an HTTP proxy server
-Communication between the agent and OMS services can use an HTTP or HTTPS proxy server. Both anonymous and basic authentication (username/password) proxies are supported. 
+Communication between the agent and OMS services can use an HTTP or HTTPS proxy server. Both anonymous and basic authentication (username/password) proxies are supported.
 
 **Proxy Configuration**
 The proxy configuration value has the following syntax:
@@ -143,13 +143,13 @@ port|Optional port number for the proxy server
 For example:
 http://user01:password@proxy01.contoso.com:8080
 
-*Note: Although you do not have any user/password set for the proxy, you will still need to add a psuedo user/password. This can be any username or password.    
+*Note: Although you do not have any user/password set for the proxy, you will still need to add a psuedo user/password. This can be any username or password.
 (This will be enhanced in future so that these psuedo user/password will not be necessary)*
 
-OMS agent only creates secure connection over http. Even if you specify the protocol as http, please note that http requests are created using SSL/TLS secure connection so the proxy must support SSL/TLS. The proxy server can be specified during installation or directly in a file (at any point). 
+OMS agent only creates secure connection over http. Even if you specify the protocol as http, please note that http requests are created using SSL/TLS secure connection so the proxy must support SSL/TLS. The proxy server can be specified during installation or directly in a file (at any point).
 
 **Specify proxy configuration during installation:**
-The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use. 
+The `-p` or `--proxy` argument to the omsagent installation bundle specifies the proxy configuration to use.
 
 ```
 sudo sh ./omsagent-*.universal.x64.sh --upgrade -p http://<proxy user>:<proxy password>@<proxy address>:<proxy port> -w <workspace id> -s <shared key>
@@ -247,12 +247,12 @@ From within the Operations Management Suite portal, access the Log Search tile. 
 ![](pictures/ZabbixSearchView.png?raw=true)
 
 # Configuring Data Collection
-Data to collect (e.g. syslog events and performance metrics) can be defined centrally in the Operations Management Suite portal, or on the agents directly.  Selections that you define in the portal for data collection will be applied to the agents within 5 minutes. 
+Data to collect (e.g. syslog events and performance metrics) can be defined centrally in the Operations Management Suite portal, or on the agents directly.  Selections that you define in the portal for data collection will be applied to the agents within 5 minutes.
 
 ## Configuring Syslog collection from the OMS portal
 * Log into the Operations Management Suite **Portal**
 * From the **Overview** dashboard, select **Settings**
-* From the Settings page, click on the **Data** link 
+* From the Settings page, click on the **Data** link
 * Select **Syslogs** from the left-hand settings list
 * Add or remove *facilities* to collect. For each facility, you can select relevant *severities* to collect
 
@@ -261,11 +261,11 @@ Data to collect (e.g. syslog events and performance metrics) can be defined cent
 ## Configuring Linux Performance Counter collection from the OMS portal
 * Log into the Operations Management Suite **Portal**
 * From the **Overview** dashboard, select **Settings**
-* From the Settings page, click on the **Data**  link 
+* From the Settings page, click on the **Data**  link
 * Select **Linux performance counters** from the left-hand settings list
-* Add or remove performance counters to collect. A complete list of available performance counters is available in the Appendix of this document. 
+* Add or remove performance counters to collect. A complete list of available performance counters is available in the Appendix of this document.
  * You can define a collection interval for each *Object* (i.e. category of performance counters).
- * Optionally, you can filter all performance counters for an *Object to a subset of instances. This is done by providing a Regular Expression value for the **InstanceName** input. For example: 
+ * Optionally, you can filter all performance counters for an *Object to a subset of instances. This is done by providing a Regular Expression value for the **InstanceName** input. For example:
    * \* - will match all instances
     * **(/|/var)** – will match Logical Disk instances named: `/` or `/var`
     * **_Total** – will match Processor instances named _Total
@@ -286,7 +286,7 @@ sudo /opt/omi/bin/service_control restart
 ```
 Alternatively, you can specify the required MySQL credentials in a file, by creating the file: `/var/opt/microsoft/mysql-cimprov/auth/omsagent/mysql-auth`. For more information on managing MySQL credentials for monitoring through the mysql-auth file, see **Appendix C** of this document.
 
-Reference the **Appendix B** of this document for details on object permissions required by the MySQL user to collect MySQL Server performance data. 
+Reference the **Appendix B** of this document for details on object permissions required by the MySQL user to collect MySQL Server performance data.
 
 ### Enabling Apache HTTP Server Performance Counters
 If Apache HTTP Server is detected on the computer when the omsagent bundle is installed, a performance monitoring provider for Apache HTTP Server will be automatically installed. This provider relies on an Apache “module” that must be loaded into the Apache HTTP Server in order to access performance data. The module can be loaded with the following command:
@@ -300,17 +300,17 @@ sudo /opt/microsoft/apache-cimprov/bin/apache_config.sh -u
 ```
 
 ## Configuring Collected Data on the Linux Computer
-Syslog events and performance counters to collect can be specified in configuration files on the Linux computers. *If you opt to configure data collection through editing of the agent configuration files, you should disable the centralized configuration or add custom configurations to the `omsagent.d/` directory.*  Instructions are provided below to configure data collection in the agent’s configuration files as well as to disable central configuration for all OMS agents for Linux, or individual computers. 
+Syslog events and performance counters to collect can be specified in configuration files on the Linux computers. *If you opt to configure data collection through editing of the agent configuration files, you should disable the centralized configuration or add custom configurations to the `omsagent.d/` directory.*  Instructions are provided below to configure data collection in the agent’s configuration files as well as to disable central configuration for all OMS agents for Linux, or individual computers.
 
 ### omsagent.d
-The directory `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d` is an *include* path for omsagent configuration files. Any `*.conf` files in this directory will be included in the configuration for omsagent. The files must be readable by the omsagent user, and will not be modified by centralized configuration options. This allows specific customizations to be added on the Linux machine, while still using centralized configuration. 
+The directory `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d` is an *include* path for omsagent configuration files. Any `*.conf` files in this directory will be included in the configuration for omsagent. The files must be readable by the omsagent user, and will not be modified by centralized configuration options. This allows specific customizations to be added on the Linux machine, while still using centralized configuration.
 
 ### Disabling central configuration
 #### Disabling central configuration for all Linux computers
 In order to disable central configuration for all Linux computers ensure that the check marks in Linux Performance Counters and Syslog are unchecked under the data section in settings.
 
 #### Disabling central configuration for an individual Linux computer
-The centralized configuration of data collection can be disabled for an individual Linux computer with the OMS_MetaConfigHelper.py script.  This can be useful if a subset of computers should have a specialized configuration. 
+The centralized configuration of data collection can be disabled for an individual Linux computer with the OMS_MetaConfigHelper.py script.  This can be useful if a subset of computers should have a specialized configuration.
 
 To disable centralized configuration:
 ```
@@ -327,7 +327,7 @@ Syslog events are sent from the syslog daemon (e.g. rsyslog or syslog-ng) to a l
 •	Rsyslog: `/etc/rsyslog.d/95-omsagent.conf`
 •	Syslog-ng: `/etc/syslog-ng/syslog-ng.conf`
 *Note: if you edit the syslog configuration, the syslog daemon must be restarted for the changes to take effect.*
- 
+
 Here is an example of syslog configuration for the OMS agent for Linux:
 
 #### Rsyslog
@@ -359,12 +359,12 @@ log { source(src); filter(f_warning_oms); destination(warning_oms); };
 ```
 
 ### Enabling high volume syslog event collection
-By default, the OMS Agent for Linux receives events from the syslog daemon over UDP. In cases where a Linux machine is expected to collect a high volume of syslog events, such as when a Linux agent is receiving events from other devices, the configuration should be modified to use TCP transport between the syslog daemon and OMS agent. 
- 
+By default, the OMS Agent for Linux receives events from the syslog daemon over UDP. In cases where a Linux machine is expected to collect a high volume of syslog events, such as when a Linux agent is receiving events from other devices, the configuration should be modified to use TCP transport between the syslog daemon and OMS agent.
+
 **To switch from UDP to TCP for syslog:**
 *	Disable centralized configuration:
 	`sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable`
-*	Edit `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/syslog.conf`.  Locate the `<source>` element with: `type syslog`. Set the protocol_type from `udp` to `tcp`. 
+*	Edit `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/syslog.conf`.  Locate the `<source>` element with: `type syslog`. Set the protocol_type from `udp` to `tcp`.
 
 	```
 	<source>
@@ -377,8 +377,8 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 	</source>
 	```
 
-	 
-*	Modify the /etc/rsyslog.d/95-omsagent.conf file and replace any instances of: `@127.0.0.1:25224` with `@@127.0.0.1:25224`. For more information on controlling which syslog events are collected, reference the **Syslog Events** section above. 
+
+*	Modify the /etc/rsyslog.d/95-omsagent.conf file and replace any instances of: `@127.0.0.1:25224` with `@@127.0.0.1:25224`. For more information on controlling which syslog events are collected, reference the **Syslog Events** section above.
 *	Restart the omsagent and syslog daemons:
 
 	```
@@ -386,7 +386,7 @@ By default, the OMS Agent for Linux receives events from the syslog daemon over 
 	sudo service rsyslog restart
 	```
 *	Confirm that no errors are reported in the omsagent log:
-	
+
 	```
 	tail /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log
 	```
@@ -423,7 +423,7 @@ Make sure there is a syslog collector available by running the following command
 ```
 **Checking port availability using netstat**
 ```
-	PORT=<port you want to use>	
+	PORT=<port you want to use>
 	[ -z "`netstat -an | grep $PORT`" ] && echo "$PORT port is available" || echo "$PORT port is NOT available"
 ```
 **Customizing syslog log format using FluentD's format regular expression parameter if syslog data shows up truncated in OMS portal**
@@ -438,7 +438,7 @@ Performance metrics to collect are controlled by the configuration in `/etc/opt/
 Each Object (or category) of performance metrics to collect should be defined in the configuration file as a single `<source>` element. The syntax follows the pattern:
 ```
 <source>
-  type oms_omi  
+  type oms_omi
   object_name "Processor"
   instance_regex ".*"
   counter_name_regex ".*"
@@ -449,7 +449,7 @@ Each Object (or category) of performance metrics to collect should be defined in
 
 The configurable parameters of this element are:
 * **Object_name**: the object name for the collection. Reference the objects and counters listed in the Appendix of this document
-* **Instance_regex**: a *regular expression* defining which instances to collect. The value: “.*” specifies all instances. To collect processor metrics for only the _Total instance, you could specify “_Total”. To collect process metrics for only the crond or sshd instances, you could specify: “(crond|sshd)”. 
+* **Instance_regex**: a *regular expression* defining which instances to collect. The value: “.*” specifies all instances. To collect processor metrics for only the _Total instance, you could specify “_Total”. To collect process metrics for only the crond or sshd instances, you could specify: “(crond|sshd)”.
 * **Counter_name_regex**: a *regular expression* defining which counters (for the object) to collect. Reference the objects and counters listed in the Appendix of this document. To collect all counters for the object, specify: “.*”. To collect only swap space counters for the memory object, you could specify: “.+Swap.+”
 * **Interval**: The frequency at which the object's counters are collected
 
@@ -511,7 +511,7 @@ The OMS Agent for Linux also listens on port 26000 for CollectD metrics and then
 ```
 
 #### Steps for setup
-1. To route CollectD data to the OMS Agent for Linux, `oms.conf` needs to be added to CollectD's configuration directory. 
+1. To route CollectD data to the OMS Agent for Linux, `oms.conf` needs to be added to CollectD's configuration directory.
 The destination of this file depends on the Linux flavor of your machine.
 
     If your CollectD config directory is located in `/etc/collectd.d/`:
@@ -533,7 +533,7 @@ The destination of this file depends on the Linux flavor of your machine.
     ```
     sudo service collectd restart
     ```
-4. Restart the OMS Agent: 
+4. Restart the OMS Agent:
     ```
     sudo /opt/microsoft/omsagent/bin/service_control restart
     ```
@@ -622,7 +622,7 @@ Shows up as the following in Log Analytics search
 
 ### Nagios Alerts
 To collect alerts from a Nagios server, the following configuration changes must be made:
-*	Grant the user **omsagent** read access to the Nagios log file (i.e. `/var/log/nagios/nagios.log`). Assuming the nagios.log file is owned by the group `nagios`, you can add the user **omsagent** to the **nagios** group. 
+*	Grant the user **omsagent** read access to the Nagios log file (i.e. `/var/log/nagios/nagios.log`). Assuming the nagios.log file is owned by the group `nagios`, you can add the user **omsagent** to the **nagios** group.
 
 ```
 sudo usermod -a -G nagios omsagent
@@ -677,7 +677,7 @@ Logs for omsagent specifically have a node for the workspace ID.  The  omsconfig
 The log rotate configuration for omsagent can be found at:
 `/etc/logrotate.d/omsagent-<workspace id>`
 
-The default settings are 
+The default settings are
 ```
 /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log {
     rotate 5
@@ -720,7 +720,7 @@ The Operations Management Suite Agent for Linux shares agent binaries with the S
 
 # Known Limitations
 * ## Azure Diagnostics
-For Linux virtual machines running in Azure, additional steps may be required to allow data collection by Azure Diagnostics and Operations Management Suite. **Version 2.2** of the Diagnostics Extension for Linux is required for compatibility with the OMS Agent for Linux. 
+For Linux virtual machines running in Azure, additional steps may be required to allow data collection by Azure Diagnostics and Operations Management Suite. **Version 2.2** of the Diagnostics Extension for Linux is required for compatibility with the OMS Agent for Linux.
 
 	For more information on installing and configuring the Diagnostic Extension for Linux, see [this article](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-diagnostic-extension/#use-the-azure-cli-command-to-enable-linux-diagnostic-extension).
 
@@ -743,7 +743,7 @@ azure vm extension set <resource-group> <vm-name> LinuxDiagnostic Microsoft.OSTC
     "storageAccountName":"the storage account to receive data",
     "storageAccountKey":"the key of the account"
 }
-```	
+```
 
 * ## Sysklog is not supported
 Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog. For more information on replacing sysklog with rsyslog, see: http://wiki.rsyslog.com/index.php/Rsyslog_on_CentOS_success_story#Install_the_newly_built_rsyslog_RPM
@@ -751,7 +751,7 @@ Either rsyslog or syslog-ng are required to collect syslog messages. The default
 # Appendices
 
 ## Appendix: Available Performance Metrics
- **Object Name** 	| **Counter Name** 	
+ **Object Name** 	| **Counter Name**
 --------------------- | ---------------------
 Apache HTTP Server | Busy Workers
 Apache HTTP Server | Idle Workers
@@ -835,7 +835,7 @@ System | Uptime
 System | Users
 
 *Note: For Network Statistics the calculation is from start of the omiagent process
- 
+
 ## Appendix B: Database Permissions Required for MySQL Performance Counters
 *Note: To grant permissions to a MySQL monitoring user the granting user must have the ‘GRANT option’ privilege as well as the privilege being granted. *
 
@@ -856,7 +856,7 @@ GRANT SELECT ON mysql.* TO ‘monuser’@’localhost’;
 
 **Configuring the MySQL OMI Provider**
 The MySQL OMI provider requires a preconfigured MySQL user and installed MySQL client libraries in order to query the performance/health information from the MySQL instance.
- 
+
 **MySQL OMI Authentication File**
 MySQL OMI provider uses an authentication file to determine what bind-address and port the MySQL instance is listening on and what credentials to use to gather metrics. During installation the MySQL OMI provider will scan MySQL my.cnf configuration files (default locations) for bind-address and port and partially set the MySQL OMI authentication file.
 
@@ -874,7 +874,7 @@ The MySQL OMI authentication file is a text file that contains information about
 	(Port)=(Bind-Address), (username), (Base64 encoded Password)
 	AutoUpdate=[true|false]
 
-A default MySQL OMI authentication file contains a default instance and a port number depending on what information is available and parsed from the found MySQL configuration file. 
+A default MySQL OMI authentication file contains a default instance and a port number depending on what information is available and parsed from the found MySQL configuration file.
 
 The default instance is a means to make managing multiple MySQL instances on one Linux host easier, and is denoted by the instance with port 0. All added instances will inherit properties set from the default instance. For example, if MySQL instance listening on port ‘3308’ is added, the default instance’s bind-address, username, and Base64 encoded password will be used to try and monitor the instance listening on 3308. If the instance on 3308 is binded to another address and uses the same MySQL username and password pair only the re specification of the bind-address is needed and the other properties will be inherited.
 
@@ -889,10 +889,10 @@ Examples of the authentication file can be found below:
 *Default instance and instance with port 3308 + different Base 64 encoded password*
 
 	0=127.0.0.1, myuser, cnBwdA==
-	3308=127.0.1.1, , 
+	3308=127.0.1.1, ,
 	AutoUpdate=true
 
- **Property** 	| **Description** 	
+ **Property** 	| **Description**
 --------------------- | ---------------------
 Port | Port represents the current port the MySQL instance is listening on. The port 0 implies that the properties following are used for default instance.
 Bind-Address|the Bind Address is the current MySQL bind-address

@@ -7,13 +7,13 @@ the specified version of dsc and scx (including omi), as well as the oss-kits.
 ### How is it built?
 [create_bundle.sh](../installer/bundle/create_bundle.sh)
 is the script that will create the shell bundle given an existing tar
-file payload. This script takes in four parameters: 
- 1. Target directory - the dir path where the bundles are created 
+file payload. This script takes in four parameters:
+ 1. Target directory - the dir path where the bundles are created
  2. Intermediate directory - the dir path to the intermediate directory where all the
-intermediate targets are saved, separate from the final targets 
- 3. tar file - the tar file that contains the .deb/.rpm files 
+intermediate targets are saved, separate from the final targets
+ 3. tar file - the tar file that contains the .deb/.rpm files
  4. Install type - the value is "DPKG" for a .deb bundle, "RPM" for an .rpm bundle,
-blank for an all-inclusive bundle  
+blank for an all-inclusive bundle
 
 This script edits the bundle file i.e.
 [bundle_skel.sh](../installer/bundle/bundle_skel.sh)
@@ -32,9 +32,9 @@ files.The create_bundle.sh script is then run to create the omsagent
 shell bundle in the target directory using the tar file. All bundles
 are put in the target directory once the build is complete.
 
-### Installing the bundle: 
+### Installing the bundle:
 
-Instructions for installing the agent and information on other bundle 
+Instructions for installing the agent and information on other bundle
 operations can be found [here.](OMS-Agent-for-Linux.md#steps-to-install-the-oms-agent-for-linux)
 
 When running bundle install, before actual

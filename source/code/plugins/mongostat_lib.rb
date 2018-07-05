@@ -104,8 +104,8 @@ module MongoStatModule
         rescue => e
           $log.warn e.to_s
         end
- 
-        dataitems = {}       
+
+        dataitems = {}
         dataitems["Timestamp"] = OMS::Common.format_time(Time.now.to_f)
         dataitems["Host"] = OMS::Common.get_hostname
         dataitems["ObjectName"] = "MongoDB"
@@ -116,12 +116,12 @@ module MongoStatModule
           if v.nil? or v == "nil"
             OMS::Log.warn_once("Dropping null value for counter #{k}")
           else
-            counter_pair = {"CounterName" => k, "Value" => v} 
-            collections.push(counter_pair) 
+            counter_pair = {"CounterName" => k, "Value" => v}
+            collections.push(counter_pair)
           end
         }
-        dataitems["Collections"] = collections       
-                  
+        dataitems["Collections"] = collections
+
         return dataitems
       end
     end
@@ -163,7 +163,7 @@ module MongoStatModule
         }
        return wrapper
      else
-       return nil 
+       return nil
      end
    end
 

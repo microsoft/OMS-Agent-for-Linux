@@ -2,29 +2,29 @@ require_relative 'scom_common'
 
 module Fluent
   class SCOMExclusiveCorrelationFilter < SCOMTimerFilterPlugin
-    #Filter plugin that generates an event when first regex matches and 
+    #Filter plugin that generates an event when first regex matches and
     #sceond regex does not match before given time interval
     Fluent::Plugin.register_filter('filter_scom_excl_correlation', self)
-    
-    desc 'stores regex on whose match timer starts'    
+
+    desc 'stores regex on whose match timer starts'
     config_param :regexp1, :string, :default => nil
     desc 'stores regex which should not match after match for regexp1'
     config_param :regexp2, :string, :default => nil
-        
+
     attr_reader :expression1
     attr_reader :key1
     attr_reader :expression2
     attr_reader :key2
     attr_reader :time_interval
-        
+
     def initialize()
       super
       @event_record = nil;
     end
-        
+
     def configure(conf)
       super
-            
+
       raise ConfigError, "Configuration does not contain 2 expressions" unless @regexp1 and @regexp2
       @key1, exp1 = @regexp1.split(/ /,2)
       raise ConfigError, "regexp1 does not contain 2 parameters" unless exp1
@@ -33,7 +33,7 @@ module Fluent
       raise ConfigError, "regexp2 does not contain 2 parameters" unless exp2
       @expression2 = Regexp.compile(exp2)
     end
-        
+
     def filter(tag, time, record)
       #Check if a match is found for regexp1
       if !@exp1_found and @expression1.match(record[key1].to_s)
@@ -50,7 +50,7 @@ module Fluent
       end # if
       record
     end
-        
+
     def timer_expired()
       super
       time = Engine.now
@@ -60,7 +60,7 @@ module Fluent
       $log.debug "Event found for ID #{@event_id}"
       router.emit("scom.event", time, result)
     end
-        
+
   end # class SCOMExclusiveCorrelationFilter
 end # module Fluent
 

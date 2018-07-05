@@ -21,7 +21,7 @@ module CollectdModule
         if counter_pair["Value"].nil?
           OMS::Log.warn_once("Dropping null value for counter #{counter_pair['CounterName']}.")
         else
-          collections.push(counter_pair) 
+          collections.push(counter_pair)
         end
       }
       data_items = []

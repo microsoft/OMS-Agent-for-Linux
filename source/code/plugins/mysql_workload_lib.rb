@@ -61,14 +61,14 @@ class MysqlWorkload_Lib
       @log.warn("mysql_workload: #{e}")
     end
   end
-  
+
   def close_connection
     # check if close connection was called prior the client connection is created
     if @mysql != nil
       mysql.close
     end
   end
-  
+
   def query(input_query)
     if @mock_interface.nil?
       @mysql ||= get_connection
@@ -90,7 +90,7 @@ class MysqlWorkload_Lib
   end
 
   def transform_row(row)
-    # creates a new hash table where keys from the input row are replaced with the Variable_name key name, 
+    # creates a new hash table where keys from the input row are replaced with the Variable_name key name,
     # and the value of the key Variable_name. Case sensitive comparision.
     # Example {VariableName => connectedthreads, Value => 20} will be replaced with {connectedthreads = > 20}
     result = Hash.new()
@@ -99,7 +99,7 @@ class MysqlWorkload_Lib
   end
 
   def get_value (input_array, key_to_find)
-    # finds given key in the array of hash tables 
+    # finds given key in the array of hash tables
     #and returns it's value, -1 otherwise
     value = -1
     input_array.each do |row|
@@ -113,7 +113,7 @@ class MysqlWorkload_Lib
 
   def get_server_database_type
     # default to InnoDB if default_storage_engine not supported
-    engine_info_value = "InnoDB"    
+    engine_info_value = "InnoDB"
     #retrieve engine info from default_storage_engine
     query("show variables like 'default_storage_engine'").each do |row|
     engine_info_value = row.fetch('Value')
@@ -126,7 +126,7 @@ class MysqlWorkload_Lib
     #retrieve database version info using innodb_version
     query("show variables like 'version'").each do |row|
     dbversion_info_value = row.fetch('Value')
-    end  
+    end
     return dbversion_info_value
   end
 

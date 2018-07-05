@@ -15,7 +15,7 @@ module Fluent
     def configure(conf)
       super
       @hostname = OMS::Common.get_hostname or "Unknown host"
-      # do the usual configuration here   
+      # do the usual configuration here
       @test_conf = conf['test_conf']
     end
 

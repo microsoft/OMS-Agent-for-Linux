@@ -2,7 +2,7 @@ require 'test/unit'
 require_relative '../../../source/code/plugins/collectd_lib'
 require_relative 'omstestlib'
 
-class CollectdTest < Test::Unit::TestCase 
+class CollectdTest < Test::Unit::TestCase
 
   class << self
     def startup
@@ -30,29 +30,29 @@ class CollectdTest < Test::Unit::TestCase
                 "plugin_instance"=>"lo",
                 "type"=>"if_packets",
                 "type_instance"=>""
-   	 }	
+   	 }
     expected_record = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Host"=>"oms_common_hostname", "ObjectName"=>"if_packets", "InstanceName"=>"lo", "Collections"=>[{"CounterName"=>"rx", "Value"=>4447}, {"CounterName"=>"tx", "Value"=>4447}]}]}
     validate_record_helper(expected_record, input_record, "Record filter failed!")
-  
+
   end
 
 
   def test_validate_record_with_empty_plugin_instance
     #Case when plugin_instance="" and type_instance not empty
     input_record = {
-		"values"=>[0], 
-		"dstypes"=>["gauge"], 
-		"dsnames"=>["value"], 
-		"interval"=>10.0, 
-		"host"=>"testhost", 
-		"plugin"=>"processes", 
-		"plugin_instance"=>"", 
-		"type"=>"ps_state", 
+		"values"=>[0],
+		"dstypes"=>["gauge"],
+		"dsnames"=>["value"],
+		"interval"=>10.0,
+		"host"=>"testhost",
+		"plugin"=>"processes",
+		"plugin_instance"=>"",
+		"type"=>"ps_state",
 		"type_instance"=>"running"
     	}
    expected_record = {"DataType"=>"LINUX_PERF_BLOB", "IPName"=>"LogManagement", "DataItems"=>[{"Host"=>"testhost", "ObjectName"=>"ps_state", "InstanceName"=>"_Total", "Collections"=>[{"CounterName"=>"running.value", "Value"=>0}]}]}
    validate_record_helper(expected_record, input_record, "Record filter failed!")
-  
+
   end
 
 

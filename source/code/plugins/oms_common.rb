@@ -21,7 +21,7 @@ module OMS
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
-    
+
     @@OSFullName = nil
     @@OSName = nil
     @@OSVersion = nil
@@ -578,7 +578,7 @@ module OMS
         # we are otherwise instructed.
         rfcl = "RFCs 1123, 2181 with hostname range of {1,63} octets for non-root item."
         return if is_hostname_compliant?(hnBuffer)
-        return if is_like_ipv4_string?(hnBuffer) 
+        return if is_like_ipv4_string?(hnBuffer)
         return if is_like_ipv6_string?(hnBuffer)
         msg = "Hostname '#{hnBuffer}' not compliant (#{rfcl}).  Not IP Address Either."
         OMS::Log.warn_once(msg)
@@ -597,7 +597,7 @@ module OMS
 
         # if the rest starts with 'right/', remove it to unify the format
         tzID = tzID[@@tzRightFolder.length..-1] if tzID.start_with?(@@tzRightFolder)
-        
+
         return tzID
       end # end get_unified_timezoneid
 
@@ -605,13 +605,13 @@ module OMS
         return @@CurrentTimeZone if !@@CurrentTimeZone.nil?
 
         tzID = 'Unknown'
-        
+
         begin
           # if /etc/localtime is a symlink, check the link file's path
           if File.symlink?(@@tzLocalTimePath)
             symlinkpath = File.absolute_path(File.readlink(@@tzLocalTimePath), File.dirname(@@tzLocalTimePath))
             tzID = get_unified_timezoneid(symlinkpath)
-            
+
             # look for the entry in the timezone mapping
             if @@tzMapping.has_key?(tzID)
               @@CurrentTimeZone = @@tzMapping[tzID]
@@ -801,12 +801,12 @@ module OMS
         if !omscloud_id.to_s.empty?
           headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
         end
-        
+
         uuid = OMS::Configuration.uuid
         if !uuid.to_s.empty?
           headers[OMS::CaseSensitiveString.new("x-ms-UUID")] = uuid
         end
- 
+
         headers[OMS::CaseSensitiveString.new("X-Request-ID")] = SecureRandom.uuid
 
         headers["Content-Type"] = "application/json"
@@ -832,13 +832,13 @@ module OMS
       # parameters:
       #   record: Hash. body of the request
       # returns:
-      #   json represention of object, 
-      # nil if encoding cannot be applied 
+      #   json represention of object,
+      # nil if encoding cannot be applied
       def parse_json_record_encoding(record)
         msg = nil
         begin
           msg = JSON.dump(record)
-        rescue => error 
+        rescue => error
           # failed encoding, encode to utf-8, iso-8859-1 and try again
           begin
             if !record["DataItems"].nil?
@@ -849,7 +849,7 @@ module OMS
             msg = JSON.dump(record)
           rescue => error
             # at this point we've given up up, we don't recognize
-            # the encode, so return nil and log_warning for the 
+            # the encode, so return nil and log_warning for the
             # record
             OMS::Log.warn_once("Skipping due to failed encoding for #{record}: #{error}")
           end
@@ -909,7 +909,7 @@ module OMS
       def start_request(req, secure_http, ignore404 = false, return_entire_response = false)
         # Tries to send the passed in request
         # Raises an exception if the request fails.
-        # This exception should only be caught by the fluentd engine so that it retries sending this 
+        # This exception should only be caught by the fluentd engine so that it retries sending this
         begin
           res = nil
           res = secure_http.start { |http|  http.request(req) }
@@ -947,7 +947,7 @@ module OMS
   end # class Common
 
   class IPcache
-    
+
     def initialize(refresh_interval_seconds)
       @cache = {}
       @cache_lock = Mutex.new
@@ -969,7 +969,7 @@ module OMS
     end
 
     private
-    
+
     def get_ip_from_socket(hostname)
       begin
         addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)

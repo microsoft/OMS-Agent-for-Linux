@@ -22,7 +22,7 @@ class ChangeTracking
     def self.instanceXMLtoHash(instanceXML)
         ret = {}
         propertyXPath = "PROPERTY"
-        instanceXML.elements.each(propertyXPath) { |inst| 
+        instanceXML.elements.each(propertyXPath) { |inst|
             name = inst.attributes['NAME']
             rexmlText = REXML::XPath.first(inst, 'VALUE').get_text # TODO escape unicode chars like "&amp;"
             value = rexmlText ? rexmlText.value.strip : ''
@@ -120,7 +120,7 @@ class ChangeTracking
         inventoryXML = strToXML(inventoryXMLstr)
         instancesXML = getInstancesXML(inventoryXML)
 
-        # Split packages from services 
+        # Split packages from services
         packagesXML = instancesXML.select { |instanceXML| isPackageInstanceXML(instanceXML) }
         servicesXML = instancesXML.select { |instanceXML| isServiceInstanceXML(instanceXML) }
         fileInventoriesXML = instancesXML.select { |instanceXML| isFileInventoryInstanceXML(instanceXML) }
@@ -134,7 +134,7 @@ class ChangeTracking
         packages = removeDuplicateCollectionNames(packages)
         services = removeDuplicateCollectionNames(services)
         fileInventories = removeDuplicateCollectionNames(fileInventories)
-        
+
         ret = {}
         if packages.size > 0
             ret["packages"] = packages
@@ -161,7 +161,7 @@ class ChangeTracking
            inventory = inventory_hash["fileInventories"]
         end
 
-        inventory.each do |inventory_item| 
+        inventory.each do |inventory_item|
            inventoryChecksum[inventory_item["CollectionName"]] = inventory_item["InventoryChecksum"]
            inventory_item.delete("InventoryChecksum")
         end
@@ -174,20 +174,20 @@ class ChangeTracking
          inventoryChecksumInstalled = current_inventory.select { |key, value| lookupchecksum(key, value, previous_inventory) }
         end
 
-        inventoryChecksumRemoved = {} 
+        inventoryChecksumRemoved = {}
         if !previous_inventory.nil?
         inventoryChecksumRemoved = previous_inventory.select { |key, value| lookupchecksum(key, value, current_inventory) }
         end
         return inventoryChecksumRemoved.merge!(inventoryChecksumInstalled)
-    end 
+    end
 
     def self.lookupchecksum(key, value, previous_inventory)
         if !previous_inventory.nil? and previous_inventory.has_key?(key)
            if value == previous_inventory[key]
               return false
            end
-        end 
-        return true 
+        end
+        return true
     end
 
     def self.markchangedinventory(checksum_filter, inventory_hash)
@@ -205,7 +205,7 @@ class ChangeTracking
         if checksum_filter.has_key?(key)
         	return true
         end
-        return false 
+        return false
     end
 
     def self.markchanged(key, checksum_filter, inventory_item)
@@ -288,7 +288,7 @@ class ChangeTracking
     end
 
     def self.setInventoryTimestamp(timestamp, file_path)
-        File.open(file_path, "w+", 0644) do |f| 
+        File.open(file_path, "w+", 0644) do |f|
              f.puts "#{timestamp}"
         end
     end
@@ -326,7 +326,7 @@ class ChangeTracking
 
             transformed_hash_map = ChangeTracking.transform(xml_string, isInventorySnapshot)
 
-            if isInventorySnapshot 
+            if isInventorySnapshot
                output = ChangeTracking.wrap(transformed_hash_map, @hostname, time)
                setInventoryTimestamp(Time.now, inventoryTimestampFile)
                return output
@@ -359,6 +359,6 @@ class ChangeTracking
             end
         else
             return {}
-        end 
+        end
     end
 end

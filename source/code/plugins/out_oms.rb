@@ -55,10 +55,10 @@ module Fluent
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
         start = Time.now
-          
+
         # This method will raise on failure alerting the engine to retry sending this data
         OMS::Common.start_request(req, http)
-          
+
         ends = Time.now
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
@@ -91,7 +91,7 @@ module Fluent
       end
     end
 
-    # This method is called every flush interval. Send the buffer chunk to OMS. 
+    # This method is called every flush interval. Send the buffer chunk to OMS.
     # 'chunk' is a buffer chunk that includes multiple formatted
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)
@@ -100,7 +100,7 @@ module Fluent
         raise OMS::RetryRequestException, 'Missing configuration. Make sure to onboard.'
       end
 
-      # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
+      # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       unmergable_records = []
       chunk.msgpack_each {|(tag, record)|
@@ -168,7 +168,7 @@ module Fluent
           @error_handlers[tag].emit(record)
         }
       end
-   
+
     private
 
       def create_error_handlers(router)

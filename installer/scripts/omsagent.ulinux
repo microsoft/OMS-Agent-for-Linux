@@ -35,7 +35,7 @@ fi
 . /opt/microsoft/omsagent/bin/service_control functions $WORKSPACE_ID
 
 if [ -f /etc/init.d/functions ]; then
-    INIT_STYLE=R      # INIT_STYLE uses R/S/D for its representative platform RedHat/SuSE/Debian 
+    INIT_STYLE=R      # INIT_STYLE uses R/S/D for its representative platform RedHat/SuSE/Debian
     . /etc/init.d/functions
 elif [ -f /etc/rc.status ]; then
     INIT_STYLE=S
@@ -63,7 +63,7 @@ case "$1" in
                 $AGENT_RUNNING || /sbin/start-stop-daemon --start $USER_REQ --quiet --pidfile $PIDFILE --exec $OMS_BIN -- $START_QUALS
                 RETVAL=$?
                 log_end_msg $RETVAL
-                ;;               
+                ;;
             R)
                 echo -n "Starting $OMS_NAME: "
                 [ "`id -u`" -eq 0 ] && USER_REQ="--user=omsagent"
@@ -71,7 +71,7 @@ case "$1" in
                 RETVAL=$?
                 echo
                 ;;
-            S) 
+            S)
                 . /etc/sysconfig/language
                 unset LC_ALL
                 LC_CTYPE="$RC_LANG"; export LC_CTYPE

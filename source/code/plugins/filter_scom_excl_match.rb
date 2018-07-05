@@ -1,15 +1,15 @@
 module Fluent
   class SCOMExclusiveMatchFilter < Filter
-    #Filter plugin that generates an event when first regex matches and 
+    #Filter plugin that generates an event when first regex matches and
     #sceond regex does not match in the same record
     Fluent::Plugin.register_filter('filter_scom_excl_match', self)
-        
+
     def initialize
       super
       require_relative 'scom_common'
     end
-    
-    desc 'regex that needs to be match'    
+
+    desc 'regex that needs to be match'
     config_param :regexp1, :string, :default => nil
     desc 'regex that should not match'
     config_param :regexp2, :string, :default => nil
@@ -17,12 +17,12 @@ module Fluent
     config_param :event_id, :string, :default => nil
     desc 'event description to be sent to SCOM'
     config_param :event_desc, :string, :default => nil
-        
+
     attr_reader :expression1
     attr_reader :key1
     attr_reader :expression2
     attr_reader :key2
-        
+
     def configure(conf)
       super
       raise ConfigError, "Configuration does not contain 2 expressions" unless @regexp1 and @regexp2
@@ -34,7 +34,7 @@ module Fluent
       raise ConfigError, "regexp2 does not contain 2 parameters" unless exp2
       @expression2 = Regexp.compile(exp2)
     end
-        
+
     def filter(tag, time, record)
       result = record
       #Check if regexp1 matches and regexp2 doesn't in the same record
@@ -44,7 +44,7 @@ module Fluent
       end
       result
     end
-        
+
   end # class SCOMExclusiveMatchFilter
 end # module Fluent
 

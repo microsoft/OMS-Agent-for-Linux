@@ -82,7 +82,7 @@ module Fluent
 
       api_endpoint = OMS::Configuration.ods_endpoint.clone
       api_endpoint.query = "api-version=#{@api_version}"
-      
+
       req = OMS::Common.create_ods_request(api_endpoint.request_uri, records, @compress, headers, lambda { |data| OMS::Common.safe_dump_simple_hash_array(data) })
 
       unless req.nil?
@@ -94,7 +94,7 @@ module Fluent
 
       return 0
     end # post_data
-    
+
     def write_status_file(success, message)
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestionAPI.status'
       status = '{ "operation": "ODSIngestionAPI", "success": "%s", "message": "%s" }' % [success, message]
@@ -165,7 +165,7 @@ module Fluent
       [tag, record].to_msgpack
     end
 
-    # This method is called every flush interval. Send the buffer chunk to OMS. 
+    # This method is called every flush interval. Send the buffer chunk to OMS.
     # 'chunk' is a buffer chunk that includes multiple formatted
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)

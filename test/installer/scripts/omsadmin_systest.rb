@@ -3,7 +3,7 @@ require 'fileutils'
 require_relative 'maintenance_systestbase'
 
 class OmsadminTest < MaintenanceSystemTestBase
-  
+
   def check_cert_perms(path)
     stat = File.stat(path)
     assert_equal(nil, stat.world_readable?, "'#{path}' should not be world readable")
@@ -11,7 +11,7 @@ class OmsadminTest < MaintenanceSystemTestBase
     assert_equal(true, stat.writable?, "'#{path}' should be writable")
     assert_equal(true, stat.readable?, "'#{path}' should be readable")
   end
-  
+
   def post_onboard_validation(ws_dir = @omsadmin_test_dir_ws1)
     crt_path = "#{ws_dir}/certs/oms.crt"
     key_path = "#{ws_dir}/certs/oms.key"
@@ -34,7 +34,7 @@ class OmsadminTest < MaintenanceSystemTestBase
     # Check permissions
     crt_uid = File.stat(crt_path).uid
     key_uid = File.stat(key_path).uid
-    assert(crt_uid == key_uid, "Key and cert should have the same uid")    
+    assert(crt_uid == key_uid, "Key and cert should have the same uid")
     check_cert_perms(crt_path)
     check_cert_perms(key_path)
   end
@@ -109,8 +109,8 @@ class OmsadminTest < MaintenanceSystemTestBase
     crt_hash = Digest::SHA256.file(crt_path)
     key_hash = Digest::SHA256.file(key_path)
     old_guid = get_GUID()
-    
-    # Reonboarding should not modify the agent GUID or the certs 
+
+    # Reonboarding should not modify the agent GUID or the certs
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
     assert_match(/Reusing previous agent GUID/, output, "Did not find GUID reuse message")
     assert_equal(old_guid, get_GUID(), "Agent GUID should not change on reonboarding")

@@ -24,9 +24,9 @@ usage()
     echo "    target-dir is directory path to create shell bundle file (target directory)"
     echo "    intermediate-dir is dir path to intermediate dir (where installer_tmp lives)"
     echo "    tar-file is the name of the tar file that contains the .deb/.rpm files"
-    echo "    install-type has the value \"RPM\" for rpm bundle, \"DPKG\" for deb bundle,"  
+    echo "    install-type has the value \"RPM\" for rpm bundle, \"DPKG\" for deb bundle,"
     echo "      empty for the all-inclusive bundle"
-    echo 
+    echo
     echo "This script, and the associated bundle skeleton, are intended to work only"
     echo "only on Linux, and only for universal installations. As such, package names"
     echo "are determined via directory lookups."

@@ -11,10 +11,10 @@ module Fluent
     config_param :check_install_interval, :time, :default=>86400
     config_param :check_status_interval, :time, :default=>1800
     config_param :dsc_cache_file, :string, :default=>'/var/opt/microsoft/omsagent/state/dsc_cache.yml'
-   
+
     def configure(conf)
       super
-      if !@tag 
+      if !@tag
         raise Fluent::ConfigError, "'tag' option is required on dsc_checks input"
       end
     end
@@ -71,7 +71,7 @@ not function properly. omsconfig can be installed by rerunning the omsagent inst
     def run_check_status
       begin
       sleep @check_status_interval
-    
+
       until @finished_check_status && @install_status == 0
         dsc_status = get_dsc_status
 
@@ -87,16 +87,16 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
         end
 
         # store dsc configuration test status in the cache
-        @dsc_cache.transaction { 
+        @dsc_cache.transaction {
           @dsc_cache[:status] = dsc_status
           @dsc_cache.commit
         }
         sleep @check_status_interval
-      end 
+      end
       rescue => e
         $log.error e
       end
-    end       
+    end
 
     def shutdown
       super

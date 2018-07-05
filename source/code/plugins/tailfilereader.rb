@@ -3,11 +3,11 @@ require 'logger'
 
 module Tailscript
 
-  class NewTail  
+  class NewTail
     def initialize(paths)
       @paths = paths
       @tails = {}
-      @pos_file = $options[:pos_file] 
+      @pos_file = $options[:pos_file]
       @read_from_head = $options[:read_from_head]
       @pf = nil
       @pf_file = nil
@@ -53,14 +53,14 @@ module Tailscript
             end
           end
         end
-        
+
         @tails[path] = setup_watcher(path, pe)
       }
     end
 
     def receive_lines(lines, tail_watcher)
       unless lines.empty?
-        puts lines 
+        puts lines
       end
       return true
     end
@@ -99,10 +99,10 @@ module Tailscript
           if @read_from_head
             pos = 0
             @pe.update(inode, pos)
-          elsif inode == last_inode 
+          elsif inode == last_inode
             # rotated file has the same inode number as the pos_file.
             # seek to the saved position
-            pos = @pe.read_pos 
+            pos = @pe.read_pos
           elsif last_inode != 0
             # read data from the head of the rotated file.
             pos = 0
@@ -126,7 +126,7 @@ module Tailscript
           @io = io
           @pe = pe
           @log = log
-          @read_lines_limit = 1000 
+          @read_lines_limit = 1000
           @receive_lines = receive_lines
           @buffer = ''.force_encoding('ASCII-8BIT')
           @iobuf = ''.force_encoding('ASCII-8BIT')
@@ -361,7 +361,7 @@ if __FILE__ == $0
       $options[:pos_file] = p
     end
     opts.on("-h", "--[no-]readfromhead") do |h|
-      $options[:read_from_head] = h 
+      $options[:read_from_head] = h
     end
   end.parse!
 

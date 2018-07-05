@@ -46,14 +46,14 @@ class ZabbixApi
       }
 
       message[:auth] = @auth_hash unless (body[:method] == 'apiinfo.version' or body[:method] == 'user.login')
-      
+
 	  JSON.generate(message)
     end
 
     def http_request(body)
       uri = URI.parse(@options[:url])
       # set the time out the default (60) or to what the user passed
-      @options[:timeout] == nil ? timeout = 60 : timeout = @options[:timeout] 
+      @options[:timeout] == nil ? timeout = 60 : timeout = @options[:timeout]
       puts "[DEBUG] Timeout for request set to #{timeout} seconds" if @options[:debug]
 
       unless @proxy_uri.nil?

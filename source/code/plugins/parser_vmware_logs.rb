@@ -78,7 +78,7 @@ module Fluent
                 if !vmName.first.empty?
                   record['VMName']= vmName.first
                 else
-                  record['VMName']= vmName.last		
+                  record['VMName']= vmName.last
                 end
               end
 

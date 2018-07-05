@@ -41,5 +41,5 @@ A.6 There can be multiple reasons.
 
 		```-rw-r--r-- 1 omsagent omiusers 677 Sep 20 16:46 vmware_esxi.conf```
 
-##### Q.7 How does it capture the logs architecturally?  
-We use native syslog function of ESXi Host to push data to the target VM which has OMS Agent. However, we don't write files into syslog within the target VM. OMS agent opens the port 1514 and listens to this. Once it recieved the data, OMS agent will push the data into OMS portal. 
+##### Q.7 How does it capture the logs architecturally?
+We use native syslog function of ESXi Host to push data to the target VM which has OMS Agent. However, we don't write files into syslog within the target VM. OMS agent opens the port 1514 and listens to this. Once it recieved the data, OMS agent will push the data into OMS portal.

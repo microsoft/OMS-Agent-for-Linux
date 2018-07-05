@@ -11,7 +11,7 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
 
   def setup
     Fluent::Test.setup
-    
+
     @base_dir = ENV['BASE_DIR']
     @ruby_test_dir = ENV['RUBY_TESTING_DIR']
     @prep_omsadmin = "#{ENV['BASE_DIR']}/test/installer/scripts/prep_omsadmin.sh"
@@ -28,10 +28,10 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
 
   def prep_onboard
     # Make sure that we read test onboarding information from the environment varibles
-    assert(TEST_WORKSPACE_ID != nil, "TEST_WORKSPACE_ID should be set by the environment for this test to run.") 
+    assert(TEST_WORKSPACE_ID != nil, "TEST_WORKSPACE_ID should be set by the environment for this test to run.")
     assert(TEST_SHARED_KEY != nil, "TEST_SHARED_KEY should be set by the environment for this test to run.")
 
-    assert(TEST_WORKSPACE_ID.empty? == false, "TEST_WORKSPACE_ID should not be empty.") 
+    assert(TEST_WORKSPACE_ID.empty? == false, "TEST_WORKSPACE_ID should not be empty.")
     assert(TEST_SHARED_KEY.empty? == false, "TEST_SHARED_KEY should not be empty.")
 
     # Setup test onboarding script and folder
@@ -39,7 +39,7 @@ class OutOMSSystemTestBase < Test::Unit::TestCase
     assert_equal(0, $?.to_i, "Unexpected failure setting up the test")
     @omsadmin_test_dir_ws = "#{@omsadmin_test_dir}/#{TEST_WORKSPACE_ID}"
   end
-  
+
   def do_onboard
     omsadmin_script = "#{@omsadmin_test_dir}/omsadmin.sh"
     onboard_out = `#{omsadmin_script} -w #{TEST_WORKSPACE_ID} -s #{TEST_SHARED_KEY}`

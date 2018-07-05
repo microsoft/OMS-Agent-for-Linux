@@ -217,7 +217,7 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
         rmdir $VAR_DIR/$ws_id/state/ 2> /dev/null
         # /var/opt/microsoft/omsagent/<wkspc>/run/ and log/ should be left for later service start
     done
-   
+
    # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
    rm -f $ETC_DIR/sysconf/installinfo.txt*
    rmdir $ETC_DIR/sysconf 2> /dev/null

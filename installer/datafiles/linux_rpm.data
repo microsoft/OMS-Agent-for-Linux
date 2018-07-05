@@ -37,7 +37,7 @@ if [ -e /usr/sbin/semodule ]; then
         exit 0
     fi
 
-    # Labeling omsagent log files 
+    # Labeling omsagent log files
     /sbin/restorecon -R /var/opt/microsoft/omsagent/*/log > /dev/null 2>&1
 fi
 

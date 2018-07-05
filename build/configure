@@ -286,7 +286,7 @@ cp -R ${base_dir}/source/ext/patches/fluentd/vendor ${base_dir}/source/ext/fluen
 
 # Note: Most of this code came from the PAL configure file
 
-set_ulinux_pf() 
+set_ulinux_pf()
 {
     PF_MAJOR=1
     PF_MINOR=0
@@ -310,7 +310,7 @@ case $uname in
     Linux)
         PF=Linux
         PKG_SUFFIX=rpm
-        if [ -e /etc/SuSE-release ]; then 
+        if [ -e /etc/SuSE-release ]; then
             CHECK_SUSE=1
         fi
         if [ -e /etc/redhat-release ]; then

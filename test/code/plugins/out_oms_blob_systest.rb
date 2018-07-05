@@ -10,7 +10,7 @@ class OutOMSBlobTest < OutOMSSystemTestBase
     # Onboard to create cert and key
     prep_onboard
     do_onboard
-    
+
     conf = load_configurations
 
     tag = 'test'

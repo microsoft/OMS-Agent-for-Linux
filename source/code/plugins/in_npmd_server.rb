@@ -388,7 +388,7 @@ module Fluent
                 @networkAgentState["AgentIP"] == nil ||
                 @networkAgentState["AgentFqdn"] == nil ||
                 @networkAgentState["TimeGenerated"] == nil
-                ) 
+                )
                 _retVal = true
             end
             _timeDiff = 0

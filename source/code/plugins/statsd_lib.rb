@@ -142,7 +142,7 @@ module OMS
 
       reset if need_reset
 
-      { 
+      {
         'timers' => aggregate_timers(timers),
         'counters' => aggregate_counters(counters),
         'sets' => aggregate_sets(sets),
@@ -251,7 +251,7 @@ module OMS
           sum_in_threshold = cumulative_values[num_in_threshold-1]
 
           mean = sum_in_threshold / num_in_threshold
-          
+
           mid = (num_in_threshold / 2).round
           median = (num_in_threshold % 2 == 1) ? values[mid] : (values[mid-1] + values[mid]) / 2
 

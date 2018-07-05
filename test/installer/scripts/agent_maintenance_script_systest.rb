@@ -1,4 +1,4 @@
-require 'tempfile' 
+require 'tempfile'
 require_relative ENV["BASE_DIR"] + '/source/code/plugins/agent_maintenance_script'
 require_relative 'maintenance_systestbase'
 require_relative '../../code/plugins/omstestlib'

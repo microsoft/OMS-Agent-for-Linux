@@ -7,7 +7,7 @@ require_relative 'oms_common'
 module Fluent
   class LinuxUpdatesFilter < Filter
 
-    Fluent::Plugin.register_filter('filter_patch_management', self)    
+    Fluent::Plugin.register_filter('filter_patch_management', self)
 
     def configure(conf)
       super

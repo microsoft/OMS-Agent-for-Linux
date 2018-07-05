@@ -9,9 +9,9 @@ module Fluent
 			super
 			require 'json'
 			require 'date'
-			require '/opt/microsoft/omsagent/plugin/zabbixapi' 
+			require '/opt/microsoft/omsagent/plugin/zabbixapi'
 			require_relative 'zabbix_lib'
-			
+
 			@watermark_file = '/var/opt/microsoft/omsagent/state/zabbix_watermark'
 			@default_watermark = Time.now.to_i
 		end

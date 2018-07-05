@@ -8,8 +8,8 @@ require_relative 'changetracking_lib'
 require_relative 'oms_common'
 
 
-class ChangeTrackingRunner 
-	CHANGE_TRACKING_FILE = ARGV[0] 
+class ChangeTrackingRunner
+	CHANGE_TRACKING_FILE = ARGV[0]
 	CHANGE_TRACKING_STATE_FILE = CHANGE_TRACKING_FILE + ".hash"
 	CHANGE_TRACKING_INVENTORY_STATE_FILE = CHANGE_TRACKING_FILE + ".inventory.hash"
 

@@ -155,7 +155,7 @@ setup_variables()
         initial_conf_dir="$ETC_DIR/$1/conf/omsadmin.conf"
     fi
 
-    WS_STATUS=0    
+    WS_STATUS=0
     . $initial_conf_dir
     WS_STATUS=$?
 
@@ -258,7 +258,7 @@ is_omsagent_running()
     else
         return 0
     fi
-} 
+}
 
 remove_PIDfile_unless_omsagent_running()
 {
@@ -359,7 +359,7 @@ generateProcedureName()
     esac
 }
 
-# ## Iterators #### 
+# ## Iterators ####
 
 check_non_oms_and_invoke()
 {
@@ -535,7 +535,7 @@ enable_omsagent_service()
             local systemd_dir=$(find_systemd_dir)
             local omsagent_service=${systemd_dir}/$OMSAGENT_WS.service
 
-            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd $omsagent_service 
+            cp /etc/opt/microsoft/omsagent/sysconf/omsagent.systemd $omsagent_service
 
             sed -i s,%CONF_DIR_WS%,$CONF_DIR,1 $omsagent_service
             sed -i s,%CERT_DIR_WS%,$CERT_DIR,1 $omsagent_service
@@ -567,7 +567,7 @@ enable_omsagent_service()
         if [ "$WS_STATUS" -eq "0" ]; then
             touch $CONF_DIR/.service_registered
         fi
-    fi 
+    fi
     return $WS_STATUS
 }
 
@@ -653,7 +653,7 @@ printUsage()
     source evocation.  So to get the WORKSPACE_ID to a sourced copy, unless it
     is in Bourne shell or another shell that sees $# and $1, $2,..., you need to
     define the variable beforehand, which this draft sees under the name:
-        WORKSPACE_ID 
+        WORKSPACE_ID
 EOUSAGE
 }
 

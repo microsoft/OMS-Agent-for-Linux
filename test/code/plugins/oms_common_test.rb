@@ -11,7 +11,7 @@ require_relative ENV['BASE_DIR'] + '/source/code/plugins/oms_common'
 
 module OMS
 
-  TestHostnameList = 
+  TestHostnameList =
   [
           #         Address Type  Compliant Name
 
@@ -77,7 +77,7 @@ module OMS
         def OSVersion=(os_version)
           @@OSVersion = os_version
         end
-      
+
         def InstalledDate=(installed_date)
           @@InstalledDate = installed_date
         end
@@ -113,7 +113,7 @@ module OMS
         def cert=(mock_cert)
           @@Cert = mock_cert
         end
-        
+
         def key=(mock_key)
           @@Key = mock_key
         end
@@ -282,7 +282,7 @@ module OMS
       assert_equal(false, File.file?(fake_conf_path))
       os_full_name = Common.get_os_full_name(fake_conf_path)
       assert_equal(nil, os_full_name, "Should not find data in a non existing file")
-      
+
       # Should retry the second time since it did not find anything before
       File.write(@tmp_conf_file.path, "OSFullName=Ubuntu 14.04 (x86_64)\n")
       os_full_name = Common.get_os_full_name(@tmp_conf_file.path)
@@ -407,7 +407,7 @@ module OMS
     end
 
     @@InstallConf = "1.1.0-124 20160412 Release_Build\n" \
-      "2016-05-24T00:27:55.0Z\n" 
+      "2016-05-24T00:27:55.0Z\n"
 
     def test_get_agent_version()
       File.write(@tmp_conf_file.path, @@InstallConf)
@@ -501,13 +501,13 @@ module OMS
       record = "syslog record"
       parsed_record = Common.parse_json_record_encoding(record);
       assert_equal(record.to_json, parsed_record, "parse json record no encoding failed");
-      
+
       record = {}
       record["DataItems"] = [ {"Message" => "iPhone\xAE"} ];
       parsed_record = Common.parse_json_record_encoding(record);
       assert_equal("{\"DataItems\":[{\"Message\":\"iPhone®\"}]}", parsed_record, "parse json record utf-8 encoding failed");
     end
-    
+
     def test_safe_dump_simple_hash_array_noerror
       $log = MockLog.new
 
@@ -517,7 +517,7 @@ module OMS
 
       assert($log.logs.empty?, "No exception should be logged")
     end
-    
+
     def test_safe_dump_simple_hash_array_firsterror_encoding_success
       $log = MockLog.new
 
@@ -552,7 +552,7 @@ module OMS
       # sanity check
       assert_equal('China Standard Time', timezone, "timezone is not expected")
     end
-    
+
     def test_get_current_timezone_symlink
       $log = MockLog.new
       File.delete(@tmp_localtime_file.path)
@@ -563,7 +563,7 @@ module OMS
       # sanity check
       assert_equal('Pacific Standard Time', timezone, "timezone is not expected")
     end
-    
+
     def test_get_current_timezone_relative_symlink
       $log = MockLog.new
       File.delete(@tmp_localtime_file.path)

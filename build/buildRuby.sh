@@ -12,7 +12,7 @@
 #       "100": Build for SSL v1.0.0
 #       blank: Build for the local system
 #       test:  Build for test purposes
-#       
+#
 
 set -e
 

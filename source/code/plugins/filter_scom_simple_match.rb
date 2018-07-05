@@ -1,14 +1,14 @@
 module Fluent
   class SCOMSimpleMatchFilter < Filter
-    # Filter plugin to generate event whenever any of the pattern 
+    # Filter plugin to generate event whenever any of the pattern
     # matches
     Fluent::Plugin.register_filter('filter_scom_simple_match', self)
-    
+
     def initialize
       super
       require_relative 'scom_common'
     end
-    
+
     REGEXP_MAX_NUM = 20
     # List of regex for which events needs to be generated
     (1..REGEXP_MAX_NUM).each {|i| config_param :"regexp#{i}", :string, :default => nil}
@@ -16,12 +16,12 @@ module Fluent
     (1..REGEXP_MAX_NUM).each {|i| config_param :"event_id#{i}", :string, :default => nil}
     # Corresponding event description to be sent to SCOM
     (1..REGEXP_MAX_NUM).each {|i| config_param :"event_desc#{i}", :string, :default => nil}
-    
+
     attr_reader :regexps
-    
+
     def configure(conf)
       super
-        
+
       @regexps = {}
 
       (1..REGEXP_MAX_NUM).each do |i|
@@ -38,15 +38,15 @@ module Fluent
         @regexps[key].push(event)
       end
     end
-    
+
     def start
       super
     end
-    
+
     def shutdown
       super
     end
-    
+
     def filter(tag, time, record)
       result = record
       @regexps.each do |key, events|
@@ -60,7 +60,7 @@ module Fluent
       end # do |key, events|
       result
     end
-    
+
   end  # class SCOMSimpleMatchFilter
 end # module Fluent
 

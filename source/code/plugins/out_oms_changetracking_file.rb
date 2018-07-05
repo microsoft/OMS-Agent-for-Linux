@@ -3,12 +3,12 @@ module Fluent
   class OutChangeTrackingFile < BufferedOutput
 
     Plugin.register_output('out.oms.changetracking.file', self)
-	
+
     # Endpoint URL ex. localhost.local/api/
 
     def initialize
       super
-	  
+
       require 'base64'
       require 'digest'
       require 'json'
@@ -45,40 +45,40 @@ module Fluent
     # Set/Get methods for use in tests
     def get_ContentlocationUri
        return @@ContentlocationUri
-    end 
+    end
     def set_ContentlocationUri(contentlocationUri)
        @@ContentlocationUri = contentlocationUri
-    end 
+    end
     def get_PrimaryContentLocationAccessToken
        return @@PrimaryContentLocationAccessToken
-    end 
+    end
     def set_PrimaryContentLocationAccessToken(token)
        @@PrimaryContentLocationAccessToken = token
-    end 
+    end
     def get_SecondaryContentLocationAccessToken
        return @@SecondaryContentLocationAccessToken
-    end 
+    end
     def set_SecondaryContentLocationAccessToken(token)
        return @@SecondaryContentLocationAccessToken = token
-    end 
+    end
     def get_PrimaryContentLocation
        return @@PrimaryContentLocation
-    end 
+    end
     def set_PrimaryContentLocation(primaryContentLocation)
         @@PrimaryContentLocation = primaryContentLocation
-    end 
+    end
     def get_SecondaryContentLocation
        return @@SecondaryContentLocation
-    end 
+    end
     def set_SecondaryContentLocation(secondryContentLocation)
         @@SecondaryContentLocation = secondryContentLocation
-    end 
+    end
     def get_ContentlocationUriResourceId
        return @@ContentlocationUriResourceId
-    end 
+    end
     def set_ContentlocationUriResourceId(resourceId)
         @@ContentlocationUriResourceId = resourceId
-    end 
+    end
 
     def configure(conf)
       s = conf.add_element("secondary")
@@ -157,7 +157,7 @@ module Fluent
       if !azure_resource_id.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
       end
-      
+
       omscloud_id = OMS::Configuration.omscloud_id
       if !omscloud_id.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
@@ -272,7 +272,7 @@ module Fluent
       @log.trace "Content location : #{@@ContentlocationUri}"
       @log.trace "Primary Content location : #{@PrimaryContentLocation}"
       @log.trace "Secondary Content location : #{@SecondaryContentLocation}"
-      
+
       @log.trace "Primary Token = #{@@PrimaryContentLocationAccessToken}"
       @log.trace "secondry Token = #{@@SecondaryContentLocationAccessToken}"
 
@@ -292,7 +292,7 @@ module Fluent
       handle_record_internal(tag, changed_records)
 
       @log.debug "Success sending file change tracking record to ODS"
-      return true 
+      return true
     end
 
     def get_changed_files(records)
@@ -300,7 +300,7 @@ module Fluent
       modifiedcollections = {}
       if records.has_key?("DataItems")
         dataItems = records["DataItems"]
-        dataItems.each {|item| 
+        dataItems.each {|item|
           if item.has_key?("ConfigChangeType") and item["ConfigChangeType"] == "Files" and item.has_key?("Collections")
              item["Collections"].each {|collection|
                 if !@@ContentlocationUri.nil? and !@@ContentlocationUri.empty? and !collection.empty?
@@ -331,7 +331,7 @@ module Fluent
       dataItems = {}
       if records.has_key?("DataItems")
         dataItems = records["DataItems"]
-        dataItems.each {|item| 
+        dataItems.each {|item|
           if item.has_key?("ConfigChangeType") and item["ConfigChangeType"] == "Files" and item.has_key?("Collections")
              item["Collections"].each {|collection|
                 if !@@ContentlocationUri.nil? and !@@ContentlocationUri.empty? and !collection.empty?
@@ -346,7 +346,7 @@ module Fluent
           end
         }
       end
-      return records 
+      return records
     end
 
     def upload_file_to_azure_storage(collections)
@@ -358,16 +358,16 @@ module Fluent
             collections.each{|filePath, blob_uri| upload_file_to_blob(filePath, blob_uri, @@PrimaryContentLocationAccessToken, @@SecondaryContentLocationAccessToken)}
          end
       end
-    end  
+    end
 
     def notify_failures_to_ods(message, filePath)
       headers = {}
         dataitem = {}
         dataitem["Timestamp"] = OMS::Common.format_time(Time.now.utc)
-        dataitem["OperationStatus"] = message 
+        dataitem["OperationStatus"] = message
         dataitem["Computer"] = OMS::Common.get_hostname or "Unknown host"
         dataitem["Detail"] = filePath
-        dataitem["Category"] = "Files"        
+        dataitem["Category"] = "Files"
         dataitem["Solution"] = "ConfigurationChange"
         dataitem["CorrelationId"] = SecureRandom.uuid
         dataitem["ErrorId"] = "Error"
@@ -386,10 +386,10 @@ module Fluent
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
         start = Time.now
-          
+
         # This method will raise on failure alerting the engine to retry sending this data
         OMS::Common.start_request(req, http)
-          
+
         ends = Time.now
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
@@ -425,7 +425,7 @@ module Fluent
       end
 
       if !primarytoken.nil?
-         blobUriWithToken = blob_uri + '?' + primarytoken 
+         blobUriWithToken = blob_uri + '?' + primarytoken
          isPrimaryTokenInUse = true
       else
          isPrimaryTokenInUse = false
@@ -442,7 +442,7 @@ module Fluent
       rescue Exception => e
         @log.info  "Exception occured, retrying with secondry key. Error:'#{e}'"
         OMS::Log.error_once ("Exception occured, retrying with secondry key. Error:'#{e}'")
-      end 
+      end
 
       if isPrimaryTokenInUse
       # try with secondry token
@@ -452,7 +452,7 @@ module Fluent
           start = Time.now
           dataSize = append_blob(blobUriWithToken, records, filePath)
           time = Time.now - start
-          @log.debug "Success sending #{dataSize} bytes of data to BLOB using secondry token #{time.round(3)}s"        
+          @log.debug "Success sending #{dataSize} bytes of data to BLOB using secondry token #{time.round(3)}s"
           return
         rescue Exception => e
            @log.info "Unexpecting exception, dropping data. Error:'#{e}'"
@@ -496,7 +496,7 @@ module Fluent
         raise 'Missing configuration. Make sure to onboard. Will continue to buffer data.'
       end
 
-      # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
+      # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       unmergable_records = []
       chunk.msgpack_each {|(tag, record)|
@@ -568,7 +568,7 @@ module Fluent
           @error_handlers[tag].emit(record)
         }
       end
-   
+
     private
 
       def create_error_handlers(router)

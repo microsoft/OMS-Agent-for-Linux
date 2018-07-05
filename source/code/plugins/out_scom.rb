@@ -39,15 +39,15 @@ module Fluent
       else
         raise 'Invalid Record: #{record}'
       end
-      @log.debug "SCOM endpoint: #{scom_endpoint}" 
+      @log.debug "SCOM endpoint: #{scom_endpoint}"
       req = SCOM::Common.create_request(scom_endpoint.path, record)
       unless req.nil?
         http = SCOM::Common.create_http(scom_endpoint)
         start = Time.now
-          
+
         # This method will raise on failure alerting the engine to retry sending this data
         SCOM::Common.start_request(req, http)
-          
+
         ends = Time.now
         time = ends - start
         @log.debug "Success sending #{tag} in #{time.round(2)}s"

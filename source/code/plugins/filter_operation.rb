@@ -10,7 +10,7 @@ module Fluent
       super
       @operation_lib = OperationModule::Operation.new(OperationModule::RuntimeError.new)
     end
-			
+
     def filter(tag, time, record)
       records = @operation_lib.filter_and_wrap(tag, record, time)
       # only return non empty records

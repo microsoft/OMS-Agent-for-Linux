@@ -36,7 +36,7 @@ class OperationLib_Test < Test::Unit::TestCase
     assert_equal({}, call_filter({"type"=>"out_oms", "config"=>{"buffer_queue_limit"=>"10"}}), "invalid operation record - no bufqlen - fails")
     assert_equal({}, call_filter({"type"=>"out_oms", "config"=>{"buffer_queue_limit"=>"10"}, "buffer_queue_length"=>"10"}), "invalid operation record - bufqlen string - fails")
     assert_equal({}, call_filter({"type"=>"out_oms", "config"=>{"buffer_queue_limit"=>"str"}, "buffer_queue_length"=>10}), "invalid operation record - bufqlim not really int - fails")
-  end 
+  end
 
   def test_filter_valid_hash
     assert_equal({}, call_filter({"type"=>"out_oms", "config"=>{"buffer_queue_limit"=>"10"}, "buffer_queue_length"=>8}), "valid record - bufq below limit - fails")

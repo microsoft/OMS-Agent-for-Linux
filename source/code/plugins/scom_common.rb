@@ -11,7 +11,7 @@ module SCOM
       @event_id = event_id
       @event_desc = event_desc
     end
-            
+
     attr_reader :regexp
     attr_reader :event_id
     attr_reader :event_desc
@@ -20,7 +20,7 @@ module SCOM
   class Common
     require_relative 'scom_configuration'
     require_relative 'omslog'
-        
+
     def self.get_scom_record(time, event_id, event_desc, event_data)
       scom_record = {
           "CustomMessage"=>event_desc,
@@ -33,7 +33,7 @@ module SCOM
       }
       scom_event
     end
-        
+
     def self.create_request(path, record, extra_headers=nil, serializer=method(:parse_json_record_encoding))
       req = Net::HTTP::Post.new(path)
       json_msg = serializer.call(add_scom_data(record))
@@ -53,17 +53,17 @@ module SCOM
       }
       event
     end
-      
+
     def self.parse_json_record_encoding(record)
       msg = nil
       begin
         msg = JSON.dump(record)
-      rescue => error 
+      rescue => error
         OMS::Log.warn_once("Skipping due to failed encoding for #{record}: #{error}")
       end
       return msg
     end
-      
+
     def self.create_secure_http(uri)
       http = Net::HTTP.new( uri.host, uri.port )
       http.use_ssl = true
@@ -84,11 +84,11 @@ module SCOM
       http.key = SCOM::Configuration.key
       return http
     end
-      
+
     def self.start_request(req, secure_http, ignore404 = false)
       # Tries to send the passed in request
       # Raises an exception if the request fails.
-      # This exception should only be caught by the fluentd engine so that it retries sending this 
+      # This exception should only be caught by the fluentd engine so that it retries sending this
       begin
         res = nil
         res = secure_http.start { |http|  http.request(req) }
@@ -116,14 +116,14 @@ module SCOM
 
       end # end begin
     end # method start_request
-      
+
   end # class Common
 end # module SCOM
 
 module Fluent
 
   class SCOMTimerFilterPlugin < Filter
-  
+
     desc 'time interval before which regexp2 needs to match'
     config_param :time_interval, :integer, :default => 0
     desc 'event number to be sent to SCOM'
@@ -132,24 +132,24 @@ module Fluent
     config_param :event_desc, :string, :default => nil
     desc 'Disable upper limit on timer'
     config_param :disable_timer_limit, :bool, :default => false
-    
+
     @@timer_limit = 3600
-  
+
     def initialize()
       super
       @exp1_found = false
       @timer = nil
       @lock = Mutex.new
     end
-    
+
     def start
       super
     end
-    
+
     def shutdown
       super
     end
-    
+
     def configure(conf)
       super
       raise ConfigError, "Configuration does not have corresponding event ID" unless @event_id
@@ -159,28 +159,28 @@ module Fluent
         $log.info "Given time interval is greater than timer limit. Setting time interval to #{@time_interval}"
       end
     end
-    
+
     def flip_state()
       @lock.synchronize {
         @exp1_found = !@exp1_found
       }
     end
-    
+
     def set_timer
       flip_state()
       @timer = Thread.new { sleep @time_interval; timer_expired() }
     end
-    
+
     def reset_timer
       flip_state()
       @timer.terminate()
       @timer = nil
     end
-    
+
     def timer_expired()
       $log.debug "Timer expired for event ID #{@event_id}"
       flip_state()
     end
-    
+
   end # class SCOMTimerFilterPlugin
 end # module Fluent

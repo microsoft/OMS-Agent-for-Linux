@@ -1,6 +1,6 @@
 
 require_relative 'security_baseline_lib'
-require_relative 'oms_common' 
+require_relative 'oms_common'
 
 module Fluent
   class SecurityBaselineFilter < Filter
@@ -25,7 +25,7 @@ module Fluent
         # Use it to free up resources, etc.
     end
 
-    def filter(tag, time, record)       
+    def filter(tag, time, record)
         # Create Security Baseline and Security Baseline Summary blobs based on omsbaseline tool scan & assessment results
         security_baseline = OMS::SecurityBaseline.new(@log)
         security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(record, @hostname, time)

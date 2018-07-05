@@ -2,7 +2,7 @@
 
 1. Setup a Linux(Ubuntu/Redhat) machine and [install PostgreSQL](https://www.postgresql.org/download/linux/).
 
-2. Download and Install [OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux) on the machine. 
+2. Download and Install [OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux) on the machine.
 
 3. Configure PostgreSQL to [generate logs](https://www.postgresql.org/docs/current/static/runtime-config-logging.html).
 
@@ -17,10 +17,10 @@
   ```
   If postgresql_logs.conf is not present in the above location, move it:
 
-  ``` 
+  ```
   sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/postgresql_logs.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/
   sudo chown omsagent:omsagent  /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/postgresql_logs.conf
-  ``` 
+  ```
 
 5. Restart the PostgreSQL daemon:
 `sudo service postgresql restart` or `/etc/init.d/postgresql restart`

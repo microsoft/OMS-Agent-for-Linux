@@ -139,7 +139,7 @@ class StatsdTest < Test::Unit::TestCase
     timers = Array.new(rng.rand(100).round+100) { |i| rng.rand(1000).round }
 
     sum = 0.0
-    timers.each do |t| 
+    timers.each do |t|
       sum += t
       @statsd_lib.receive("sample.timer:#{t}|ms")
     end

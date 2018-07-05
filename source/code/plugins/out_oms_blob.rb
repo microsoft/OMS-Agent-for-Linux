@@ -3,12 +3,12 @@ module Fluent
   class OutputOMSBlob < BufferedOutput
 
     Plugin.register_output('out_oms_blob', self)
-	
+
     # Endpoint URL ex. localhost.local/api/
 
     def initialize
       super
-	  
+
       require 'base64'
       require 'digest'
       require 'json'
@@ -69,7 +69,7 @@ module Fluent
       if !azure_resource_id.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
       end
-      
+
       omscloud_id = OMS::Configuration.omscloud_id
       if !omscloud_id.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
@@ -284,7 +284,7 @@ module Fluent
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.notify_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
     end # notify_blob_upload_complete
-    
+
     def write_status_file(success, message)
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestionBlob.status'
       status = '{ "operation": "ODSIngestionBlob", "success": "%s", "message": "%s" }' % [success, message]
@@ -366,7 +366,7 @@ module Fluent
       [tag, record].to_msgpack
     end
 
-    # This method is called every flush interval. Send the buffer chunk to OMS. 
+    # This method is called every flush interval. Send the buffer chunk to OMS.
     # 'chunk' is a buffer chunk that includes multiple formatted
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)
@@ -375,7 +375,7 @@ module Fluent
         raise 'Missing configuration. Make sure to onboard. Will continue to buffer data.'
       end
 
-      # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
+      # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       chunk.msgpack_each {|(tag, record)|
         if !datatypes.has_key?(tag)

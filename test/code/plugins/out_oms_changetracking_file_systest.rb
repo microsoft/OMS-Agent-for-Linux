@@ -8,7 +8,7 @@ class TestableOutChangeTrackingFile < Fluent::OutChangeTrackingFile
     def initialize
       super
     end
-    
+
     append_blob_log = {}
 
     def append_blob(uri, msgs, file_path)
@@ -16,13 +16,13 @@ class TestableOutChangeTrackingFile < Fluent::OutChangeTrackingFile
     end
     def get_append_blob_log
         return @append_blob_log
-    end 
+    end
     def clear_append_blob_log
         @append_blob_log ={}
     end
 end
 
-class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase 
+class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
 
   def test_send_data
     # Onboard to create cert and key
@@ -40,7 +40,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     output.set_ContentlocationUriResourceId("subscription/subname/groupname/group/accountname/account")
     output.start
 
-    assert_equal("http://abc.blob.core.net/changetracking", output.get_ContentlocationUri, "Content Location Uri not found : '#{output.get_ContentlocationUri}'") 
+    assert_equal("http://abc.blob.core.net/changetracking", output.get_ContentlocationUri, "Content Location Uri not found : '#{output.get_ContentlocationUri}'")
     assert_equal("subscription/subname/groupname/group/accountname/account", output.get_ContentlocationUriResourceId, "Content Location Resource not found : '#{output.get_ContentlocationUriResourceId}'")
 
    $log.clear
@@ -52,7 +52,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
                     "Timestamp" => "2016-08-20T18:12:22.000Z",
                     "Computer" => "host",
                     "ConfigChangeType"=> "Files",
-                    "Collections"=> 
+                    "Collections"=>
 		             [{"CollectionName"=>"/etc/yum.conf",
 		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
@@ -77,7 +77,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
                     "Timestamp" => "2016-08-20T18:12:22.000Z",
                     "Computer" => "host",
                     "ConfigChangeType"=> "Files",
-                    "Collections"=> 
+                    "Collections"=>
 		             [{"CollectionName"=>"/etc/yum.conf",
 		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
@@ -107,7 +107,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     assert_equal(append_blob_log["/etc/yum.conf"],  "http://abc.blob.core.net/changetracking/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/2016-08-20T18:12:22.000Z-yum.conf?xyz")
     assert_equal(append_blob_log["/etc/yum1.conf"], nil)
 
- 
+
    $log.clear
    record = {
               "DataType"=>"CONFIG_CHANGE_BLOB",
@@ -117,7 +117,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
                     "Timestamp" => "2016-08-20T18:12:22.000Z",
                     "Computer" => "host",
                     "ConfigChangeType"=> "Files",
-                    "Collections"=> 
+                    "Collections"=>
 		             [{"CollectionName"=>"/etc/yum.conf",
 		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",

@@ -9,14 +9,14 @@ Rake::TestTask.new(:prerequisites) do
   required_gems = %w{
                      mocha
                      }
- 
+
   gem_list = %x{#{ENV['RUBY_DEST_DIR']}/bin/gem list}
- 
+
   # check gem sources and only add github if its not already there
   if ((%x{#{ENV['RUBY_DEST_DIR']}/bin/gem sources} =~ %r{https://rubygems.org})).nil?
     puts %x{sudo #{ENV['RUBY_DEST_DIR']}/bin/gem sources -a https://rubygems.org}
   end
- 
+
   required_gems.each do | gem_name |
     if (gem_list=~ %r{#{gem_name}}).nil?
       puts %x{sudo #{ENV['RUBY_DEST_DIR']}/bin/gem install #{gem_name}}

@@ -2,36 +2,36 @@ require_relative 'scom_common'
 
 module Fluent
   class SCOMCorrelatedMatchFilter < SCOMTimerFilterPlugin
-    #Filter plugin that generates an event when first regex matches and 
+    #Filter plugin that generates an event when first regex matches and
     #sceond regex matches before given time interval
     Fluent::Plugin.register_filter('filter_scom_cor_match', self)
-    
-    desc 'stores regex on whose match timer starts'    
+
+    desc 'stores regex on whose match timer starts'
     config_param :regexp1, :string, :default => nil
     desc 'stores regex which needs to match after match for regexp1'
     config_param :regexp2, :string, :default => nil
-        
+
     attr_reader :expression1
     attr_reader :key1
     attr_reader :expression2
     attr_reader :key2
     attr_reader :time_interval
-    
+
     def initialize()
       super
     end
-    
+
     def start
       super
     end
-    
+
     def shutdown
       super
     end
-        
+
     def configure(conf)
       super
-            
+
       raise ConfigError, "Configuration does not contain 2 expressions" unless @regexp1 and @regexp2
       @key1, exp1 = @regexp1.split(/ /,2)
       raise ConfigError, "regexp1 does not contain 2 parameters" unless exp1
@@ -40,7 +40,7 @@ module Fluent
       raise ConfigError, "regexp2 does not contain 2 parameters" unless exp2
       @expression2 = Regexp.compile(exp2)
     end
-        
+
     def filter(tag, time, record)
       result = record
       #Check if a match is found for regexp1
@@ -58,7 +58,7 @@ module Fluent
       end # if
       result
     end # method filter
-        
+
   end # class SCOMCorrelatedMatchFilter
 end # module Fluent
 

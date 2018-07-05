@@ -2,7 +2,7 @@ class OmiOms
   require 'json'
   require_relative 'oms_common'
   require_relative 'omslog'
-  
+
   attr_reader :specific_mapping
 
   def initialize(object_name, instance_regex, counter_name_regex, omi_mapping_path, omi_interface=nil, common=nil)
@@ -20,12 +20,12 @@ class OmiOms
       @conf_error = true
       return
     end
-    
+
     if common == nil
       common = OMS::Common
     end
-    
-    @hostname = common.get_hostname or "Unknown host" 
+
+    @hostname = common.get_hostname or "Unknown host"
 
     if omi_interface
       @omi_interface = omi_interface
@@ -44,7 +44,7 @@ class OmiOms
       $log.error "Unable to read file #{@omi_mapping_path}"
       return
     end
-    
+
     begin
       mapping = JSON.parse(file)
     rescue => error
@@ -54,7 +54,7 @@ class OmiOms
 
     specific_mapping = nil
 
-    mapping.each { |class_info| 
+    mapping.each { |class_info|
       if class_info["ObjectName"] == @object_name
         specific_mapping = class_info
         break
@@ -97,11 +97,11 @@ class OmiOms
     # get the specific instance value given the instance property name (i.e. Name, InstanceId, etc. )
     oms_instance["InstanceName"] = omi_instance[@specific_mapping["InstanceProperty"]]
     oms_instance_collections = []
-    
+
     # go through each CimProperties in the specific mapping,
     # if counterName is collected, perform the lookup for the value
     # else skip to the next property
-    
+
     # Filter properties. Watch out! We get them as CIM but the regex is with OMS property names
     omi_instance.each do |property, value|
       # CimProperty may have a DisplayName attribute; if so, use that as the CounterName
@@ -124,7 +124,7 @@ class OmiOms
               counter_pair["CounterName"] = oms_property_display_name
             end
             counter_pair["Value"] = value
-            oms_instance_collections.push(counter_pair) 
+            oms_instance_collections.push(counter_pair)
           end
         end
       rescue RegexpError => e
@@ -147,7 +147,7 @@ class OmiOms
 
     # Filter based on instance names
     begin
-      instances.select!{ |instance| 
+      instances.select!{ |instance|
         /#{@instance_regex}/.match(instance[@instance_property])
       }
     rescue RegexpError => e
@@ -155,10 +155,10 @@ class OmiOms
       $log.error "Regex error on instance_regex : #{e}"
       return
     end
- 
-    timestamp = OMS::Common.format_time(time)   
+
+    timestamp = OMS::Common.format_time(time)
     # Convert instances to oms format
-    instances.map!{ |instance| 
+    instances.map!{ |instance|
       omi_to_oms_instance(instance, timestamp, wlm_enabled)
     }
 

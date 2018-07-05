@@ -15,7 +15,7 @@ case "$1" in
         service omsagent restart
         ;;
     get)
-        grep protocol_type /etc/opt/microsoft/omsagent/conf/omsagent.conf 
+        grep protocol_type /etc/opt/microsoft/omsagent/conf/omsagent.conf
         ;;
     *)
         echo "Unknown argument: '$1'" >&2

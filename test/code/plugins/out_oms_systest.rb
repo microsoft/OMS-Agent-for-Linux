@@ -3,7 +3,7 @@ require_relative ENV['BASE_DIR'] + '/source/ext/fluentd/test/helper'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/out_oms'
 require_relative 'omstestlib'
 require_relative 'out_oms_systestbase'
-class OutOMSTest < OutOMSSystemTestBase 
+class OutOMSTest < OutOMSSystemTestBase
 
   def test_send_data
     # Onboard to create cert and key
@@ -38,7 +38,7 @@ class OutOMSTest < OutOMSSystemTestBase
     $log.clear
     record = {"DataType"=>"LINUX_NAGIOSALERTS_BLOB", "IPName"=>"AlertManagement", "DataItems"=>[{"Timestamp"=>"1970-01-01T00:00:00+00:00", "AlertName"=>"SERVICE ALERT", "HostName"=>"host100", "State"=>"alert state", "StateType"=>"state type", "AlertPriority"=>0, "AlertDescription"=>"Alert Description."}]}
     assert(output.handle_record("oms.nagios", record), "Failed to send nagios data : '#{$log.logs}'")
-    
+
     # Mock Linux Updates data
     $log.clear
     record = {"DataType"=>"LINUX_UPDATES_SNAPSHOT_BLOB", "IPName"=>"Updates", "DataItems"=>{"DataItems"=> [{"Collections"=> [{"CollectionName"=>"dpkg_1.18.4ubuntu1.1_Ubuntu 16.04 (x86_64)", "Installed"=>false, "PackageName"=>"dpkg", "PackageVersion"=>"1.18.4ubuntu1.1", "Repository"=>"Ubuntu:16.04/xenial-updates", "Timestamp"=>"1970-01-01T00:00:00.000Z"}], "Computer"=>"HostName","OSFullName"=>"Ubuntu 16.04 (x86_64)", "OSName"=>"Ubuntu", "OSType"=>"Linux", "OSVersion"=>"16.04", "Timestamp"=>"2016-03-15T19:02:38.577Z"}]}}
@@ -59,13 +59,13 @@ class OutOMSTest < OutOMSSystemTestBase
                     "Timestamp" => "2016-08-20T18:12:22.000Z",
                     "Computer" => "host",
                     "ConfigChangeType"=> "Daemons",
-                    "Collections"=> [] 
+                    "Collections"=> []
                 },
                 {
                     "Timestamp" => "2016-08-20T18:12:22.000Z",
                     "Computer" => "host",
                     "ConfigChangeType"=> "Files",
-                    "Collections"=> 
+                    "Collections"=>
 		             [{"CollectionName"=>"/etc/yum.conf",
 		               "Contents"=>"",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
@@ -82,37 +82,37 @@ class OutOMSTest < OutOMSSystemTestBase
     assert(output.handle_record("oms.changetracking", record), "Failed to send change tracking updates data : '#{$log.logs}'")
 
     $log.clear
-    
-    record = 
+
+    record =
     {
-      "DataType"=>"UPDATES_RUN_PROGRESS_BLOB", 
-      "IPName"=>"Updates", 
+      "DataType"=>"UPDATES_RUN_PROGRESS_BLOB",
+      "IPName"=>"Updates",
       "DataItems"=>
       [
         {
           "OSType"=>"Linux",
-          "Computer"=>"ShujunLinux1", 
-          "UpdateRunName"=>"Shujun_Fake_Update_Run_Name1", 
-          "UpdateTitle"=>"cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)", 
-          "UpdateId"=>"d0228460-fd73-43f7-97d9-2df3e18b4fff", 
-          "Status"=>"Succeeded", 
+          "Computer"=>"ShujunLinux1",
+          "UpdateRunName"=>"Shujun_Fake_Update_Run_Name1",
+          "UpdateTitle"=>"cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)",
+          "UpdateId"=>"d0228460-fd73-43f7-97d9-2df3e18b4fff",
+          "Status"=>"Succeeded",
           "TimeStamp"=>"2016-10-24T21:54:30.979Z",
           "StartTime"=>"2016-10-21 04:25:51Z",
           "EndTime"=>"2016-10-21 04:30:02Z"
-        }, 
+        },
         {
           "OSType"=>"Linux",
-          "Computer"=>"ShujunLinux2", 
-          "UpdateRunName"=>"Shujun_Fake_Update_Run_Name1", 
-          "UpdateTitle"=>"cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)", 
-          "UpdateId"=>"d0228460-fd73-43f7-97d9-2df3e18b4fff", 
-          "Status"=>"Succeeded", 
+          "Computer"=>"ShujunLinux2",
+          "UpdateRunName"=>"Shujun_Fake_Update_Run_Name1",
+          "UpdateTitle"=>"cairo-dock-data:amd64 (3.4.1-0ubuntu1, automatic)",
+          "UpdateId"=>"d0228460-fd73-43f7-97d9-2df3e18b4fff",
+          "Status"=>"Succeeded",
           "TimeStamp"=>"2016-10-24T21:54:30.979Z",
           "StartTime"=>"2016-10-21 04:25:51Z",
           "EndTime"=>"2016-10-21 04:30:02Z"
         }
       ]
-    }                                                                                                                                        
+    }
 
     assert(output.handle_record("oms.update_progress", record), "Failed to send update progress data: '#{$log.logs}'")
   end

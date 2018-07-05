@@ -12,12 +12,12 @@ Let us take mysql_2.0.gem  as an example. First, you will need to update the pri
 * Make sure you are in the build location. Then run `../installer/scripts/genRubyInstaller.sh`
   It will create the new ruby.data content in /tmp/installBuilder-ruby-data-$USER.
 * Diff installBuilder-ruby-data-$USER with the ruby.data file from /installer/datafiles/
-* Observe only mysql2 gem related records are added. 
+* Observe only mysql2 gem related records are added.
 * Replace /installer/datafiles/ruby.data with the content of installBuilder-ruby-data-$USER file
-  
-Now, perform another make to build the omsagent bundle with all the changes. 
+
+Now, perform another make to build the omsagent bundle with all the changes.
 Then , install the bundle and validate the ruby folder under /opt/microsoft/omsagent/ruby has all the new changes.
-  
+
 ###### To add a new Ruby gem into OMSAgent bundle if you DO NOT have the .gem file on you local machine, you need to follow these steps:
 
 Let us take mysql2 as an example. First, you will need to get the mysql_2.0.gem , and update the private branch:
@@ -27,19 +27,19 @@ Let us take mysql2 as an example. First, you will need to get the mysql_2.0.gem 
 * Setup a private build system on your local machine to build the bundle with --enable-ulinux.
 * Copy mysql_2.0.gem from /opt/microsoft/omsagent/ruby into the private build under /source/ext/gems folder.
 * Navigate to /installer/scripts and update genRubyInstaller.sh with SOURCE_DIR to point to /opt/microsoft/omsagent/ruby.
-* Run `genRubyInstaller.sh` 
+* Run `genRubyInstaller.sh`
 It will create the new ruby.data content in /tmp/installBuilder-ruby-data-$USER.
 * Diff installBuilder-ruby-data-$USER with the ruby.data file from /installer/datafiles/
-* Observe only mysql2 gem related records are added. 
+* Observe only mysql2 gem related records are added.
 * Replace /installer/datafiles/ruby.data in build location with the content of installBuilder-ruby-data-$USER file
 * Navigate to /omsagent/build/ folder and put modified commands in buildRuby.sh
   Example, `${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mysql_2.0.gem`
 * Uninstall omsagent to be able to build it privately.
 * Navigate to build location. Run `./configure --enable-ulinux`. And build the bundle using make.
-  
+
 Then install the new bundle and validate the ruby folder under /opt/microsoft/omsagent/ruby has all the new changes.
-  
+
 Note that if your new .gem is depending on other gems, the dependent gems need to be added to buildRuby.sh in non-dependent order.
 Always make sure you do not accidentally make the build download gems to satisfy dependencies.
-Note that this how to would not work for a .gem file that has dependencies on native packages and if their versions are not compatable across 
+Note that this how to would not work for a .gem file that has dependencies on native packages and if their versions are not compatable across
 different Linux distributions.

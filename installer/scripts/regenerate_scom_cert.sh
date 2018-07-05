@@ -14,7 +14,7 @@ usage()
     echo
     echo "Regenerate certificate:"
     echo "$basename [-h <hostname>] [-d <domain name>]"
-    echo 
+    echo
     echo "Help:"
     echo "$basename -?"
 }

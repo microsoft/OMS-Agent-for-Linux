@@ -4,13 +4,13 @@ module OperationModule
     def log_error(text)
     end
   end
-  
+
   class RuntimeError < LoggingBase
     def log_error(text)
       $log.info "RuntimeError: #{text}"
     end
   end
-  
+
   class Operation
     require_relative 'oms_common'
 
@@ -19,7 +19,7 @@ module OperationModule
     def initialize(error_handler)
       @error_handler = error_handler
     end
-    
+
     def filter(record, time)
       if record.is_a?(Hash) && record['type'] == 'out_oms' && record['config'].is_a?(Hash) && record['config']['buffer_queue_limit'].is_a?(String) && record['buffer_queue_length'].is_a?(Integer)
         buffer_queue_limit = record['config']['buffer_queue_limit'].to_i
@@ -67,13 +67,13 @@ module OperationModule
       end
       return {}
     end
- 
+
     def filter_and_wrap(tag, record, time)
-      tag_type = tag.match(/[^\.]*$/) 
+      tag_type = tag.match(/[^\.]*$/)
       case tag_type[0]
       when "buffer"
         data_item = filter(record, time)
-      when "dsc" 
+      when "dsc"
         data_item = filter_generic(record, time)
       when "auditd_plugin"
         data_item = filter_auditd_plugin(record, time)

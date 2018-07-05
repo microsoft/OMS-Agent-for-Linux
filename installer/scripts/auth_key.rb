@@ -22,7 +22,7 @@ end
 def get_auth_str(date_str, file_path, shared_key_path)
   content_hash = get_content_hash(file_path)
   auth_key = get_auth_key(date_str, content_hash, shared_key_path)
-  return "#{content_hash} #{auth_key}" 
+  return "#{content_hash} #{auth_key}"
 end
 
 def print_auth(date_str, file_path, shared_key_path)

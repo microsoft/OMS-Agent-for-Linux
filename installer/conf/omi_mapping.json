@@ -354,7 +354,7 @@
             {
                 "CimPropertyName": "ErrorsPerMinute500",
                 "CounterName": "Errors per Minute - Server"
-            }   
+            }
         ]
     },
     {

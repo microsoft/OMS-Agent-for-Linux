@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This shell script takes two parameters (BUILD_BASEDIR and TestSigningDir).
-# The first parameter (BUILD_BASEDIR) points to the build share where signed package is dropped, 
+# The first parameter (BUILD_BASEDIR) points to the build share where signed package is dropped,
 # the second parameter (TestSigningDir) points to the path where signing certs are located.
 # These are parameter combinations currently supported by this script:
 #                    Blank (No parameter)
@@ -99,7 +99,7 @@ if [ -d "$TestSigningDir" ]; then
             echo "Did not find the test GPG key at $TestGPGKey"
             exit 1
         fi
-    fi  
+    fi
 
     SigningKeyFilePath="$TestSigningDir/signingkeys.gpg"
     SigningKeyPassphrase="$TestSigningDir/passphrase"
@@ -131,7 +131,7 @@ do
     # expected file name: ./x64/nxOMSPlugin_1.0.zip
     ModuleFileName=`basename $ModuleFilePath`
     ModuleName=`echo $ModuleFileName | cut -d _ -f 1`
-    
+
     if [ -f "$X64Dir/$ModuleFileName" ]
     then
         echo "Found x64 module .zip: "$X64Dir/$ModuleFileName""
@@ -147,19 +147,19 @@ do
         echo "Did not find x86 module .zip: "$X86Dir/$ModuleFileName""
         exit 1
     fi
-    
+
     #Merge modules to ./intermediate/ModuleFileName
     unzip -q -o $X86Dir/$ModuleFileName -d ./$DscModuleIntermediateDir
     unzip -q -o $X64Dir/$ModuleFileName -d ./$DscModuleIntermediateDir
-    
+
     WorkingDir="./$DscModuleIntermediateDir/$ModuleName/"
-    
+
     (
         #Generate Sha256sums
         echo "Generating sha256sums..."
         cd $WorkingDir
         find . -type f -print0 | xargs -0 sha256sum |grep -v sha256sums > ./$ModuleName.sha256sums
-    
+
         #Test Sha256sums
         echo "Test sha256sums..."
         sha256sum --quiet -c $ModuleName.sha256sums

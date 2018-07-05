@@ -23,11 +23,11 @@ class TailFileReaderTest < Test::Unit::TestCase
 
   def test_initialize
     file = ["#{TMP_DIR}/tail.txt"]
-    File.open(file[0], "w") 
+    File.open(file[0], "w")
     tailreader = create({}, file)
     assert_equal(tailreader.paths, ["#{TMP_DIR}/tail.txt"])
   end
-  
+
   def test_rotate
     file = ["#{TMP_DIR}/tail.txt"]
     tailreader = create({:pos_file => @pos_file}, file)
@@ -38,19 +38,19 @@ class TailFileReaderTest < Test::Unit::TestCase
     input.puts "test 2"
     input.flush
 
-    tailreader.start    
-    
+    tailreader.start
+
     input.puts "test 3"
     input.puts "test 4"
     input.flush
-    
+
     tailreader.start
- 
+
     output = $stdout.string.split("\n")
     assert_equal(2, output.length)
     assert_equal("test 3", output[0])
     assert_equal("test 4", output[1])
-  end 
+  end
 
   def test_rotate_readfromhead
     file = ["#{TMP_DIR}/tail.txt"]
@@ -74,17 +74,17 @@ class TailFileReaderTest < Test::Unit::TestCase
     assert_equal("test 2", output[1])
     assert_equal("test 3", output[2])
     assert_equal("test 4", output[3])
-  end 
+  end
 
   def test_mulitple_paths
     files = ["#{TMP_DIR}/tail1.txt", "#{TMP_DIR}/tail2.txt"]
     tailreader = create({:pos_file => @pos_file}, files)
     $stdout = StringIO.new
 
-    input1 = File.open(files[0], 'w') 
+    input1 = File.open(files[0], 'w')
     input1.puts "test 1"
     input1.puts "test 2"
-    input1.flush 
+    input1.flush
 
     input2 = File.open(files[1], 'w')
     input2.puts "test a"
@@ -96,7 +96,7 @@ class TailFileReaderTest < Test::Unit::TestCase
     input1.flush
     input2.puts "test c"
     input2.flush
-     
+
     tailreader.start
     output = $stdout.string.split("\n")
 

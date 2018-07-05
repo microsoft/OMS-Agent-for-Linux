@@ -14,7 +14,7 @@ module Fluent
     config_param :instance_regex, :string, :default => ".*"
     config_param :counter_name_regex, :string, :default => ".*"
     config_param :interval, :time, :default => nil
-    config_param :tag, :string, :default => "oms.omi"  
+    config_param :tag, :string, :default => "oms.omi"
     config_param :omi_mapping_path, :string, :default => "/etc/opt/microsoft/omsagent/conf/omsagent.d/omi_mapping.json"
     config_param :wlm_enabled, :bool, :default => false
 

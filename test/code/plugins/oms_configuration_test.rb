@@ -132,7 +132,7 @@ module OMS
       assert_equal(false, File.file?(fake_conf_path))
       success = Configuration.load_configuration(fake_conf_path, @tmp_cert_file.path, @tmp_key_file.path)
       assert_equal(false, success, "Should not find configuration in a non existing file")
-      
+
       fake_cert_path = @tmp_cert_file.path + '.fake'
       assert_equal(false, File.file?(fake_cert_path))
       success = Configuration.load_configuration(@tmp_conf_file.path, fake_cert_path, @tmp_key_file.path)
@@ -162,7 +162,7 @@ module OMS
                  "https://1.2.3.4:1234",
                  "proxyuser:pass:pass@proxyhost:8080",
                  "123.2.3.456:3456"]
-      
+
       expected = [{:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
                   {:user=>"proxyuser", :pass=>"proxypass", :addr=>"proxyhost", :port=>"8080"},
                   {:user=>nil,         :pass=>nil,         :addr=>"proxyhost", :port=>"8080"},
@@ -174,9 +174,9 @@ module OMS
                   {:user=>nil,         :pass=>nil,         :addr=>"1.2.3.4",   :port=>"1234"},
                   {:user=>"proxyuser", :pass=>"pass:pass", :addr=>"proxyhost", :port=>"8080"},
                   {:user=>nil,         :pass=>nil,         :addr=>"123.2.3.456",:port=>"3456"}]
-      
+
       assert_equal(configs.size, expected.size, "Test array and result array should have the same size")
-      
+
       expected.zip(configs).each { |expect, config|
         parsed = Configuration.parse_proxy_config(config)
         assert_equal(expect, parsed, "Parsing failed for this partial configuration : '#{config}'")

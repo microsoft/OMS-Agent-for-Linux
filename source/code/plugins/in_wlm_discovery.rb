@@ -100,7 +100,7 @@ module Fluent
           $log.error "Error generating discovery data #{e}"
         end # begin
     end # method run_periodic
-    
+
     def update_discovery_time(time)
       begin
         time_file = File.open(@discovery_time_file, "w")
@@ -111,7 +111,7 @@ module Fluent
         time_file.close unless time_file.nil?
       end # begin
     end # method update_discovery_time
-    
+
     def get_last_discovery_time()
       begin
         last_discovery_time = File.open(@discovery_time_file, &:readline)
@@ -126,7 +126,7 @@ module Fluent
       begin
         url_metadata="http://169.254.169.254/metadata/instance?api-version=#{@metadata_api_version}"
         metadata_json = open(url_metadata,"Metadata"=>"true").read
-        metadata_instance = { 
+        metadata_instance = {
           "EncodedVMMetadata" => Base64.strict_encode64(metadata_json),
           "ApiVersion" => @metadata_api_version
         }

@@ -3,9 +3,9 @@
 @@ -671,7 +671,7 @@
      rb_check_frozen(self);
      GetSSLCTX(self, ctx);
- 
+
 -    SSL_CTX_clear_options(ctx, SSL_CTX_get_options(ctx));
 +//    SSL_CTX_clear_options(ctx, SSL_CTX_get_options(ctx));
- 
+
      if (NIL_P(options)) {
  	SSL_CTX_set_options(ctx, SSL_OP_ALL);

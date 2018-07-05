@@ -10,20 +10,20 @@ module Fluent
     config_param :password, :string, :default => nil
     config_param :auth_database, :string, :default => nil
     config_param :tag, :string, :default => nil
-    config_param :run_interval, :string, :default => nil   
-  
+    config_param :run_interval, :string, :default => nil
+
     def initialize
       super
       require_relative 'mongostat_lib'
       require_relative 'omslog'
-    end  
-       
+    end
+
     def configure(conf)
       super
-      if !@tag 
+      if !@tag
         raise ConfigError, "'tag' option is required on mongostat input"
       end
-    
+
       if !@user or !@password
         raise ConfigError, "username and password is required"
       end
@@ -39,10 +39,10 @@ module Fluent
       @thread = Thread.new(&method(:run))
     end
 
-    def receive_data(line) 
+    def receive_data(line)
        begin
         line.chomp!
-        transformed_record = @mongostat_lib.transform_and_wrap(line) 
+        transformed_record = @mongostat_lib.transform_and_wrap(line)
         time = Time.now
         if time && transformed_record
           tag=@tag
@@ -64,7 +64,7 @@ module Fluent
         while line = readio.gets
             receive_data(line)
         end
-        
+
         while line = errio.gets
           $log.error "#{line}"
         end
@@ -76,11 +76,11 @@ module Fluent
         OMS::Log.error_once("in_mongostat failed to run or shutdown child prcess #{$!.to_s}")
       end
     end
-   
+
     def shutdown
       super
       @thread.join
     end
   end
- 
+
 end

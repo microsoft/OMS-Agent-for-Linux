@@ -5,7 +5,7 @@ module OMS
     require 'uri'
 
     require_relative 'omslog'
-    
+
     @@ConfigurationLoaded = false
 
     @@Cert = nil
@@ -19,16 +19,16 @@ module OMS
     @@OmsCloudId = nil
     @@AzureResourceId = nil
     @@UUID = nil
- 
+
     class << self
-      
+
       # test the onboard file existence
       def test_onboard_file(file_name)
         if !File.file?(file_name)
           OMS::Log.error_once("Could not find #{file_name} Make sure to onboard.")
           return false
         end
-      
+
         if !File.readable?(file_name)
           OMS::Log.error_once("Could not read #{file_name} Check that the read permissions are set for the omsagent user")
           return false
@@ -66,9 +66,9 @@ module OMS
             return nil
           end
 
-          re = /^(?:(?<user>[^:]+):(?<pass>[^@]+)@)?(?<addr>[^:@]+)(?::(?<port>\d+))?$/ 
+          re = /^(?:(?<user>[^:]+):(?<pass>[^@]+)@)?(?<addr>[^:@]+)(?::(?<port>\d+))?$/
           matches = re.match(proxy_conf_str)
-          if matches.nil? or matches[:addr].nil? 
+          if matches.nil? or matches[:addr].nil?
             return nil
           end
           # Convert nammed matches to a hash
@@ -156,7 +156,7 @@ module OMS
         end
 
         @@ConfigurationLoaded = true
-        return true        
+        return true
       end # load_configuration
 
       def cert
@@ -200,6 +200,6 @@ module OMS
       end # getter for VM uuid
 
     end # Class methods
-        
+
   end # class Common
 end # module OMS

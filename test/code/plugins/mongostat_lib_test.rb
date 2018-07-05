@@ -3,7 +3,7 @@ require_relative '../../../source/code/plugins/mongostat_lib'
 require_relative 'omstestlib'
 require 'mocha/test_unit'
 
-class MongostatTest < Test::Unit::TestCase 
+class MongostatTest < Test::Unit::TestCase
 
   class << self
     def startup
@@ -20,7 +20,7 @@ class MongostatTest < Test::Unit::TestCase
     assert_equal(nil, @@mongostat_lib.transform_and_wrap(""))
     assert_equal(nil, @@mongostat_lib.transform_and_wrap(nil))
   end
-  
+
   def test_set_counters_and_values_centOS
     $log = OMS::MockLog.new
     set_fields = "insert query update delete getmore command  flushes mapped  vsize   res  faults qr|qw ar|aw netIn netOut conn     time"
@@ -62,7 +62,7 @@ class MongostatTest < Test::Unit::TestCase
     $log = OMS::MockLog.new
     set_fields = "insert query update delete getmore command % dirty % used flushes  vsize   res   qr|qw ar|aw netIn netOut conn time"
     send_values = " *0    *0     *0     *0       0     1|0     0.0    0.2       0    255.0M 38.0M   0|0   0|0   79b    18k    3   2016-11-09T17:13:01-08:00"
-    
+
     @@mongostat_lib.stubs(:get_mongostat_version).returns(3.2)
     @@mongostat_lib.transform_and_wrap(set_fields)
     returned_record = @@mongostat_lib.transform_and_wrap(send_values)
@@ -97,7 +97,7 @@ class MongostatTest < Test::Unit::TestCase
 
   def test_null_counters
     $log = OMS::MockLog.new
-    send_values = " nil  nil  nil  nil  nil   nil  nil  nil nil  nil  0|0   0|0  53b    8k    2  12:29:52"  
+    send_values = " nil  nil  nil  nil  nil   nil  nil  nil nil  nil  0|0   0|0  53b    8k    2  12:29:52"
     returned_counters = @@mongostat_lib.transform_and_wrap(send_values)
     expected_record = {"DataType"=>"LINUX_PERF_BLOB",
                        "IPName"=>"LogManagement",
@@ -110,7 +110,7 @@ class MongostatTest < Test::Unit::TestCase
                                  {"CounterName"=>"Active Clients (Read)", "Value"=>"0"},
                                  {"CounterName"=>"Active Clients (Write)", "Value"=>"0"},
                                  {"CounterName"=>"Queue Length (Read)", "Value"=>"0"},
-                                 {"CounterName"=>"Queue Length (Write)", "Value"=>"0"}]}]}             
+                                 {"CounterName"=>"Queue Length (Write)", "Value"=>"0"}]}]}
     assert_equal(expected_record, record_helper(returned_counters))
     assert($log.logs[0].include?("Dropping null value"))
     $log.clear
@@ -119,7 +119,7 @@ class MongostatTest < Test::Unit::TestCase
   def record_helper(record)
     #strip Timestamp and Hostname keys from dataitems for returned_record
     record["DataItems"].each do |rec|
-      rec.tap{ |x| 
+      rec.tap{ |x|
         x.delete("Timestamp")
         x.delete("Host")
         x.delete("InstanceName")

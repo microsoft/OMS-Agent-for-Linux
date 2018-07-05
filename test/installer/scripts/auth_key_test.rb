@@ -2,7 +2,7 @@ require 'test/unit'
 require_relative '../../../installer/scripts/auth_key.rb'
 
 class Auth_Test < Test::Unit::TestCase
-  
+
   def setup
     test_dir = File.dirname(__FILE__)
     @body_onboard_path1 = "#{test_dir}/body_onboard_test1.xml"
@@ -11,7 +11,7 @@ class Auth_Test < Test::Unit::TestCase
     @expected_hash1     = "5PWvuBVXOgrizTvwU/n9IVA7wgKDj4ihFVWUhb9j9s0="
     @expected_auth_key1 = "K6h/Cxyr4lYZPX4WiKwgbwUnumOSAFa71AQIz6VnDpw="
   end
-  
+
   def test_content_hash()
     content_hash = get_content_hash(@body_onboard_path1)
     assert_equal(@expected_hash1, content_hash, "Content hash of #{@body_onboard_path1} does not match")

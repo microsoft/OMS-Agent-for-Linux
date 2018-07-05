@@ -21,7 +21,7 @@ class ZabbixApiWrapper
 	else
 		@client = mock_client
 	end
-	
+
     unless @client.api_version =~ /2\.\d+\.\d+/
       raise "Zabbix API version: #{@client.api_version} is not support by this version of zabbixapi"
     end

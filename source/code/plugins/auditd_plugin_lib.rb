@@ -1,5 +1,5 @@
 require 'yajl'
-require 'securerandom' # SecureRandom.uuid 
+require 'securerandom' # SecureRandom.uuid
 
 require_relative 'oms_common'
 

@@ -35,7 +35,7 @@ module MaintenanceModule
 
     attr_reader :AGENT_USER, :load_config_return_code
     attr_accessor :suppress_stdout
-  
+
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path,
                    os_info, install_info, log = nil, verbose = false)
       @suppress_logging = true  # suppress_logging suppresses all output, including both print and logger
@@ -213,7 +213,7 @@ module MaintenanceModule
         cert_update_endpoint = match["cert_update_endpoint"]
         update_attr = match["update_cert"]
       }
- 
+
       if cert_update_endpoint.empty?
         log_error("Could not extract the update certificate endpoint.")
         return MISSING_CERT_UPDATE_ENDPOINT
@@ -226,7 +226,7 @@ module MaintenanceModule
       @CERTIFICATE_UPDATE_ENDPOINT = cert_update_endpoint
       # When apply_dsc_endpoint is called from onboarding, dsc_endpoint will be returned in file
       update_config("CERTIFICATE_UPDATE_ENDPOINT", cert_update_endpoint)
- 
+
       # Check in the response if the certs should be renewed
       if update_attr == "true" and check_for_renew_request
         renew_certs_ret = renew_certs
@@ -429,7 +429,7 @@ module MaintenanceModule
         x509_version = 2  # enable X509 V3 extensions
         two_byte_range = 2**16 - 2  # 2 digit byte range for serial number
         year = 1 * 365 * 24 * 60 * 60  # 365 days validity for certificate
-  
+
         # Generate CSR from new private key
         csr = OpenSSL::X509::Request.new
         csr.version = x509_version
@@ -440,7 +440,7 @@ module MaintenanceModule
             ["O", "Microsoft"]])
         csr.public_key = key.public_key
         csr.sign(key, OpenSSL::Digest::SHA256.new)
-  
+
         # Self-sign CSR
         csr_cert = OpenSSL::X509::Certificate.new
         csr_cert.serial = SecureRandom.random_number(two_byte_range) + 1
@@ -495,7 +495,7 @@ module MaintenanceModule
       key_file.write(key_old)
       key_file.close
     end
- 
+
     # Renew certificates for agent/workspace connection
     def renew_certs
       # Check necessary inputs

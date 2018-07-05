@@ -13,7 +13,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @installed_packages_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxPackageResource&quot;&gt;&lt;PROPERTY NAME=&quot;Publisher&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu Developers &amp;lt;ubuntu-devel-discuss@lists.ubuntu.com&amp;gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ReturnCode&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;autotools-dev&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FilePath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageGroup&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Installed&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;InstalledOn&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Unknown&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;20150820.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Ensure&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;present&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;all&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Arguments&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageManager&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageDescription&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Update infrastructure for config.{guess,sub} files&amp;#10; This package installs an up-to-date version of config.guess and&amp;#10; config.sub, used by the automake and libtool packages.  It provides&amp;#10; the canonical copy of those files for other packages as well.&amp;#10; .&amp;#10; It also documents in /usr/share/doc/autotools-dev/README.Debian.gz&amp;#10; best practices and guidelines for using autoconf, automake and&amp;#10; friends on Debian packages.  This is a must-read for any developers&amp;#10; packaging software that uses the GNU autotools, or GNU gettext.&amp;#10; .&amp;#10; Additionally this package provides seamless integration into Debhelper&amp;#10; or CDBS, allowing maintainers to easily update config.{guess,sub} files&amp;#10; in their packages.&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Size&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;151&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
 
     @installed_packages_xml_str_with_installed_on_date = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxPackageResource&quot;&gt;&lt;PROPERTY NAME=&quot;Publisher&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu Developers &amp;lt;ubuntu-devel-discuss@lists.ubuntu.com&amp;gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ReturnCode&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;autotools-dev&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FilePath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageGroup&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Installed&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;InstalledOn&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1468202536&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;20150820.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Ensure&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;present&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;all&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Arguments&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageManager&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageDescription&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Update infrastructure for config.{guess,sub} files&amp;#10; This package installs an up-to-date version of config.guess and&amp;#10; config.sub, used by the automake and libtool packages.  It provides&amp;#10; the canonical copy of those files for other packages as well.&amp;#10; .&amp;#10; It also documents in /usr/share/doc/autotools-dev/README.Debian.gz&amp;#10; best practices and guidelines for using autoconf, automake and&amp;#10; friends on Debian packages.  This is a must-read for any developers&amp;#10; packaging software that uses the GNU autotools, or GNU gettext.&amp;#10; .&amp;#10; Additionally this package provides seamless integration into Debhelper&amp;#10; or CDBS, allowing maintainers to easily update config.{guess,sub} files&amp;#10; in their packages.&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Size&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;151&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
-    
+
     @installed_packages_xml_str_with_nil_installed_on_date = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxPackageResource&quot;&gt;&lt;PROPERTY NAME=&quot;Publisher&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu Developers &amp;lt;ubuntu-devel-discuss@lists.ubuntu.com&amp;gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;ReturnCode&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;0&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;autotools-dev&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;FilePath&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageGroup&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;false&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Installed&quot; TYPE=&quot;boolean&quot;&gt;&lt;VALUE&gt;true&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;InstalledOn&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;20150820.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Ensure&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;present&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;all&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Arguments&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageManager&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;PackageDescription&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Update infrastructure for config.{guess,sub} files&amp;#10; This package installs an up-to-date version of config.guess and&amp;#10; config.sub, used by the automake and libtool packages.  It provides&amp;#10; the canonical copy of those files for other packages as well.&amp;#10; .&amp;#10; It also documents in /usr/share/doc/autotools-dev/README.Debian.gz&amp;#10; best practices and guidelines for using autoconf, automake and&amp;#10; friends on Debian packages.  This is a must-read for any developers&amp;#10; packaging software that uses the GNU autotools, or GNU gettext.&amp;#10; .&amp;#10; Additionally this package provides seamless integration into Debhelper&amp;#10; or CDBS, allowing maintainers to easily update config.{guess,sub} files&amp;#10; in their packages.&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Size&quot; TYPE=&quot;uint32&quot;&gt;&lt;VALUE&gt;151&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
 
     @available_updates_xml_str = '<INSTANCE CLASSNAME="Inventory"><PROPERTY.ARRAY NAME="Instances" TYPE="string" EmbeddedObject="object"><VALUE.ARRAY><VALUE>&lt;INSTANCE CLASSNAME=&quot;MSFT_nxAvailableUpdatesResource&quot;&gt;&lt;PROPERTY NAME=&quot;Name&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;dpkg&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Version&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;1.18.4ubuntu1.1&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Architecture&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;amd64&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;Repository&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;Ubuntu:15.04/xenial-updates&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;PROPERTY NAME=&quot;BuildDate&quot; TYPE=&quot;string&quot;&gt;&lt;VALUE&gt;BuildDate&lt;/VALUE&gt;&lt;/PROPERTY&gt;&lt;/INSTANCE&gt;</VALUE></VALUE.ARRAY></PROPERTY.ARRAY></INSTANCE>'
@@ -68,13 +68,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_15.10", "15.10"), "Ubuntu_14.04")
     assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_16.04", "16.04"), "Ubuntu_16.04")
     assert_equal(@linuxUpdatesInstance.getOSShortName("Ubuntu_16.10", "16.10"), "Ubuntu_16.04")
-    
-    # CentOS 
-    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_5.0", "5.0"), "CentOS_5.0") 
-    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_5.7", "5.7"), "CentOS_5.0") 
-    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_6.0", "6.0"), "CentOS_6.0") 
+
+    # CentOS
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_5.0", "5.0"), "CentOS_5.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_5.7", "5.7"), "CentOS_5.0")
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_6.0", "6.0"), "CentOS_6.0")
     assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_6.7", "6.7"), "CentOS_6.0")
-    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_7.0", "7.0"), "CentOS_7.0") 
+    assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_7.0", "7.0"), "CentOS_7.0")
     assert_equal(@linuxUpdatesInstance.getOSShortName("CentOS_7.1", "7.1"), "CentOS_7.0")
 
     # RHEL
@@ -84,7 +84,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_6.6", "6.6"), "RHEL_6.0")
     assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_7.0", "7.0"), "RHEL_7.0")
     assert_equal(@linuxUpdatesInstance.getOSShortName("RHEL_7.7", "7.7"), "RHEL_7.0")
-    
+
     # SLES
     assert_equal(@linuxUpdatesInstance.getOSShortName("SUSE_11.0", "11.0"), "SUSE_11.0")
     assert_equal(@linuxUpdatesInstance.getOSShortName("SUSE_11.10", "11.10"), "SUSE_11.0")
@@ -102,13 +102,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       @linuxUpdatesInstance.strToXML("<<<<")
     end
   end
-  
+
   def test_getAvailableUpdatesInstancesXML
     xml = @linuxUpdatesInstance.strToXML(@available_updates_xml_str)
     assert(xml.root != nil, 'Failed find the root of the xml document')
     assert_equal("INSTANCE", xml.root.name)
     instances = @linuxUpdatesInstance.getInstancesXML(xml)
-    
+
     assert_equal(1, instances.size)
     assert_equal("INSTANCE", instances[0].name)
     assert_equal("MSFT_nxAvailableUpdatesResource", instances[0].attributes['CLASSNAME'])
@@ -133,7 +133,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
             <VALUE>BuildDate</VALUE>
         </PROPERTY>
       </INSTANCE>'
-    
+
     expectedHash = {
       "CollectionName"=> "dpkg" + @@delimiter + "1.18.4ubuntu1.1" + @@delimiter + "Ubuntu_14.04",
       "Architecture"=>"amd64",
@@ -143,7 +143,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Installed"=>false,
       "UpdateState"=>"Needed"
     }
-    
+
     instanceXML = @linuxUpdatesInstance.strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
     assert_equal("MSFT_nxAvailableUpdatesResource", instanceXML.attributes['CLASSNAME'])
@@ -156,7 +156,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     assert(xml.root != nil, 'Failed find the root of the xml document')
     assert_equal("INSTANCE", xml.root.name)
     instances = @linuxUpdatesInstance.getInstancesXML(xml)
-    
+
     assert_equal(1, instances.size)
     assert_equal("INSTANCE", instances[0].name)
     assert_equal("MSFT_nxPackageResource", instances[0].attributes['CLASSNAME'])
@@ -219,7 +219,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 <PROPERTY NAME="Size" TYPE="uint32">
                   <VALUE>151</VALUE>
                 </PROPERTY>
-              </INSTANCE>'    
+              </INSTANCE>'
 
     expectedHash = {
       "CollectionName"=> "autotools-dev" + @@delimiter + "20150820.1" + @@delimiter + "Ubuntu_14.04",
@@ -231,7 +231,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Installed"=>true,
       "UpdateState"=>"NotNeeded"
     }
-    
+
     instanceXML = @linuxUpdatesInstance.strToXML(instanceXMLstr).root
     assert_equal("INSTANCE", instanceXML.name)
     assert_equal("MSFT_nxPackageResource", instanceXML.attributes['CLASSNAME'])
@@ -240,7 +240,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
   end
 
   def test_installed_packages_transform_and_wrap
-    
+
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
 
@@ -256,19 +256,19 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "Repository" => nil,
                 "Size" => "151"
             }]
-   
+
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    
-    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str, "HostName", expectedTime, 
+
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str, "HostName", expectedTime,
                                                    86400,  "Ubuntu", "Ubuntu 16.04",
                                                    "16.04", "Ubuntu_16.04")
     assert_equal(@myExpectedHash, wrappedHash)
   end
-  
+
   def test_installed_packages_transform_and_wrap_with_installed_on_date
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
- 
+
     @myExpectedHash["DataItems"][0]["Collections"] = [
                 @myExpectedHeartbeatItem,
                 {
@@ -281,10 +281,10 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "Repository" => nil,
                     "Size" => "151",
                     "Timestamp" => "2016-07-11T02:02:16.000Z"
-                }]   
+                }]
 
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str_with_installed_on_date, "HostName", expectedTime, 
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str_with_installed_on_date, "HostName", expectedTime,
                                                    86400, "Ubuntu", "Ubuntu 16.04",
                                                    "16.04", "Ubuntu_16.04")
     assert_equal(@myExpectedHash, wrappedHash)
@@ -293,9 +293,9 @@ class LinuxUpdatesTest < Test::Unit::TestCase
   def test_installed_packages_transform_and_wrap_with_nil_installed_on_date
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
-  
+
     @myExpectedHash["DataItems"][0]["Collections"] = [
-                @myExpectedHeartbeatItem,      
+                @myExpectedHeartbeatItem,
                 {
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
@@ -308,12 +308,12 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 }]
 
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
-    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str_with_nil_installed_on_date, "HostName", expectedTime, 
+    wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@installed_packages_xml_str_with_nil_installed_on_date, "HostName", expectedTime,
                                                    86400, "Ubuntu", "Ubuntu 16.04",
                                                    "16.04", "Ubuntu_16.04")
     assert_equal(@myExpectedHash, wrappedHash)
   end
-  
+
   def test_available_updates_transform_and_wrap
     # Mock dependent methods, let them return fake values
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
@@ -334,7 +334,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     expectedOSFullName = "Ubuntu 15.04"
     @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
     @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName
-    
+
     expectedTime = Time.utc(2016,3,15,19,2,38.5776)
     wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@available_updates_xml_str, "HostName", expectedTime,
                                                    86400, "Ubuntu", "Ubuntu 15.04",
@@ -346,8 +346,8 @@ class LinuxUpdatesTest < Test::Unit::TestCase
 
   def test_available_updates_transform_and_wrap_with_build_date
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
-    
-    @myExpectedHash["DataItems"][0]["Collections"] = [      
+
+    @myExpectedHash["DataItems"][0]["Collections"] = [
                 @myExpectedHeartbeatItem,
                 {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
@@ -364,7 +364,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     expectedOSVersion = "15.04"
     expectedOSFullName = "Ubuntu 15.04"
     @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
-    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName    
+    @myExpectedHash["DataItems"][0]["OSFullName"] = expectedOSFullName
 
     wrappedHash = @linuxUpdatesInstance.transform_and_wrap(@available_updates_xml_str_with_build_date, "HostName", expectedTime,
                                                    86400, "Ubuntu", expectedOSFullName,
@@ -392,7 +392,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
 
     @myExpectedHash["DataItems"][0]["Collections"] = [
-               @myExpectedHeartbeatItem,      
+               @myExpectedHeartbeatItem,
                 {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
@@ -402,7 +402,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "PackageVersion" => "1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
-    
+
     expectedOSVersion = "15.04"
     expectedOSFullName = "Ubuntu 15.04"
     @myExpectedHash["DataItems"][0]["OSVersion"] = expectedOSVersion
@@ -413,13 +413,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                                                    "15.04", "Ubuntu_15.04")
     assert_equal(@myExpectedHash, wrappedHash)
   end
-  
+
   def test_performance
     inventoryXMLstr = File.read(@inventoryPath)
     @linuxUpdatesInstance.expects(:getAgentId).returns(@fakeAgentId)
     start = Time.now
     wrappedHash = @linuxUpdatesInstance.transform_and_wrap(inventoryXMLstr, "HostName", Time.now, 86400,
-                                                   "Ubuntu", "Ubuntu 16.04", "16.04", 
+                                                   "Ubuntu", "Ubuntu 16.04", "16.04",
                                                    "Ubuntu_16.04")
     finish = Time.now
     time_spent = finish - start
@@ -429,7 +429,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       warn("Method transform_and_wrap too slow, it took #{time_spent.round(2)}s to complete. The current time set is 5s")
     end
   end
-  
+
   # Test if it removes the duplicate installed package.
   def test_remove_duplicates_installed_packages
     inventoryXMLstr = File.read(@inventoryPath)
@@ -447,7 +447,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     data_items_dedup = @linuxUpdatesInstance.removeDuplicateCollectionNames(installedPackages)
     assert_equal(collectionNamesSet.size, data_items_dedup.size, "Deduplication failed")
   end
-  
+
   # Test if it removes the duplicate available package.
   def test_remove_duplicates_available_packages
     inventoryXMLstr = File.read(@inventoryPath)
@@ -456,7 +456,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     availableUpdatesXML = instancesXML.select { |instanceXML| @linuxUpdatesInstance.isAvailableUpdateInstanceXML(instanceXML) }
     availableUpdates = availableUpdatesXML.map { |availableUpdate| @linuxUpdatesInstance.availableUpdatesXMLtoHash(availableUpdate, "Ubuntu_16.04")}
     assert_equal(25, availableUpdates.size)
-    
+
     collectionNames = availableUpdates.map { |availableUpdate| availableUpdate["CollectionName"] }
     collectionNamesSet = Set.new collectionNames
     assert_equal(20, collectionNamesSet.size) # 5 duplicates

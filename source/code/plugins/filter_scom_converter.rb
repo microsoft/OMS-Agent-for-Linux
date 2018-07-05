@@ -27,12 +27,12 @@ module Fluent
   end
 
   def filter(tag, time, record)
-    $log.debug "Generating SCOM Event with id: #{@event_id} and data: #{record}" 
+    $log.debug "Generating SCOM Event with id: #{@event_id} and data: #{record}"
     result = SCOM::Common.get_scom_record(time, @event_id, @event_desc, record)
     result
   end
-  
+
   end # class SCOMConverter
 end # module Fluent
-  
-  
+
+

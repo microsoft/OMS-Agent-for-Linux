@@ -6,7 +6,7 @@ class DscMonitorTest < Test::Unit::TestCase
   include FlexMock::TestCase
 
   TMP_DIR = File.dirname(__FILE__) + "/../tmp/test_dscmonitor"
-  CHECK_IF_DPKG = "which dpkg > /dev/null 2>&1; echo $?" 
+  CHECK_IF_DPKG = "which dpkg > /dev/null 2>&1; echo $?"
   CHECK_DSC_INSTALL = "dpkg --list omsconfig > /dev/null 2>&1; echo $?"
   CHECK_DSC_STATUS = "/opt/microsoft/omsconfig/Scripts/TestDscConfiguration.py"
 
@@ -24,8 +24,8 @@ class DscMonitorTest < Test::Unit::TestCase
   end
 
   CONFIG = %[
-    tag oms.mock.dsc 
-    check_install_interval 2 
+    tag oms.mock.dsc
+    check_install_interval 2
     check_status_interval 2
     dsc_cache_file #{TMP_DIR}/cache.yml
   ]
@@ -37,7 +37,7 @@ class DscMonitorTest < Test::Unit::TestCase
   def test_dsc_install_failure_message
     dsc_install_fail_message = "omsconfig is not installed, OMS Portal \
 configuration will not be applied and solutions such as Change Tracking and Update Assessment will \
-not function properly. omsconfig can be installed by rerunning the omsagent installation" 
+not function properly. omsconfig can be installed by rerunning the omsagent installation"
 
     flexmock(Fluent::DscMonitoringInput).new_instances do |instance|
       instance.should_receive(:`).with(CHECK_IF_DPKG).and_return(0)
@@ -83,7 +83,7 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
 	InDesiredState=true
 	ResourceId={}
 	}"
- 
+
     flexmock(Fluent::DscMonitoringInput).new_instances do |instance|
       instance.should_receive(:`).with(CHECK_IF_DPKG).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_INSTALL).and_return(0)

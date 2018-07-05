@@ -37,7 +37,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
       if File.exist?(@fileInventoryTimestampHashPath)
          File.delete(@fileInventoryTimestampHashPath)
       end
-    rescue Exception => e 
+    rescue Exception => e
       assert(false, "failed to delete the file : #{e.message}")
     end
   end
@@ -270,7 +270,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     transformedHash = ChangeTracking::transform(@package_xml_str)
     inventoryChecksum = ChangeTracking::computechecksum(transformedHash)
     wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
-    expectedInventoryChecksum = {"rsyslog"=>"4099458fbd53f8dc65880268c08d52c055b9a380a364d25b16e89f0a626636b0"} 
+    expectedInventoryChecksum = {"rsyslog"=>"4099458fbd53f8dc65880268c08d52c055b9a380a364d25b16e89f0a626636b0"}
     assert_equal(expectedInventoryChecksum, inventoryChecksum);
     assert_equal(expectedHash, wrappedHash)
   end
@@ -304,7 +304,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     transformedHash = ChangeTracking::transform(@service_xml_str)
     inventoryChecksum = ChangeTracking::computechecksum(transformedHash)
     wrappedHash = ChangeTracking::wrap(transformedHash, "HostName",expectedTime)
-    expectedInventoryChecksum = {"omsagent"=>"69115cd1ae2598c3888618dbf3561f0331076264e10680a7f9bb7891f29f4895"} 
+    expectedInventoryChecksum = {"omsagent"=>"69115cd1ae2598c3888618dbf3561f0331076264e10680a7f9bb7891f29f4895"}
     assert_equal(expectedInventoryChecksum, inventoryChecksum);
     assert_equal(expectedHash, wrappedHash)
   end
@@ -358,7 +358,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
 
     compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, inventoryChecksum)
     ChangeTracking.setHash(compareChecksum, Time.now, @fileinventoryHashPath1)
-    
+
 
     expectedHash = {"DataItems"=>
   [{"Collections"=>
@@ -420,7 +420,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
     assert_equal(compareChecksum["/etc/c"], "dd")
 
-    previousInventoryChecksum = nil 
+    previousInventoryChecksum = nil
     currentInventoryChecksum = {"/etc/a"=>"aa","/etc/b"=>"bb", "/etc/c"=>"dd"}
     compareChecksum = ChangeTracking.comparechecksum(previousInventoryChecksum, currentInventoryChecksum)
     assert_equal(compareChecksum["/etc/c"], "dd")
@@ -486,7 +486,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(1, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
 
-    #2nd call should return empty since inventory did not change and time 
+    #2nd call should return empty since inventory did not change and time
     ret = ChangeTracking.transform_and_wrap(@fileinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert(ret.empty?, "Got the wrong number of file inventory instances")
   end
@@ -504,7 +504,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     #exceed force send time
     previousTime = Time.now - (10*3600 + 1)
     ChangeTracking.setInventoryTimestamp(previousTime, @fileInventoryTimestampHashPath)
-    #2nd call should return empty since inventory did not change and time 
+    #2nd call should return empty since inventory did not change and time
     ret = ChangeTracking.transform_and_wrap(@fileinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(1, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
     assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot"))
@@ -513,7 +513,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
 
     previousHash1 = ChangeTracking.getHash(@fileinventoryHashPath)
     previousInventoryChecksum1 =  previousHash["PREV_HASH"]
-    assert_equal(previousInventoryChecksum, previousInventoryChecksum1, "Checksum should not differ, since xml file did not change")  
+    assert_equal(previousInventoryChecksum, previousInventoryChecksum1, "Checksum should not differ, since xml file did not change")
 
 
     previousTime = Time.now - (9*3600)
@@ -527,7 +527,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(1371, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
 
-    #2nd call should return empty since inventory did not change and time 
+    #2nd call should return empty since inventory did not change and time
     ret = ChangeTracking.transform_and_wrap(@packageinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert(ret.empty?, "Got the wrong number of file inventory instances")
   end
@@ -545,7 +545,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     #exceed force send time
     previousTime = Time.now - (10*3600 + 1)
     ChangeTracking.setInventoryTimestamp(previousTime, @fileInventoryTimestampHashPath)
-    #2nd call should return empty since inventory did not change and time 
+    #2nd call should return empty since inventory did not change and time
     ret = ChangeTracking.transform_and_wrap(@packageinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(1371, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
     assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
@@ -554,7 +554,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
 
     previousHash1 = ChangeTracking.getHash(@fileinventoryHashPath)
     previousInventoryChecksum1 =  previousHash["PREV_HASH"]
-    assert_equal(previousInventoryChecksum, previousInventoryChecksum1, "Checksum should not differ, since xml file did not change")  
+    assert_equal(previousInventoryChecksum, previousInventoryChecksum1, "Checksum should not differ, since xml file did not change")
 
 
     previousTime = Time.now - (9*3600)
@@ -568,7 +568,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     # Test that duplicates are removed as well. The test data has 1374 packages and 216 services with some duplicates.
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
 
-    #2nd call should return empty since inventory did not change and time 
+    #2nd call should return empty since inventory did not change and time
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert(ret.empty?, "Got the wrong number of file inventory instances")
   end
@@ -586,7 +586,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
     #exceed force send time
     previousTime = Time.now - (10*3600 + 1)
     ChangeTracking.setInventoryTimestamp(previousTime, @fileInventoryTimestampHashPath)
-    #2nd call should return empty since inventory did not change and time 
+    #2nd call should return empty since inventory did not change and time
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
     assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
@@ -595,7 +595,7 @@ class ChangeTrackingTest < Test::Unit::TestCase
 
     previousHash1 = ChangeTracking.getHash(@fileinventoryHashPath)
     previousInventoryChecksum1 =  previousHash["PREV_HASH"]
-    assert_equal(previousInventoryChecksum, previousInventoryChecksum1, "Checksum should not differ, since xml file did not change")  
+    assert_equal(previousInventoryChecksum, previousInventoryChecksum1, "Checksum should not differ, since xml file did not change")
 
 
     previousTime = Time.now - (9*3600)
@@ -614,17 +614,17 @@ class ChangeTrackingTest < Test::Unit::TestCase
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
     assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
     assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == true)
-    
+
     #Case 2 - last inventory was sent a while ago, its time for inventory
     previousTime = Time.now - (25*3600)
-    SetInventoryTimeStamp(@fileInventoryTimestampHashPath, previousTime) 
+    SetInventoryTimeStamp(@fileInventoryTimestampHashPath, previousTime)
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
     assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)
     assert(ret["DataItems"][0]["Collections"][0]["IsInventorySnapshot"] == true)
-    
+
     #case 3 - last inventry was sent moments ago, inventorry should not be sent, but a change should be found since there was no previous hashfile
-    SetInventoryTimeStamp(@fileInventoryTimestampHashPath, Time.now) 
+    SetInventoryTimeStamp(@fileInventoryTimestampHashPath, Time.now)
     ret = ChangeTracking.transform_and_wrap(@serviceinventoryPath, @fileinventoryHashPath, @fileInventoryTimestampHashPath)
     assert_equal(209, ret["DataItems"][0]["Collections"].size, "Got the wrong number of file inventory instances")
     assert(ret["DataItems"][0]["Collections"][0].has_key?("IsInventorySnapshot") == true)

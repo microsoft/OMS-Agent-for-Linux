@@ -12,13 +12,13 @@ class AuditdPluginLibTest < Test::Unit::TestCase
         #no op
         end
     end
-    
+
     def test_nil_event
         audit_blob = @@auditd_plugin.transform_and_wrap(nil, "test", nil)
 
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
     end
-    
+
     def test_missing_records_event
         record = {}
 
@@ -26,7 +26,7 @@ class AuditdPluginLibTest < Test::Unit::TestCase
 
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
     end
-    
+
     def test_invalid_records_event
         record = {
             "records" => nil
@@ -52,7 +52,7 @@ class AuditdPluginLibTest < Test::Unit::TestCase
 
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
     end
-    
+
     def test_missing_timestamp_event
         record = {
             "SerialNumber" => 731250,
@@ -63,7 +63,7 @@ class AuditdPluginLibTest < Test::Unit::TestCase
 
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
     end
-    
+
     def test_missing_serial_number_event
         record = {
             "Timestamp" => "1485983836.377",
@@ -74,7 +74,7 @@ class AuditdPluginLibTest < Test::Unit::TestCase
 
         assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
     end
-    
+
     def test_invalid_record_data_event
         [nil,"str",23,23.5,[1,2,3],{}].each do |json|
             record = {
@@ -88,7 +88,7 @@ class AuditdPluginLibTest < Test::Unit::TestCase
             assert(audit_blob.nil?, "Returned value is unexpectedly NOT nil!")
         end
     end
-    
+
     def test_one_record_event
         record = {
             "Timestamp" => "1485983836.377",
@@ -107,7 +107,7 @@ class AuditdPluginLibTest < Test::Unit::TestCase
         assert_equal(731250, audit_blob["DataItems"][0]["SerialNumber"], "Invalid SerialNumber in DataItem")
         assert_equal("Value1", audit_blob["DataItems"][0]["Field1"], "Invalid Field value DataItem")
     end
-    
+
     def test_multi_record_event
         record = {
             "Timestamp" => "1485983836.377",
