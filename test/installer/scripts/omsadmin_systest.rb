@@ -50,19 +50,19 @@ class OmsadminTest < MaintenanceSystemTestBase
     assert_equal("proxy_host:8080", proxy_setting, "Did not find the expected setting in the proxy conf file.")
   end
 
-  def test_onboard_proxy_sucess
-    prep_proxy(TEST_PROXY_SETTING)
-    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
-    assert_match(/Using proxy settings/, output, "Did not find using proxy settings message: #{output}")
-  end
+#  def test_onboard_proxy_sucess
+#    prep_proxy(TEST_PROXY_SETTING)
+#    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
+#    assert_match(/Using proxy settings/, output, "Did not find using proxy settings message: #{output}")
+#  end
 
-  def test_onboard_proxy_failure
-    bad_proxy_setting = TEST_PROXY_SETTING.sub(/(http:\/\/\w+:)\w+(@.*)/, '\1badpassword\2')
-    prep_proxy(bad_proxy_setting)
-    check_test_keys()
-    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY, should_succeed = false)
-    assert_match(/Using proxy settings/, output, "Did not find using proxy settings message")
-  end
+#  def test_onboard_proxy_failure
+#    bad_proxy_setting = TEST_PROXY_SETTING.sub(/(http:\/\/\w+:)\w+(@.*)/, '\1badpassword\2')
+#    prep_proxy(bad_proxy_setting)
+#    check_test_keys()
+#    output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY, should_succeed = false)
+#    assert_match(/Using proxy settings/, output, "Did not find using proxy settings message")
+#  end
 
   def test_onboard_success
     output = do_onboard(TEST_WORKSPACE_ID, TEST_SHARED_KEY)
