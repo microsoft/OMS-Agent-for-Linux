@@ -205,10 +205,8 @@ module WLM
             wlm_instance.add_key_property(key,value)
           end # do |key, value|
         end # if
-        instance.each do |properties|
-          properties.each do |key,value|
-            wlm_instance.add_cim_property(key,value)
-          end # do |key,value|
+        instance.each do |key,value| 
+          wlm_instance.add_cim_property(key,value)
         end # do |properties|
         discovery.add_instance(wlm_instance)
         if wclass["class_name"] == "Universal Linux Computer"
