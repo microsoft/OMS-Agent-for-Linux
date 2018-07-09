@@ -41,7 +41,6 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
     @mock = MockOmiInterface.new
     @common = MockCommon
     @mapping_path = "#{ENV['BASE_DIR']}/installer/conf/omi_mapping.json"
-    @wlm_mapping_path = "#{ENV['BASE_DIR']}/installer/conf/wlm_monitor_mapping.json"
   end
 
   def teardown
@@ -53,13 +52,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
                         'Apache Virtual Host', 'MySQL Database', 'MySQL Server']
     oms_object_names.each { |name| validate_specific_mapping(name) }
   end
-  
-  def test_get_specific_mapping_wlm
-    wlm_object_names = ['Processor', 'Logical Disk', 'Memory', 'Physical Disk', 'Network Adapter', 'Apache HTTP Server Statistics',
-                        'Apache HTTP Server', 'Apache Virtual Host', 'Apache Virtual Host Certificate']
-    wlm_object_names.each { |name| validate_specific_mapping(name, @wlm_mapping_path) }
-  end
-  
+
   def validate_specific_mapping(object_name, mapping=@mapping_path)
     omilib = OmiOms.new(object_name, 'inst_regex', 'counter_regex', mapping, @mock)
 
@@ -124,28 +117,7 @@ class In_OMS_OMI_Test < Test::Unit::TestCase
     expected = {"TotalPctCPU"=>"Total Pct CPU", "IdleWorkers"=>"Idle Workers", "BusyWorkers"=>"Busy Workers", "PctBusyWorkers"=>"Pct Busy Workers"}
     assert_equal(expected, cim_to_oms, "Did not generate the correct mapping of CIM to OMS properties")
   end
-  
-  def test_get_cim_to_wlm_mappings
-    omilib = OmiOms.new('Processor', 'inst_regex', 'counter_regex', @wlm_mapping_path, @mock)
     
-    cim_properties = [{
-                        "CimPropertyName"=> "PercentProcessorTime",
-                        "CounterName"=> "% Processor Time"
-                      },
-                      {
-                        "CimPropertyName"=> "PercentDPCTime",
-                        "CounterName"=> "% DPC Time"
-                      },
-                      {
-                        "CimPropertyName"=> "PercentInterruptTime",
-                        "CounterName"=> "% Interrupt Time"
-                      }]
-
-    cim_to_wlm = omilib.get_cim_to_oms_mappings(cim_properties)
-    expected = {"PercentProcessorTime"=>"% Processor Time", "PercentDPCTime"=>"% DPC Time", "PercentInterruptTime"=>"% Interrupt Time"}
-    assert_equal(expected, cim_to_wlm, "Did not generate the correct mapping of CIM to WLM properties")  
-  end
-  
   def test_enumerate_filtering
     @mock.omi_result = @OMI_result_logical_disk
     omilib = OmiOms.new('Logical Disk', '_Total', '%', @mapping_path, @mock, @common)
