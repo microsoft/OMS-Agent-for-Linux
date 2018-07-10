@@ -46,8 +46,8 @@ module Fluent
       discovery_data = omi_lib.get_discovery_data()
       wlm_formatter = WLM::WLMDataFormatter.new(@wlm_class_file)
       discovery_data.each do |wclass|
-  	if wclass["class_name"].to_s == "Universal Linux Computer"
-	  wclass["discovery_data"][0][0]["CSName"] = OMS::Common.get_fully_qualified_domain_name
+	if wclass["class_name"].to_s == "Universal Linux Computer"
+          wclass["discovery_data"][0]["CSName"] = OMS::Common.get_fully_qualified_domain_name
 	end
         discovery_xml = wlm_formatter.get_discovery_xml(wclass)
         instance = {}
