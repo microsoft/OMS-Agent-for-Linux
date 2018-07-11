@@ -564,7 +564,7 @@ class NPMDServerTest < Test::Unit::TestCase
         assert(mtime_bin_2 > mtime_bin_1, "The new binary should have a modification that is newer or higher than earlier")
 
     end
-
+    
     # Test12: Check that "_x64" preceeds "_x32" if both staging are present
     # Sequence:
     # 1. Copy the binary file by appending "_x64" to name
@@ -573,28 +573,28 @@ class NPMDServerTest < Test::Unit::TestCase
     #   (a) Wait for emit to have at least one error log
     # 4. Run the driver
     # 5. Assert that both 32, 64 found and picked 64 log is present
-    def test_case_12_check_x64_preceeds_x32
-        # Step 1
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
+    # def test_case_12_check_x64_preceeds_x32
+    #     # Step 1
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 2
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
+    #     # Step 2
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 3
-        d = create_driver
-        d.register_run_post_condition {
-            sleep(100 * ONE_MSEC)
-            true
-        }
+    #     # Step 3
+    #     d = create_driver
+    #     d.register_run_post_condition {
+    #         sleep(100 * ONE_MSEC)
+    #         true
+    #     }
 
-        # Step 4
-        d.run
-        error_logs = parse_diag_logs_from_emits(d.emits)
+    #     # Step 4
+    #     d.run
+    #     error_logs = parse_diag_logs_from_emits(d.emits)
 
-        # Step 5
-        found_binary_duplicate_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_DUPLICATE)
-        assert_equal(true, found_binary_duplicate_log, "Binary duplicate log in test should have been seen");
-    end
+    #     # Step 5
+    #     found_binary_duplicate_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_DUPLICATE)
+    #     assert_equal(true, found_binary_duplicate_log, "Binary duplicate log in test should have been seen");
+    # end
 
     # Test13: Check UID of binary connecting
     # Sequence:
