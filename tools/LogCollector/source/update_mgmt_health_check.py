@@ -46,7 +46,7 @@ def main(output_path=None):
         f = open(output_path + "/healthcheck-" + str(datetime.datetime.utcnow().isoformat()) + ".log", "w")
         f.write("".join(output))
 
-    return "".join(output)
+    print "".join(output)
 
 def check_network():
     output = []
@@ -232,4 +232,7 @@ def get_machine_info():
     return "".join(output)
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        main(sys.argv[1])
+    else:
+        main()

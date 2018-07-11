@@ -23,8 +23,6 @@ import logging
 import sys, getopt
 import datetime
 
-import update_mgmt_health_check
-
 if "check_output" not in dir( subprocess ): # duck punch it in!
         def check_output(*popenargs, **kwargs):
             r"""Run command with arguments and return its output as a byte string.
@@ -978,7 +976,9 @@ try:
     Run Update Management Health Check Script
     '''
     path = outDir + "/updateMgmtlogs"
-    writeLogOutput(update_mgmt_health_check.main(output_path=path))
+    cmd='python ./update_mgmt_health_check.py ' + path
+    out=execCommand(cmd)
+    writeLogOutput(out)
 
     '''
     Logic to capture IOError or OSError in above logic
