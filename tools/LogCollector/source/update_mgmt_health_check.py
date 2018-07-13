@@ -62,6 +62,9 @@ def check_network():
 
     ods_endpoints = ["*.ods.opinsights.azure.com", "*.oms.opinsights.azure.com", "ods.systemcenteradvisor.com"]
 
+    ff_endpoints = ["usge-jobruntimedata-prod-1.usgovtrafficmanager.net", "usge-agentservice-prod-1.usgovtrafficmanager.net", 
+                    "*.ods.opinsights.azure.us", "*.oms.opinsights.azure.us" ]
+
     workspace = get_workspace()
 
     for endpoint in endpoints:
@@ -86,8 +89,8 @@ def check_network():
                 output.append(region + agent_endpoint + ": failure\n")
 
         except Exception as ex:
-            print region + agent_endpoint
-            print str(ex)
+            output.append(region + agent_endpoint + ": failure\n")
+            output.append(str(ex) + "\n")
 
     output.append("\n")
 
@@ -102,8 +105,8 @@ def check_network():
                 output.append(region + jrds_endpoint + ": failure\n")
 
         except Exception as ex:
-            print region + jrds_endpoint
-            print str(ex)
+            output.append(region + jrds_endpoint + ": failure\n")
+            output.append(str(ex) + "\n")
 
     output.append("\n")
     
@@ -127,8 +130,33 @@ def check_network():
                     output.append(new_endpoint + ": failure\n")
 
             except Exception as ex:
-                print new_endpoint
-                print str(ex)
+                output.append(new_endpoint + ": failure (this is normal if region is in Fairfax) \n")
+                output.append(str(ex) + "\n")
+    
+    output.append("\n")
+
+    for endpoint in ff_endpoints:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        new_endpoint = None
+        
+        if "*" in endpoint and workspace is not None:
+            new_endpoint = endpoint.replace("*", workspace)
+        elif "*" not in endpoint:
+            new_endpoint = endpoint
+
+        if new_endpoint is not None:
+            try:
+                response = sock.connect_ex((new_endpoint, 443))
+
+                if response == 0:
+                    output.append(new_endpoint + ": success\n")
+                else:
+                    output.append(new_endpoint + ": failure\n")
+
+            except Exception as ex:
+                output.append(new_endpoint + ": failure (this is normal if the region is not Fairfax).\n")
+                output.append(str(ex) + "\n")
         
     return "".join(output)
 
