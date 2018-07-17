@@ -330,7 +330,7 @@
         service="syslog" />
     </audit>
     <audit
-      description="File permissions for all rsyslog log files should be set to 640."
+      description="File permissions for all rsyslog log files should be set to 640 or 600."
       msid="63"
       cceid="CCE-18095-0"
       severity="Important"
@@ -340,7 +340,7 @@
       <check
         distro="!SLES"
         command="CheckMatchingLines"
-        regex="^[\s]*.FileCreateMode\s+0640"
+        regex="^[\s]*.FileCreateMode\s+06[04]0"
         path="/etc/rsyslog.conf" />
     </audit>
     <audit
