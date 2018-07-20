@@ -8,6 +8,10 @@ class WlmOmiOms < OmiOms
   end
 
   def omi_to_oms_instance(omi_instance, timestamp)
+    omi_instance.each do |property,value|
+      omi_instance[property] = 1 if value == "true"
+      omi_instance[property] = 0 if value == "false"
+    end
     oms_instance = super
     oms_instance["Host"] = @hostname
     oms_instance[@object_name] = omi_instance[@specific_mapping["InstanceProperty"]]
