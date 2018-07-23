@@ -75,6 +75,7 @@ def check_endpoints(workspace, endpoints, success_message, failure_message):
                     output.append(new_endpoint + ": " + failure_message + "\n")
 
             except Exception as ex:
+                output.append(new_endpoint + ": " + failure_message + "\n")
                 output.append(str(ex) + "\n")
 
     return output
@@ -175,18 +176,9 @@ def check_oms_agent_installed():
     return "".join(agent_status)
 
 def check_hybrid_worker_running():
-    output = os.popen("ps aux | grep worker").read()
-
-    hybrid_worker_status = []
-
-    if "python /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/hybridworker.py" in output:
-        hybrid_worker_status.append("Hybrid worker seems to be running. \n\n")
-    else:
-        hybrid_worker_status.append("Hybrid worker does not seem to be running. \n\n")
-
-    hybrid_worker_status.append("Hybrid worker output: \n" + str(output))
-
-    return "".join(hybrid_worker_status)
+    return grep_for_process("worker", 
+                            ["python /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/hybridworker.py"], 
+                            "Hybrid worker")
 
 def check_hybrid_worker_installed():
     workspace = get_workspace()
@@ -200,18 +192,21 @@ def check_hybrid_worker_installed():
             return "worker.conf does not exist. Is hybrid worker installed? \n"
 
 def check_oms_agent_running():
-    output = os.popen("ps aux | grep omsagent").read()
+    return grep_for_process("omsagent", ["omsagent.log", "omsagent.conf"], "OMS Agent")
 
-    hybrid_worker_status = []
+def grep_for_process(process_name, search_criteria, output_name):
+    grep_output = os.popen("ps aux | grep " + process_name).read()
 
-    if "omsagent.log" or "omsagent.conf" in output:
-        hybrid_worker_status.append("OMS Agent seems to be running. \n\n")
+    output = []
+
+    if any(search_text in grep_output for search_text in search_criteria):
+        output.append(output_name + " seems to be running. \n\n")
     else:
-        hybrid_worker_status.append("OMS Agent does not seem to be running. \n\n")
+        output.append(output_name + " does not seem to be running. \n\n")
+    
+    output.append(output_name + " output: \n" + str(grep_output))
 
-    hybrid_worker_status.append("OMS Agent output: \n" + str(output))
-
-    return ''.join(hybrid_worker_status)
+    return "".join(output)
 
 def check_oms_admin():
     oms_admin_path = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
