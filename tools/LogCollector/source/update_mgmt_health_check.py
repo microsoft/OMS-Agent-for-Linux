@@ -25,15 +25,19 @@ import datetime
 from os import walk
 
 def main(output_path=None):
-
     output = []
 
-    output.append(check_network() + "\n")
+    if os.geteuid() != 0:
+        print "Please run this script in sudo"
+        exit()
+
+    output.append(get_machine_info() + "\n")
+    output.append(check_oms_admin() + "\n")
     output.append(check_oms_agent_installed() + "\n")
     output.append(check_oms_agent_running() + "\n")
-    output.append(check_oms_admin() + "\n")
+    output.append(check_hybrid_worker_installed() + "\n")
     output.append(check_hybrid_worker_running() + "\n")
-    output.append(get_machine_info() + "\n")
+    output.append(check_network() + "\n")
 
     output.append("\n")
 
@@ -48,17 +52,49 @@ def main(output_path=None):
 
     print "".join(output)
 
+def check_endpoints(workspace, endpoints, success_message, failure_message):
+    output = []
+
+    for endpoint in endpoints:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        new_endpoint = None
+        
+        if "*" in endpoint and workspace is not None:
+            new_endpoint = endpoint.replace("*", workspace)
+        elif "*" not in endpoint:
+            new_endpoint = endpoint
+
+        if new_endpoint is not None:
+            try:
+                response = sock.connect_ex((new_endpoint, 443))
+
+                if response == 0:
+                    output.append(new_endpoint + ": " + success_message + "\n")
+                else:
+                    output.append(new_endpoint + ": " + failure_message + "\n")
+
+            except Exception as ex:
+                output.append(str(ex) + "\n")
+
+    return output
+
 def check_network():
     output = []
     output.append("Network check: \n\n")
 
     endpoints = ["bing.com", "google.com"]
-    
-    agent_regions = ["jpe", "eus2", "cc", "scus", "uks", "sea"]
-    agent_endpoint = "-agentservice-prod-arm-1.trafficmanager.net"
+    agent_endpoints = []
+    jrds_endpoints = []
 
-    jrds_regions = ["wcus", "ncus"]
-    jrds_endpoint = "-jobruntimedata-prod-arm-1.trafficmanager.net"
+    agent_endpoint = get_agent_endpoint()
+    jrds_endpoint = get_jrds_endpoint()
+
+    if agent_endpoint is not None:
+        agent_endpoints.append(agent_endpoint)
+    
+    if jrds_endpoint is not None:
+        jrds_endpoints.append(jrds_endpoint)
 
     ods_endpoints = ["*.ods.opinsights.azure.com", "*.oms.opinsights.azure.com", "ods.systemcenteradvisor.com"]
 
@@ -67,98 +103,43 @@ def check_network():
 
     workspace = get_workspace()
 
-    for endpoint in endpoints:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        response = sock.connect_ex((endpoint, 443))
-
-        if response == 0:
-            output.append(endpoint + ": success\n")
-        else:
-            output.append(endpoint + ": failure\n")
-
+    output.extend(check_endpoints(workspace, endpoints, "success", "failure"))
     output.append("\n")
-        
-    for region in agent_regions:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            response = sock.connect_ex((str(region + agent_endpoint), 443))
+    output.extend(check_endpoints(workspace, agent_endpoints, "success", "failure"))
+    output.append("\n")
+    output.extend(check_endpoints(workspace, jrds_endpoints, "success", "failure"))
+    output.append("\n")
 
-            if response == 0:
-                output.append(region + agent_endpoint + ": success\n")
-            else:
-                output.append(region + agent_endpoint + ": failure\n")
-
-        except Exception as ex:
-            output.append(region + agent_endpoint + ": failure\n")
-            output.append(str(ex) + "\n")
+    if check_ff() is True:
+        output.extend(check_endpoints(workspace, ff_endpoints, "success", "failure"))
+    else:
+        output.extend(check_endpoints(workspace, ods_endpoints, "success", "failure"))
 
     output.append("\n")
 
-    for region in jrds_regions:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            response = sock.connect_ex((str(region + jrds_endpoint), 443))
-
-            if response == 0:
-                output.append(region + jrds_endpoint + ": success\n")
-            else:
-                output.append(region + jrds_endpoint + ": failure\n")
-
-        except Exception as ex:
-            output.append(region + jrds_endpoint + ": failure\n")
-            output.append(str(ex) + "\n")
-
-    output.append("\n")
-    
-    for endpoint in ods_endpoints:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        new_endpoint = None
-        
-        if "*" in endpoint and workspace is not None:
-            new_endpoint = endpoint.replace("*", workspace)
-        elif "*" not in endpoint:
-            new_endpoint = endpoint
-
-        if new_endpoint is not None:
-            try:
-                response = sock.connect_ex((new_endpoint, 443))
-
-                if response == 0:
-                    output.append(new_endpoint + ": success\n")
-                else:
-                    output.append(new_endpoint + ": failure\n")
-
-            except Exception as ex:
-                output.append(new_endpoint + ": failure (this is normal if region is in Fairfax) \n")
-                output.append(str(ex) + "\n")
-    
-    output.append("\n")
-
-    for endpoint in ff_endpoints:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        new_endpoint = None
-        
-        if "*" in endpoint and workspace is not None:
-            new_endpoint = endpoint.replace("*", workspace)
-        elif "*" not in endpoint:
-            new_endpoint = endpoint
-
-        if new_endpoint is not None:
-            try:
-                response = sock.connect_ex((new_endpoint, 443))
-
-                if response == 0:
-                    output.append(new_endpoint + ": success\n")
-                else:
-                    output.append(new_endpoint + ": failure\n")
-
-            except Exception as ex:
-                output.append(new_endpoint + ": failure (this is normal if the region is not Fairfax).\n")
-                output.append(str(ex) + "\n")
-        
     return "".join(output)
+
+def get_jrds_endpoint():
+    workspace = get_workspace()
+
+    if workspace is not None:
+        worker_conf_path = "/var/opt/microsoft/omsagent/" + workspace + "/state/automationworker/worker.conf"
+        
+        line = find_line_in_path("jrds_base_uri", worker_conf_path)
+        
+        if line is not None:
+            return line.split("=")[1].split("/")[2].strip()
+
+    return None
+
+def get_agent_endpoint():
+    oms_admin_path = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+    line = find_line_in_path("agentservice", oms_admin_path)
+
+    if line is not None:
+        return line.split("=")[1].split("/")[2].strip()
+
+    return None
 
 def check_oms_agent_installed():
     oms_agent_dir = "/var/opt/microsoft/omsagent"
@@ -205,7 +186,18 @@ def check_hybrid_worker_running():
 
     hybrid_worker_status.append("Hybrid worker output: \n" + str(output))
 
-    return ''.join(hybrid_worker_status)
+    return "".join(hybrid_worker_status)
+
+def check_hybrid_worker_installed():
+    workspace = get_workspace()
+
+    if workspace is not None:
+        worker_conf_path = "/var/opt/microsoft/omsagent/" + workspace + "/state/automationworker/worker.conf"
+
+        if os.path.isfile(worker_conf_path):
+            return "worker.conf exists. Hybrid worker looks to be installed. \n"
+        else:
+            return "worker.conf does not exist. Is hybrid worker installed? \n"
 
 def check_oms_agent_running():
     output = os.popen("ps aux | grep omsagent").read()
@@ -239,15 +231,11 @@ def check_oms_admin():
 
 def get_workspace():
     oms_admin_path = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+    line = find_line_in_path("WORKSPACE", oms_admin_path)
 
-    if os.path.isfile(oms_admin_path):
-        oms_admin_file = open(oms_admin_path, 'r')
+    if line is not None:
+        return line.split("=")[1].strip()
 
-        for line in oms_admin_file:
-            if "WORKSPACE" in line:
-                workspace = line.split("=")[1]
-                return str(workspace).strip()
-    
     return None
 
 def get_machine_info():
@@ -258,6 +246,23 @@ def get_machine_info():
     output.append(hostname_output + "\n")
 
     return "".join(output)
+
+def check_ff():
+    oms_admin_path = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+    oms_endpoint = find_line_in_path("OMS_ENDPOINT", oms_admin_path).split("=")[1]
+
+    if oms_endpoint is not None:
+        return ".us" in oms_endpoint
+
+def find_line_in_path(search_text, path):
+    if os.path.isfile(path):
+        current_file = open(path, 'r')
+
+        for line in current_file:
+            if search_text in line:
+                return line
+    
+    return None
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:

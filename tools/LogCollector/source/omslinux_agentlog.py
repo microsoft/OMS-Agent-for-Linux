@@ -976,7 +976,7 @@ try:
     Run Update Management Health Check Script
     '''
     path = outDir + "/updateMgmtlogs"
-    cmd='python ./update_mgmt_health_check.py ' + path
+    cmd='sudo python ./update_mgmt_health_check.py ' + path
     out=execCommand(cmd)
     writeLogOutput(out)
 
