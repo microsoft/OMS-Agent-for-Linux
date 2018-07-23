@@ -6,6 +6,7 @@ module Fluent
   class SecurityBaselineFilter < Filter
 
     Fluent::Plugin.register_filter('filter_security_baseline', self)
+    config_param :baseline_type, :string, default: nil
 
     def configure(conf)
         super
@@ -27,7 +28,7 @@ module Fluent
 
     def filter(tag, time, record)       
         # Create Security Baseline and Security Baseline Summary blobs based on omsbaseline tool scan & assessment results
-        security_baseline = OMS::SecurityBaseline.new(@log)
+        security_baseline = OMS::SecurityBaseline.new(@log, @baseline_type)
         security_baseline_blob, security_baseline_summary_blob = security_baseline.transform_and_wrap(record, @hostname, time)
 
         if !security_baseline_summary_blob.nil?

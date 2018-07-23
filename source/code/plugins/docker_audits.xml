@@ -1,0 +1,165 @@
+<data>
+  <audits BaselineId="OMS.Docker.Linux.1" BaseOrigId="1" Dependencies="ServiceStatus:docker|running">
+     <audit
+      description="Ensure docker version is up-to-date"
+      msid="1.3"
+      cceid="CIS-CE-1-3"
+      severity="Critical"
+      impact="Using up-to-date docker version will keep your host secure"
+      remediation="Follow the docker documentation in aim to upgrade your version"
+      ruleId="23d52f96-7ba6-45ef-8fa4-0251805d4896">
+      <check distro="*" command="CheckDockerVersionGreaterThan" version="17.12.0/17.03.2" />
+    </audit>
+    <audit
+      description="Ensure auditing is configured for the docker daemon"
+      msid="1.5"
+      cceid="CIS-CE-1-5"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit Docker daemon as well. Docker daemon runs with root privileges. It is thus necessary to audit its activities and usage."
+      remediation="Add the line '-w /usr/bin/docker -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="505207ac-8ff4-42e4-81eb-7c5b7d96e696">
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/usr\/bin\/docker|\/usr\/bin\/|\/usr\/)\s"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - /var/lib/docker"
+      msid="1.6"
+      cceid="CIS-CE-1-6"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /var/lib/docker is one such directory. It holds all the information about containers. It must be audited."
+      remediation="Add the line '-w /var/lib/docker -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="89ba197c-e67b-4d91-b441-5b1e552847a5">
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/var\/lib\/docker\/?|\/var\/lib\/?|\/var\/?)\s"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - /etc/docker"
+      msid="1.7"
+      cceid="CIS-CE-1-7"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /etc/docker is one such directory. It holds various certificates and keys used for TLS communication between Docker daemon and Docker client. It must be audited."
+      remediation="Add the line '-w /etc/docker -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="b10dcd00-7461-46b9-a71e-21531216cb5d">
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/etc\/docker\/?|\/etc\/?)\s"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - docker.service"
+      msid="1.8"
+      cceid="CIS-CE-1-8"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. docker.service is one such file. The docker.service file might be present if the daemon parameters have been changed by an administrator. It holds various parameters for Docker daemon. It must be audited, if applicable."
+      remediation="Find out the 'docker.service' file location by running: 'systemctl show -p FragmentPath docker.service' and add the line '-w {docker.service file location} -k docker' into the /etc/audit/audit.rules file where {docker.service file location} is the file path you have found earlier. Restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="62063e9a-c9ce-4167-b4e2-a2536a515947">
+      <check distro="*" dependencies="SystemDUnitExists:docker.service" command="CheckMatchingLinesInAuditDRules" filter= "" regex="docker.service"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - docker.socket"
+      msid="1.9"
+      cceid="CIS-CE-1-9"  
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. docker.socket is one such file. It holds various parameters for Docker daemon socket. It must be audited, if applicable."
+      remediation="Find out the 'docker.socket' file location by running: 'systemctl show -p FragmentPath docker.socket' and add the line '-w {docker.socket file location} -k docker' into the /etc/audit/audit.rules file where {docker.socket file location} is the file path you have found earlier. Restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="358eadc8-57f6-4b4e-a874-1999e8a80a17">
+      <check distro="*" dependencies="SystemDUnitExists:docker.socket" command="CheckMatchingLinesInAuditDRules" filter= "" regex="docker.socket"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - /etc/default/docker"
+      msid="1.10"
+      cceid="CIS-CE-1-10"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /etc/default/docker is one such file. It holds various parameters for Docker daemon. It must be audited, if applicable."
+      remediation="Add the line '-w /etc/default/docker -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="07982b8f-5697-45ad-93dc-786273aa4ba1">
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/etc\/default\/docker|\/etc\/default\/|\/etc\/)\s"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - /etc/docker/daemon.json"
+      msid="1.11"
+      cceid="CIS-CE-1-11"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /etc/docker/daemon.json is one such file. It holds various parameters for Docker daemon. It must be audited, if applicable."
+      remediation="Add the line '-w /etc/docker/daemon.json -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="a2a9eaaf-8571-4be3-8d04-c0db00e78125">
+      <check distro="*" dependencies="FileExists:/etc/docker/daemon.json" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/etc\/docker\/daemon.json|\/etc\/docker\/|\/etc\/)\s"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - /usr/bin/docker-containerd"
+      msid="1.12"
+      cceid="CIS-CE-1-12"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /usr/bin/docker-containerd is one such file. Docker now relies on containerdand runC to spawn containers. It must be audited, if applicable."
+      remediation="Add the line '-w /usr/bin/docker-containerd -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="db3d50cf-a60c-4b11-a09f-409ee45401b8">
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/usr\/bin\/docker-containerd|\/usr\/bin\/|\/usr\/)\s"/>
+    </audit>
+    <audit
+      description="Ensure auditing is configured for Docker files and directories - /usr/bin/docker-runc"
+      msid="1.13"
+      cceid="CIS-CE-1-13"
+      severity="Warning"
+      impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /usr/bin/docker-runc is one such file. Docker now relies on containerd and runC to spawn containers. It must be audited, if applicable."
+      remediation="Add the line '-w /usr/bin/docker-runc -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
+      ruleId="7b2cdabf-f4c3-4e69-9af9-b65c3e2edae9">
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/usr\/bin\/docker-runc|\/usr\/bin\/|\/usr\/)\s"/>
+    </audit>
+     <audit
+      description="Ensure network traffic is restricted between containers on the default bridge"
+      msid="2.1"
+      cceid="CIS-CE-2-1"
+      severity="Critical"
+      impact="The inter-container communication would be disabled on the default network bridge. If any communication between containers on the same host is desired, then it needs to be explicitly defined using container linking or alternatively custom networks have to be defined."
+      remediation="Run the docker in daemon mode and pass --icc=false as an argument or set the 'icc' setting to false in the daemon.json file. Alternatively, you can follow the Docker documentation and create a custom network and only join containers that need to communicate to that custom network. The --icc parameter only applies to the default docker bridge, if custom networks are used then the approach of segmenting networks should be adopted instead."
+      ruleId="f30a6a51-9f47-4d3b-819d-7edf7fb53eb4">
+      <check distro="*" command="CheckNoMatchingLinesDockerNetworkInspect" filter="icc" regex="true" />
+    </audit>
+    <audit
+      description="Ensure insecure registries are not used"
+      msid="2.4"
+      cceid="CIS-CE-2-4"
+      severity="Critical"
+      impact="You should not be using any insecure registries in the production environment. Insecure registries can be tampered with leading to possible compromise to your production system."
+      remediation="remove '--insecure-registry' flag from the dockerd start command"
+      ruleId="63a6efd7-8465-4a9d-a979-ed82db21fb6d">
+      <check distro="*" command="CheckNoMatchingLinesPSCommand" filter="dockerd" regex="--insecure-registry" />
+    </audit>
+    <audit
+      description="The 'aufs' storage driver should not be used by the docker daemon"
+      msid="2.5"
+      cceid="CIS-CE-2-5"
+      severity="Critical"
+      impact="The 'aufs' storage driver is the oldest storage driver. It is based on a Linux kernel patch-set that is unlikely to be merged into the main Linux kernel. aufs driver is also known to cause some serious kernel crashes. aufs just has legacy support from Docker. Most importantly, aufs is not a supported driver in many Linux distributions using latest Linux kernels"
+      remediation="The 'aufs' storage driver should be replaced by a different storage driver, we recommend to use 'overlay2'"
+      ruleId="3b964bc7-584b-43fa-87aa-c84cda32c1c5">
+      <check distro="*" command="CheckNoMatchingLinesDockerInfo" filter="" regex="^Storage Driver:\s*aufs\s*$" />
+    </audit>
+    <audit
+      description="Ensure the default ulimit is configured appropriately"
+      msid="2.7"
+      cceid="CIS-CE-2-7"
+      severity="Warning"
+      impact="If the ulimits are not set properly, the desired resource control might not be achieved and might even make the system unusable."
+      remediation="Run the docker in daemon mode and pass --default-ulimit as argument with respective ulimits as appropriate in your environment. Alternatively, you can also set a specific resource limitation to each container separately by using the --ulimit argument with respective ulimits as appropriate in your environment."
+      ruleId="783e2e24-d659-4292-ae88-6cecc861ac3f">
+      <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" filter="Ulimits" regex="null" />
+    </audit>
+    <audit
+      description="Ensure base device size is not changed until needed"
+      msid="2.10"
+      cceid="CIS-CE-2-10"
+      severity="Warning"
+      impact="Increasing the base device size allows all future images and containers to be of the new base device size, This may cause a denial of service by ending up in file system being over-allocated or full."
+      remediation="remove '--storage-opt dm.basesize' flag from the dockerd start command until you need it"
+      ruleId="9cdefd3a-f2ea-4cd5-a807-30d2551eb45f">
+      <check distro="*" command="CheckNoMatchingLinesPSCommand" filter="dockerd" regex="--storage-opt dm.basesize" />
+    </audit>    
+    <audit
+      description="Ensure a user for the container has been created"
+      msid="4.1"
+      cceid="CIS-CE-4-1"
+      severity="Warning"
+      impact="It is a good practice to run the container as a non-root user, if possible. Though user namespace mapping is now available, if a user is already defined in the container image, the container is run as that user by default and specific user namespace remapping is not required."
+      remediation="Ensure that the Dockerfile for the container image contains: 'USER {username or ID}' where username or ID refers to the user that could be found in the container base image. If there is no specific user created in the container base image, then add a useradd command to add the specific user before USER instruction."
+      ruleId="344e58e2-95d7-4c37-981c-c246be90ce8d">
+      <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" filter='"User"' regex='"0"|"root"|""' />
+    </audit>
+  </audits>
+</data>
+
