@@ -190,6 +190,8 @@ def check_hybrid_worker_installed():
             return "worker.conf exists. Hybrid worker looks to be installed. \n"
         else:
             return "worker.conf does not exist. Is hybrid worker installed? \n"
+    else:
+        return "Checking hybrid worker installed...workspace not found. Is OMS Agent installed?"
 
 def check_oms_agent_running():
     return grep_for_process("omsagent", ["omsagent.log", "omsagent.conf"], "OMS Agent")
@@ -244,10 +246,10 @@ def get_machine_info():
 
 def check_ff():
     oms_admin_path = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
-    oms_endpoint = find_line_in_path("OMS_ENDPOINT", oms_admin_path).split("=")[1]
+    oms_endpoint = find_line_in_path("OMS_ENDPOINT", oms_admin_path)
 
     if oms_endpoint is not None:
-        return ".us" in oms_endpoint
+        return ".us" in oms_endpoint.split("=")[1]
 
 def find_line_in_path(search_text, path):
     if os.path.isfile(path):
