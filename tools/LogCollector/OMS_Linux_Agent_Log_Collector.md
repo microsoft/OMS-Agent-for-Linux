@@ -6,7 +6,7 @@
 - Download the tool and copy to any directory of your choice:
 
    ```
-   wget https://github.com/Microsoft/OMS-Agent-for-Linux/raw/master/tools/LogCollector/download/v2/omslinux_agentlog.tgz
+   wget https://github.com/Microsoft/OMS-Agent-for-Linux/raw/master/tools/LogCollector/download/v3/omslinux_agentlog.tgz
    ```  
    Recommendation is to copy the tool to the user’s home directory (/home/user)
 - Untar the archive file to extract OMS Log Collector source files:
