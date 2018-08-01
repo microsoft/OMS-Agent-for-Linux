@@ -34,13 +34,13 @@ The Operations Management Suite Agent for Linux comprises multiple packages. The
 
 **Package** | **Version** | **Description**
 ----------- | ----------- | --------------
-omsagent | 1.1.0 | The Operations Management Suite Agent for Linux
+omsagent | 1.6.0 | The Operations Management Suite Agent for Linux
 omsconfig | 1.1.1 | Configuration agent for the OMS Agent
-omi | 1.0.8.3 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
-scx | 1.6.2 | OMI CIM Providers for operating system performance metrics
-apache-cimprov | 1.0.0 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
-mysql-cimprov | 1.0.0 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
-docker-cimprov | 0.1.0 | Docker provider for OMI. Only installed if Docker is detected.
+omi | 1.4.2 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
+scx | 1.6.3 | OMI CIM Providers for operating system performance metrics
+apache-cimprov | 1.0.1 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
+mysql-cimprov | 1.0.1 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
+docker-cimprov | 1.0.0 | Docker provider for OMI. Only installed if Docker is detected.
 
 **Additional Installation Artifacts**
 After installing the OMS agent for Linux packages, the following additional system-wide configuration changes are applied. These artifacts are removed when the omsagent package is uninstalled.
@@ -53,7 +53,7 @@ After installing the OMS agent for Linux packages, the following additional syst
  **Required package** 	| **Description** 	| **Minimum version**
 --------------------- | --------------------- | -------------------
 Glibc |	GNU C Library	| 2.5-12 
-Openssl	| OpenSSL Libraries | 0.9.8e or 1.0
+Openssl	| OpenSSL Libraries | 1.0.x or 1.1.x
 Curl | cURL web client | 7.15.5
 Python-ctypes | | 
 PAM | Pluggable Authentication Modules	 | 
@@ -720,21 +720,21 @@ The Operations Management Suite Agent for Linux shares agent binaries with the S
 
 # Known Limitations
 * ## Azure Diagnostics
-For Linux virtual machines running in Azure, additional steps may be required to allow data collection by Azure Diagnostics and Operations Management Suite. **Version 2.2** of the Diagnostics Extension for Linux is required for compatibility with the OMS Agent for Linux. 
+For Linux virtual machines running in Azure, additional steps may be required to allow data collection by Azure Diagnostics and Operations Management Suite. Minimum **Version 2.3** of the Diagnostics Extension for Linux is required for compatibility with the OMS Agent for Linux. 
 
-	For more information on installing and configuring the Diagnostic Extension for Linux, see [this article](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-diagnostic-extension/#use-the-azure-cli-command-to-enable-linux-diagnostic-extension).
+For more information on installing and configuring the Diagnostic Extension for Linux, see [this article](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-diagnostic-extension/#use-the-azure-cli-command-to-enable-linux-diagnostic-extension).
 
-**Upgrading the Linux Diagnostics Extension from 2.0 to 2.2**
+**Upgrading the Linux Diagnostics Extension from 2.0 to 2.3**
 **Azure CLI**
 *ASM:*
 ```
 azure vm extension set -u <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.0
-azure vm extension set <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.2 --private-config-path PrivateConfig.json
+azure vm extension set <vm_name> LinuxDiagnostic Microsoft.OSTCExtensions 2.3 --private-config-path PrivateConfig.json
 ```
 *ARM:*
 ```
 azure vm extension set -u <resource-group> <vm-name> Microsoft.Insights.VMDiagnosticsSettings Microsoft.OSTCExtensions 2.0
-azure vm extension set <resource-group> <vm-name> LinuxDiagnostic Microsoft.OSTCExtensions 2.2 --private-config-path PrivateConfig.json
+azure vm extension set <resource-group> <vm-name> LinuxDiagnostic Microsoft.OSTCExtensions 2.3 --private-config-path PrivateConfig.json
 ```
 
 *Note: These command examples reference a file named PrivateConfig.json. The format of that file should be:*
