@@ -30,15 +30,24 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * **Elite Linux customer panel:** If you are a die-hard OMS Linux user and want to join our weekly calls and talk directly to the product team apply through this **[survey](https://www.surveymonkey.com/r/6MTHN3P).**
 
 ## Supported Linux Operating Systems
-* Amazon Linux 2012.09 --> 2017 (x86/x64)
-* CentOS Linux 5,6, and 7 (x86/x64)
-* Oracle Linux 5,6, and 7 (x86/x64)
-* Red Hat Enterprise Linux Server 5,6 and 7 (x86/x64)
-* Debian GNU/Linux 6, 7, 8, and 9 (x86/x64)
-* Ubuntu 12.04 LTS, 14.04 LTS, 16.04 LTS (x86/x64)
-* SUSE Linux Enteprise Server 11 and 12 (x86/x64)
+### 64-bit
+* CentOS 6 and 7
+* Amazon Linux 2017.09
+* Oracle Linux 6 and 7
+* Red Hat Enterprise Linux Server 6 and 7
+* Debian GNU/Linux 8 and 9
+* Ubuntu Linux 14.04 LTS, 16.04 LTS and 18.04 LTS
+* SUSE Linux Enteprise Server 12
+### 32-bit
+* CentOS 6
+* Oracle Linux 6
+* Red Hat Enterprise Linux Server 6
+* Debian GNU/Linux 8 and 9
+* Ubuntu Linux 14.04 LTS and 16.04 LTS
 
 **Note:** Openssl 1.1.0 is only supported on x86_64 platforms (64-bit).
+
+**Note:** OpenSSL < 1.x is not supported on any platform.
 
 ## Supported Scenarios
 ### [Heartbeat data collection](docs/OMS-Agent-for-Linux.md#viewing-heartbeat-data)
