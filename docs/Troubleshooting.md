@@ -66,6 +66,7 @@ If none of these steps work for you the following channels for help are also ava
 | 23 | SCX or OMI package already installed; Use `--upgrade` instead of `--install` to install the shell bundle |
 | 30 | Internal bundle error; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
 | 51 | Unsupported Package Manager; OMSAgent only supports systems with 'DPKG' or 'RPM' package managers |
+| 55 | Unsupported openssl version or Cannot connect to Microsoft OMS service or dpkg is locked or Missing curl program |
 | 60 | Unsupported version of OpenSSL; Install a version of OpenSSL meeting our [package requirements](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#package-requirements) |
 | 61 | Missing Python ctypes library; Install the Python ctypes library or package (python-ctypes) |
 | 62 | Missing tar program; Install tar |
