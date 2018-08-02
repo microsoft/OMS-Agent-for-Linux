@@ -30,6 +30,18 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * **Elite Linux customer panel:** If you are a die-hard OMS Linux user and want to join our weekly calls and talk directly to the product team apply through this **[survey](https://www.surveymonkey.com/r/6MTHN3P).**
 
 ## Supported Linux Operating Systems
+
+### Supported Distro/Version strategy
+The OMS Agent for Linux is built to work with OMS, which has a limited scope of scenarios. Our strategy for supporting new distros and versions starting August 2018 is that we will:
+1. Only support server versions, no client OS versions.
+2. Always support any new (Azure Linux Endorsed distros/versions)[https://docs.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros].
+3. Not support versions that have passed their manufacturer's end-of-support date.
+4. Always support the latest GA version of a supported distro.
+5. Not support new versions of AMI.
+6. Only support versions that run SSL 1.x by default.
+
+If you are using a distro or version that is not currently supported and doesn't fit our future support strategy, we recommend that you fork this repo, acknowledging that Microsoft support will not provide assistance with for forked agent versions.
+
 ### 64-bit
 * CentOS 6 and 7
 * Amazon Linux 2017.09
