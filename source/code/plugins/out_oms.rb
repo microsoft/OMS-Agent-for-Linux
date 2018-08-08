@@ -16,6 +16,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
+      require 'fileutils'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -38,6 +39,16 @@ module Fluent
     def shutdown
       super
     end
+
+    def write_heartbeat_status()
+      fn = '/var/opt/microsoft/omsagent/log/heartbeat'
+      begin
+        FileUtils.touch(fn)
+        @log.info "Written heartbeat status"
+      rescue => e
+         @log.warn "Error:'#{e}'"
+      end
+    end 
 
     def write_status_file(success, message)
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestion.status'
@@ -103,8 +114,13 @@ module Fluent
       # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
       datatypes = {}
       unmergable_records = []
+      heartbeat_found = false
       chunk.msgpack_each {|(tag, record)|
         if record.has_key?('DataType') and record.has_key?('IPName')
+          if !heartbeat_found && tag.include?('oms.heartbeat')
+            heartbeat_found = true
+          end
+
           key = "#{record['DataType']}.#{record['IPName']}".upcase
 
           if datatypes.has_key?(key)
@@ -124,6 +140,11 @@ module Fluent
 
       datatypes.each do |key, record|
         handle_record(key, record)
+      end
+
+      if heartbeat_found
+        write_heartbeat_status()
+        heartbeat_found = false
       end
 
       @log.trace "Handling #{unmergable_records.size} unmergeable records"
