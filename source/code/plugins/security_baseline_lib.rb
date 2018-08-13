@@ -81,7 +81,9 @@ module OMS
 
             security_baseline_summary_blob = calculate_summary(results, hostname, time)
 
-            @log.info "Security Baseline Summary: " + security_baseline_summary_blob.inspect
+            if !security_baseline_summary_blob.nil?
+                @log.info "Security Baseline Summary: " + security_baseline_summary_blob.inspect
+            end
 
             return security_baseline_blob, security_baseline_summary_blob
         end # transform_and_wrap
@@ -95,7 +97,6 @@ module OMS
             warning_failed_rules = 0;
             informational_failed_rules = 0;
             all_failed_rules = 0;
-            percentage_of_passed_rules = 0;
     
             asm_baseline_results.each do |asm_baseline_result|
 
@@ -121,10 +122,13 @@ module OMS
             end 
 
             all_assessed_rules = all_failed_rules + pass_rules
-	    if all_assessed_rules != 0
-	        percentage_of_passed_rules = (pass_rules * 100.0 / all_assessed_rules).round
+        
+            if all_assessed_rules == 0
+                return nil
             end
-
+	    
+            percentage_of_passed_rules = (pass_rules * 100.0 / all_assessed_rules).round
+            
             security_baseline_summary_blob = {
                 "DataType" => "SECURITY_BASELINE_SUMMARY_BLOB",
                 "IPName" => "Security",
