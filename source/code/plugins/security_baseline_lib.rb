@@ -81,10 +81,8 @@ module OMS
 
             security_baseline_summary_blob = calculate_summary(results, hostname, time)
 
-            if !security_baseline_summary_blob.nil?
-                @log.info "Security Baseline Summary: " + security_baseline_summary_blob.inspect
-            end
-
+            @log.info "Security Baseline Summary: " + security_baseline_summary_blob.inspect
+            
             return security_baseline_blob, security_baseline_summary_blob
         end # transform_and_wrap
     
