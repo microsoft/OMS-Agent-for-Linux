@@ -55,9 +55,9 @@ If none of these steps work for you the following channels for help are also ava
 | NOT_DEFINED | Because the necessary dependencies are not installed, the auoms auditd plugin will not be installed | Installation of auoms failed; Install package auditd |
 | 2 | Invalid option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
 | 3 | No option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
-| 4 | Invalid package type; `omsagent-*rpm*.sh` packages can only be installed on RPM-based systems, and `omsagent-*deb*.sh` packages can only be installed on Debian-based systems; We recommend that you use the universal installer from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
-| 5 | The shell bundle must be executed as root; Run your command using `sudo` |
-| 6 | Invalid package architecture; `omsagent-*x64.sh` packages can only be installed on 64-bit systems, and `omsagent-*x86.sh` packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
+| 4 | Invalid package type OR invalid proxy settings; omsagent-*rpm*.sh packages can only be installed on RPM-based systems, and omsagent-*deb*.sh packages can only be installed on Debian-based systems; We recommend that you use the universal installer from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest). Also [review](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting.md#im-unable-to-connect-through-my-proxy-to-oms) your proxy settings. |
+| 5 | The shell bundle must be executed as root OR there was 403 error returned during onboarding; Run your command using `sudo` |
+| 6 | Invalid package architecture OR there was error 200 error returned during onboarding; omsagent-*x64.sh packages can only be installed on 64-bit systems, and omsagent-*x86.sh packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
 | 17 | Installation of OMS package failed; Look through the command output for the root failure |
 | 19 | Installation of OMI package failed; Look through the command output for the root failure |
 | 20 | Installation of SCX package failed; Look through the command output for the root failure |
@@ -65,9 +65,7 @@ If none of these steps work for you the following channels for help are also ava
 | 22 | Installation of bundled package failed; Look through the command output for the root failure |
 | 23 | SCX or OMI package already installed; Use `--upgrade` instead of `--install` to install the shell bundle |
 | 30 | Internal bundle error; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
-| 51 | Unsupported Package Manager; OMSAgent only supports systems with 'DPKG' or 'RPM' package managers |
-| 55 | Unsupported openssl version or Cannot connect to Microsoft OMS service or dpkg is locked or Missing curl program |
-| 60 | Unsupported version of OpenSSL; Install a version of OpenSSL meeting our [package requirements](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#package-requirements) |
+| 55 | Unsupported openssl version OR Cannot connect to Microsoft OMS service OR dpkg is locked OR Missing curl program |
 | 61 | Missing Python ctypes library; Install the Python ctypes library or package (python-ctypes) |
 | 62 | Missing tar program; Install tar |
 | 63 | Missing sed program; Install sed |
