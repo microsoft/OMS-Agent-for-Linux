@@ -384,6 +384,7 @@ ${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/stub_specification.rb;            ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/errors.rb;                        ${{RUBY_INT}}/lib/ruby/2.4.0/rubygems/errors.rb;                 644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/rdoc.rb;                          ${{RUBY_INT}}/lib/ruby/2.4.0/rubygems/rdoc.rb;                   644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/remote_fetcher.rb;                ${{RUBY_INT}}/lib/ruby/2.4.0/rubygems/remote_fetcher.rb;         644; root; root
+${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/safe_yaml.rb;                     ${{RUBY_INT}}/lib/ruby/2.4.0/rubygems/safe_yaml.rb;              644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/source_specific_file.rb;          ${{RUBY_INT}}/lib/ruby/2.4.0/rubygems/source_specific_file.rb;   644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/command.rb;                       ${{RUBY_INT}}/lib/ruby/2.4.0/rubygems/command.rb;                644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.4.0/rubygems/server.rb;                        ${{RUBY_INT}}/lib/ruby/2.4.0/rubygems/server.rb;                 644; root; root
