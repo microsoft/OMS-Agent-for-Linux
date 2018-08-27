@@ -18,6 +18,10 @@ module OMS
     @@NotifyBlobODSEndpoint = nil
     @@OmsCloudId = nil
     @@AzureResourceId = nil
+    @@AzureIMDSEndpoint = "http://169.254.169.254/metadata/instance?api-version=2017-12-01"
+    @@AzureResIDThreadLock = Mutex.new
+    @@ProxyConfig = nil
+    @@ProxyConfigFilePath = "/etc/opt/microsoft/omsagent/proxy.conf"
     @@UUID = nil
  
     class << self
@@ -75,10 +79,60 @@ module OMS
           Hash[ matches.names.map{ |name| name.to_sym}.zip( matches.captures ) ]
       end
 
+      def get_azure_resid_from_imds()
+          begin
+            uri = URI.parse(@@AzureIMDSEndpoint)
+            http_get_req = Net::HTTP::Get.new(uri, initheader = {'Metadata' => 'true'})
+
+            if @@ProxyConfig
+              http_req = Net::HTTP.new(uri.host, uri.port, @@ProxyConfig[:addr], @@ProxyConfig[:port], @@ProxyConfig[:user], @@ProxyConfig[:pass])
+            else
+              http_req = Net::HTTP.new(uri.host, uri.port)
+            end
+
+            http_req.open_timeout = 5
+            http_req.read_timeout = 5
+
+            res = http_req.start() do |http|
+              http.request(http_get_req)
+            end
+
+            imds_instance_json = JSON.parse(res.body)
+            if !imds_instance_json.has_key?("compute")
+              return nil  #classic vm
+            end
+
+            azure_resource_id = '/subscriptions/' + imds_instance_json['compute']['subscriptionId'] + '/resourceGroups/' + imds_instance_json['compute']['resourceGroupName'] + '/providers/Microsoft.Compute/'
+
+            if (imds_instance_json['compute']['vmScaleSetName'].empty?)
+              azure_resource_id = azure_resource_id + 'virtualMachines/' + imds_instance_json['compute']['name']
+            else
+              azure_resource_id = azure_resource_id + 'virtualMachineScaleSets/' + imds_instance_json['compute']['vmScaleSetName'] + '/virtualMachines/' + imds_instance_json['compute']['name']
+            end
+
+            return azure_resource_id
+
+          rescue => e
+            # this may be a container instance or a non-Azure VM
+            OMS::Log.warn_once("Could not fetch Azure Resource ID from IMDS, Reason: #{e}")
+            return nil
+          end
+      end
+
+      def update_azure_resource_id()
+          loop do
+            sleep 60
+            azure_resource_id = get_azure_resid_from_imds()
+            @@AzureResourceId = azure_resource_id unless @@AzureResourceId == azure_resource_id
+          end
+      end
+
       # load the configuration from the configuration file, cert, and key path
       def load_configuration(conf_path, cert_path, key_path)
         return true if @@ConfigurationLoaded
         return false if !test_onboard_file(conf_path) or !test_onboard_file(cert_path) or !test_onboard_file(key_path)
+
+        @@ProxyConfig = get_proxy_config(@@ProxyConfigFilePath)
 
         endpoint_lines = IO.readlines(conf_path).select{ |line| line.start_with?("OMS_ENDPOINT")}
         if endpoint_lines.size == 0
@@ -135,7 +189,22 @@ module OMS
 
         File.open(conf_path).each_line do |line|
           if line =~ /AZURE_RESOURCE_ID/
-            @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
+            azure_resource_id = get_azure_resid_from_imds()
+
+            retries = 0
+            until !azure_resource_id.nil? do
+              azure_resource_id = get_azure_resid_from_imds()
+              retries += 1
+              break if retries > 2
+              sleep 2
+            end
+
+            if azure_resource_id.nil?
+              @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
+            else
+              @@AzureResourceId = azure_resource_id
+              Thread.new(&method(:update_azure_resource_id)) if @@AzureResIDThreadLock.try_lock
+            end
           end
           if line =~ /OMSCLOUD_ID/
             @@OmsCloudId = line.sub("OMSCLOUD_ID=","").strip
