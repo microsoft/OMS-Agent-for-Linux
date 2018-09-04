@@ -144,7 +144,7 @@ ConfigureSyslog_ng() {
         RestartService syslog-ng
     else
         # there was a previous setup, is the port right?
-        egrep -q "${SYSLOG_PORT}" ${SYSLOG_NG_DEST}
+        egrep -q "port\(${SYSLOG_PORT}" ${SYSLOG_NG_DEST}
         if [ $? -ne 0 ]; then            
             sed -i -r "s/port\([0-9]+/port\(${SYSLOG_PORT}/g" ${SYSLOG_NG_DEST}
             RestartService syslog-ng
