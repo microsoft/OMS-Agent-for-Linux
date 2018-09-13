@@ -244,7 +244,7 @@ module Fluent
         etag = etag_quoted.gsub(/"/, "")
       else
         @log.error("Cannot extract ETag from BLOB response #{response}.")
-        etag = ""num_threads
+        etag = ""
       end
       return etag
     end # commit_blocks
