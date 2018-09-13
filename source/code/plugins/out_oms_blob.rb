@@ -244,7 +244,7 @@ module Fluent
         etag = etag_quoted.gsub(/"/, "")
       else
         @log.error("Cannot extract ETag from BLOB response #{response}.")
-        etag = ""
+        etag = ""num_threads
       end
       return etag
     end # commit_blocks
@@ -340,14 +340,18 @@ module Fluent
 
       start = Time.now
 
-      # get a lock for the blob append to avoid storage errors when parallel threads are writing
-      BlockLock.lock
-      begin
+      if @num_threads > 1
+        # get a lock for the blob append to avoid storage errors when parallel threads are writing
+        BlockLock.lock
+        begin
+          dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
+        ensure
+          BlockLock.unlock
+        end
+      else
         dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
-      ensure
-        BlockLock.unlock
       end
-      
+
       time = Time.now - start
       @log.debug "Success sending #{dataSize} bytes of data to BLOB #{time.round(3)}s"
 
