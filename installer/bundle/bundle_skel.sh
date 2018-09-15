@@ -547,6 +547,9 @@ remove_and_install()
         return $OMI_INSTALL_FAILED
     fi
 
+    # remove omi cron
+    /opt/omi/bin/support/config_keytab_update.sh --unconfigure
+
     pkg_add $SCX_PKG scx
     temp_status=$?
 
@@ -1046,6 +1049,9 @@ case "$installMode" in
                 pkg_add ${OMI_PKG} omi
                 OMI_EXIT_STATUS=$?
             fi
+
+            # remove omi cron
+            /opt/omi/bin/support/config_keytab_update.sh --unconfigure
 
             # Install SCX
             shouldInstall_scx
