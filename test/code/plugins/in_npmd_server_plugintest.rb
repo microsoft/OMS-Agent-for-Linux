@@ -230,7 +230,7 @@ class NPMDServerTest < Test::Unit::TestCase
             assert(d.instance.num_agent_data > 0, "Num agent data should be greater than 0")
             true
         }
-
+        
         # Step 2
         d.run
         emits = d.emits
