@@ -22,6 +22,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
+      require_relative 'blocklock'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -86,7 +87,7 @@ module Fluent
       headers["Content-Length"] = msg.bytesize.to_s
 
       # If the request version is 2011-08-18 or newer, the ETag value will be returned
-      headers[OMS::CaseSensitiveString.new("x-ms-version")] = "2011-08-18"
+      headers[OMS::CaseSensitiveString.new("x-ms-version")] = "2016-05-31"
 
       req = Net::HTTP::Put.new(uri.request_uri, headers)
       req.body = msg
@@ -338,7 +339,19 @@ module Fluent
       @log.debug "Success getting the BLOB information in #{time.round(3)}s"
 
       start = Time.now
-      dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
+
+      if @num_threads > 1
+        # get a lock for the blob append to avoid storage errors when parallel threads are writing
+        BlockLock.lock
+        begin
+          dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
+        ensure
+          BlockLock.unlock
+        end
+      else
+        dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
+      end
+
       time = Time.now - start
       @log.debug "Success sending #{dataSize} bytes of data to BLOB #{time.round(3)}s"
 
