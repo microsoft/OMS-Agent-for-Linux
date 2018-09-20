@@ -101,9 +101,16 @@ module OMS
 
             imds_instance_json = JSON.parse(res.body)
 
-            return nil unless imds_instance_json.has_key?("compute")  #classic vm
+            return nil if !imds_instance_json.has_key?("compute") || imds_instance_json['compute'].empty? #classic vm
 
             imds_instance_json_compute = imds_instance_json['compute']
+
+            #guard from missing keys
+            return nil unless imds_instance_json_compute.has_key?("subscriptionId") && imds_instance_json_compute.has_key?("resourceGroupName") && imds_instance_json_compute.has_key?("name") && imds_instance_json_compute.has_key?("vmScaleSetName")
+
+            #guard from blank values
+            return nil if imds_instance_json_compute['subscriptionId'].empty? || imds_instance_json_compute['resourceGroupName'].empty? || imds_instance_json_compute['name'].empty?
+
             azure_resource_id = '/subscriptions/' + imds_instance_json_compute['subscriptionId'] + '/resourceGroups/' + imds_instance_json_compute['resourceGroupName'] + '/providers/Microsoft.Compute/'
 
             if (imds_instance_json_compute['vmScaleSetName'].empty?)
