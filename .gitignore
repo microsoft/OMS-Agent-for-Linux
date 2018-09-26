@@ -8,4 +8,4 @@
 /build/x64
 /build/x86
 .vscode
-/docker-test/omsbundle
+/docker-test/omsfiles/omsagent-*.sh
