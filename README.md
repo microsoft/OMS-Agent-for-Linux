@@ -61,18 +61,6 @@ If you are using a distro or version that is not currently supported and doesn't
 
 **Note:** OpenSSL < 1.x is not supported on any platform.
 
-## Supported Scenarios
-### [Heartbeat data collection](docs/OMS-Agent-for-Linux.md#viewing-heartbeat-data)
-### [Syslog data collection](docs/OMS-Agent-for-Linux.md#viewing-syslog-events)
-### [Docker collection](docs/Docker-Instructions.md)
-### [Performance data collection](docs/OMS-Agent-for-Linux.md#viewing-performance-data)
-### [Nagios Core alert collection](docs/OMS-Agent-for-Linux.md#viewing-nagios-alerts)
-### [Zabbix alert collection](docs/OMS-Agent-for-Linux.md#viewing-zabbix-alerts)
-### [CollectD Metrics Collection](docs/OMS-Agent-for-Linux.md#collectd-metrics)
-### [Custom JSON Data](docs/OMS-Agent-for-Linux.md#custom-json-data-sources)
-### [VMware Monitoring](docs/VMware-Instruction.md)
-### [Full documentation](docs/OMS-Agent-for-Linux.md)
-
 ## [Troubleshooting Guide](docs/Troubleshooting.md)
 
 ## Code of Conduct
