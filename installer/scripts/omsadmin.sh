@@ -660,7 +660,7 @@ onboard()
             fi
 
             if [ "$USER_ID" -eq "0" ]; then
-                su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
+                sudo -u $AGENT_USER $METACONFIG_PY > /dev/null || error=$?
             else
                 $METACONFIG_PY > /dev/null || error=$?
             fi
