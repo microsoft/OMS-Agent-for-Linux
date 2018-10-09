@@ -60,6 +60,7 @@ PAM | Pluggable Authentication Modules	 |
 
 **Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog.
 
+Please also review the [list of supported distros and versions.](https://github.com/Microsoft/OMS-Agent-for-Linux#supported-linux-operating-systems)
 
 ## Upgrade from a Previous Release
 Upgrade from prior versions (>1.0.0-47) is supported in this release. Performing the installation with the --upgrade command will upgrade all components of the agent to the latest version.
@@ -750,7 +751,18 @@ Either rsyslog or syslog-ng are required to collect syslog messages. The default
 
 # Appendices
 
-## Appendix: Available Performance Metrics
+## Appendix A: Supported Distro/Version strategy
+The OMS Agent for Linux is built to work with OMS, which has a limited scope of scenarios. Our strategy for supporting new distros and versions starting August 2018 is that we will:
+1. Only support server versions, no client OS versions.
+2. Always support any new (Azure Linux Endorsed distros/versions)[https://docs.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros].
+3. Not support versions that have passed their manufacturer's end-of-support date.
+4. Always support the latest GA version of a supported distro.
+5. Not support new versions of AMI.
+6. Only support versions that run SSL 1.x by default.
+
+If you are using a distro or version that is not currently supported and doesn't fit our future support strategy, we recommend that you fork this repo, acknowledging that Microsoft support will not provide assistance with for forked agent versions.
+
+## Appendix B: Available Performance Metrics
  **Object Name** 	| **Counter Name** 	
 --------------------- | ---------------------
 Apache HTTP Server | Busy Workers
@@ -836,7 +848,7 @@ System | Users
 
 *Note: For Network Statistics the calculation is from start of the omiagent process
  
-## Appendix B: Database Permissions Required for MySQL Performance Counters
+## Appendix c: Database Permissions Required for MySQL Performance Counters
 *Note: To grant permissions to a MySQL monitoring user the granting user must have the ‘GRANT option’ privilege as well as the privilege being granted. *
 
 In order for the MySQL User to return performance data the user will need access to the following queries
@@ -852,7 +864,7 @@ GRANT SELECT ON information_schema.* TO ‘monuser’@’localhost’;
 GRANT SELECT ON mysql.* TO ‘monuser’@’localhost’;
 ```
 
-## Appendix C: Managing MySQL monitoring credentials in the authentication file
+## Appendix D: Managing MySQL monitoring credentials in the authentication file
 
 **Configuring the MySQL OMI Provider**
 The MySQL OMI provider requires a preconfigured MySQL user and installed MySQL client libraries in order to query the performance/health information from the MySQL instance.
