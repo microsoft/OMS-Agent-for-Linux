@@ -21,7 +21,7 @@ CERT_DIR=$DF_CERT_DIR
 CONF_DIR=$DF_CONF_DIR
 SYSCONF_DIR=$ETC_DIR/sysconf
 
-# Optional file with initial onboarding credentials
+# Optional file with initial onboarding credentials.
 FILE_ONBOARD=/etc/omsagent-onboard.conf
 
 # Generated conf file containing information for this script
