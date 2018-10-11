@@ -6,7 +6,4 @@ RUN mkdir /home/temp \
     && apt-get install -y gcc net-tools python-ctypes gnupg2 cron vim systemd rsyslog upstart dos2unix apache2 \
     && echo 'mysql-server mysql-server/root_password password password' | debconf-set-selections \
     && echo 'mysql-server mysql-server/root_password_again password password' | debconf-set-selections \
-    && apt-get install -y mysql-server python-pip python-dev build-essential libssl-dev libffi-dev \
-    && pip install -U requests adal
-
-#EXPOSE 3306
+    && apt-get install -y mysql-server

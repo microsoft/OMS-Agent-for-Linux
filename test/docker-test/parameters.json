@@ -1,0 +1,10 @@
+{
+  "resource": "https://management.azure.com",
+  "tenant" : "72f988bf-86f1-41af-91ab-2d7cd011db47",
+  "authority host URL" : "https://login.microsoftonline.com",
+  "id" : "<app-id>",
+  "secret" : "<app-key>",
+  "subscription": "<subscription-id>",
+  "resource group": "<resource-group-name>",
+  "workspace": "<workspace-name>"
+}
