@@ -17,7 +17,7 @@ $ python build_images.py distro1 distro2 ...
 
 #### Prepare
 
-1. In OMS_TestsWithDocker.py, fill in the following:
+1. In oms_docker_tests.py, fill in the following:
   - `<bundle-file-name>` – path to OMS bundle to be tested
   - `<workspace-id>`, `<workspace-key>` – Log Analytics workspace ID, key
 2. In parameters.json, fill in the following:
@@ -27,6 +27,8 @@ $ python build_images.py distro1 distro2 ...
   - `<workspace-name>` – name of Log Analytics workspace
 3. Ensure the images list in oms_docker_tests.py matches the docker images on your machine
 4. Copy the bundle to test into the omsfiles directory
+5. Install rstr and xeger to generate guid:
+  - `pip install rstr xeger`
 
 #### Execute tests
 ```
