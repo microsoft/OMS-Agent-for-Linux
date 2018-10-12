@@ -19,7 +19,7 @@ def replace_items(infile,old_word,new_word):
     m=f1.replace(old_word,new_word)
     f2.write(m)
 
-replace_items("omsfiles/perf.conf", "<workspace-id>", workspaceId)
+# replace_items("omsfiles/perf.conf", "<workspace-id>", workspaceId)
 
 for image in images:
     print image
@@ -30,7 +30,7 @@ for image in images:
     os.system("docker container rm {}".format(container))
     os.system("docker run --name {} --hostname {} -it --privileged=true -d {}".format(container, hostname, image))
     os.system("docker cp omsfiles/ {}:/home/temp/".format(container))
-    os.system("docker exec {} python /home/temp/omsfiles/omsRunScript.py -preinstall".format(container))
+    os.system("docker exec {} python /home/temp/omsfiles/oms_run_script.py -preinstall".format(container))
     os.system("docker exec {} sh /home/temp/omsfiles/{} --purge".format(container, omsbundle))
     os.system("docker exec {} sh /home/temp/omsfiles/{} --upgrade -w {} -s {}".format(container, omsbundle, workspaceId, workspaceKey))
-    os.system("docker exec {} python /home/temp/omsfiles/omsRunScript.py -postinstall".format(container))
+    os.system("docker exec {} python /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))

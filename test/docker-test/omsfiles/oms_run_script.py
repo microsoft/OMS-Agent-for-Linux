@@ -28,7 +28,7 @@ def main():
     except:
         if operation is None:
             print "No operation specified. run with 'preinstall' or 'postinstall'"
-    
+
     run_operation()
 
 def replace_items(infile,old_word,new_word):
@@ -40,7 +40,6 @@ def replace_items(infile,old_word,new_word):
     f2=open(infile,'w')
     m=f1.replace(old_word,new_word)
     f2.write(m)
-
 
 def install_additional_packages():
     #Add additional packages command here
