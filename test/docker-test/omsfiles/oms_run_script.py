@@ -60,7 +60,7 @@ def apache_mysql_conf():
     mysql_conf_dir = '/etc/opt/microsoft/omsagent/conf/omsagent.d/mysql_logs.conf'
     apache_conf_dir = '/etc/opt/microsoft/omsagent/conf/omsagent.d/apache_logs.conf'
     #shutil.copy('/home/temp/omsfiles/mysql_logs.conf', mysql_conf_dir)
-    os.system('chown omsagent:omiusers {}'.format(apache_conf_dir))
+    os.system('chown omsagent:omiusers {0}'.format(apache_conf_dir))
     #os.system('chown omsagent:omiusers {}'.format(mysql_conf_dir))
     if INSTALLER == 'DPKG':
         replace_items(apache_conf_dir, '<apache-access-dir>', '/var/log/apache2/access.log')
