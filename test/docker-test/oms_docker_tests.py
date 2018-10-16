@@ -1,10 +1,14 @@
 import json
 import os
-import sys
-import rstr
-import xeger
 import random
+import rstr
+import sys
+import time
+import xeger
 
+from verify_e2e import check_e2e
+
+E2E_DELAY = 10
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9","centos6", "centos7", "oracle6", "oracle7"]
 
 if len(sys.argv) > 1:
@@ -40,8 +44,11 @@ for image in images:
     os.system("docker run --name {} --hostname {} -it --privileged=true -d {}".format(container, hostname, image))
     os.system("docker cp omsfiles/ {}:/home/temp/".format(container))
     os.system("docker exec {} python /home/temp/omsfiles/oms_run_script.py -preinstall".format(container))
-    # check e2e
     os.system("docker exec {} sh /home/temp/omsfiles/{} --purge".format(container, oms_bundle))
     os.system("docker exec {} sh /home/temp/omsfiles/{} --upgrade -w {} -s {}".format(container, oms_bundle, workspace_id, workspace_key))
     os.system("docker exec {} python /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
-    # check e2e
+
+time.sleep(E2E_DELAY * 60)
+
+for image in images:
+    check_e2e(hostname)

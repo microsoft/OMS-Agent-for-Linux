@@ -4,7 +4,7 @@ import sys
 import requests
 import adal
 
-log_file = open('{}/tmp/omsresults.out'.format(os.getcwd()), 'a+')
+log_file = open('{}/tmp/e2eresults.out'.format(os.getcwd()), 'a+')
 
 def write_log_command(cmd):
     print(cmd)
@@ -21,23 +21,23 @@ def write_log_output(out):
     return
 
 def check_e2e(hostname):
-    with open('/home/temp/omsfiles/_parameters.json', 'r') as f:
+    with open('{}/_parameters.json'.format(os.getcwd()), 'r') as f:
         parameters = f.read()
     parameters = json.loads(parameters)
 
-    authority_url = parameters['authority host URL'] + '/' + parameters['tenant']
+    authority_url = parameters['authority host url'] + '/' + parameters['tenant']
 
     context = adal.AuthenticationContext(authority_url)
     token = context.acquire_token_with_client_credentials(
                 parameters['resource'],
-                parameters['id'],
-                parameters['secret'])
+                parameters['app id'],
+                parameters['app secret'])
 
     head = {'Authorization': 'Bearer ' + token['accessToken']}
 
     subscription = parameters['subscription']
     resource_group = parameters['resource group']
-    workspace = parameters['workspace name']
+    workspace = parameters['workspace']
 
     url = ('https://management.azure.com/subscriptions/{}/resourcegroups/{}/'
            'providers/Microsoft.OperationalInsights/workspaces/{}/api/'
@@ -60,12 +60,16 @@ def check_e2e(hostname):
         else:
             out = 'Failure: query request failure with code {} and message {}'.format(r.status_code, json.loads(r.text)['error']['message'])
 
-        cmd = 'Verifying data from computer {} and source {}'.format(computer, s)
+        cmd = 'Verifying data from computer {} and source {}'.format(hostname, s)
         write_log_command(cmd)
         write_log_output(out)
 
 def main():
-    check_e2e()
+    if len(sys.argv) == 2:
+        check_e2e(sys.argv[1])
+    else:
+        print('Hostname not provided')
+        exit()
 
 if __name__ == '__main__' :
     main()
