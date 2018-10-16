@@ -47,6 +47,8 @@ def install_additional_packages():
         os.system('apt update')
     elif INSTALLER == 'RPM':
         os.system('yum update')
+    os.system('curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py && python /tmp/get-pip.py')
+    generate_data()
 
 def disable_dsc():
     os.system('/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable')
@@ -77,6 +79,17 @@ def apache_mysql_conf():
         replace_items(apache_conf_dir, '<apache-access-dir>', '/var/log/httpd/access_log')
         replace_items(apache_conf_dir, '<apache-error-dir>', '/var/log/httpd/error_log')
 
+def generate_data():
+    os.system('git clone https://github.com/kiritbasu/Fake-Apache-Log-Generator /tmp/apachefake \
+            && pip install -r /tmp/apachefake/requirements.txt \
+            && python /tmp/apachefake/apache-fake-log-gen.py -n 100 -o LOG')
+    if INSTALLER == 'APT':
+        os.system('mv access_log_*.log /var/log/apache2/access.log')
+    elif INSTALLER == 'YUM':
+        os.system('mv access_log_*.log /var/log/httpd/access_log')
+    elif INSTALLER == 'ZYPPER':
+        os.system('mv access_log_*.log /var/log/apache2/access_log')
+
 def start_services():
     os.system('service rsyslog start')
     os.system('chown -R mysql:mysql /var/lib/mysql')
@@ -102,11 +115,14 @@ def copy_config_files():
             && dos2unix /home/temp/omsfiles/mysql_logs.conf \
             && cat /home/temp/omsfiles/perf.conf >> /etc/opt/microsoft/omsagent/conf/omsagent.conf \
             && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/opt/omi/conf/omsconfig/rsyslog-oms.conf \
+            && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/rsyslog.d/95-omsagent.conf \
+            && chown omsagent:omiusers /etc/rsyslog.d/95-omsagent.conf \
             && cp /home/temp/omsfiles/apache_logs.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/apache_logs.conf \
             && cp /home/temp/omsfiles/mysql_logs.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/mysql_logs.conf')
 
 def restart_services():
-    os.system('/opt/omi/bin/service_control restart \
+    os.system('service rsyslog restart \
+                &&/opt/omi/bin/service_control restart \
                 && /opt/microsoft/omsagent/bin/service_control restart')
 
 def inject_logs():
