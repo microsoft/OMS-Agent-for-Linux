@@ -31,14 +31,14 @@ def main():
 
     run_operation()
 
-def replace_items(infile,old_word,new_word):
+def replace_items(infile, old_word, new_word):
     if not os.path.isfile(infile):
-        print ("Error on replace_word, not a regular file: "+infile)
+        print("Error on replace_word, not a regular file: " + infile)
         sys.exit(1)
 
-    f1=open(infile,'r').read()
-    f2=open(infile,'w')
-    m=f1.replace(old_word,new_word)
+    f1 = open(infile, 'r').read()
+    f2 = open(infile, 'w')
+    m = f1.replace(old_word,new_word)
     f2.write(m)
 
 def install_additional_packages():
@@ -57,50 +57,62 @@ def disable_dsc():
         os.remove(Current_mof)
 
 def apache_mysql_conf():
-    mysql_conf_dir = '/etc/opt/microsoft/omsagent/conf/omsagent.d/mysql_logs.conf'
     apache_conf_dir = '/etc/opt/microsoft/omsagent/conf/omsagent.d/apache_logs.conf'
+    mysql_conf_dir = '/etc/opt/microsoft/omsagent/conf/omsagent.d/mysql_logs.conf'
     #shutil.copy('/home/temp/omsfiles/mysql_logs.conf', mysql_conf_dir)
-    os.system('chown omsagent:omiusers {}'.format(apache_conf_dir))
-    #os.system('chown omsagent:omiusers {}'.format(mysql_conf_dir))
+    os.system('chown omsagent:omiusers {0}'.format(apache_conf_dir))
+    os.system('chown omsagent:omiusers {0}'.format(mysql_conf_dir))
+
+    replace_items(mysql_conf_dir, '<mysql-general-log>', '/var/log/mysql/mysql.log')
+    replace_items(mysql_conf_dir, '<mysql-error-log>', '/var/log/mysql/error.log')
+    replace_items(mysql_conf_dir, '<mysql-slowquery-log>', '/var/log/mysql/slow.log')
+    os.system('mkdir -p /var/log/mysql \
+                && touch /var/log/mysql/mysql.log /var/log/mysql/error.log /var/log/mysql/slow.log \
+                && chmod +r /var/log/mysql/* && chmod +rx /var/log/mysql')
+
     if INSTALLER == 'DPKG':
         replace_items(apache_conf_dir, '<apache-access-dir>', '/var/log/apache2/access.log')
         replace_items(apache_conf_dir, '<apache-error-dir>', '/var/log/apache2/error.log')
-        #replace_items(mysql_conf_dir, '<mysql-general-log>', )
     elif INSTALLER == 'RPM':
         replace_items(apache_conf_dir, '<apache-access-dir>', '/var/log/httpd/access_log')
         replace_items(apache_conf_dir, '<apache-error-dir>', '/var/log/httpd/error_log')
-        # replace_items(mysql_conf_dir, '<mysql-general-log>', '/var/log/mysqld.log')
-        # replace_items(mysql_conf_dir, '<mysql-error-log>', '/var/log/mysqld.log')
 
 def start_services():
     os.system('service rsyslog start')
     os.system('chown -R mysql:mysql /var/lib/mysql')
     if INSTALLER == 'DPKG':
         os.system('service cron start \
-                && service apache2 start \
-                && service mysql start')
+                    && service apache2 start \
+                    && service mysql start')
     elif INSTALLER == 'RPM':
         os.system('service crond start \
-                && service httpd start \
-                && service mysqld start')
+                    && service httpd start \
+                    && service mysqld start')
 
 def config_start_oms_services():
     os.system('/opt/omi/bin/omiserver -d')
     copy_config_files()
+    apache_mysql_conf()
     disable_dsc()
 
 def copy_config_files():
     os.system('dos2unix /home/temp/omsfiles/perf.conf \
             && dos2unix /home/temp/omsfiles/rsyslog-oms.conf \
             && dos2unix /home/temp/omsfiles/apache_logs.conf \
+            && dos2unix /home/temp/omsfiles/mysql_logs.conf \
             && cat /home/temp/omsfiles/perf.conf >> /etc/opt/microsoft/omsagent/conf/omsagent.conf \
             && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/opt/omi/conf/omsconfig/rsyslog-oms.conf \
-            && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/apache_logs.conf')
-    apache_mysql_conf()
+            && cp /home/temp/omsfiles/apache_logs.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/apache_logs.conf \
+            && cp /home/temp/omsfiles/mysql_logs.conf /etc/opt/microsoft/omsagent/conf/omsagent.d/mysql_logs.conf')
 
 def restart_services():
     os.system('/opt/omi/bin/service_control restart \
                 && /opt/microsoft/omsagent/bin/service_control restart')
+
+def inject_logs():
+    os.system('cp /home/temp/omsfiles/mysql.log /var/log/mysql/mysql.log \
+                && cp /home/temp/omsfiles/error.log /var/log/mysql/error.log \
+                && cp /home/temp/omsfiles/slow.log /var/log/mysql/slow.log')
 
 def get_status():
     os.system('/opt/microsoft/omsagent/bin/omsadmin.sh -l \
@@ -113,6 +125,7 @@ def run_operation():
         start_services()
         config_start_oms_services()
         restart_services()
+        inject_logs()
 
 if __name__ == '__main__' :
     main()
