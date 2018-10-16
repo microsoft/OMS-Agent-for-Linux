@@ -10,6 +10,7 @@ from verify_e2e import check_e2e
 
 E2E_DELAY = 10
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9","centos6", "centos7", "oracle6", "oracle7"]
+hostnames = []
 
 if len(sys.argv) > 1:
     images = sys.argv[1:]
@@ -39,6 +40,7 @@ for image in images:
     container = image + "-container"
     uid = rstr.xeger(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
     hostname = image + '-' + uid
+    hostnames.append(hostname)
     os.system("docker container stop {}".format(container))
     os.system("docker container rm {}".format(container))
     os.system("docker run --name {} --hostname {} -it --privileged=true -d {}".format(container, hostname, image))
@@ -50,5 +52,5 @@ for image in images:
 
 time.sleep(E2E_DELAY * 60)
 
-for image in images:
+for hostname in hostnames:
     check_e2e(hostname)
