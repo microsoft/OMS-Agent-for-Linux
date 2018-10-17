@@ -4,7 +4,7 @@ import sys
 import requests
 import adal
 
-log_file = open('{}/tmp/e2eresults.out'.format(os.getcwd()), 'a+')
+log_file = open('{}/e2eresults.out'.format(os.getcwd()), 'a+')
 
 def write_log_command(cmd):
     print(cmd)
@@ -21,7 +21,7 @@ def write_log_output(out):
     return
 
 def check_e2e(hostname):
-    with open('{}/_parameters.json'.format(os.getcwd()), 'r') as f:
+    with open('{}/parameters.json'.format(os.getcwd()), 'r') as f:
         parameters = f.read()
     parameters = json.loads(parameters)
 

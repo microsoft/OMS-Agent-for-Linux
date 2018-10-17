@@ -8,4 +8,4 @@ if len(sys.argv) > 1:
 
 for i in images:
     print('\nBuilding image for {}\n'.format(i))
-    os.system('docker build {} -t {}'.format(i, i))
+    os.system('docker build --rm {} -t {}'.format(i, i))

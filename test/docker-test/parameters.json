@@ -1,7 +1,7 @@
 {
   "resource": "https://management.azure.com",
   "tenant": "72f988bf-86f1-41af-91ab-2d7cd011db47",
-  "authority host URL": "https://login.microsoftonline.com",
+  "authority host url": "https://login.microsoftonline.com",
   "app id": "<app-id>",
   "app secret": "<app-secret>",
   "oms bundle": "<bundle-file-name>",
