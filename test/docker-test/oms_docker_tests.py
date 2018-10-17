@@ -85,8 +85,11 @@ for image in images:
     uid = rstr.xeger(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
     hostname = image + '-' + uid
     hostnames.append(hostname)
+<<<<<<< HEAD
     writeLogCommand("Container: {}".format(image))
     htmlOpen.write("<h1> Container: {} <h1>".format(image))
+=======
+>>>>>>> 705e01bb1fb994444e2f2072a623dcd44983397a
     os.system("docker container stop {}".format(container))
     os.system("docker container rm {}".format(container))
     os.system("docker run --name {} --hostname {} -it --privileged=true -d {}".format(container, hostname, image))
@@ -108,7 +111,10 @@ for image in images:
 #Delay for 10 minutes
 time.sleep(E2E_DELAY * 60)
 
+<<<<<<< HEAD
 #Loop to verify data e2e
+=======
+>>>>>>> 705e01bb1fb994444e2f2072a623dcd44983397a
 for hostname in hostnames:
     check_e2e(hostname)
 
