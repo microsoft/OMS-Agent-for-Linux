@@ -46,6 +46,8 @@ def writeLogCommand(cmd):
     logOpen.write('\n')
     return
 
+replace_items("omsfiles/perf.conf", "<workspace-id>", workspace_id)
+
 resultlog = "finalresult.log"
 resulthtml = "finalresult.html"
 resultlogOpen = open(resultlog, 'a+')
