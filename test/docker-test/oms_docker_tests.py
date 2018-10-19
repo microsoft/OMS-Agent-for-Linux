@@ -1,16 +1,28 @@
+"""
+Test the OMS Agent on all or a subset of images.
+
+1. Create container and install agent
+2. Wait for data to propagate to backend and check for data
+3. Remove agent
+4. Reinstall agent
+5. Purge agent and delete container
+"""
+
 import json
 import os
 import subprocess
 import re
-import rstr
 import sys
 import time
-import xeger
+from collections import OrderedDict
 
+import rstr
+
+from json2html import *
 from verify_e2e import check_e2e
 
-E2E_DELAY = 15
-images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9","centos6", "centos7", "oracle6", "oracle7"]
+E2E_DELAY = 15 # Delay (minutes) before checking for data
+images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7"]
 hostnames = []
 
 if len(sys.argv) > 1:
@@ -24,36 +36,25 @@ oms_bundle = parameters['oms bundle']
 workspace_id = parameters['workspace id']
 workspace_key = parameters['workspace key']
 
-def replace_items(infile, old_word, new_word):
-    if not os.path.isfile(infile):
-        print "Error on replace_word, not a regular file: "+infile
-        sys.exit(1)
-
-    f1=open(infile, 'r').read()
-    f2=open(infile, 'w')
-    m=f1.replace(old_word, new_word)
-    f2.write(m)
-
-def appendFile(filename, destFile):
-    f = open(filename, 'r')
-    destFile.write(f.read())
+def append_file(src, dest):
+    """Append contents of src to dest."""
+    f = open(src, 'r')
+    dest.write(f.read())
     f.close()
 
-def writeLogCommand(cmd):
+def write_log_command(cmd):
+    """Print cmd to stdout and append it to logOpen file."""
     print(cmd)
     logOpen.write(cmd + '\n')
     logOpen.write('-' * 40)
     logOpen.write('\n')
-    return
-
-replace_items("omsfiles/perf.conf", "<workspace-id>", workspace_id)
 
 resultlog = "finalresult.log"
 resulthtml = "finalresult.html"
 resultlogOpen = open(resultlog, 'a+')
 resulthtmlOpen = open(resulthtml, 'a+')
 
-htmlstart="""<!DOCTYPE html>
+htmlstart = """<!DOCTYPE html>
 <html>
 <head>
 <style>
@@ -78,9 +79,9 @@ tr:nth-child(even) {
 """
 resulthtmlOpen.write(htmlstart)
 
-all_images_install_message=""
+all_images_install_message = ""
 
-# Loop to run container and install omsagent
+# Run container and install omsagent
 for image in images:
     imageLog = image+"result.log"
     htmlFile = image+"result.html"
@@ -90,8 +91,8 @@ for image in images:
     uid = rstr.xeger(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
     hostname = image + '-' + uid
     hostnames.append(hostname)
-    writeLogCommand("Container: {0}".format(container))
-    writeLogCommand("Install Logs: {0}".format(image))
+    write_log_command("Container: {0}".format(container))
+    write_log_command("Install Logs: {0}".format(image))
     htmlOpen.write("<h1 id='{0}'> Container: {0} <h1>".format(image))
     os.system("docker container stop {0}".format(container))
     os.system("docker container rm {0}".format(container))
@@ -103,119 +104,141 @@ for image in images:
     os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
     os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -status".format(container))
     os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
-    writeLogCommand("Create Container and Install OmsAgent")
-    appendFile('omsfiles/omsresults.out', logOpen)
+    write_log_command("Create Container and Install OMS Agent")
+    append_file('omsfiles/omsresults.out', logOpen)
     os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
-    htmlOpen.write("<h2> Install OmsAgent </h2>")
-    appendFile('omsfiles/omsresults.html', htmlOpen)
+    htmlOpen.write("<h2> Install OMS Agent </h2>")
+    append_file('omsfiles/omsresults.html', htmlOpen)
     logOpen.close()
     htmlOpen.close()
     if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
         x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
         if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
-            all_images_install_message+="""
+            all_images_install_message += """
                         <td style='background-color: green'>Install Success</td>"""
         elif x_out.rstrip() == "No Workspace":
-            all_images_install_message+="""
+            all_images_install_message += """
                         <td style='background-color: yellow'>Onboarding Failed</td>"""
     else:
-        all_images_install_message+="""
+        all_images_install_message += """
                         <td style='background-color: red'>Install Failed</td>"""
 
-# Delay for 10 minutes
-time.sleep(E2E_DELAY * 60)
+# Delay to allow data to propagate
+for i in reversed(range(1, E2E_DELAY + 1)):
+    print('E2E propagation delay: T-{} Minutes'.format(i))
+    time.sleep(60)
 
-all_images_verify_message=""
+all_images_verify_message = ""
 
-# Loop to verify data e2e
+# Verify data e2e
 for hostname in hostnames:
+    image = hostname.split('-')[0]
+    imageLog = image + "result.log"
+    htmlFile = image + "result.html"
+    logOpen = open(imageLog, 'a+')
+    htmlOpen = open(htmlFile, 'a+')
+    os.system('rm e2eresults.json')
     check_e2e(hostname)
+
+    # write detailed table for image
+    htmlOpen.write("<h2> Verify Data from OMS workspace </h2>")
+    write_log_command('Status After Verifying Data')
+    with open('e2eresults.json', 'r') as infile:
+        data = json.load(infile)
+    results = data[image][0]
+    logOpen.write(image + ':\n' + json.dumps(results, indent=4, separators=(',', ': ')) + '\n')
+    # prepend distro column to results row before generating the table
+    data = [OrderedDict([('Distro', image)] + results.items())]
+    out = json2html.convert(data)
+    htmlOpen.write(out)
+
+    # write to summary table
     from verify_e2e import success_count
     if success_count == 6:
-        all_images_verify_message+="""
+        all_images_verify_message += """
                         <td style='background-color: green'>Verify Success</td>"""
-    elif success_count < 6 and success_count > 0:
+    elif 0 < success_count < 6:
         from verify_e2e import success_sources, failed_sources
-        all_images_verify_message+="""
+        all_images_verify_message += """
                         <td style='background-color: yellow'>{0} Success <br><br>{1} Failed</td>""".format(', '.join(success_sources), ', '.join(failed_sources))
     elif success_count == 0:
-        all_images_verify_message+="""
+        all_images_verify_message += """
                         <td style='background-color: red'>Verify Failed</td>"""
 
 
-all_images_remove_message=""
+all_images_remove_message = ""
 
-# Loop to remove omsagent
+# Remove omsagent
 for image in images:
-    container=image+"-container"
+    container = image+"-container"
     imageLog = image+"result.log"
     htmlFile = image+"result.html"
     logOpen = open(imageLog, 'a+')
     htmlOpen = open(htmlFile, 'a+')
-    writeLogCommand("Remove Logs: {0}".format(image))
+    write_log_command("Remove Logs: {0}".format(image))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --remove | tee -a {2}".format(container, oms_bundle, imageLog))
     os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -status".format(container))
     os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
-    writeLogCommand("Remove OmsAgent")
-    appendFile('omsfiles/omsresults.out', logOpen)
+    write_log_command("Remove OMS Agent")
+    append_file('omsfiles/omsresults.out', logOpen)
     os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
-    htmlOpen.write("<h2> Remove OmsAgent </h2>")
-    appendFile('omsfiles/omsresults.html', htmlOpen)
+    htmlOpen.write("<h2> Remove OMS Agent </h2>")
+    append_file('omsfiles/omsresults.html', htmlOpen)
     logOpen.close()
     htmlOpen.close()
     if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
         x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
         if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
-            all_images_remove_message+="""
+            all_images_remove_message += """
                         <td style='background-color: red'>Remove Failed</td>"""
         elif x_out.rstrip() == "No Workspace":
-            all_images_remove_message+="""
+            all_images_remove_message += """
                         <td style='background-color: yellow'>Onboarding Failed</td>"""
     else:
-        all_images_remove_message+="""
+        all_images_remove_message += """
                         <td style='background-color: green'>Remove Success</td>"""
 
 
-all_images_reinstall_message=""
+all_images_reinstall_message = ""
 
-# Loop to reinstall omsagent
+# Reinstall omsagent
 for image in images:
-    container=image+"-container"
-    imageLog = image+"result.log"
+    container = image+"-container"
+    imageLog = image + "result.log"
     htmlFile = image+"result.html"
     logOpen = open(imageLog, 'a+')
     htmlOpen = open(htmlFile, 'a+')
-    writeLogCommand("Reinstall Logs: {0}".format(image))
+    write_log_command("Reinstall Logs: {0}".format(image))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, imageLog))
     os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
     os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -status".format(container))
     os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
-    writeLogCommand("Reinstall OmsAgent")
-    appendFile('omsfiles/omsresults.out', logOpen)
+    write_log_command("Reinstall OMS Agent")
+    append_file('omsfiles/omsresults.out', logOpen)
     os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
-    htmlOpen.write("<h2> Reinstall OmsAgent </h2>")
-    appendFile('omsfiles/omsresults.html', htmlOpen)
+    htmlOpen.write("<h2> Reinstall OMS Agent </h2>")
+    append_file('omsfiles/omsresults.html', htmlOpen)
     logOpen.close()
     htmlOpen.close()
     if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
         x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
         if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
-            all_images_reinstall_message+="""
+            all_images_reinstall_message += """
                         <td style='background-color: green'>Reinstall Success</td>"""
         elif x_out.rstrip() == "No Workspace":
-            all_images_reinstall_message+="""
+            all_images_reinstall_message += """
                         <td style='background-color: yellow'>Onboarding Failed</td>"""
     else:
-        all_images_reinstall_message+="""
+        all_images_reinstall_message += """
                         <td style='background-color: red'>Reinstall Failed</td>"""
-    
 
-# Loop to purge and delete container
+
+# Purge agent and delete container
 for image in images:
-    container=image+"-container"
+    container = image+"-container"
     imageLog = image+"result.log"
     logOpen = open(imageLog, 'a+')
-    writeLogCommand("Purge Logs: {0}".format(image))
+    write_log_command("Purge Logs: {0}".format(image))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, imageLog))
     os.system("docker container stop {0}".format(container))
     os.system("docker container rm {0}".format(container))
@@ -224,12 +247,12 @@ for image in images:
 imagesth = ""
 resultsth = ""
 for image in images:
-    imagesth+="""
+    imagesth += """
             <th>{0}</th>""".format(image)
-    resultsth+="""
+    resultsth += """
             <th><a href='#{0}'>{0} results</a></th>""".format(image)
 
-statustable="""
+statustable = """
 <table>
   <caption><h2>Test Result Table</h2><caption>
   <tr>
@@ -260,15 +283,18 @@ statustable="""
 """.format(imagesth, all_images_install_message, all_images_verify_message, all_images_remove_message, all_images_reinstall_message, resultsth)
 resulthtmlOpen.write(statustable)
 
-# Loop to create final html & log file
+# Create final html & log file
 for image in images:
     imageLog = image+"result.log"
     htmlFile = image+"result.html"
-    appendFile(imageLog, resultlogOpen)
-    appendFile(htmlFile, resulthtmlOpen)
+    append_file(imageLog, resultlogOpen)
+    append_file(htmlFile, resulthtmlOpen)
 
-htmlend="""
+htmlend = """
 </body>
 </html>
 """
 resulthtmlOpen.write(htmlend)
+
+# Remove intermediate log and html files
+# os.system('find . -type f -not -name \'final*\' -name \'*result*\' -print0 | xargs -0 rm --')
