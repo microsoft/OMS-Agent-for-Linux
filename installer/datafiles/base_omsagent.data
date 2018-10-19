@@ -59,6 +59,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/in_oms_omi.rb;                           source/code/plugins/in_oms_omi.rb;                     744; root; root
 /opt/microsoft/omsagent/plugin/oms_omi_lib.rb;                          source/code/plugins/oms_omi_lib.rb;                    744; root; root
 /opt/microsoft/omsagent/plugin/oms_common.rb;                           source/code/plugins/oms_common.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/blocklock.rb;                            source/code/plugins/blocklock.rb;                      744; root; root
 /opt/microsoft/omsagent/plugin/Libomi.so;                               intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
 /opt/microsoft/omsagent/plugin/filter_nagios_log.rb;                    source/code/plugins/filter_nagios_log.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/nagios_parser_lib.rb;                    source/code/plugins/nagios_parser_lib.rb;              744; root; root
