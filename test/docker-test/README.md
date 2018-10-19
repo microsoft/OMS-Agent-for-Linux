@@ -39,11 +39,11 @@ $ python build_images.py distro1 distro2 ...
 4. Custom Log Setup:
   - [Custom logs Docs](https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-data-sources-custom-logs)
   - Add custom.log file to setup Custom_Log_CL
-    ![AddingCustomlogFile](pictures/AddingCustomlogFile.PNG?raw=true)
+    ![AddingCustomlogFile](pictures/AddingCustomlogFile.png?raw=true)
   - Add location of the file on containers i.e., '/var/log/custom.log'
-    ![AddLocationofFile](pictures/AddLocationofFile.PNG?raw=true)
+    ![AddLocationofFile](pictures/AddLocationofFile.png?raw=true)
   - Add Custom_Log_CL tag
-    ![AddingCustomlogTag](pictures/AddingCustomlogTag.PNG?raw=true)
+    ![AddingCustomlogTag](pictures/AddingCustomlogTag.png?raw=true)
 
 #### Test all images
 ```
