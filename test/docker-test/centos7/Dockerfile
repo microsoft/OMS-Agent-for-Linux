@@ -7,8 +7,6 @@ RUN mkdir /home/temp \
     && yum install -y gcc curl git net-tools python-ctypes gnupg2 systemd rsyslog cronie vim openssl dos2unix httpd wget \
     && wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm \
     && yum localinstall -y mysql-community-release-el7-5.noarch.rpm \
-    && yum install -y mysql-community-server \
-    && curl https://bootstrap.pypa.io/get-pip.py -o /home/temp/get-pip.py && python /home/temp/get-pip.py \
-    && pip install pandas
+    && yum install -y mysql-community-server
 
 ENTRYPOINT ["/usr/sbin/init"]
