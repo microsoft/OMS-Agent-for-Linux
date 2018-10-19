@@ -21,11 +21,17 @@ def write_log_output(out):
     return
 
 def check_e2e(hostname):
+    global success_count
+    global success_sources
+    global failed_sources
+    success_count = 0
+    failed_sources = []
+    success_sources = []
     with open('{}/parameters.json'.format(os.getcwd()), 'r') as f:
         parameters = f.read()
     parameters = json.loads(parameters)
 
-    authority_url = parameters['authority host url'] + '/' + parameters['tenant']
+    authority_url = parameters['authority host URL'] + '/' + parameters['tenant']
 
     context = adal.AuthenticationContext(authority_url)
     token = context.acquire_token_with_client_credentials(
@@ -43,7 +49,7 @@ def check_e2e(hostname):
            'providers/Microsoft.OperationalInsights/workspaces/{}/api/'
            'query?api-version=2017-01-01-preview').format(subscription, resource_group, workspace)
 
-    sources = ['Syslog', 'Perf', 'Heartbeat', 'ApacheAccess_CL', 'MySQL_CL'] # custom ?
+    sources = ['Heartbeat', 'Syslog', 'Perf', 'ApacheAccess_CL', 'MySQL_CL', 'Custom_Log_CL']
 
     for s in sources:
         query = '%s | where Computer == \'%s\' | take 1' % (s, hostname)
@@ -54,8 +60,11 @@ def check_e2e(hostname):
             r = (json.loads(r.text)['Tables'])[0]
             if len(r['Rows']) < 1:
                 out = 'Failure: no logs found for {}'.format(s)
+                failed_sources.append(s)
             else:
                 out = 'Success: logs found for {}'.format(s)
+                success_count+=1
+                success_sources.append(s)
 
         else:
             out = 'Failure: query request failure with code {} and message {}'.format(r.status_code, json.loads(r.text)['error']['message'])
