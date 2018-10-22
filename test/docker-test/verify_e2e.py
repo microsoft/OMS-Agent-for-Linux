@@ -56,7 +56,7 @@ def check_e2e(hostname):
     print('Verifying data from computer {}'.format(hostname))
     for s in sources:
         query = '%s | where Computer == \'%s\' | take 1' % (s, hostname)
-        timespan = 'PT1H'
+        timespan = 'P10Y'
         r = requests.post(url, headers=head, json={'query':query,'timespan':timespan})
 
         if r.status_code == requests.codes.ok:
@@ -84,5 +84,5 @@ def main():
         print('Hostname not provided')
         exit()
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     main()

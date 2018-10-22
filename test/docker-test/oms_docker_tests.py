@@ -21,7 +21,7 @@ import rstr
 from json2html import *
 from verify_e2e import check_e2e
 
-E2E_DELAY = 15 # Delay (minutes) before checking for data
+E2E_DELAY = 10 # Delay (minutes) before checking for data
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7"]
 hostnames = []
 
@@ -30,6 +30,9 @@ if len(sys.argv) > 1:
 
 with open('{0}/parameters.json'.format(os.getcwd()), 'r') as f:
     parameters = f.read()
+    if re.search(r'"<.*>"', parameters):
+        print('Please replace placeholders in parameters.json')
+        exit()
 parameters = json.loads(parameters)
 
 oms_bundle = parameters['oms bundle']
@@ -48,6 +51,9 @@ def write_log_command(cmd):
     logOpen.write(cmd + '\n')
     logOpen.write('-' * 40)
     logOpen.write('\n')
+
+# Remove intermediate log and html files
+os.system('rm ./*.log ./*.html ./omsfiles/omsresults* 2> /dev/null')
 
 resultlog = "finalresult.log"
 resulthtml = "finalresult.html"
@@ -295,6 +301,3 @@ htmlend = """
 </html>
 """
 resulthtmlOpen.write(htmlend)
-
-# Remove intermediate log and html files
-# os.system('find . -type f -not -name \'final*\' -name \'*result*\' -print0 | xargs -0 rm --')

@@ -113,22 +113,35 @@ def copy_config_files():
     replace_items('/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf'.format(workspace_id), '<workspace-id>', workspace_id)
 
 def apache_mysql_conf():
-    """Configure Apache and MySQL as appropriate for current package manager type."""
-    apache_conf_dir = '/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/apache_logs.conf'.format(workspace_id)
-    mysql_conf_dir = '/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/mysql_logs.conf'.format(workspace_id)
+    """Configure Apache and MySQL, set up empty log files, and add permissions."""
+    apache_conf_file = '/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/apache_logs.conf'.format(workspace_id)
+    mysql_conf_file = '/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/mysql_logs.conf'.format(workspace_id)
     apache_access_conf_path_string = '/usr/local/apache2/logs/access_log /var/log/apache2/access.log /var/log/httpd/access_log /var/log/apache2/access_log'
     apache_error_conf_path_string = '/usr/local/apache2/logs/error_log /var/log/apache2/error.log /var/log/httpd/error_log /var/log/apache2/error_log'
-    os.system('chown omsagent:omiusers {0}'.format(apache_conf_dir))
-    os.system('chown omsagent:omiusers {0}'.format(mysql_conf_dir))
+    os.system('chown omsagent:omiusers {0}'.format(apache_conf_file))
+    os.system('chown omsagent:omiusers {0}'.format(mysql_conf_file))
+
+    os.system('mkdir -p /var/log/mysql \
+            && touch /var/log/mysql/mysql.log /var/log/mysql/error.log /var/log/mysql/mysql-slow.log \
+            && touch /var/log/custom.log \
+            && chmod +r /var/log/mysql/* \
+            && chmod +rx /var/log/mysql \
+            && chmod +r /var/log/custom.log')
 
     if INSTALLER == 'DPKG':
-        replace_items(apache_conf_dir, apache_access_conf_path_string, '/var/log/apache2/access.log')
-        replace_items(apache_conf_dir, apache_error_conf_path_string, '/var/log/apache2/error.log')
-        os.system('chmod +r /var/log/apache2/* && chmod +rx /var/log/apache2')
+        replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/apache2/access.log')
+        replace_items(apache_conf_file, apache_error_conf_path_string, '/var/log/apache2/error.log')
+        os.system('mkdir -p /var/log/apache2 \
+                && touch /var/log/apache2/access_log /var/log/apache2/error_log \
+                && chmod +r /var/log/apache2/* \
+                && chmod +rx /var/log/apache2')
     elif INSTALLER == 'RPM':
-        replace_items(apache_conf_dir, apache_access_conf_path_string, '/var/log/httpd/access_log')
-        replace_items(apache_conf_dir, apache_error_conf_path_string, '/var/log/httpd/error_log')
-        os.system('chmod +r /var/log/httpd/* && chmod +rx /var/log/httpd')
+        replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/httpd/access_log')
+        replace_items(apache_conf_file, apache_error_conf_path_string, '/var/log/httpd/error_log')
+        os.system('mkdir -p /var/log/httpd \
+                && touch /var/log/httpd/access_log /var/log/httpd/error_log \
+                && chmod +r /var/log/httpd/* \
+                && chmod +rx /var/log/httpd')
 
 def inject_logs():
     """Inject logs (after) agent is running in order to simulate real Apache/MySQL/Custom logs output."""
@@ -137,14 +150,10 @@ def inject_logs():
     elif INSTALLER == 'RPM':
         os.system('cp /home/temp/omsfiles/apache_access.log /var/log/httpd/access_log')
 
-    os.system('mkdir -p /var/log/mysql \
-                && touch /var/log/mysql/mysql.log /var/log/mysql/error.log /var/log/mysql/mysql-slow.log \
-                && chmod +r /var/log/mysql/* && chmod +rx /var/log/mysql')
     os.system('cp /home/temp/omsfiles/mysql.log /var/log/mysql/mysql.log \
-                && cp /home/temp/omsfiles/error.log /var/log/mysql/error.log \
-                && cp /home/temp/omsfiles/mysql-slow.log /var/log/mysql/mysql-slow.log \
-                && cp /home/temp/omsfiles/custom.log /var/log/custom.log \
-                && chmod +r /var/log/custom.log')
+            && cp /home/temp/omsfiles/error.log /var/log/mysql/error.log \
+            && cp /home/temp/omsfiles/mysql-slow.log /var/log/mysql/mysql-slow.log \
+            && cp /home/temp/omsfiles/custom.log /var/log/custom.log')
 
 def start_system_services():
     """Start rsyslog, cron and apache to enable log collection."""
@@ -166,8 +175,8 @@ def config_start_oms_services():
 def restart_services():
     """Restart rsyslog, OMI, and OMS."""
     os.system('service rsyslog restart \
-                &&/opt/omi/bin/service_control restart \
-                && /opt/microsoft/omsagent/bin/service_control restart')
+            && /opt/omi/bin/service_control restart \
+            && /opt/microsoft/omsagent/bin/service_control restart')
 
 def exec_command(cmd):
     """Run the provided command, check, and return its output."""
@@ -193,6 +202,28 @@ def write_log_command(cmd):
     openFile.write('=' * 40)
     openFile.write('\n')
 
+def check_pkg_status(pkg):
+    """Check pkg install status and return output and derived status."""
+    if INSTALLER == 'DPKG':
+        cmd = 'dpkg -s {0}'.format(pkg)
+        output = exec_command(cmd)
+        if (os.system('{0} | grep deinstall > /dev/null 2>&1'.format(cmd)) == 0 or
+                os.system('dpkg -s omsagent > /dev/null 2>&1') != 0):
+            status = 'Not Installed'
+        else:
+            status = 'Install Ok'
+    elif INSTALLER == 'RPM':
+        cmd = 'rpm -qi {0}'.format(pkg)
+        output = exec_command(cmd)
+        if os.system('{0} > /dev/null 2>&1'.format(cmd)) == 0:
+            status = 'Install Ok'
+        else:
+            status = 'Not Installed'
+
+    write_log_command(cmd)
+    write_log_output(output)
+    return (output, status)
+
 def result_commands():
     """Determine and store status of agent."""
     global onboardStatus, omiRunStatus, psefomsagent, omsagentRestart, omiRestart
@@ -205,86 +236,11 @@ def result_commands():
     omiRunStatus = exec_command(cmd)
     write_log_command(cmd)
     write_log_output(omiRunStatus)
-    if INSTALLER == 'DPKG':
-        # OMI install status
-        cmd = 'dpkg -s omi'
-        omiInstallOut = exec_command(cmd)
-        if os.system('dpkg -s omi | grep deinstall > /dev/null 2>&1') == 0 or os.system('dpkg -s omsagent > /dev/null 2>&1') != 0:
-            omiInstallStatus = 'Not Installed'
-        else:
-            omiInstallStatus = 'Install Ok'
-        write_log_command(cmd)
-        write_log_output(omiInstallOut)
 
-        # OMS agent install status
-        cmd = 'dpkg -s omsagent'
-        omsagentInstallOut = exec_command(cmd)
-        if os.system('dpkg -s omsagent | grep deinstall > /dev/null 2>&1') == 0 or os.system('dpkg -s omsagent > /dev/null 2>&1') != 0:
-            omsagentInstallStatus = 'Not Installed'
-        else:
-            omsagentInstallStatus = 'Install Ok'
-        write_log_command(cmd)
-        write_log_output(omsagentInstallOut)
-
-        # OMS configuration install status
-        cmd = 'dpkg -s omsconfig'
-        omsconfigInstallOut = exec_command(cmd)
-        if os.system('dpkg -s omsconfig | grep deinstall > /dev/null 2>&1') == 0 or os.system('dpkg -s omsagent > /dev/null 2>&1') != 0:
-            omsconfigInstallStatus = 'Not Installed'
-        else:
-            omsconfigInstallStatus = 'Install Ok'
-        write_log_command(cmd)
-        write_log_output(omsconfigInstallOut)
-
-        # SCX install status
-        cmd = 'dpkg -s scx'
-        scxInstallOut = exec_command(cmd)
-        if os.system('dpkg -s scx | grep deinstall > /dev/null 2>&1') == 0 or os.system('dpkg -s omsagent > /dev/null 2>&1') != 0:
-            scxInstallStatus = ' Not Installed'
-        else:
-            scxInstallStatus = 'Install Ok'
-        write_log_command(cmd)
-        write_log_output(scxInstallOut)
-    elif INSTALLER == 'RPM':
-        # OMI install status
-        cmd = 'rpm -qi omi'
-        omiInstallOut = exec_command(cmd)
-        if os.system('{0} > /dev/null 2>&1'.format(cmd)) == 0:
-            omiInstallStatus = 'Install Ok'
-        else:
-            omiInstallStatus = 'Not Installed'
-        write_log_command(cmd)
-        write_log_output(omiInstallOut)
-
-        # OMS agent install status
-        cmd = 'rpm -qi omsagent'
-        omsagentInstallOut = exec_command(cmd)
-        if os.system('{0} > /dev/null 2>&1'.format(cmd)) == 0:
-            omsagentInstallStatus = 'Install Ok'
-        else:
-            omsagentInstallStatus = 'Not Installed'
-        write_log_command(cmd)
-        write_log_output(omsagentInstallOut)
-
-        # OMS configuration install status
-        cmd = 'rpm -qi omsconfig'
-        omsconfigInstallOut = exec_command(cmd)
-        if os.system('{0} > /dev/null 2>&1'.format(cmd)) == 0:
-            omsconfigInstallStatus = 'Install Ok'
-        else:
-            omsconfigInstallStatus = 'Not Installed'
-        write_log_command(cmd)
-        write_log_output(omsconfigInstallOut)
-
-        # SCX install status
-        cmd = 'rpm -qi scx'
-        scxInstallOut = exec_command(cmd)
-        if os.system('{0} > /dev/null 2>&1'.format(cmd)) == 0:
-            scxInstallStatus = 'Install Ok'
-        else:
-            scxInstallStatus = 'Not Installed'
-        write_log_command(cmd)
-        write_log_output(scxInstallOut)
+    omiInstallOut, omiInstallStatus = check_pkg_status('omi')
+    omsagentInstallOut, omsagentInstallStatus = check_pkg_status('omsagent')
+    omsconfigInstallOut, omsconfigInstallStatus = check_pkg_status('omsconfig')
+    scxInstallOut, scxInstallStatus = check_pkg_status('scx')
 
     # OMS agent process check
     cmd = 'ps -ef | egrep "omsagent|omi"'
@@ -425,11 +381,11 @@ def run_operation():
     start_system_services()
     if operation == 'preinstall':
         install_additional_packages()
-        inject_logs()
     elif operation == 'postinstall':
         detect_workspace_id()
         config_start_oms_services()
         restart_services()
+        inject_logs()
     elif operation == 'status':
         result_commands()
         service_control_commands()

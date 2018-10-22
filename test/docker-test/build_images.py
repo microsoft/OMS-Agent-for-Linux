@@ -13,3 +13,6 @@ def main():
     for i in images:
         print('\nBuilding image for {}\n'.format(i))
         os.system('docker build --rm {} -t {}'.format(i, i))
+
+if __name__ == '__main__':
+    main()
