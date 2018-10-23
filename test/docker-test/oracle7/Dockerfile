@@ -8,3 +8,5 @@ RUN mkdir /home/temp \
     && wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm \
     && yum localinstall -y mysql-community-release-el7-5.noarch.rpm \
     && yum install -y mysql-community-server
+
+ENTRYPOINT ["/usr/sbin/init"]

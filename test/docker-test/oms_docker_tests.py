@@ -16,8 +16,6 @@ import sys
 import time
 from collections import OrderedDict
 
-import rstr
-
 from json2html import *
 from verify_e2e import check_e2e
 
@@ -89,21 +87,21 @@ all_images_install_message = ""
 
 # Run container and install omsagent
 for image in images:
-    imageLog = image+"result.log"
-    htmlFile = image+"result.html"
+    container = image + "-container"
+    imageLog = image + "result.log"
+    htmlFile = image + "result.html"
     logOpen = open(imageLog, 'a+')
     htmlOpen = open(htmlFile, 'a+')
-    container = image+"-container"
-    uid = rstr.xeger(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
-    hostname = image + '-' + uid
-    hostnames.append(hostname)
     write_log_command("Container: {0}".format(container))
     write_log_command("Install Logs: {0}".format(image))
     htmlOpen.write("<h1 id='{0}'> Container: {0} <h1>".format(image))
     os.system("docker container stop {0}".format(container))
     os.system("docker container rm {0}".format(container))
-    os.system("docker run --name {0} --hostname {1} -it --privileged=true -d {2}".format(container, hostname, image))
+    uid = os.popen("docker run --name {0} -it --privileged=true -d {1}".format(container, image)).read()[:12]
+    hostname = image + '-' + uid # uid is the truncated container uid
+    hostnames.append(hostname)
     os.system("docker cp omsfiles/ {0}:/home/temp/".format(container))
+    os.system("docker exec {0} hostname {1}".format(container, hostname))
     os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -preinstall".format(container))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, imageLog))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, imageLog))
@@ -128,6 +126,12 @@ for image in images:
     else:
         all_images_install_message += """
                         <td style='background-color: red'>Install Failed</td>"""
+
+# Inject logs
+time.sleep(30)
+for image in images:
+    container = image + "-container"
+    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container))
 
 # Delay to allow data to propagate
 for i in reversed(range(1, E2E_DELAY + 1)):
@@ -176,9 +180,9 @@ all_images_remove_message = ""
 
 # Remove omsagent
 for image in images:
-    container = image+"-container"
-    imageLog = image+"result.log"
-    htmlFile = image+"result.html"
+    container = image + "-container"
+    imageLog = image + "result.log"
+    htmlFile = image + "result.html"
     logOpen = open(imageLog, 'a+')
     htmlOpen = open(htmlFile, 'a+')
     write_log_command("Remove Logs: {0}".format(image))
@@ -209,9 +213,9 @@ all_images_reinstall_message = ""
 
 # Reinstall omsagent
 for image in images:
-    container = image+"-container"
+    container = image + "-container"
     imageLog = image + "result.log"
-    htmlFile = image+"result.html"
+    htmlFile = image + "result.html"
     logOpen = open(imageLog, 'a+')
     htmlOpen = open(htmlFile, 'a+')
     write_log_command("Reinstall Logs: {0}".format(image))
@@ -241,8 +245,8 @@ for image in images:
 
 # Purge agent and delete container
 for image in images:
-    container = image+"-container"
-    imageLog = image+"result.log"
+    container = image + "-container"
+    imageLog = image + "result.log"
     logOpen = open(imageLog, 'a+')
     write_log_command("Purge Logs: {0}".format(image))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, imageLog))
@@ -291,8 +295,8 @@ resulthtmlOpen.write(statustable)
 
 # Create final html & log file
 for image in images:
-    imageLog = image+"result.log"
-    htmlFile = image+"result.html"
+    imageLog = image + "result.log"
+    htmlFile = image + "result.html"
     append_file(imageLog, resultlogOpen)
     append_file(htmlFile, resulthtmlOpen)
 

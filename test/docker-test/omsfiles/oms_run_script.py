@@ -5,6 +5,7 @@ import os.path
 import subprocess
 import re
 import sys
+import time
 
 if "check_output" not in dir(subprocess): # duck punch it in!
     def check_output(*popenargs, **kwargs):
@@ -54,11 +55,29 @@ def main():
             operation = 'postinstall'
         elif re.match('^([-/]*)(status)', option):
             operation = 'status'
+        elif re.match('^([-/]*)(injectlogs)', option):
+            operation = 'injectlogs'
     except:
         if operation is None:
             print("No operation specified. run with 'preinstall' or 'postinstall' or 'status'")
 
     run_operation()
+
+def run_operation():
+    """Execute steps associated with agent preinstall, postinstall, or status check."""
+    start_system_services()
+    if operation == 'preinstall':
+        install_additional_packages()
+    elif operation == 'postinstall':
+        detect_workspace_id()
+        config_start_oms_services()
+        restart_services()
+    elif operation == 'status':
+        result_commands()
+        service_control_commands()
+        write_html()
+    elif operation == 'injectlogs':
+        inject_logs()
 
 def replace_items(infile, old_word, new_word):
     """Replace old_word with new_world in file infile."""
@@ -132,7 +151,7 @@ def apache_mysql_conf():
         replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/apache2/access.log')
         replace_items(apache_conf_file, apache_error_conf_path_string, '/var/log/apache2/error.log')
         os.system('mkdir -p /var/log/apache2 \
-                && touch /var/log/apache2/access_log /var/log/apache2/error_log \
+                && touch /var/log/apache2/access.log /var/log/apache2/error.log \
                 && chmod +r /var/log/apache2/* \
                 && chmod +rx /var/log/apache2')
     elif INSTALLER == 'RPM':
@@ -146,9 +165,15 @@ def apache_mysql_conf():
 def inject_logs():
     """Inject logs (after) agent is running in order to simulate real Apache/MySQL/Custom logs output."""
     if INSTALLER == 'DPKG':
-        os.system('cp /home/temp/omsfiles/apache_access.log /var/log/apache2/access.log')
+        os.system('cp /home/temp/omsfiles/apache_access.log /var/log/apache2/access.log \
+                && chown root:root /var/log/apache2/access.log \
+                && chmod 644 /var/log/apache2/access.log \
+                && dos2unix /var/log/apache2/access.log')
     elif INSTALLER == 'RPM':
-        os.system('cp /home/temp/omsfiles/apache_access.log /var/log/httpd/access_log')
+        os.system('cp /home/temp/omsfiles/apache_access.log /var/log/httpd/access_log \
+                && chown root:root /var/log/httpd/access_log \
+                && chmod 644 /var/log/httpd/access_log \
+                && dos2unix /var/log/httpd/access_log')
 
     os.system('cp /home/temp/omsfiles/mysql.log /var/log/mysql/mysql.log \
             && cp /home/temp/omsfiles/error.log /var/log/mysql/error.log \
@@ -174,6 +199,7 @@ def config_start_oms_services():
 
 def restart_services():
     """Restart rsyslog, OMI, and OMS."""
+    time.sleep(10)
     os.system('service rsyslog restart \
             && /opt/omi/bin/service_control restart \
             && /opt/microsoft/omsagent/bin/service_control restart')
@@ -375,21 +401,6 @@ def write_html():
 
     f.write(message)
     f.close()
-
-def run_operation():
-    """Execute steps associated with agent preinstall, postinstall, or status check."""
-    start_system_services()
-    if operation == 'preinstall':
-        install_additional_packages()
-    elif operation == 'postinstall':
-        detect_workspace_id()
-        config_start_oms_services()
-        restart_services()
-        inject_logs()
-    elif operation == 'status':
-        result_commands()
-        service_control_commands()
-        write_html()
 
 if __name__ == '__main__':
     main()
