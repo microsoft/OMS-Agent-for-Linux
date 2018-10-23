@@ -1,32 +1,33 @@
 
 # OMS Bundle Automated Testing with Docker
 
-### Requirements
+## Requirements
 
 * Docker - Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
 * Python 2.7+ & [pip](https://pip.pypa.io/en/stable/installing/)
 * [Requests](http://docs.python-requests.org/en/master/), [ADAL](https://github.com/AzureAD/azure-activedirectory-library-for-python), [rstr](https://bitbucket.org/leapfrogdevelopment/rstr/overview), [xeger](https://github.com/crdoconnor/xeger)
 
-```
+```bash
 $ pip install requests adal rstr xeger
 ```
 
-
 ## Building the Docker Images
 
-#### Build all images
-```
+### Build all images
+
+```bash
 $ python build_images.py
 ```
-#### Build a subset of images
-```
+
+### Build a subset of images
+
+```bash
 $ python build_images.py distro1 distro2 ...
 ```
 
-
 ## Running Tests
 
-#### Prepare
+### Prepare
 
 1. In parameters.json, fill in the following:
   - `<app-id>`, `<app-secret>` – verify_e2e service principal ID, secret (available in OneNote document)
@@ -45,12 +46,14 @@ $ python build_images.py distro1 distro2 ...
   - Add Custom_Log_CL tag
     ![AddingCustomlogTag](pictures/AddingCustomlogTag.png?raw=true)
 
-#### Test all images
-```
-$ python oms_docker_tests.py
+### Test all images
+
+```bash
+$ python -u oms_docker_tests.py
 ```
 
-#### Test a subset of images
-```
-$ python oms_docker_tests.py image1 image2 ...
+### Test a subset of images
+
+```bash
+$ python -u oms_docker_tests.py image1 image2 ...
 ```

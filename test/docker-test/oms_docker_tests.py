@@ -102,11 +102,11 @@ for image in images:
     hostnames.append(hostname)
     os.system("docker cp omsfiles/ {0}:/home/temp/".format(container))
     os.system("docker exec {0} hostname {1}".format(container, hostname))
-    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -preinstall".format(container))
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -preinstall".format(container))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, imageLog))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, imageLog))
-    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
-    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -status".format(container))
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
     os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
     write_log_command("Create Container and Install OMS Agent")
     append_file('omsfiles/omsresults.out', logOpen)
@@ -119,19 +119,19 @@ for image in images:
         x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
         if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
             all_images_install_message += """
-                        <td style='background-color: green'>Install Success</td>"""
+                        <td><span style='background-color: #66ff99'>Install Success</span></td>"""
         elif x_out.rstrip() == "No Workspace":
             all_images_install_message += """
-                        <td style='background-color: yellow'>Onboarding Failed</td>"""
+                        <td><span style='background-color: red; color: white'>Onboarding Failed</span></td>"""
     else:
         all_images_install_message += """
-                        <td style='background-color: red'>Install Failed</td>"""
+                        <td><span style='background-color: red; color: white'>Install Failed</span></td>"""
 
 # Inject logs
 time.sleep(30)
 for image in images:
     container = image + "-container"
-    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container))
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container))
 
 # Delay to allow data to propagate
 for i in reversed(range(1, E2E_DELAY + 1)):
@@ -166,14 +166,14 @@ for hostname in hostnames:
     from verify_e2e import success_count
     if success_count == 6:
         all_images_verify_message += """
-                        <td style='background-color: green'>Verify Success</td>"""
+                        <td><span style='background-color: #66ff99'>Verify Success</td>"""
     elif 0 < success_count < 6:
         from verify_e2e import success_sources, failed_sources
         all_images_verify_message += """
-                        <td style='background-color: yellow'>{0} Success <br><br>{1} Failed</td>""".format(', '.join(success_sources), ', '.join(failed_sources))
+                        <td><span style='background-color: #66ff99'>{0} Success</span> <br><br><span style='background-color: red; color: white'>{1} Failed</span></td>""".format(', '.join(success_sources), ', '.join(failed_sources))
     elif success_count == 0:
         all_images_verify_message += """
-                        <td style='background-color: red'>Verify Failed</td>"""
+                        td><span style='background-color: red; color: white'>Verify Failed</span></td>"""
 
 
 all_images_remove_message = ""
@@ -187,7 +187,7 @@ for image in images:
     htmlOpen = open(htmlFile, 'a+')
     write_log_command("Remove Logs: {0}".format(image))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --remove | tee -a {2}".format(container, oms_bundle, imageLog))
-    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -status".format(container))
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
     os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
     write_log_command("Remove OMS Agent")
     append_file('omsfiles/omsresults.out', logOpen)
@@ -200,13 +200,13 @@ for image in images:
         x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
         if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
             all_images_remove_message += """
-                        <td style='background-color: red'>Remove Failed</td>"""
+                        <td><span style='background-color: red; color: white'>Remove Failed</span></td>"""
         elif x_out.rstrip() == "No Workspace":
             all_images_remove_message += """
-                        <td style='background-color: yellow'>Onboarding Failed</td>"""
+                        <td><span style='background-color: red; color: white'>Onboarding Failed<span></td>"""
     else:
         all_images_remove_message += """
-                        <td style='background-color: green'>Remove Success</td>"""
+                        <td><span style='background-color: #66ff99'>Remove Success</span></td>"""
 
 
 all_images_reinstall_message = ""
@@ -220,8 +220,8 @@ for image in images:
     htmlOpen = open(htmlFile, 'a+')
     write_log_command("Reinstall Logs: {0}".format(image))
     os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, imageLog))
-    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
-    os.system("docker exec {0} python /home/temp/omsfiles/oms_run_script.py -status".format(container))
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
     os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
     write_log_command("Reinstall OMS Agent")
     append_file('omsfiles/omsresults.out', logOpen)
@@ -234,13 +234,13 @@ for image in images:
         x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
         if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
             all_images_reinstall_message += """
-                        <td style='background-color: green'>Reinstall Success</td>"""
+                        <td><span style='background-color: #66ff99'>Reinstall Success</span></td>"""
         elif x_out.rstrip() == "No Workspace":
             all_images_reinstall_message += """
-                        <td style='background-color: yellow'>Onboarding Failed</td>"""
+                        <td><span style='background-color: red; color: white'>Onboarding Failed</span></td>"""
     else:
         all_images_reinstall_message += """
-                        <td style='background-color: red'>Reinstall Failed</td>"""
+                        <td><span style='background-color: red; color: white'>Reinstall Failed</span></td>"""
 
 
 # Purge agent and delete container

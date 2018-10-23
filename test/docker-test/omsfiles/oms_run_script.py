@@ -274,6 +274,7 @@ def result_commands():
     write_log_command(cmd)
     write_log_output(psefomsagent)
 
+    time.sleep(10)
     # OMS agent restart
     cmd = '/opt/microsoft/omsagent/bin/service_control restart'
     omsagentRestart = exec_command(cmd)
