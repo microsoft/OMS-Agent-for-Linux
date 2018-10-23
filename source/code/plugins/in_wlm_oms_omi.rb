@@ -18,6 +18,7 @@ module Fluent
     config_param :omi_mapping_path, :string, :default => "/etc/opt/microsoft/omsagent/conf/omsagent.d/wlm_monitor_mapping.json"
     config_param :wlm_data_type, :string, :default => "WLM_LINUX_PERF_DATA_BLOB"
     config_param :wlm_ip, :string, :default => "InfrastructureInsights"
+    config_param :discovery_time_file, :string 
 
     def configure (conf)
       super
@@ -49,9 +50,11 @@ module Fluent
 
     def enumerate
       wrapper = nil
-      time = Time.now.to_f
-      wrapper = @omi_lib.enumerate(time, @wlm_data_type, @wlm_ip)
-      router.emit(@tag, time, wrapper) if wrapper
+      if File.exist?(@discovery_time_file)
+        time = Time.now.to_f
+        wrapper = @omi_lib.enumerate(time, @wlm_data_type, @wlm_ip)
+        router.emit(@tag, time, wrapper) if wrapper
+      end
     end
 
     def run_periodic
@@ -72,3 +75,4 @@ module Fluent
   end # WLM_OMS_OMI_Input
 
 end # module
+
