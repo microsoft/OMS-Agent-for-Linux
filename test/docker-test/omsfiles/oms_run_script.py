@@ -65,8 +65,8 @@ def main():
 
 def run_operation():
     """Execute steps associated with agent preinstall, postinstall, or status check."""
-    start_system_services()
     if operation == 'preinstall':
+        start_system_services()
         install_additional_packages()
     elif operation == 'postinstall':
         detect_workspace_id()

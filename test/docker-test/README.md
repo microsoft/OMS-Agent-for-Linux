@@ -11,18 +11,47 @@
 $ pip install requests adal rstr xeger
 ```
 
-## Building the Docker Images
+## Getting the Docker Images
 
-### Build all images
+### From Azure Container Registry
+
+Note: You must be a user of 'Geneva Monitoring Agent - LinuxMdsd' Subscription to pull images from Registry.
+Log in to Azure Container Registry:
+- Container Registry - Portal
+Use the omslinuxagent Registry's Login server, Username and password to login
+![RegistryAccessKeys](pictures/RegistryAccessKeys.png?raw=true)
+
+  ```bash
+  $ docker login --username omslinuxagent --password <password> omslinuxagent.azurecr.io
+  ```
+
+- [Container Registry - CLI](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-azure-cli#log-in-to-acr)
+- [Container Registry - PowerShell](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-powershell#log-in-to-registry)
+
+### Pull all images
 
 ```bash
-$ python build_images.py
+$ python -u build_images.py -pull
 ```
 
-### Build a subset of images
+#### Pull a subset of images
 
 ```bash
-$ python build_images.py distro1 distro2 ...
+$ python -u build_images.py -pull distro1 distro2 ...
+```
+
+### Using docker builder
+
+#### Build all images using Dockerfiles
+
+```bash
+$ python -u build_images.py -build
+```
+
+#### Build a subset of images using Dockerfiles
+
+```bash
+$ python -u build_images.py -build distro1 distro2 ...
 ```
 
 ## Running Tests
@@ -46,13 +75,16 @@ $ python build_images.py distro1 distro2 ...
   - Add Custom_Log_CL tag
     ![AddingCustomlogTag](pictures/AddingCustomlogTag.png?raw=true)
 
-### Test all images
+
+### Run test scripts
+
+#### All images
 
 ```bash
 $ python -u oms_docker_tests.py
 ```
 
-### Test a subset of images
+#### Subset of images
 
 ```bash
 $ python -u oms_docker_tests.py image1 image2 ...
