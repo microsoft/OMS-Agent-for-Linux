@@ -11,6 +11,12 @@
 $ pip install requests adal rstr xeger
 ```
 
+## Images currently supported for testing:
+* CentOS 6 and 7
+* Oracle Linux 6 and 7
+* Debian 8 and 9
+* Ubuntu 14.04, 16.04 and 18.04
+
 ## Getting the Docker Images
 
 ### From Azure Container Registry
@@ -28,7 +34,7 @@ Use the omslinuxagent Registry's Login server, Username and password to login
 - [Container Registry - CLI](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-azure-cli#log-in-to-acr)
 - [Container Registry - PowerShell](https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-powershell#log-in-to-registry)
 
-### Pull all images
+#### Pull all images
 
 ```bash
 $ python -u build_images.py -pull
@@ -40,7 +46,7 @@ $ python -u build_images.py -pull
 $ python -u build_images.py -pull distro1 distro2 ...
 ```
 
-### Using docker builder
+### Using docker build
 
 #### Build all images using Dockerfiles
 
