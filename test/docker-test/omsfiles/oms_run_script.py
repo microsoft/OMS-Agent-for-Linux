@@ -38,46 +38,33 @@ def linux_detect_installer():
     global INSTALLER
     INSTALLER = None
     if os.system("which dpkg > /dev/null 2>&1") == 0:
-        INSTALLER="DPKG"
+        INSTALLER = "DPKG"
     elif os.system("which rpm > /dev/null 2>&1") == 0:
-        INSTALLER="RPM"
-
-linux_detect_installer()
+        INSTALLER = "RPM"
 
 def main():
     """Determine the operation to executed, and execute it."""
+    linux_detect_installer()
+
     global operation
     try:
         option = sys.argv[1]
         if re.match('^([-/]*)(preinstall)', option):
-            operation = 'preinstall'
+            start_system_services()
+            install_additional_packages()
         elif re.match('^([-/]*)(postinstall)', option):
-            operation = 'postinstall'
+            detect_workspace_id()
+            config_start_oms_services()
+            restart_services()
         elif re.match('^([-/]*)(status)', option):
-            operation = 'status'
+            result_commands()
+            service_control_commands()
+            write_html()
         elif re.match('^([-/]*)(injectlogs)', option):
-            operation = 'injectlogs'
+            inject_logs()
     except:
         if operation is None:
-            print("No operation specified. run with 'preinstall' or 'postinstall' or 'status'")
-
-    run_operation()
-
-def run_operation():
-    """Execute steps associated with agent preinstall, postinstall, or status check."""
-    if operation == 'preinstall':
-        start_system_services()
-        install_additional_packages()
-    elif operation == 'postinstall':
-        detect_workspace_id()
-        config_start_oms_services()
-        restart_services()
-    elif operation == 'status':
-        result_commands()
-        service_control_commands()
-        write_html()
-    elif operation == 'injectlogs':
-        inject_logs()
+            print("No operation specified. run with 'preinstall', 'postinstall', 'status', or 'injectlogs'")
 
 def replace_items(infile, old_word, new_word):
     """Replace old_word with new_world in file infile."""
@@ -318,8 +305,8 @@ def service_control_commands():
 def write_html():
     """Use stored command results to create an HTML report of the test results."""
     os.system('rm /home/temp/omsresults.html')
-    htmlFile = '/home/temp/omsresults.html'
-    f = open(htmlFile, 'w+')
+    html_file = '/home/temp/omsresults.html'
+    f = open(html_file, 'w+')
 
     message = """
 <div class="text" style="white-space: pre-wrap" >

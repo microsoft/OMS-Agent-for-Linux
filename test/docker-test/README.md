@@ -5,10 +5,10 @@
 
 * Docker - Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
 * Python 2.7+ & [pip](https://pip.pypa.io/en/stable/installing/)
-* [Requests](http://docs.python-requests.org/en/master/), [ADAL](https://github.com/AzureAD/azure-activedirectory-library-for-python), [rstr](https://bitbucket.org/leapfrogdevelopment/rstr/overview), [xeger](https://github.com/crdoconnor/xeger)
+* [Requests](http://docs.python-requests.org/en/master/), [ADAL](https://github.com/AzureAD/azure-activedirectory-library-for-python)
 
 ```bash
-$ pip install requests adal rstr xeger
+$ pip install requests adal
 ```
 
 ## Images currently supported for testing:
@@ -70,9 +70,16 @@ $ python -u build_images.py -build distro1 distro2 ...
   - `<resource-group-name>` – resource group that hosts specified workspace
   - `<subscription-id>` – ID of subscription that hosts specified workspace
   - `<workspace-name>`, `<workspace-id>`, `<workspace-key>` – Log Analytics workspace name, ID, key
-2. Ensure the images list in oms_docker_tests.py matches the docker images on your machine
-3. Copy the bundle to test into the omsfiles directory
-4. Custom Log Setup:
+2. Enable the end-to-end verification script to read your workspace
+  - Open workspace in Azure Portal
+  - Access control (IAM) > Add
+    - `Role` – Reader
+    - `Assign access to` – Azure AD user, group, or application
+    - `Select` – verify_e2e
+  - Save
+3. Ensure the images list in oms_docker_tests.py matches the docker images on your machine
+4. Copy the bundle to test into the omsfiles directory
+5. Custom Log Setup:
   - [Custom logs Docs](https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-data-sources-custom-logs)
   - Add custom.log file to setup Custom_Log_CL
     ![AddingCustomlogFile](pictures/AddingCustomlogFile.png?raw=true)

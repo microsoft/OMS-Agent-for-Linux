@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import sys
 
 import adal
@@ -10,6 +11,12 @@ import requests
 ENDPOINT = ('https://management.azure.com/subscriptions/{}/resourcegroups/'
             '{}/providers/Microsoft.OperationalInsights/workspaces/{}/api/'
             'query?api-version=2017-01-01-preview')
+
+def detect_placeholders(parameters):
+    """Check for placeholders in parameters file, warning and exiting if found."""
+    if re.search(r'"<.*>"', parameters):
+        print('Please replace placeholders in parameters.json')
+        exit()
 
 def check_e2e(hostname):
     '''
@@ -24,16 +31,23 @@ def check_e2e(hostname):
     failed_sources = []
     success_sources = []
 
-    with open('{}/parameters.json'.format(os.getcwd()), 'r') as f:
+    # Prioritize _parameters.json (uncommitted, filled parameters file) for development
+    if os.path.isfile('{0}/_parameters.json'.format(os.getcwd())):
+        parameters_path = '{0}/_parameters.json'.format(os.getcwd())
+    else:
+        parameters_path = '{0}/parameters.json'.format(os.getcwd())
+
+    with open(parameters_path, 'r') as f:
         parameters = f.read()
-    parameters = json.loads(parameters)
+        detect_placeholders(parameters)
+        parameters = json.loads(parameters)
 
     authority_url = parameters['authority host url'] + '/' + parameters['tenant']
     context = adal.AuthenticationContext(authority_url)
     token = context.acquire_token_with_client_credentials(
-                parameters['resource'],
-                parameters['app id'],
-                parameters['app secret'])
+        parameters['resource'],
+        parameters['app id'],
+        parameters['app secret'])
 
     head = {'Authorization': 'Bearer ' + token['accessToken']}
     subscription = parameters['subscription']
@@ -57,7 +71,7 @@ def check_e2e(hostname):
     for s in sources:
         query = '%s | where Computer == \'%s\' | take 1' % (s, hostname)
         timespan = 'P10Y'
-        r = requests.post(url, headers=head, json={'query':query,'timespan':timespan})
+        r = requests.post(url, headers=head, json={'query':query, 'timespan':timespan})
 
         if r.status_code == requests.codes.ok:
             r = (json.loads(r.text)['Tables'])[0]
@@ -78,6 +92,7 @@ def check_e2e(hostname):
     return results
 
 def main():
+    '''Check for data with given hostname.'''
     if len(sys.argv) == 2:
         check_e2e(sys.argv[1])
     else:

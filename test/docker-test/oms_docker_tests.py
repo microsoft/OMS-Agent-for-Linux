@@ -1,11 +1,14 @@
 """
 Test the OMS Agent on all or a subset of images.
 
+Setup: read parameters and setup HTML report
+Test:
 1. Create container and install agent
 2. Wait for data to propagate to backend and check for data
 3. Remove agent
 4. Reinstall agent
 5. Purge agent and delete container
+Finish: compile HTML report and log file
 """
 
 import json
@@ -26,12 +29,22 @@ hostnames = []
 if len(sys.argv) > 1:
     images = sys.argv[1:]
 
-with open('{0}/parameters.json'.format(os.getcwd()), 'r') as f:
-    parameters = f.read()
+def detect_placeholders(parameters):
+    """Check for placeholders in parameters file, warning and exiting if found."""
     if re.search(r'"<.*>"', parameters):
         print('Please replace placeholders in parameters.json')
         exit()
-parameters = json.loads(parameters)
+
+# Prioritize _parameters.json (uncommitted, filled parameters file) for development
+if os.path.isfile('{0}/_parameters.json'.format(os.getcwd())):
+    parameters_path = '{0}/_parameters.json'.format(os.getcwd())
+else:
+    parameters_path = '{0}/parameters.json'.format(os.getcwd())
+
+with open(parameters_path, 'r') as f:
+    parameters = f.read()
+    detect_placeholders(parameters)
+    parameters = json.loads(parameters)
 
 oms_bundle = parameters['oms bundle']
 workspace_id = parameters['workspace id']
