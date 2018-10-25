@@ -12,12 +12,6 @@ ENDPOINT = ('https://management.azure.com/subscriptions/{}/resourcegroups/'
             '{}/providers/Microsoft.OperationalInsights/workspaces/{}/api/'
             'query?api-version=2017-01-01-preview')
 
-def detect_placeholders(parameters):
-    """Check for placeholders in parameters file, warning and exiting if found."""
-    if re.search(r'"<.*>"', parameters):
-        print('Please replace placeholders in parameters.json')
-        exit()
-
 def check_e2e(hostname):
     '''
     Verify data from computer with provided hostname is
@@ -31,15 +25,11 @@ def check_e2e(hostname):
     failed_sources = []
     success_sources = []
 
-    # Prioritize _parameters.json (uncommitted, filled parameters file) for development
-    if os.path.isfile('{0}/_parameters.json'.format(os.getcwd())):
-        parameters_path = '{0}/_parameters.json'.format(os.getcwd())
-    else:
-        parameters_path = '{0}/parameters.json'.format(os.getcwd())
-
-    with open(parameters_path, 'r') as f:
+    with open('{0}/parameters.json'.format(os.getcwd()), 'r') as f:
         parameters = f.read()
-        detect_placeholders(parameters)
+        if re.search(r'"<.*>"', parameters):
+            print('Please replace placeholders in parameters.json')
+            exit()
         parameters = json.loads(parameters)
 
     authority_url = parameters['authority host url'] + '/' + parameters['tenant']
@@ -83,7 +73,7 @@ def check_e2e(hostname):
                 success_count += 1
                 success_sources.append(s)
         else:
-            results[distro][s] = 'Failure: {} {}'.format(r.status_code, json.loads(r.text)['error']['message'])
+            results[distro][s] = 'Failure: {} {}'.format(r.status_code, r.text)
 
     results[distro] = [results[distro]]
     print(results)

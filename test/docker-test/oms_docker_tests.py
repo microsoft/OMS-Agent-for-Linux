@@ -29,21 +29,11 @@ hostnames = []
 if len(sys.argv) > 1:
     images = sys.argv[1:]
 
-def detect_placeholders(parameters):
-    """Check for placeholders in parameters file, warning and exiting if found."""
+with open('{0}/parameters.json'.format(os.getcwd()), 'r') as f:
+    parameters = f.read()
     if re.search(r'"<.*>"', parameters):
         print('Please replace placeholders in parameters.json')
         exit()
-
-# Prioritize _parameters.json (uncommitted, filled parameters file) for development
-if os.path.isfile('{0}/_parameters.json'.format(os.getcwd())):
-    parameters_path = '{0}/_parameters.json'.format(os.getcwd())
-else:
-    parameters_path = '{0}/parameters.json'.format(os.getcwd())
-
-with open(parameters_path, 'r') as f:
-    parameters = f.read()
-    detect_placeholders(parameters)
     parameters = json.loads(parameters)
 
 oms_bundle = parameters['oms bundle']

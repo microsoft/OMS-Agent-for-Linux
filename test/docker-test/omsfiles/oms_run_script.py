@@ -50,6 +50,7 @@ def main():
     try:
         option = sys.argv[1]
         if re.match('^([-/]*)(preinstall)', option):
+            set_hostname()
             start_system_services()
             install_additional_packages()
         elif re.match('^([-/]*)(postinstall)', option):
@@ -85,6 +86,24 @@ def detect_workspace_id():
         workspace_id = re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x).group(0)
     except AttributeError:
         workspace_id = None
+
+def set_hostname():
+    """Set /etc/hostname and modify /etc/hosts to prevent getaddrinfo failure."""
+    hostname = os.popen('hostname').read()[:-1] # strip \n
+    os.system(r"sed '$s|\(.*\)\t.*|\1\t{0}|' /etc/hosts > /etc/_hosts".format(hostname))
+    os.system('echo {0} > /etc/hostname \
+            && cat /etc/_hosts > /etc/hosts \
+            && rm /etc/_hosts'.format(hostname))
+
+def start_system_services():
+    """Start rsyslog, cron and apache to enable log collection."""
+    os.system('service rsyslog start')
+    if INSTALLER == 'DPKG':
+        os.system('service cron start \
+                && service apache2 start')
+    elif INSTALLER == 'RPM':
+        os.system('service crond start \
+                && service httpd start')
 
 def install_additional_packages():
     """Install additional packages as needed."""
@@ -167,15 +186,6 @@ def inject_logs():
             && cp /home/temp/omsfiles/mysql-slow.log /var/log/mysql/mysql-slow.log \
             && cp /home/temp/omsfiles/custom.log /var/log/custom.log')
 
-def start_system_services():
-    """Start rsyslog, cron and apache to enable log collection."""
-    os.system('service rsyslog start')
-    if INSTALLER == 'DPKG':
-        os.system('service cron start \
-                    && service apache2 start')
-    elif INSTALLER == 'RPM':
-        os.system('service crond start \
-                    && service httpd start')
 
 def config_start_oms_services():
     """Orchestrate overall configuration prior to agent start."""
