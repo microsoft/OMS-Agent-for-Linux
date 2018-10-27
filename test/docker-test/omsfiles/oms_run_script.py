@@ -1,5 +1,6 @@
 """Test OMS Agent bundle functionality within a container."""
 
+import datetime
 import os
 import os.path
 import subprocess
@@ -170,6 +171,11 @@ def apache_mysql_conf():
 
 def inject_logs():
     """Inject logs (after) agent is running in order to simulate real Apache/MySQL/Custom logs output."""
+
+    # set apache timestamps to current time to ensure they are searchable with 1 hour period in log analytics
+    now = datetime.datetime.utcnow().strftime('[%d/%b/%Y:%H:%M:%S +0000]')
+    os.system(r"sed -i 's|\(\[.*\]\)|{0}|' /home/temp/omsfiles/apache_access.log".format(now))
+
     if INSTALLER == 'DPKG':
         os.system('cp /home/temp/omsfiles/apache_access.log /var/log/apache2/access.log \
                 && chown root:root /var/log/apache2/access.log \
@@ -314,7 +320,7 @@ def service_control_commands():
 
 def write_html():
     """Use stored command results to create an HTML report of the test results."""
-    os.system('rm /home/temp/omsresults.html')
+    os.system('rm -f /home/temp/omsresults.html')
     html_file = '/home/temp/omsresults.html'
     f = open(html_file, 'w+')
 

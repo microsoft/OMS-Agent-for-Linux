@@ -60,7 +60,7 @@ def check_e2e(hostname):
     print('Verifying data from computer {}'.format(hostname))
     for s in sources:
         query = '%s | where Computer == \'%s\' | take 1' % (s, hostname)
-        timespan = 'P10Y'
+        timespan = 'PT1H'
         r = requests.post(url, headers=head, json={'query':query, 'timespan':timespan})
 
         if r.status_code == requests.codes.ok:
