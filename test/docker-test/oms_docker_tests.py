@@ -98,16 +98,18 @@ def main():
     remove_msg = remove_agent()
     reinstall_msg = reinstall_agent()
     if is_long:
-        # TODO add visual counter, log
-        time.sleep(LONG_DELAY)
+        for i in reversed(range(1, LONG_DELAY + 1)):
+            sys.stdout.write('\rLong-term delay: T-{} minutes...'.format(i))
+            sys.stdout.flush()
+            time.sleep(60)
+        print('')
         inject_logs()
         long_verify_msg = verify_data()
         long_status_msg = check_status()
     else:
         long_verify_msg, long_status_msg = None, None
     purge_delete_agent()
-    messages = (install_msg, verify_msg, remove_msg,
-                reinstall_msg, long_verify_msg, long_status_msg)
+    messages = (install_msg, verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
     create_report(messages)
 
 def install_agent():
@@ -163,8 +165,10 @@ def verify_data():
     """Verify data end-to-end, returning HTML results."""
     # Delay to allow data to propagate
     for i in reversed(range(1, E2E_DELAY + 1)):
-        print('E2E propagation delay: T-{} Minutes'.format(i))
+        sys.stdout.write('\rE2E propagation delay: T-{} minutes...'.format(i))
+        sys.stdout.flush()
         time.sleep(60)
+    print('')
 
     message = ""
     for hostname in hostnames:
@@ -173,14 +177,11 @@ def verify_data():
         html_path = image + "result.html"
         log_file = open(log_path, 'a+')
         html_file = open(html_path, 'a+')
-        os.system('rm e2eresults.json')
-        check_e2e(hostname)
+        data = check_e2e(hostname)
 
         # write detailed table for image
         html_file.write("<h2> Verify Data from OMS workspace </h2>")
         write_log_command('Status After Verifying Data', log_file)
-        with open('e2eresults.json', 'r') as infile:
-            data = json.load(infile)
         results = data[image][0]
         log_file.write(image + ':\n' + json.dumps(results, indent=4, separators=(',', ': ')) + '\n')
         # prepend distro column to results row before generating the table
@@ -258,7 +259,7 @@ def reinstall_agent():
                 message += """<td><span style='background-color: red; color: white'>Onboarding Failed</span></td>"""
         else:
             message += """<td><span style='background-color: red; color: white'>Reinstall Failed</span></td>"""
-        return message
+    return message
 
 def check_status():
     """Check agent status."""
@@ -321,11 +322,11 @@ def create_report(messages):
     if long_verify_msg and long_status_msg:
         long_running_summary = """
         <tr>
-          <td>Long-term Verify Data</td>
+          <td>Long-Term Verify Data</td>
           {0}
         </tr>
         <tr>
-          <td>Long-term Status</td>
+          <td>Long-Term Status</td>
           {1}
         </tr>
         """.format(long_verify_msg, long_status_msg)
