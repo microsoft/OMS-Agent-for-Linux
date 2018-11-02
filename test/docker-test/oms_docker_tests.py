@@ -31,6 +31,7 @@ hostnames = []
 if len(sys.argv) == 1:
     print(('Please indicate run length (short or long) and optional image subset:\n'
            '$ python -u oms_docker_tests.py length [image...]'))
+    exit()
 is_long = sys.argv[1] == 'long'
 
 if len(sys.argv) > 2: # user has specified image subset
@@ -156,7 +157,7 @@ def install_agent():
 
 def inject_logs():
     """Inject logs."""
-    time.sleep(30)
+    time.sleep(60)
     for image in images:
         container = image + "-container"
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container))
