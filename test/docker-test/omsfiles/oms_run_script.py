@@ -177,20 +177,20 @@ def inject_logs():
     os.system(r"sed -i 's|\(\[.*\]\)|{0}|' /home/temp/omsfiles/apache_access.log".format(now))
 
     if INSTALLER == 'DPKG':
-        os.system('cp /home/temp/omsfiles/apache_access.log /var/log/apache2/access.log \
+        os.system('cat /home/temp/omsfiles/apache_access.log >> /var/log/apache2/access.log \
                 && chown root:root /var/log/apache2/access.log \
                 && chmod 644 /var/log/apache2/access.log \
                 && dos2unix /var/log/apache2/access.log')
     elif INSTALLER == 'RPM':
-        os.system('cp /home/temp/omsfiles/apache_access.log /var/log/httpd/access_log \
+        os.system('cat /home/temp/omsfiles/apache_access.log >> /var/log/httpd/access_log \
                 && chown root:root /var/log/httpd/access_log \
                 && chmod 644 /var/log/httpd/access_log \
                 && dos2unix /var/log/httpd/access_log')
 
-    os.system('cp /home/temp/omsfiles/mysql.log /var/log/mysql/mysql.log \
-            && cp /home/temp/omsfiles/error.log /var/log/mysql/error.log \
-            && cp /home/temp/omsfiles/mysql-slow.log /var/log/mysql/mysql-slow.log \
-            && cp /home/temp/omsfiles/custom.log /var/log/custom.log')
+    os.system('cat /home/temp/omsfiles/mysql.log >> /var/log/mysql/mysql.log \
+            && cat /home/temp/omsfiles/error.log >> /var/log/mysql/error.log \
+            && cat /home/temp/omsfiles/mysql-slow.log >> /var/log/mysql/mysql-slow.log \
+            && cat /home/temp/omsfiles/custom.log >> /var/log/custom.log')
 
 
 def config_start_oms_services():

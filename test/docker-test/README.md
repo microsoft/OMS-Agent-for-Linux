@@ -5,10 +5,10 @@
 
 * Docker - Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
 * Python 2.7+ & [pip](https://pip.pypa.io/en/stable/installing/)
-* [Requests](http://docs.python-requests.org/en/master/), [ADAL](https://github.com/AzureAD/azure-activedirectory-library-for-python)
+* [Requests](http://docs.python-requests.org/en/master/), [ADAL](https://github.com/AzureAD/azure-activedirectory-library-for-python), [json2html](https://github.com/softvar/json2html)
 
 ```bash
-$ pip install requests adal
+$ pip install requests adal json2html
 ```
 
 ## Images currently supported for testing:
@@ -65,21 +65,34 @@ $ python -u build_images.py -build distro1 distro2 ...
 ### Prepare
 
 1. In parameters.json, fill in the following:
-  - `<app-id>`, `<app-secret>` – verify_e2e service principal ID, secret (available in OneNote document)
+  - `<tenant>` – your AAD tenant, visible in Azure Portal > Azure Active Directory > Properties > Directory ID
+  - `<app-id>`, `<app-secret>` – verify_e2e service principal ID, secret (available in OneNote document, or optionally register your own Azure Active Directory app in step 2)
   - `<bundle-file-name>` – file name OMS bundle to be tested
   - `<resource-group-name>` – resource group that hosts specified workspace
   - `<subscription-id>` – ID of subscription that hosts specified workspace
   - `<workspace-name>`, `<workspace-id>`, `<workspace-key>` – Log Analytics workspace name, ID, key
-2. Enable the end-to-end verification script to read your workspace
+2. [Optional] Register your own AAD app to allow end-to-end verification script to access Microsoft REST APIs
+  - Azure Portal > Azure Active Directory > App Registrations (Preview) > New Registration
+    - `Name` – A name of your choice, can be changed later
+    - `Supported Account Types` – Accounts in this organizational directory only (Microsoft)
+    - `Redirect URI (Optional)` – Leave blank
+    - Register
+    - Use Application (client) ID value displayed in app overview to replace `<app-id>` in parameters.json
+  - In blade of new registration > Certificates & Secrets > New Client Secret
+    - `Description` – A descriptive word or phrase of your choice
+    - `Expires` – Never
+    - Add
+    - *Copy down the new client secret value!* Use this to replace `<app-secret>` in parameters.json
+3. Give the end-to-end verification script permission to read your workspace
   - Open workspace in Azure Portal
   - Access control (IAM) > Add
     - `Role` – Reader
     - `Assign access to` – Azure AD user, group, or application
     - `Select` – verify_e2e
   - Save
-3. Ensure the images list in oms_docker_tests.py matches the docker images on your machine
-4. Copy the bundle to test into the omsfiles directory
-5. Custom Log Setup:
+4. Ensure the images list in oms_docker_tests.py matches the docker images on your machine
+5. Copy the bundle to test into the omsfiles directory
+6. Custom Log Setup:
   - [Custom logs Docs](https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-data-sources-custom-logs)
   - Add custom.log file to setup Custom_Log_CL
     ![AddingCustomlogFile](pictures/AddingCustomlogFile.png?raw=true)
@@ -91,14 +104,16 @@ $ python -u build_images.py -build distro1 distro2 ...
 
 ### Run test scripts
 
+Specify `length` of 'long' to initiate long-running tests (check the agent status after a few hours) or 'short' to omit such tests.
+
 #### All images
 
 ```bash
-$ python -u oms_docker_tests.py
+$ python -u oms_docker_tests.py length
 ```
 
 #### Subset of images
 
 ```bash
-$ python -u oms_docker_tests.py image1 image2 ...
+$ python -u oms_docker_tests.py length image1 image2 ...
 ```
