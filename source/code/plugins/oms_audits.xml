@@ -1065,7 +1065,47 @@
         command="CheckNoMatchingLines"
         regex="^[\s\t]*RhostsAuthentication\s+yes"
         path="/etc/ssh/sshd_config" />
-    </audit>    
+    </audit>
+    <audit
+      description="Ensure auditd package is installed"
+      msid="161"
+      cceid="CCE-4240-1"
+      severity="Critical"
+      impact="This package provides the auditd plugin used to collect audit events. If this package isn’t installed, then audit events are not collected. This leads to compliance failure and inability for detection pipeline to monitor system"
+      remediation="Install the auditd (apt-get install auditd) or audit package (yum install audit)."
+      ruleId="91e21b9b-9688-4bea-8a44-4a2de471151f">
+      <check
+        distro="*"
+        command="CheckPackageInstalledRegexp"
+        packagename="audit(?:d)?$" />
+    </audit>
+    <audit
+      description="Ensure auditd service is enabled"
+      msid="162"
+      cceid=" CCE-4240-2"
+      severity="Critical"
+      impact="The capturing of system events provides system administrators with information to allow them to determine if unauthorized access to their system is occurring."
+      remediation="Install audit package (systemctl enable auditd)"
+      ruleId="f9fd03d2-75e4-4564-84a9-4e955f1e7c30">
+      <check
+        distro="*"
+        command="CheckServiceEnabled"
+        service="auditd" />
+    </audit>
+    <audit
+      description="Run AuditD service"
+      msid="163"
+      cceid=" CCE-4240-3"
+      severity="Critical"
+      impact="The capturing of system events provides system administrators with information to allow them to determine if unauthorized access to their system is occurring."
+      remediation="Run AuditD service (systemctl start auditd)"
+      ruleId="f9fd03d2-75e4-4564-84a9-4e955f1e7c30">
+      <check
+        distro="*"
+        command="CheckServiceStatus"
+        expect="running"
+        service="auditd" />
+    </audit>
   </audits>
  <remediations>
   <!--
