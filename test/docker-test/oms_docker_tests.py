@@ -28,14 +28,13 @@ LONG_DELAY = 250 # Delay (minutes) before rechecking agent
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7"]
 hostnames = []
 
-if len(sys.argv) == 1:
-    print(('Please indicate run length (short or long) and optional image subset:\n'
-           '$ python -u oms_docker_tests.py length [image...]'))
-    exit()
-is_long = sys.argv[1] == 'long'
-
-if len(sys.argv) > 2: # user has specified image subset
-    images = sys.argv[2:]
+if len(sys.argv) > 0:
+    options = sys.argv[1:]
+    images = [ i for i in options if i not in ('long', 'instantupgrade')]
+    is_long = 'long' in options
+    is_instantupgrade = 'instantupgrade' in options
+else:
+    is_long = is_instantupgrade = False
 
 with open('{0}/parameters.json'.format(os.getcwd()), 'r') as f:
     parameters = f.read()
@@ -44,7 +43,16 @@ with open('{0}/parameters.json'.format(os.getcwd()), 'r') as f:
         exit()
     parameters = json.loads(parameters)
 
-oms_bundle = parameters['oms bundle']
+try:
+    if parameters['oms bundle'] and os.path.isfile('omsfiles/'+parameters['oms bundle']):
+        oms_bundle = parameters['oms bundle']
+
+    if parameters['old oms bundle'] and os.path.isfile('omsfiles/'+parameters['old oms bundle']):
+        old_oms_bundle = parameters['old oms bundle']
+
+except KeyError:
+    print('parameters not defined correctly or omsbundle file not found')
+
 workspace_id = parameters['workspace id']
 workspace_key = parameters['workspace key']
 
@@ -93,9 +101,18 @@ result_html_file.write(htmlstart)
 
 def main():
     """Orchestrate fundemental testing steps onlined in header docstring."""
-    install_msg = install_agent()
-    inject_logs()
-    verify_msg = verify_data()
+    if is_instantupgrade:
+        install_msg = install_agent(old_oms_bundle)
+        inject_logs()
+        verify_msg = verify_data()
+        instantupgrade_install_msg = upgrade_agent(oms_bundle)
+        inject_logs()
+        instantupgrade_verify_msg = verify_data()
+    else:
+        install_msg = install_agent(oms_bundle)
+        inject_logs()
+        verify_msg = verify_data()
+
     remove_msg = remove_agent()
     reinstall_msg = reinstall_agent()
     if is_long:
@@ -110,12 +127,13 @@ def main():
     else:
         long_verify_msg, long_status_msg = None, None
     purge_delete_agent()
-    messages = (install_msg, verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
+    messages = (install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
     create_report(messages)
 
-def install_agent():
+def install_agent(oms_bundle):
     """Run container and install the OMS agent, returning HTML results."""
     message = ""
+    version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
     for image in images:
         container = image + "-container"
         log_path = image + "result.log"
@@ -133,15 +151,49 @@ def install_agent():
         os.system("docker cp omsfiles/ {0}:/home/temp/".format(container))
         os.system("docker exec {0} hostname {1}".format(container, hostname))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -preinstall".format(container))
-        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, log_path))
-        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, log_path))
+        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, image+'temp.log'))
+        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, image+'temp.log'))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
+        append_file(image+'temp.log', log_file)
+        os.remove(image+'temp.log')
         os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
-        write_log_command("Create Container and Install OMS Agent", log_file)
+        write_log_command("Create Container and Install OMS Agent v{0}".format(version), log_file)
         append_file('omsfiles/omsresults.out', log_file)
         os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
-        html_file.write("<h2> Install OMS Agent </h2>")
+        html_file.write("<h2> Install OMS Agent v{0} </h2>".format(version))
+        append_file('omsfiles/omsresults.html', html_file)
+        log_file.close()
+        html_file.close()
+        if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
+            x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
+            if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
+                message += """<td><span style='background-color: #66ff99'>Install Success</span></td>"""
+            elif x_out.rstrip() == "No Workspace":
+                message += """<td><span style='background-color: red; color: white'>Onboarding Failed</span></td>"""
+        else:
+            message += """<td><span style='background-color: red; color: white'>Install Failed</span></td>"""
+    return message
+
+def upgrade_agent(oms_bundle):
+    message = ""
+    version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
+    for image in images:
+        container = image + "-container"
+        log_path = image + "result.log"
+        html_path = image + "result.html"
+        log_file = open(log_path, 'a+')
+        html_file = open(html_path, 'a+')
+        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, image+'temp.log'))
+        os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
+        os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
+        append_file(image+'temp.log', log_file)
+        os.remove(image+'temp.log')
+        os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
+        write_log_command("Upgrade OMS Agent v{0}".format(version), log_file)
+        append_file('omsfiles/omsresults.out', log_file)
+        os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
+        html_file.write("<h2> Upgrade OMS Agent v{0} </h2>".format(version))
         append_file('omsfiles/omsresults.html', html_file)
         log_file.close()
         html_file.close()
@@ -211,8 +263,10 @@ def remove_agent():
         log_file = open(log_path, 'a+')
         html_file = open(html_path, 'a+')
         write_log_command("Remove Logs: {0}".format(image), log_file)
-        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --remove | tee -a {2}".format(container, oms_bundle, log_path))
+        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --remove | tee -a {2}".format(container, oms_bundle, image+'temp.log'))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
+        append_file(image+'temp.log', log_file)
+        os.remove(image+'temp.log')
         os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
         write_log_command("Remove OMS Agent", log_file)
         append_file('omsfiles/omsresults.out', log_file)
@@ -241,9 +295,12 @@ def reinstall_agent():
         log_file = open(log_path, 'a+')
         html_file = open(html_path, 'a+')
         write_log_command("Reinstall Logs: {0}".format(image), log_file)
-        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, log_path))
+        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade | tee -a {4}".format(container, oms_bundle, image+'temp.log'))
+        os.system("docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -w {1} -s {2} | tee -a {3}".format(container, workspace_id, workspace_key, image+'temp.log'))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
+        append_file(image+'temp.log', log_file)
+        os.remove(image+'temp.log')
         os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
         write_log_command("Reinstall OMS Agent", log_file)
         append_file('omsfiles/omsresults.out', log_file)
@@ -301,13 +358,15 @@ def purge_delete_agent():
         log_path = image + "result.log"
         log_file = open(log_path, 'a+')
         write_log_command("Purge Logs: {0}".format(image), log_file)
-        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, log_path))
+        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, image+'temp.log'))
+        append_file(image+'temp.log', log_file)
+        os.remove(image+'temp.log')
         os.system("docker container stop {0}".format(container))
         os.system("docker container rm {0}".format(container))
 
 def create_report(messages):
     """Compile the final HTML report."""
-    install_msg, verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg = messages
+    install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg = messages
     result_log_file = open("finalresult.log", 'a+')
 
     # summary table
@@ -318,6 +377,21 @@ def create_report(messages):
                 <th>{0}</th>""".format(image)
         resultsth += """
                 <th><a href='#{0}'>{0} results</a></th>""".format(image)
+
+    # pre-compile instant-upgrade summary
+    if instantupgrade_install_msg and instantupgrade_verify_msg:
+        instantupgrade_summary = """
+        <tr>
+          <td>Instant Upgrade Install Status</td>
+          {0}
+        </tr>
+        <tr>
+          <td>Instant Upgrade Verify Data</td>
+          {1}
+        </tr>
+        """.format(instantupgrade_install_msg, instantupgrade_verify_msg)
+    else:
+        instantupgrade_summary = ""
 
     # pre-compile long-running summary
     if long_verify_msg and long_status_msg:
@@ -349,21 +423,22 @@ def create_report(messages):
         <td>Verify Data</td>
         {2}
       </tr>
+      {3}
       <tr>
         <td>Remove OMSAgent</td>
-        {3}
+        {4}
       </tr>
       <tr>
         <td>Reinstall OMSAgent</td>
-        {4}
+        {5}
       </tr>
-      {5}
+      {6}
       <tr>
         <td>Result Link</td>
-        {6}
+        {7}
       <tr>
     </table>
-    """.format(imagesth, install_msg, verify_msg, remove_msg, reinstall_msg, long_running_summary, resultsth)
+    """.format(imagesth, install_msg, verify_msg, instantupgrade_summary, remove_msg, reinstall_msg, long_running_summary, resultsth)
     result_html_file.write(statustable)
 
     # Create final html & log file

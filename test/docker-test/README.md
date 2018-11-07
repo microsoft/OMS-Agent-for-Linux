@@ -68,6 +68,7 @@ $ python -u build_images.py -build distro1 distro2 ...
   - `<tenant>` – your AAD tenant, visible in Azure Portal > Azure Active Directory > Properties > Directory ID
   - `<app-id>`, `<app-secret>` – verify_e2e service principal ID, secret (available in OneNote document, or optionally register your own Azure Active Directory app in step 2)
   - `<bundle-file-name>` – file name OMS bundle to be tested
+  - `<old-bundle-file-name>` - file name of old OMS bundle. Only if you are testing upgrade from older version. remove if not using (optional)
   - `<resource-group-name>` – resource group that hosts specified workspace
   - `<subscription-id>` – ID of subscription that hosts specified workspace
   - `<workspace-name>`, `<workspace-id>`, `<workspace-key>` – Log Analytics workspace name, ID, key
@@ -91,7 +92,7 @@ $ python -u build_images.py -build distro1 distro2 ...
     - `Select` – verify_e2e
   - Save
 4. Ensure the images list in oms_docker_tests.py matches the docker images on your machine
-5. Copy the bundle to test into the omsfiles directory
+5. Copy the bundle or bundles to test into the omsfiles directory
 6. Custom Log Setup:
   - [Custom logs Docs](https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-data-sources-custom-logs)
   - Add custom.log file to setup Custom_Log_CL
@@ -104,16 +105,27 @@ $ python -u build_images.py -build distro1 distro2 ...
 
 ### Run test scripts
 
-Specify `length` of 'long' to initiate long-running tests (check the agent status after a few hours) or 'short' to omit such tests.
+- Available modes: 
+  - default: No options needed. Runs the install & reinstall tests on the latest agent with a 10 min wait time before verification.
+  - `long`: Adds a very longer wait time before verification.
+  - `instantupgrade`: Install the older version first, verify status, upgrade to newer version and continue tests.
 
 #### All images
 
 ```bash
-$ python -u oms_docker_tests.py length
+$ python -u oms_docker_tests.py
 ```
 
 #### Subset of images
 
 ```bash
-$ python -u oms_docker_tests.py length image1 image2 ...
+$ python -u oms_docker_tests.py long image1 image2 ...
+```
+
+#### Test upgrade from old bundle to new bundle
+
+Note: Define a proper value for the `old oms bundle` in parameters.json file and bundle must be present in omsfiles folder
+
+```bash
+$ python -u oms_docker_tests.py instantupgrade image1 image2
 ```

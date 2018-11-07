@@ -5,6 +5,7 @@
   "app id": "<app-id>",
   "app secret": "<app-secret>",
   "oms bundle": "<bundle-file-name>",
+  "old oms bundle": "<old-bundle-file-name>",
   "resource group": "<resource-group-name>",
   "subscription": "<subscription-id>",
   "workspace": "<workspace-name>",
