@@ -30,7 +30,7 @@ hostnames = []
 
 if len(sys.argv) > 0:
     options = sys.argv[1:]
-    images = [ i for i in options if i not in ('long', 'instantupgrade')]
+    images = [i for i in options if i in images] or images # if parsed images are empty, revert to full list
     is_long = 'long' in options
     is_instantupgrade = 'instantupgrade' in options
 else:
