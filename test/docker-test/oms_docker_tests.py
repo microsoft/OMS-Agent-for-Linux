@@ -295,7 +295,7 @@ def reinstall_agent():
         log_file = open(log_path, 'a+')
         html_file = open(html_path, 'a+')
         write_log_command("Reinstall Logs: {0}".format(image), log_file)
-        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade | tee -a {4}".format(container, oms_bundle, image+'temp.log'))
+        os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade | tee -a {2}".format(container, oms_bundle, image+'temp.log'))
         os.system("docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -w {1} -s {2} | tee -a {3}".format(container, workspace_id, workspace_key, image+'temp.log'))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
