@@ -5,6 +5,7 @@ Setup: read parameters and setup HTML report
 Test:
 1. Create container and install agent
 2. Wait for data to propagate to backend and check for data
+?. Repeat steps 1 and 2 with newer agent
 3. Remove agent
 4. Reinstall agent
 ?. Optionally, wait for hours and check data and agent status
@@ -112,6 +113,7 @@ def main():
         install_msg = install_agent(oms_bundle)
         inject_logs()
         verify_msg = verify_data()
+        instantupgrade_install_msg, instantupgrade_verify_msg = None, None
 
     remove_msg = remove_agent()
     reinstall_msg = reinstall_agent()

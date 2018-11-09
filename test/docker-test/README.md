@@ -105,10 +105,11 @@ $ python -u build_images.py -build distro1 distro2 ...
 
 ### Run test scripts
 
-- Available modes: 
-  - default: No options needed. Runs the install & reinstall tests on the latest agent with a 10 min wait time before verification.
-  - `long`: Adds a very longer wait time before verification.
-  - `instantupgrade`: Install the older version first, verify status, upgrade to newer version and continue tests.
+- Available modes (approximate runtime for all distros). Long and instantupgrade can be enabled together:
+  - default (30m): No options needed. Runs the install & reinstall tests on the latest agent with a single verification.
+  - `long` (+`LONG_DELAY`): Adds a long wait time (`LONG_DELAY` in oms_docker_tests.py) followed by a second verification.
+  - `instantupgrade` (+15m): Install the older version first, verify status, upgrade to newer version and continue tests.
+- With all modes, a subset of images can be tested by providing the corresponding image names
 
 #### All images
 
@@ -119,13 +120,19 @@ $ python -u oms_docker_tests.py
 #### Subset of images
 
 ```bash
-$ python -u oms_docker_tests.py long image1 image2 ...
+$ python -u oms_docker_tests.py image1 image2 ...
 ```
 
-#### Test upgrade from old bundle to new bundle
+#### All images, long-term
+
+```bash
+$ python -u oms_docker_tests.py long
+```
+
+#### Subset of images, Test upgrade from old bundle to new bundle
 
 Note: Define a proper value for the `old oms bundle` in parameters.json file and bundle must be present in omsfiles folder
 
 ```bash
-$ python -u oms_docker_tests.py instantupgrade image1 image2
+$ python -u oms_docker_tests.py instantupgrade image1 image2 ...
 ```
