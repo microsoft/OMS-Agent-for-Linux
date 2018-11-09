@@ -18,8 +18,9 @@ import os
 import subprocess
 import re
 import sys
-import time
+from time import sleep
 from collections import OrderedDict
+from datetime import datetime, timedelta
 
 from json2html import *
 from verify_e2e import check_e2e
@@ -28,6 +29,7 @@ E2E_DELAY = 10 # Delay (minutes) before checking for data
 LONG_DELAY = 250 # Delay (minutes) before rechecking agent
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7"]
 hostnames = []
+install_times = {}
 
 if len(sys.argv) > 0:
     options = sys.argv[1:]
@@ -70,6 +72,12 @@ def write_log_command(cmd, log):
     log.write('-' * 40)
     log.write('\n')
 
+def get_time_diff(timevalue1, timevalue2):
+    """Get time difference in minutes and seconds"""
+    timediff = timevalue2 - timevalue1
+    minutes, seconds = divmod(timediff.days * 86400 + timediff.seconds, 60)
+    return minutes, seconds
+
 # Remove intermediate log and html files
 os.system('rm ./*.log ./*.html ./omsfiles/omsresults* 2> /dev/null')
 
@@ -104,14 +112,11 @@ def main():
     """Orchestrate fundemental testing steps onlined in header docstring."""
     if is_instantupgrade:
         install_msg = install_agent(old_oms_bundle)
-        inject_logs()
         verify_msg = verify_data()
         instantupgrade_install_msg = upgrade_agent(oms_bundle)
-        inject_logs()
         instantupgrade_verify_msg = verify_data()
     else:
         install_msg = install_agent(oms_bundle)
-        inject_logs()
         verify_msg = verify_data()
         instantupgrade_install_msg, instantupgrade_verify_msg = None, None
 
@@ -121,9 +126,13 @@ def main():
         for i in reversed(range(1, LONG_DELAY + 1)):
             sys.stdout.write('\rLong-term delay: T-{} minutes...'.format(i))
             sys.stdout.flush()
-            time.sleep(60)
+            sleep(60)
         print('')
-        inject_logs()
+        for image in images:
+            install_times.clear()
+            install_times.update({image: datetime.now()})
+            container = image + '-container'
+            inject_logs(container)
         long_verify_msg = verify_data()
         long_status_msg = check_status()
     else:
@@ -136,6 +145,7 @@ def install_agent(oms_bundle):
     """Run container and install the OMS agent, returning HTML results."""
     message = ""
     version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
+    install_times.clear()
     for image in images:
         container = image + "-container"
         log_path = image + "result.log"
@@ -157,6 +167,8 @@ def install_agent(oms_bundle):
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, image+'temp.log'))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
+        install_times.update({image: datetime.now()})
+        inject_logs(container)
         append_file(image+'temp.log', log_file)
         os.remove(image+'temp.log')
         os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
@@ -180,6 +192,7 @@ def install_agent(oms_bundle):
 def upgrade_agent(oms_bundle):
     message = ""
     version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
+    install_times.clear()
     for image in images:
         container = image + "-container"
         log_path = image + "result.log"
@@ -189,6 +202,8 @@ def upgrade_agent(oms_bundle):
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, image+'temp.log'))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
+        install_times.update({image: datetime.now()})
+        inject_logs(container)
         append_file(image+'temp.log', log_file)
         os.remove(image+'temp.log')
         os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
@@ -209,21 +224,13 @@ def upgrade_agent(oms_bundle):
             message += """<td><span style='background-color: red; color: white'>Install Failed</span></td>"""
     return message
 
-def inject_logs():
+def inject_logs(container):
     """Inject logs."""
-    time.sleep(60)
-    for image in images:
-        container = image + "-container"
-        os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container))
-
+    sleep(60)
+    os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container))
+        
 def verify_data():
     """Verify data end-to-end, returning HTML results."""
-    # Delay to allow data to propagate
-    for i in reversed(range(1, E2E_DELAY + 1)):
-        sys.stdout.write('\rE2E propagation delay: T-{} minutes...'.format(i))
-        sys.stdout.flush()
-        time.sleep(60)
-    print('')
 
     message = ""
     for hostname in hostnames:
@@ -232,7 +239,15 @@ def verify_data():
         html_path = image + "result.html"
         log_file = open(log_path, 'a+')
         html_file = open(html_path, 'a+')
-        data = check_e2e(hostname)
+        while datetime.now() < (install_times[image] + timedelta(minutes=E2E_DELAY)):
+            mins, secs = get_time_diff(datetime.now(), install_times[image] + timedelta(minutes=E2E_DELAY))
+            sys.stdout.write('\rE2E propagation delay for {0}: {1} minutes {2} seconds...'.format(image, mins, secs))
+            sys.stdout.flush()
+            sleep(1)
+        print('')
+        minutes, _ = get_time_diff(install_times[image], datetime.now())
+        timespan = 'PT{0}M'.format(minutes)
+        data = check_e2e(hostname, timespan)
 
         # write detailed table for image
         html_file.write("<h2> Verify Data from OMS workspace </h2>")

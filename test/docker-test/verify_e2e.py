@@ -12,7 +12,7 @@ ENDPOINT = ('https://management.azure.com/subscriptions/{}/resourcegroups/'
             '{}/providers/Microsoft.OperationalInsights/workspaces/{}/api/'
             'query?api-version=2017-01-01-preview')
 
-def check_e2e(hostname):
+def check_e2e(hostname, timespan = 'PT15M'):
     '''
     Verify data from computer with provided hostname is
     present in the Log Analytics workspace specified in
@@ -53,7 +53,6 @@ def check_e2e(hostname):
     print('Verifying data from computer {}'.format(hostname))
     for s in sources:
         query = '%s | where Computer == \'%s\' | take 1' % (s, hostname)
-        timespan = 'PT15M'
         r = requests.post(url, headers=head, json={'query':query, 'timespan':timespan})
 
         if r.status_code == requests.codes.ok:
