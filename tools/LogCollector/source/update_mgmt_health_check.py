@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Title - OMS Health Check Script for Update Management Linux VM
+# Version - 2.0
+
 import sys
 import os
 import os.path
@@ -43,7 +46,8 @@ def main(output_path=None, return_json_output="False"):
 
     # supported python version 2.4.x to 2.7.x
     if not ((sys.version_info[0] == 2) and ((sys.version_info[1]>=4) and (sys.version_info[1] < 8))):
-        print("Unsupport python version:" + str(sys.version_info))
+        log_msg = "Unsupport python version:%s.%s. Supported python version (2.4 to 2.7)" % (sys.version_info[0], sys.version_info[1])
+        print log_msg
         exit()
 
     global workspace
