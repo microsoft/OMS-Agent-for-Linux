@@ -18,6 +18,8 @@ import os
 import subprocess
 import re
 import sys
+import shutil
+from glob import glob
 from time import sleep
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -140,6 +142,7 @@ def main():
     purge_delete_agent()
     messages = (install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
     create_report(messages)
+    mv_result_files()
 
 def install_agent(oms_bundle):
     """Run container and install the OMS agent, returning HTML results."""
@@ -277,8 +280,14 @@ def remove_agent():
         container = image + "-container"
         log_path = image + "result.log"
         html_path = image + "result.html"
+        omslog_path = image + "-omsagent.log"
         log_file = open(log_path, 'a+')
         html_file = open(html_path, 'a+')
+        oms_file = open(omslog_path, 'a+')
+        write_log_command('\n OmsAgent Logs: Before Removing the agent\n', oms_file)
+        os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -copyomslogs".format(container))
+        os.system("docker cp {0}:/home/temp/copyofomsagent.log omsfiles/".format(container))
+        append_file('omsfiles/copyofomsagent.log', oms_file)
         write_log_command("Remove Logs: {0}".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --remove | tee -a {2}".format(container, oms_bundle, image+'temp.log'))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
@@ -292,6 +301,7 @@ def remove_agent():
         append_file('omsfiles/omsresults.html', html_file)
         log_file.close()
         html_file.close()
+        oms_file.close()
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
             x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
             if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
@@ -373,11 +383,20 @@ def purge_delete_agent():
     for image in images:
         container = image + "-container"
         log_path = image + "result.log"
+        omslog_path = image + "-omsagent.log"
         log_file = open(log_path, 'a+')
+        oms_file = open(omslog_path, 'a+')
+        write_log_command('\n OmsAgent Logs: Before Purging the agent\n', oms_file)
+        os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -copyomslogs".format(container))
+        os.system("docker cp {0}:/home/temp/copyofomsagent.log omsfiles/".format(container))
+        append_file('omsfiles/copyofomsagent.log', oms_file)
         write_log_command("Purge Logs: {0}".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, image+'temp.log'))
         append_file(image+'temp.log', log_file)
         os.remove(image+'temp.log')
+        oms_file.close()
+        append_file(omslog_path, log_file)
+        log_file.close()
         os.system("docker container stop {0}".format(container))
         os.system("docker container rm {0}".format(container))
 
@@ -462,12 +481,23 @@ def create_report(messages):
     for image in images:
         append_file(image + "result.log", result_log_file)
         append_file(image + "result.html", result_html_file)
-
+    
+    result_log_file.close()
     htmlend = """
     </body>
     </html>
     """
     result_html_file.write(htmlend)
+    result_html_file.close()
+
+def mv_result_files():
+    if not os.path.exists('results'):
+        os.makedirs('results')
+    
+    file_types = ['*result.*', '*-omsagent.log']
+    for files in file_types:
+        for f in glob(files):
+            shutil.move(os.path.join(f), os.path.join('results/'))
 
 if __name__ == '__main__':
     main()

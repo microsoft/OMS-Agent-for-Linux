@@ -62,6 +62,9 @@ def main():
             result_commands()
             service_control_commands()
             write_html()
+        elif re.match('^([-/]*)(copyomslogs)', option):
+            detect_workspace_id()
+            copy_oms_logs()
         elif re.match('^([-/]*)(injectlogs)', option):
             inject_logs()
     except:
@@ -78,6 +81,12 @@ def replace_items(infile, old_word, new_word):
     f2 = open(infile, 'w')
     m = f1.replace(old_word,new_word)
     f2.write(m)
+
+def append_file(src, dest):
+    """Append contents of src to dest."""
+    f = open(src, 'r')
+    dest.write(f.read())
+    f.close()
 
 def detect_workspace_id():
     """Detect the workspace id where the agent is onboarded."""
@@ -100,7 +109,7 @@ def start_system_services():
     """Start rsyslog, cron and apache to enable log collection."""
     os.system('service rsyslog start')
     if INSTALLER == 'DPKG':
-        os.system('service cron start \
+        os.system('cron \
                 && service apache2 start')
     elif INSTALLER == 'RPM':
         os.system('service crond start \
@@ -405,6 +414,12 @@ def write_html():
 
     f.write(message)
     f.close()
+
+def copy_oms_logs():
+    omslogfile = "/home/temp/copyofomsagent.log"
+    omslogfileOpen = open(omslogfile, 'w+')
+    omsagent_file = '/var/opt/microsoft/omsagent/{0}/log/omsagent.log'.format(workspace_id)
+    append_file(omsagent_file, omslogfileOpen)
 
 if __name__ == '__main__':
     main()
