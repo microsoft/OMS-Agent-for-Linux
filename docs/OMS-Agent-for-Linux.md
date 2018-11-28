@@ -190,4 +190,3 @@ SHARED_KEY=<Shared Key>
 `sudo /opt/microsoft/omsagent/bin/omsadmin.sh`
 
 4.	The file will be deleted on successful onboarding
-
