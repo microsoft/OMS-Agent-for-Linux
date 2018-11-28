@@ -1,19 +1,35 @@
-# Log Analytics Agent for Linux (2018-05)
+# Log Analytics Agent for Linux (2018-11)
 
 ## Overview
-Welcome to the Log Analytics agent for Linux! The agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
+Welcome to the Log Analytics agent for Linux! The agent for Linux enables rich and real-time analytics for operational data (Syslog, performance, alerts, inventory) from Linux servers, Docker containers and monitoring tools like Nagios, Zabbix and System Center.
 
 ## Quick Install guide
-Run the following commands to download the omsagent, validate the checksum, and install+onboard the agent. *Commands are for 64-bit*. The Workspace ID and Primary Key can be found inside the OMS Portal under Settings in the **connected sources** tab.
+The following steps configure setup of the Log Analytics agent in Azure and Azure Government cloud.  *Commands are for 64-bit*. Before installing the Log Analytics agent for Linux, you need the workspace ID and key for your Log Analytics workspace. 
+
+1. In the Azure portal, click **All services** found in the upper left-hand corner. In the list of resources, type **Log Analytics**. As you begin typing, the list filters based on your input. Select **Log Analytics**.  
+2. In your list of Log Analytics workspaces, select the workspace.
+3. Select **Advanced settings** from the left hand pane.
+4. Select **Connected Sources**, and then select **Linux Servers**. 
+5. The value to the right of **Workspace ID** and **Primary Key**. Copy and paste both into your favorite editor. 
+
+To configure the Linux computer to connect to Log Analytics, run the following command providing the workspace ID and primary key copied earlier. The following command downloads the agent, validates its checksum, and installs it. 
+
+For Azure Log Analytics:
 ```
-$> wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w <YOUR OMS WORKSPACE ID> -s <YOUR OMS WORKSPACE PRIMARY KEY>
+wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w <YOUR WORKSPACE ID> -s <YOUR WORKSPACE PRIMARY KEY>
 ```
+
+For Log Analytics in Azure Government cloud:
+```
+wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w <YOUR WORKSPACE ID> -s <YOUR WORKSPACE PRIMARY KEY> -d opinsights.azure.us
+```
+
 ## Azure Install guide
-If you are an Azure customer, we have an Azure VM Extension that allows you to onboard with a couple of clicks.
-* [Log Analytics Agent for Linux Azure VM Extension Documentation](https://docs.microsoft.com/azure/virtual-machines/extensions/oms-linux?toc=%2Fazure%2Fazure-monitor%2Ftoc.json)
+If you are an Azure customer, we have an Azure VM extension that allows you to easily onboard to Log Analytics.
+* [Log Analytics Agent for Linux Azure VM extension documentation](https://docs.microsoft.com/azure/virtual-machines/extensions/oms-linux?toc=%2Fazure%2Fazure-monitor%2Ftoc.json)
 * [Azure Video walkthrough](https://www.youtube.com/watch?v=mF1wtHPEzT0)
 
-## [Full installation guide](https://docs.microsoft.com/azure/log-analytics/log-analytics-concept-hybrid?toc=/azure/azure-monitor/toc.json)
+## [Full installation guide](https://docs.microsoft.com/azure/log-analytics/log-analytics-agent-overview?toc=/azure/azure-monitor/toc.json)
 
 ## [Download Latest Log Analytics agent for Linux (64-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.6.0-163/omsagent-1.6.0-163.universal.x64.sh)
 
@@ -59,7 +75,24 @@ If you are using a distro or version that is not currently supported and doesn't
 
 **Note:** OpenSSL < 1.x is not supported on any platform.
 
-## [Troubleshooting Guide](docs/Troubleshooting.md)
+## [Troubleshooting Guide](https://docs.microsoft.com/azure/log-analytics/log-analytics-agent-linux-support?toc=/azure/azure-monitor/toc.json)
+
+## Supported Scenarios
+- [Heartbeat data collection](https://docs.microsoft.com/azure/log-analytics/log-analytics-queries?toc=/azure/azure-monitor/toc.json#write-a-query) 
+- 
+- ### [Syslog data collection](https://docs.microsoft.com/azure/azure-monitor/platform/data-sources-syslog) 
+
+- ### [Docker collection](https://docs.microsoft.com/azure/log-analytics/log-analytics-containers?toc=/azure/azure-monitor/toc.json) 
+
+- ### [Performance data collection](https://docs.microsoft.com/azure/azure-monitor/platform/data-sources-performance-counters) 
+
+- ### [Nagios and Zabbix alert collection](https://docs.microsoft.com/azure/azure-monitor/platform/data-sources-alerts-nagios-zabbix) 
+
+- ### [CollectD Metrics Collection](https://docs.microsoft.com/azure/azure-monitor/platform/data-sources-collectd) 
+
+- ### [Custom JSON Data](https://docs.microsoft.com/azure/azure-monitor/platform/data-sources-json) 
+
+- ### [VMware Monitoring](https://docs.microsoft.com/azure/azure-monitor/insights/vmware) 
 
 ## Code of Conduct
 
