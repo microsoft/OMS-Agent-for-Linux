@@ -224,6 +224,7 @@ apply_patch ${base_dir}/source/ext/patches/ruby/clear_options.patch ${base_dir}/
 
 # This patch is borrowed from the latest Ruby code as of 1/18/2017 and resolves the error "undefined symbol: SSLv3_method"
 # Upgrading to a version higher than Ruby 2.3 may already include this patch
+# Updating patch for extconf.rb in version Ruby 2.4.4.
 apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_dir}/source/ext/ruby/ext/openssl/extconf.rb
 
 # This patch is borrowed from FluentD 0.12.32 to resolve in_exec plugin failing repeatedly with command or parsing failing
