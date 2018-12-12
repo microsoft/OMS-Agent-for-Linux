@@ -58,7 +58,6 @@ module Fluent
       rescue => e
         $log.error "Error while executing get_data. #{e}" 
       end 
-      $log.info wrapper
       router.emit(@tag, time, wrapper) if wrapper
     end #get_emit_data
 
