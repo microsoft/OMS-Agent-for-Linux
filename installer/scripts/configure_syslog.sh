@@ -56,8 +56,17 @@ ConfigureRsyslog() {
         if [ $? -ne 0 ]; then
             echo "Configuring rsyslog for OMS logging"
 
-            cat ${RSYSLOG_TEMP} | sed "s/%WORKSPACE_ID%/${WORKSPACE_ID}/g" | sed "s/%SYSLOG_PORT%/${SYSLOG_PORT}/g" >> ${RSYSLOG_DEST}
-            RestartService rsyslog
+            # does it have any workspace configuration?
+            egrep -q "${WORKSPACE_ID}" ${RSYSLOG_DEST}
+
+            if [ $? -ne 0 ]; then
+                cat ${RSYSLOG_TEMP} | sed "s/%WORKSPACE_ID%/${WORKSPACE_ID}/g" | sed "s/%SYSLOG_PORT%/${SYSLOG_PORT}/g" >> ${RSYSLOG_DEST}
+                RestartService rsyslog
+            else
+                # there was a previous setup, we should update the output port                
+                sed -i -r "s/127.0.0.1:[0-9]+/127.0.0.1:${SYSLOG_PORT}/g" ${RSYSLOG_DEST}
+                RestartService rsyslog
+            fi
         fi
     fi
 }
@@ -133,6 +142,13 @@ ConfigureSyslog_ng() {
 
         cat ${SYSLOG_NG_TEMP} | sed "s/%SOURCE%/${source}/g" | sed "s/%WORKSPACE_ID%/${WORKSPACE_ID}/g" | sed "s/%SYSLOG_PORT%/${SYSLOG_PORT}/g" >> ${SYSLOG_NG_DEST}
         RestartService syslog-ng
+    else
+        # there was a previous setup, is the port right?
+        egrep -q "port\(${SYSLOG_PORT}" ${SYSLOG_NG_DEST}
+        if [ $? -ne 0 ]; then            
+            sed -i -r "s/port\([0-9]+/port\(${SYSLOG_PORT}/g" ${SYSLOG_NG_DEST}
+            RestartService syslog-ng
+        fi
     fi
 }
 

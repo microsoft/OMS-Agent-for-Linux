@@ -15,6 +15,7 @@ class Logger
     end
 end
 
+
 class NPMDServerTest < Test::Unit::TestCase
     class OMS::Diag
         @@DiagSupported = true

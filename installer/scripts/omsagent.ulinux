@@ -28,11 +28,15 @@ test -x $OMS_BIN || { echo "$OMS_BIN not installed";
 # LOGFILE and PIDFILE picked up from service control helper script
 
 if [ ! -f /opt/microsoft/omsagent/bin/service_control ]; then
-    echo "Could not source service control functions."
+    echo "Missing OMS agent's service_control script."
     exit 1
 fi
 
 . /opt/microsoft/omsagent/bin/service_control functions $WORKSPACE_ID
+if [ $? -ne 0 ]; then
+    echo "Could not source service control functions, perhaps omsadmin.conf is missing."
+    exit 1
+fi
 
 if [ -f /etc/init.d/functions ]; then
     INIT_STYLE=R      # INIT_STYLE uses R/S/D for its representative platform RedHat/SuSE/Debian 

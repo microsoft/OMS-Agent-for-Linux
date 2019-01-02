@@ -1,4 +1,4 @@
-# Operations Management Suite Agent for Linux (2018-05)
+# Operations Management Suite Agent for Linux (2018-10)
 
 ## Overview
 Welcome to the OMS Agent for Linux! The OMS Agent for Linux enables rich and real-time analytics for operational data (Syslog, Performance, Alerts, Inventory) from Linux servers, Docker Containers and monitoring tools like Nagios, Zabbix and System Center.
@@ -17,9 +17,9 @@ If you are an Azure customer, we have an Azure VM Extension that allows you to o
 
 ### [Video Walkthrough](https://www.youtube.com/watch?v=7b4KxL7E5fw)
 
-## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.6.0-42/omsagent-1.6.0-42.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.8.1.256/omsagent-1.8.1-256.universal.x64.sh)
 
-## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.6.0-42/omsagent-1.6.0-42.universal.x86.sh)
+## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.8.1.256/omsagent-1.8.1-256.universal.x86.sh)
 
 ## Feedback
 
@@ -30,15 +30,36 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 * **Elite Linux customer panel:** If you are a die-hard OMS Linux user and want to join our weekly calls and talk directly to the product team apply through this **[survey](https://www.surveymonkey.com/r/6MTHN3P).**
 
 ## Supported Linux Operating Systems
-* Amazon Linux 2012.09 --> 2017 (x86/x64)
-* CentOS Linux 5,6, and 7 (x86/x64)
-* Oracle Linux 5,6, and 7 (x86/x64)
-* Red Hat Enterprise Linux Server 5,6 and 7 (x86/x64)
-* Debian GNU/Linux 6, 7, 8, and 9 (x86/x64)
-* Ubuntu 12.04 LTS, 14.04 LTS, 16.04 LTS (x86/x64)
-* SUSE Linux Enteprise Server 11 and 12 (x86/x64)
+
+### Supported Distro/Version strategy
+The OMS Agent for Linux is built to work with OMS, which has a limited scope of scenarios. Our strategy for supporting new distros and versions starting August 2018 is that we will:
+1. Only support server versions, no client OS versions.
+2. Always support any new [Azure Linux Endorsed distros/versions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros).
+3. Not support versions that have passed their manufacturer's end-of-support date.
+4. Always support the latest GA version of a supported distro.
+5. Not support new versions of AMI.
+6. Only support versions that run SSL 1.x by default.
+
+If you are using a distro or version that is not currently supported and doesn't fit our future support strategy, we recommend that you fork this repo, acknowledging that Microsoft support will not provide assistance with for forked agent versions.
+
+### 64-bit
+* CentOS 6 and 7
+* Amazon Linux 2017.09
+* Oracle Linux 6 and 7
+* Red Hat Enterprise Linux Server 6 and 7
+* Debian GNU/Linux 8 and 9
+* Ubuntu Linux 14.04 LTS, 16.04 LTS and 18.04 LTS
+* SUSE Linux Enteprise Server 12
+### 32-bit
+* CentOS 6
+* Oracle Linux 6
+* Red Hat Enterprise Linux Server 6
+* Debian GNU/Linux 8 and 9
+* Ubuntu Linux 14.04 LTS and 16.04 LTS
 
 **Note:** Openssl 1.1.0 is only supported on x86_64 platforms (64-bit).
+
+**Note:** OpenSSL < 1.x is not supported on any platform.
 
 ## Supported Scenarios
 ### [Heartbeat data collection](docs/OMS-Agent-for-Linux.md#viewing-heartbeat-data)
