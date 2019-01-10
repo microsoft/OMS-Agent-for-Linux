@@ -9,41 +9,31 @@ require_relative 'antimalwarecommon'
 
 class McAfee
 
-	def self.detect()
-		#logger = Logger.new('/opt/microsoft/omsagent/plugin/omsagent.log')
-		#logger.info("Trying to find if mcafee running on the machine...")
+	def self.detect()	
 		begin
 			if !File.file?('/opt/isec/ens/threatprevention/bin/isecav')
 				return false
 			end			
 			detectioncmd = `/opt/isec/ens/threatprevention/bin/isecav --version 2>&1`.lines.map(&:chomp)
 
-			if !$?.success? || detectioncmd.nil? || detectioncmd.empty?
-				#logger.info "Fail to execute mcafee version cmd, mcafee is not detected on the machine"
+			if !$?.success? || detectioncmd.nil? || detectioncmd.empty?				
 				return false
 			else
 				mcafeeName = detectioncmd[0]
 				mcafeeVersion = detectioncmd[1].split(" : ")[1]
-				if mcafeeName != "McAfee Endpoint Security for Linux Threat Prevention"
-					#logger.info "Tool name is not McAfee Endpoint Security for Linux Threat Prevention: " + mcafeeName
+				if mcafeeName != "McAfee Endpoint Security for Linux Threat Prevention"					
 					return false
-				elsif mcafeeVersion.split(".")[0].to_i  < 10
-					#loggerinfo "Mcafee version is below 10, OMS only support version 10+: " + mcafeeVersion
+				elsif mcafeeVersion.split(".")[0].to_i  < 10					
 					return false
 				end
-			end
-			#logger.info("McAfee is detected on the machine")
+			end			
 			return true
-		rescue => e
-			#logger.info "Getting exception when trying to detect mcafee: " + e.message + " " + e.backtrace.inspect			
+		rescue => e					
 			return false			
 		end
 	end
 
-	def self.getprotectionstatus()
-		#file = File.open('/opt/microsoft/omsagent/plugin/omsagent.log', File::WRONLY | File::APPEND)
-		#logger = Logger.new(file)
-		#logger.info "Collecting mcafee health info" 
+	def self.getprotectionstatus()		 
 		ret = {}
 		
 		mcafeeName = "McAfee Endpoint Security for Linux Threat Prevention"
@@ -74,8 +64,7 @@ class McAfee
 
 		begin
 			detectioncmd = `/opt/isec/ens/threatprevention/bin/isecav --version 2>&1`.lines.map(&:chomp)
-			if !$?.success? || detectioncmd.nil? || detectioncmd.empty?
-				#logger.info "Fail to get mcafee version info"
+			if !$?.success? || detectioncmd.nil? || detectioncmd.empty?			
 				error += "Fail to get mcafee version info; "
 			else 
 				mcafeeVersion = detectioncmd[1].split(" : ")[1]
@@ -84,40 +73,27 @@ class McAfee
 				engineVersion = detectioncmd[5].split(" : ")[1]
 			end
 
-			taskcmd = `/opt/isec/ens/threatprevention/bin/isecav --listtask 2>&1`.lines.map(&:chomp)
+			taskcmd = `LANG=en_US.UTF-8 /opt/isec/ens/threatprevention/bin/isecav --listtask 2>&1`.lines.map(&:chomp)
 
-			if !$?.success? || taskcmd.nil? || taskcmd.empty?
-				#logger.info "fail to run listtask cmd"
+			if !$?.success? || taskcmd.nil? || taskcmd.empty?				
 				error += "fail to run listtask cmd; "
 			else
 				$i = 3
-				$len = taskcmd.length-1
+				$len = taskcmd.length
 
-				while $i < $len  do
+				while $i < $len-1  do
 					if taskcmd[$i].include? "quick scan"
 						if taskcmd[$i].include? "Not Applicable"
 							quickscan = "NA"
 						else		
 							quickscanarray = taskcmd[$i].split(" ")
-							$l = quickscanarray.length
-							#|1   quick scan      ODS      Not Started   25/10/18 23:44:42 UTC      |
-							if $l >= 4
-								#25/10/18
-								quickscandate = quickscanarray[$l-4].split("/")
-								if quickscandate.length >= 3
-									quickscan = quickscandate[1] + "/" + quickscandate[0] + "/20" + quickscandate[2] + " " + quickscanarray[$l-3]#+ " UTC"
-									if $l >= 5
-										quickscanStatus = quickscanarray[$l-5]
-										if (quickscanStatus.include? "Stopped") || (quickscanStatus.include? "Aborted") || (quickscanStatus.include? "Completed") || (quickscanStatus.include? "Running")
-											protectionStatusDetailsString += "Quick scan status: " + quickscanStatus + ". "
-										end
-									end
-								else
-									quickscan = "NA"
-								end
-							else
-								quickscan = "NA"
+							quickscanStatus = 'NA'
+							quickscan, quickscanStatus = parseMcAfeeDateTime(quickscanarray)							
+							if quickscan == "NA"
 								protectionStatusDetailsArray.push("Fail to parse quickscan date: " + taskcmd[$i])
+							end
+							if quickscanStatus != 'NA'
+								protectionStatusDetailsString += "Quick scan status: " + quickscanStatus + ". "
 							end
 						end
 					elsif taskcmd[$i].include? "full scan"
@@ -125,24 +101,13 @@ class McAfee
 							fullscan = "NA"
 						else		
 							fullscanarray = taskcmd[$i].split(" ")
-							$l = fullscanarray.length
-							if $l >= 4
-								#25/10/18
-								fullscandate = fullscanarray[$l-4].split("/")
-								if fullscandate.length >= 3
-									fullscan = fullscandate[1] + "/" + fullscandate[0] + "/20" + fullscandate[2] + " " + fullscanarray[$l-3]#+ " UTC"
-									if $l >= 5
-										fullscanStatus = fullscanarray[$l-5]
-										if (fullscanStatus.include? "Stopped") || (fullscanStatus.include? "Aborted") || (fullscanStatus.include? "Completed") || (fullscanStatus.include? "Running")
-											protectionStatusDetailsString += "Full scan status: " + fullscanStatus + ". "
-										end
-									end
-								else
-									fullscan = "NA"
-								end
-							else
-								fullscan = "NA"
+							fullscanStatus = 'NA'
+							fullscan, fullscanStatus = parseMcAfeeDateTime(fullscanarray)						
+							if fullscan == "NA"
 								protectionStatusDetailsArray.push("Fail to parse fullscan date: " + taskcmd[$i])
+							end
+							if fullscanStatus != 'NA'
+								protectionStatusDetailsString += "Full scan status: " + fullscanStatus + ". "
 							end
 						end
 					elsif taskcmd[$i].include? "DAT and Engine Update"
@@ -150,18 +115,13 @@ class McAfee
 							datengupdate = "NA"
 						else		
 							datengupdatearray = taskcmd[$i].split(" ")
-							$l = datengupdatearray.length
-							if $l >= 4
-								#25/10/18
-								dateng = datengupdatearray[$l-4].split("/")
-								if dateng.length >= 3
-									datengupdate = dateng[1] + "/" + dateng[0] + "/20" + dateng[2] + " " + datengupdatearray[$l-3] + " UTC"
-								else
-									datengupdate = "NA"
-								end
-							else
-								datengupdate = "NA"
+							datengupdateStatus = 'NA'							
+							datengupdate, datengupdateStatus = parseMcAfeeDateTime(datengupdatearray)
+							if datengupdate == "NA"
 								protectionStatusDetailsArray.push("Fail to parse DAT Engine update date: " + taskcmd[$i])
+							end
+							if datengupdateStatus != 'NA'
+								protectionStatusDetailsString += "DAT Engine update status: " + datengupdateStatus + ". "
 							end
 						end
 					end
@@ -170,8 +130,7 @@ class McAfee
 			end
 
 			oascmd = `/opt/isec/ens/threatprevention/bin/isecav --getoasconfig --summary 2>&1`.lines.map(&:chomp)
-			if !$?.success? || oascmd.nil? || oascmd.empty?
-				#logger.info "fail to run getoasconfig cmd"
+			if !$?.success? || oascmd.nil? || oascmd.empty?			
 				error += "fail to run getoasconfig cmd; "
 			else
 				if (oascmd[0].include? "On-Access Scan")
@@ -184,7 +143,6 @@ class McAfee
 
 			apcmd = `/opt/isec/ens/threatprevention/bin/isecav --getapstatus 2>&1`.lines.map(&:chomp)
 			if !$?.success? || apcmd.nil? || apcmd.empty?
-				#logger.info "fail to run getapstatus cmd"
 				error += "fail to run getapstatus cmd; "
 			else
 				if (apcmd[0].include? "Access Protection")
@@ -195,21 +153,21 @@ class McAfee
 			if (datTime == "NA" && datengupdate == "NA" )
 				($ProtectionStatusRank, $ProtectionStatus) = AntimalwareCommon::NotReportingProtectionCode
 				protectionStatusDetailsArray.push("DAT and Engine update not found")
-			elsif (datTime == "NA" || (Time.parse(datTime).utc < (Time.now - 7*24*3600).utc)) && 
-		   		(datengupdate == "NA" || (Time.strptime(datengupdate, "%m/%d/%Y %H:%M:%S %Z") < (Time.now - 7*24*3600).utc))
+			elsif (datTime == "NA" || (Time.strptime(datTime, "%m-%d-%Y") < (Time.now - 7*24*3600))) &&
+		   		(datengupdate == "NA" || datengupdate < (Time.now - 7*24*3600).utc)
 		   		($ProtectionStatusRank, $ProtectionStatus) = AntimalwareCommon::SignaturesOutOfDateProtectionCode
 		   		protectionStatusDetailsArray.push("DAT and Engine update are out of 7 days: " + datengupdate)
 			end
 
-			if (!fullscan.nil? && !fullscan.empty? && fullscan != "NA")
+			if (!fullscan.nil? && fullscan != "NA")
 				scandate = fullscan
-				if (Time.strptime(fullscan, "%m/%d/%Y %H:%M:%S").utc < (Time.now - 7*24*3600).utc)
+				if (fullscan < (Time.now - 7*24*3600).utc)
 					fullscanoutofdate = true
 				end
 			end
 
-			if (!quickscan.nil? && !quickscan.empty? && quickscan != "NA")
-				if (Time.strptime(quickscan, "%m/%d/%Y %H:%M:%S").utc < (Time.now - 7*24*3600).utc)
+			if (!quickscan.nil? && quickscan != "NA")
+				if (quickscan < (Time.now - 7*24*3600).utc)
 					quickscanoutofdate = true
 				end
 				if ((fullscanoutofdate && !quickscanoutofdate) || scandate == "")
@@ -246,9 +204,9 @@ class McAfee
 			end
 
 			if (datengupdate != "NA")
-				protectionStatusDetailsString += "DAT and Engine update Time: " + datengupdate + ". "
+				protectionStatusDetailsString += "DAT and Engine update Time: " + datengupdate.to_s + ". "
 			elsif(datTime != "NA")
-				protectionStatusDetailsString += "DAT and Engine update Time: " + datTime + ". "
+				protectionStatusDetailsString += "DAT and Engine update Time: " + datTime.to_s + ". "
 			end
 
 			if protectionStatusDetailsArray.length == 0
@@ -261,6 +219,13 @@ class McAfee
 		rescue => e
 			error += "Getting exception when trying to find mcafee health info: " + e.message + " " + e.backtrace.inspect
 			ret["Error"] = error					
+		end
+
+		if(scandate != "")
+			scanarray = scandate.to_s.split(" ")
+			if (scanarray.length >= 3) 
+				scandate = scanarray[0] + " " + scanarray[1]
+			end
 		end
 		ret["ProtectionStatusRank"] = $ProtectionStatusRank
     	ret["ProtectionStatus"] = $ProtectionStatus
@@ -276,5 +241,27 @@ class McAfee
     	ret["Tool"] = mcafeeName
 		ret["AMProductVersion"] = (mcafeeVersion.nil? || mcafeeVersion.empty? || mcafeeVersion == "NA")? "McAfee version not found" : mcafeeVersion
 		return ret
+	end
+
+	def self.parseMcAfeeDateTime(datearray)		
+		$l = datearray.length
+		scandate = 'NA'
+		scanstatus = 'NA'		
+		if $l >= 4
+			if(!datearray[$l-3].include? "AM") && (!datearray[$l-3].include? "PM")
+				scandate = datearray[$l-4] + " " + datearray[$l-3] + " " + datearray[$l-2]						
+				scandate = Time.strptime(scandate, '%d/%m/%y %H:%M:%S %Z')
+			elsif $l >= 8
+				scandate = datearray[$l-7] + " " + datearray[$l-6] + " " + datearray[$l-5] + " " + datearray[$l-4] + " " + datearray[$l-3] + " " + datearray[$l-2]				
+				scandate = Time.strptime(scandate, '%d %b %Y %I:%M:%S %p %Z')
+			end
+			if $l >= 5 && (!datearray[4].include? "Not")
+				scanstatus = datearray[4]
+			end
+			if $l >= 10 && (datearray[4].include? "task") && (!datearray[9].include? "Not")
+				scanstatus = datearray[9]
+			end
+		end
+		return scandate, scanstatus
 	end
 end
