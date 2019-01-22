@@ -21,7 +21,7 @@ module Tailscript
     attr_reader :paths
 
     def file_exists(path)
-      if system("sudo test -f #{path}")
+      if File.exist?(path)
         @log.info "Following tail of #{path}"
         return path
       else
