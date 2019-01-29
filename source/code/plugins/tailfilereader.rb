@@ -16,6 +16,7 @@ module Tailscript
       @log.formatter = proc do |severity, time, progname, msg|
         "#{severity} #{msg}\n"
       end
+      @log.info "Received paths : #{paths}"
     end
 
     attr_reader :paths
