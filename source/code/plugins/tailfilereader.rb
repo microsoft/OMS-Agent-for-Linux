@@ -20,8 +20,38 @@ module Tailscript
 
     attr_reader :paths
 
+    def file_exists(path)
+      if File.exist?(path)
+        @log.info "Following tail of #{path}"
+        return path
+      else
+        @log.warn "#{path} does not exist. Cannot tail the file."
+        return nil
+      end
+    end
+
+    def expand_paths()
+      arr_paths = @paths.split(',').map {|path| path.strip }
+      date = Time.now
+      expanded_paths = []
+      arr_paths.each { |path|
+        path = date.strftime(path)
+        if path.include?('*')
+          Dir.glob(path).select { |p|
+            @log.info "Following tail of #{p}"
+            expanded_paths << p
+          }
+        else
+          file = file_exists(path)
+          expanded_paths << file unless file.nil?
+        end
+      }
+      return expanded_paths
+    end
+
     def start
-      start_watchers(@paths) unless @paths.empty?
+      paths = expand_paths()
+      start_watchers(paths) unless paths.empty?
     end
 
     def shutdown
@@ -365,7 +395,7 @@ if __FILE__ == $0
     end
   end.parse!
 
-  a = Tailscript::NewTail.new(ARGV)
+  a = Tailscript::NewTail.new(ARGV[0])
   a.start
   a.shutdown
 end
