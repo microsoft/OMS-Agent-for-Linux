@@ -40,6 +40,9 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSAuditdPlugin.sh
 # run omsbaseline
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/plugin/omsbaseline *
 
+# run omsantimalware
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/plugin/collectantimalwareinfo.rb
+
 # Enable nxAutomationWorker scenarios
 Defaults:nxautomation !requiretty
 Defaults:nxautomation lecture = never
