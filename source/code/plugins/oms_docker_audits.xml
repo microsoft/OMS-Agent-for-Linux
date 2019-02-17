@@ -1,5 +1,6 @@
 <data>
-  <audits BaselineId="OMS.Docker.Linux.1" BaseOrigId="1" Dependencies="ServiceStatus:docker|running">
+  <audits BaselineId="OMS.Docker.Linux.1" BaseOrigId="1">
+     <dependency type="ServiceStatus">docker|running</dependency>
      <audit
       description="Docker inventory Information"
       msid="0.0"
@@ -58,7 +59,9 @@
       impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. docker.service is one such file. The docker.service file might be present if the daemon parameters have been changed by an administrator. It holds various parameters for Docker daemon. It must be audited, if applicable."
       remediation="Find out the 'docker.service' file location by running: 'systemctl show -p FragmentPath docker.service' and add the line '-w {docker.service file location} -k docker' into the /etc/audit/audit.rules file where {docker.service file location} is the file path you have found earlier. Restart the audit daemon by running the command: 'service auditd restart'"
       ruleId="62063e9a-c9ce-4167-b4e2-a2536a515947">
-      <check distro="*" dependencies="SystemDUnitExists:docker.service" command="CheckMatchingLinesInAuditDRules" filter= "" regex="docker.service"/>
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="docker.service">
+        <dependency type="SystemDUnitExists">docker.service</dependency>
+      </check>
     </audit>
     <audit
       description="Ensure auditing is configured for Docker files and directories - docker.socket"
@@ -68,7 +71,9 @@
       impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. docker.socket is one such file. It holds various parameters for Docker daemon socket. It must be audited, if applicable."
       remediation="Find out the 'docker.socket' file location by running: 'systemctl show -p FragmentPath docker.socket' and add the line '-w {docker.socket file location} -k docker' into the /etc/audit/audit.rules file where {docker.socket file location} is the file path you have found earlier. Restart the audit daemon by running the command: 'service auditd restart'"
       ruleId="358eadc8-57f6-4b4e-a874-1999e8a80a17">
-      <check distro="*" dependencies="SystemDUnitExists:docker.socket" command="CheckMatchingLinesInAuditDRules" filter= "" regex="docker.socket"/>
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="docker.socket">
+        <dependency type="SystemDUnitExists">docker.service</dependency>
+      </check>
     </audit>
     <audit
       description="Ensure auditing is configured for Docker files and directories - /etc/default/docker"
@@ -88,7 +93,9 @@
       impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /etc/docker/daemon.json is one such file. It holds various parameters for Docker daemon. It must be audited, if applicable."
       remediation="Add the line '-w /etc/docker/daemon.json -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
       ruleId="a2a9eaaf-8571-4be3-8d04-c0db00e78125">
-      <check distro="*" dependencies="FileExists:/etc/docker/daemon.json" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/etc\/docker\/daemon.json|\/etc\/docker\/|\/etc\/)\s"/>
+      <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/etc\/docker\/daemon.json|\/etc\/docker\/|\/etc\/)\s">
+        <dependency type="FileExists">/etc/docker/daemon.json</dependency>
+      </check>
     </audit>
     <audit
       description="Ensure auditing is configured for Docker files and directories - /usr/bin/docker-containerd"
