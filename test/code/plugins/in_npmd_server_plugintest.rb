@@ -15,6 +15,7 @@ class Logger
     end
 end
 
+
 class NPMDServerTest < Test::Unit::TestCase
     class OMS::Diag
         @@DiagSupported = true
@@ -418,27 +419,27 @@ class NPMDServerTest < Test::Unit::TestCase
     #   (a) Wait for emit to have at least one error log
     # 3. Run the driver
     # 4. Assert that binary not found error is there in error log
-    def test_case_09_binary_not_present
-        # Step 1
-        File.unlink(FAKE_BINARY_LOCATION) if File.exist?(FAKE_BINARY_LOCATION)
-        File.unlink("#{FAKE_BINARY_LOCATION}_x32") if File.exist?("#{FAKE_BINARY_LOCATION}_x32")
-        File.unlink("#{FAKE_BINARY_LOCATION}_x64") if File.exist?("#{FAKE_BINARY_LOCATION}_x64")
+    # def test_case_09_binary_not_present
+    #     # Step 1
+    #     File.unlink(FAKE_BINARY_LOCATION) if File.exist?(FAKE_BINARY_LOCATION)
+    #     File.unlink("#{FAKE_BINARY_LOCATION}_x32") if File.exist?("#{FAKE_BINARY_LOCATION}_x32")
+    #     File.unlink("#{FAKE_BINARY_LOCATION}_x64") if File.exist?("#{FAKE_BINARY_LOCATION}_x64")
 
-        # Step 2
-        d = create_driver
-        d.register_run_post_condition {
-            sleep(100 * ONE_MSEC)
-            true
-        }
+    #     # Step 2
+    #     d = create_driver
+    #     d.register_run_post_condition {
+    #         sleep(100 * ONE_MSEC)
+    #         true
+    #     }
 
-        # Step 3
-        d.run
-        error_logs = parse_diag_logs_from_emits(d.emits)
+    #     # Step 3
+    #     d.run
+    #     error_logs = parse_diag_logs_from_emits(d.emits)
 
-        # Step 4
-        found_binary_absent_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_ABSENT)
-        assert_equal(true, found_binary_absent_log, "Binary absent log in test should have been seen");
-    end
+    #     # Step 4
+    #     found_binary_absent_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_ABSENT)
+    #     assert_equal(true, found_binary_absent_log, "Binary absent log in test should have been seen");
+    # end
 
     # Test10: Check that binary is getting replaced properly by "_x32"
     # Sequence:
@@ -455,52 +456,52 @@ class NPMDServerTest < Test::Unit::TestCase
     # 11.Assert that copy with "_x32" ending does not exist
     # 12.Assert that the binary file exists
     # 13.Assert that modification time of binary file is newer than mtime_bin_1
-    def test_case_10_binary_replaced_by_x32
-        # Step 1
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
+    # def test_case_10_binary_replaced_by_x32
+    #     # Step 1
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 2
-        mtime_x32_1 = File.mtime("#{FAKE_BINARY_LOCATION}_x32")
+    #     # Step 2
+    #     mtime_x32_1 = File.mtime("#{FAKE_BINARY_LOCATION}_x32")
 
-        # Step 3
-        FileUtils.rm(FAKE_BINARY_LOCATION)
-        assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been deleted")
+    #     # Step 3
+    #     FileUtils.rm(FAKE_BINARY_LOCATION)
+    #     assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been deleted")
 
-        # Step 4
-        sleep(2)
-        d = create_driver
-        d.run
+    #     # Step 4
+    #     sleep(2)
+    #     d = create_driver
+    #     d.run
 
-        # Step 5
-        assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x32"), "#{FAKE_BINARY_LOCATION}_x32 should have been deleted")
+    #     # Step 5
+    #     assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x32"), "#{FAKE_BINARY_LOCATION}_x32 should have been deleted")
 
-        # Step 6
-        assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created")
+    #     # Step 6
+    #     assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created")
 
-        # Step 7
-        mtime_bin = File.mtime(FAKE_BINARY_LOCATION)
-        assert(mtime_bin == mtime_x32_1, "The new binary should have a time of modification that is equal to x32 one")
+    #     # Step 7
+    #     mtime_bin = File.mtime(FAKE_BINARY_LOCATION)
+    #     assert(mtime_bin == mtime_x32_1, "The new binary should have a time of modification that is equal to x32 one")
 
-        # Step 8
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
+    #     # Step 8
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 9
-        mtime_bin_1 = File.mtime(FAKE_BINARY_LOCATION)
+    #     # Step 9
+    #     mtime_bin_1 = File.mtime(FAKE_BINARY_LOCATION)
 
-        # Step 10
-        sleep(2)
-        d.run
+    #     # Step 10
+    #     sleep(2)
+    #     d.run
 
-        # Step 11
-        assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x32"), "#{FAKE_BINARY_LOCATION}_x32 should have been deleted again")
+    #     # Step 11
+    #     assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x32"), "#{FAKE_BINARY_LOCATION}_x32 should have been deleted again")
 
-        # Step 12
-        assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created again")
+    #     # Step 12
+    #     assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created again")
 
-        # Step 13
-        mtime_bin_2 = File.mtime(FAKE_BINARY_LOCATION)
-        assert(mtime_bin_2 > mtime_bin_1, "The new binary should have a modification that is newer or higher than earlier")
-    end
+    #     # Step 13
+    #     mtime_bin_2 = File.mtime(FAKE_BINARY_LOCATION)
+    #     assert(mtime_bin_2 > mtime_bin_1, "The new binary should have a modification that is newer or higher than earlier")
+    # end
 
     # Test11: Check that binary is getting replaced properly by "_x64"
     # Sequence:
@@ -517,54 +518,54 @@ class NPMDServerTest < Test::Unit::TestCase
     # 11.Assert that copy with "_x64" ending does not exist
     # 12.Assert that the binary file exists
     # 13.Assert that modification time of binary file is newer than mtime_bin_1
-    def test_case_11_binary_replaced_by_x64
-        # Step 1
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
+    # def test_case_11_binary_replaced_by_x64
+    #     # Step 1
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 2
-        mtime_x64_1 = File.mtime("#{FAKE_BINARY_LOCATION}_x64")
+    #     # Step 2
+    #     mtime_x64_1 = File.mtime("#{FAKE_BINARY_LOCATION}_x64")
 
-        # Step 3
-        FileUtils.rm(FAKE_BINARY_LOCATION)
-        assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been deleted")
+    #     # Step 3
+    #     FileUtils.rm(FAKE_BINARY_LOCATION)
+    #     assert_equal(false, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been deleted")
 
-        # Step 4
-        sleep(2)
-        d = create_driver
-        d.run
+    #     # Step 4
+    #     sleep(2)
+    #     d = create_driver
+    #     d.run
 
-        # Step 5
-        assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x64"), "#{FAKE_BINARY_LOCATION}_x64 should have been deleted")
+    #     # Step 5
+    #     assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x64"), "#{FAKE_BINARY_LOCATION}_x64 should have been deleted")
 
-        # Step 6
-        assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created")
+    #     # Step 6
+    #     assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created")
 
-        # Step 7
-        mtime_bin = File.mtime(FAKE_BINARY_LOCATION)
-        assert(mtime_bin == mtime_x64_1, "The new binary should have a time of modification that is equal to x64 one")
+    #     # Step 7
+    #     mtime_bin = File.mtime(FAKE_BINARY_LOCATION)
+    #     assert(mtime_bin == mtime_x64_1, "The new binary should have a time of modification that is equal to x64 one")
 
-        # Step 8
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
+    #     # Step 8
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 9
-        mtime_bin_1 = File.mtime(FAKE_BINARY_LOCATION)
+    #     # Step 9
+    #     mtime_bin_1 = File.mtime(FAKE_BINARY_LOCATION)
 
-        # Step 10
-        sleep(2)
-        d.run
+    #     # Step 10
+    #     sleep(2)
+    #     d.run
 
-        # Step 11
-        assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x64"), "#{FAKE_BINARY_LOCATION}_x64 should have been deleted again")
+    #     # Step 11
+    #     assert_equal(false, File.exist?("#{FAKE_BINARY_LOCATION}_x64"), "#{FAKE_BINARY_LOCATION}_x64 should have been deleted again")
 
-        # Step 12
-        assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created again")
+    #     # Step 12
+    #     assert_equal(true, File.exist?(FAKE_BINARY_LOCATION), "Fake binary file should have been created again")
 
-        # Step 13
-        mtime_bin_2 = File.mtime(FAKE_BINARY_LOCATION)
-        assert(mtime_bin_2 > mtime_bin_1, "The new binary should have a modification that is newer or higher than earlier")
+    #     # Step 13
+    #     mtime_bin_2 = File.mtime(FAKE_BINARY_LOCATION)
+    #     assert(mtime_bin_2 > mtime_bin_1, "The new binary should have a modification that is newer or higher than earlier")
 
-    end
-
+    # end
+    
     # Test12: Check that "_x64" preceeds "_x32" if both staging are present
     # Sequence:
     # 1. Copy the binary file by appending "_x64" to name
@@ -573,28 +574,28 @@ class NPMDServerTest < Test::Unit::TestCase
     #   (a) Wait for emit to have at least one error log
     # 4. Run the driver
     # 5. Assert that both 32, 64 found and picked 64 log is present
-    def test_case_12_check_x64_preceeds_x32
-        # Step 1
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
+    # def test_case_12_check_x64_preceeds_x32
+    #     # Step 1
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x64") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 2
-        FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
+    #     # Step 2
+    #     FileUtils.cp(FAKE_BINARY_LOCATION, "#{FAKE_BINARY_LOCATION}_x32") if File.exist?(FAKE_BINARY_LOCATION)
 
-        # Step 3
-        d = create_driver
-        d.register_run_post_condition {
-            sleep(100 * ONE_MSEC)
-            true
-        }
+    #     # Step 3
+    #     d = create_driver
+    #     d.register_run_post_condition {
+    #         sleep(100 * ONE_MSEC)
+    #         true
+    #     }
 
-        # Step 4
-        d.run
-        error_logs = parse_diag_logs_from_emits(d.emits)
+    #     # Step 4
+    #     d.run
+    #     error_logs = parse_diag_logs_from_emits(d.emits)
 
-        # Step 5
-        found_binary_duplicate_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_DUPLICATE)
-        assert_equal(true, found_binary_duplicate_log, "Binary duplicate log in test should have been seen");
-    end
+    #     # Step 5
+    #     found_binary_duplicate_log = check_presence_of_error_log(error_logs, TEST_ERROR_LOG_BINARY_DUPLICATE)
+    #     assert_equal(true, found_binary_duplicate_log, "Binary duplicate log in test should have been seen");
+    # end
 
     # Test13: Check UID of binary connecting
     # Sequence:

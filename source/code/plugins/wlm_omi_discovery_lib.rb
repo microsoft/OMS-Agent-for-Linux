@@ -59,13 +59,11 @@ module WLM
     end # method get_cim_data
     
     def get_cim_values(instance,specific_mapping)
-      cim_values = []
+      cim_values = {}
       cim_properties = specific_mapping["CimProperties"]
       instance.each do |property,value|
        if cim_properties.include? property
-         property_pair = {}
-         property_pair[property] = value
-         cim_values.push(property_pair)
+         cim_values[property] = value
        end # if
       end # each
       return cim_values

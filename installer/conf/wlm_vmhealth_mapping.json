@@ -1,7 +1,7 @@
 [
     {
         "CimClassName": "SCX_RTProcessorStatisticalInformation",
-        "ObjectName": "Processor",
+        "ObjectName": "ProcessorInstance",
         "InstanceProperty": "Name",
         "Namespace": "root/scx",
         "CimProperties": [
@@ -44,17 +44,19 @@
     },
     {
         "CimClassName": "SCX_MemoryStatisticalInformation",
-        "ObjectName": "Memory",
+        "ObjectName": "MemoryInstance",
         "InstanceProperty": "Name",
         "Namespace": "root/scx",
         "CimProperties": [
             {
                 "CimPropertyName": "AvailableMemory",
-                "CounterName": "Available MBytes Memory"
+                "CounterName": "Available MBytes Memory",
+                "NormalizationFactor": "1000"
             },
             {
                 "CimPropertyName": "AvailableSwap",
-                "CounterName": "Available MBytes Swap"
+                "CounterName": "Available MBytes Swap",
+                "NormalizationFactor": "1000"
             }
         ]
     },
@@ -66,15 +68,18 @@
         "CimProperties": [
             {
                 "CimPropertyName": "AverageTransferTime",
-                "CounterName": "Avg. Disk sec/Transfer"
+                "CounterName": "Avg. Disk sec/Transfer",
+                "NormalizationFactor": "1000"
             },
             {
                 "CimPropertyName": "AverageReadTime",
-                "CounterName": "Avg. Disk sec/Read"
+                "CounterName": "Avg. Disk sec/Read",
+                "NormalizationFactor": "1000"
             },
             {
                 "CimPropertyName": "AverageWriteTime",
-                "CounterName": "Avg. Disk sec/Write"
+                "CounterName": "Avg. Disk sec/Write",
+                "NormalizationFactor": "1000"
             },
             {   "CimPropertyName": "IsOnline",
                 "CounterName": "Physical Disk Online"
@@ -171,7 +176,7 @@
             {
                 "CimPropertyName": "ErrorsPerMinute500",
                 "CounterName": "Errors per Minute - Server"
-            }   
+            }
         ]
     },
    {

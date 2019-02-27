@@ -40,8 +40,8 @@ SEPOLICY_DIR_EL6=$(INTERMEDIATE_DIR)/selinux.el6
 
 ifeq ($(ULINUX),1)
 # Doesn't matter what version of SSL/Ruby we use to compile or link the OMI plugin
-RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/098/ruby
-OMI_LIBRARY_DIR := $(OMI_ROOT)/output_openssl_0.9.8/lib
+RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/100/ruby
+OMI_LIBRARY_DIR := $(OMI_ROOT)/output_openssl_1.0.0/lib
 else
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
 OMI_LIBRARY_DIR := $(OMI_ROOT)/output/lib
@@ -126,13 +126,13 @@ all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
 
-sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp 
-  
+sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp
+
 clean : clean-status
 	$(RMDIR) $(INTERMEDIATE_DIR)/source/code
 
 	# On Debian, installer staging directory has root permissions, so sudo elevate
-	sudo $(RMDIR) $(STAGING_DIR) $(INSTALLER_TMPDIR) $(BASE_DIR)/target 
+	sudo $(RMDIR) $(STAGING_DIR) $(INSTALLER_TMPDIR) $(BASE_DIR)/target
 
 	# Until we can build Ruby under installation dir, clean it here
 	sudo $(RMDIR) $(RUBY_TEST_DIRECTORY)
@@ -200,9 +200,6 @@ ifeq ($(ULINUX),1)
 	@$(ECHO) "========================= Performing Building DSC Project"
 	cd $(DSC_DIR); ./configure --oms
 	ln -fs $(OMI_ROOT) $(DSC_DIR)/omi-1.0.8
-	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_0.9.8 output
-	$(MAKE) -C $(DSC_DIR) dsc098
-	$(MAKE) -C $(DSC_DIR) dsckit098
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.0.0 output
 	$(MAKE) -C $(DSC_DIR) dsc100
 	$(MAKE) -C $(DSC_DIR) dsckit100
@@ -245,7 +242,7 @@ endif
 #--------------------------------------------------------------------------------
 # Build AUOMS project
 
-$(AUOMS_TARGET_DIR)/auoms-bundle-test.sh : 
+$(AUOMS_TARGET_DIR)/auoms-bundle-test.sh :
 	$(MAKE) -C $(AUOMS_DIR)/build all
 
 #--------------------------------------------------------------------------------
@@ -266,13 +263,11 @@ $(RUBY_DEST_DIR) :
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
 ifeq ($(ULINUX),1)
-	@$(ECHO) "========================= Performing Building Ruby for SSL v0.9.8 ..."
-	$(BASE_DIR)/build/buildRuby.sh 098
 	@$(ECHO) "========================= Performing Building Ruby for SSL v1.0.0 ..."
 	$(BASE_DIR)/build/buildRuby.sh 100
 ifeq ($(PF_ARCH),x64)
-	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..." 
-	$(BASE_DIR)/build/buildRuby.sh 110 
+	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
+	$(BASE_DIR)/build/buildRuby.sh 110
 endif
 else
 	@$(ECHO) "========================= Performing Building Ruby"
@@ -325,7 +320,7 @@ $(IN_PLUGINS_LIB) : $(STATIC_PLUGINS_OBJFILES)
 ifeq ($(ULINUX),1)
 
 kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh $(TARGET_DIR)/dsc \
-      $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh 
+      $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh
 
 $(TARGET_DIR)/dsc : $(DSC_TARGET_DIR)
 	@echo "========================= Performing Copying DSC resources"
@@ -348,18 +343,13 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PAC
 
 ifeq ($(PF_ARCH),x64)
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb \
 	$(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building .tar file"
 
 	# Gather the DSC bits that we need
-	$(RM) $(INTERMEDIATE_DIR)/098/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/110/omsconfig-*.{rpm,deb}
-
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(INTERMEDIATE_DIR)/098; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_098././'` ; $(MV) $$SOURCE $$DEST; done
+	$(RM) $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/110/omsconfig-*.{rpm,deb}
 
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
@@ -390,7 +380,6 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR); $(SHELL) scx-*.sh --extract
 
 	# Gather SCX packages
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 098/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 110/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
 
@@ -398,13 +387,10 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
 
 	# Gather OMI packages from omi-kits
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_098.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
 	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
 
-	# Remove ssl_098, ssl_100 and ssl_110 from omi filenames
-	cd $(INTERMEDIATE_DIR)/098; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_098\./\./g"`
-	cd $(INTERMEDIATE_DIR)/098; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_098\./\./g"`
+	# Remove ssl_100 and ssl_110 from omi filenames
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
 	cd $(INTERMEDIATE_DIR)/110; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_110\./\./g"`
@@ -413,37 +399,32 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} 110/*.{deb,rpm} oss-kits/* bundles/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 100/*.{deb,rpm} 110/*.{deb,rpm} oss-kits/* bundles/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm 
+	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm 
 
 	@echo "========================= Performing Building RPM .tar file"
 
 	# Build the tar file containing .rpm packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 098/*.rpm 100/*.rpm 110/*.rpm oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 100/*.rpm 110/*.rpm oss-kits/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
+	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building DEB .tar file"
 
 	# Build the tar file containing .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 098/*.deb 100/*.deb 110/*.deb oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb 110/*.deb oss-kits/*
 
 else
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building .tar file"
 
 	# Gather the DSC bits that we need
-	$(RM) $(INTERMEDIATE_DIR)/098/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb}
-
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_098.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/098
-	cd $(INTERMEDIATE_DIR)/098; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_098././'` ; $(MV) $$SOURCE $$DEST; done
+	$(RM) $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb}
 
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
@@ -470,100 +451,39 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR); $(SHELL) scx-*.sh --extract
 
 	# Gather SCX packages
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 098/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 
 	# Gather apache and mysql cimprov bundle scripts from SCX
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
 
 	# Gather OMI packages from omi-kits
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_098.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/098
 	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 
-	# Remove ssl_098, ssl_100 from omi filenames
-	cd $(INTERMEDIATE_DIR)/098; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_098\./\./g"`
-	cd $(INTERMEDIATE_DIR)/098; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_098\./\./g"`
+	# Remove ssl_100 from omi filenames
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
 
 	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 098/*.{deb,rpm} 100/*.{deb,rpm} oss-kits/* bundles/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 100/*.{deb,rpm} oss-kits/* bundles/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm 
+	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm 
 
 	@echo "========================= Performing Building RPM .tar file"
 
 	# Build the tar file containing .rpm packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 098/*.rpm 100/*.rpm oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 100/*.rpm oss-kits/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
+	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building DEB .tar file"
 
 	# Build the tar file containing .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 098/*.deb 100/*.deb oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb oss-kits/*
 endif
-
-$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).rpm:
-	@echo "========================= Performing Building RPM package (SSL 0.9.8)"
-	$(MKPATH) $(INSTALLER_TMPDIR)
-	$(MKPATH) $(INTERMEDIATE_DIR)/098
-
-	sudo $(RMDIR) $(STAGING_DIR)
-	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
-		--BASE_DIR=$(BASE_DIR) \
-		--TARGET_DIR=$(INTERMEDIATE_DIR) \
-		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
-		--STAGING_DIR=$(STAGING_DIR) \
-		--BUILD_TYPE=$(BUILD_TYPE) \
-		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
-		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/098/ruby \
-		--RUBY_ARCH=$(RUBY_ARCH) \
-		--RUBY_ARCM=$(RUBY_ARCM) \
-		--PFARCH=$(PF_ARCH) \
-		--PFDISTRO=$(PF_DISTRO) \
-		--PFMAJOR=$(PF_MAJOR) \
-		--PFMINOR=$(PF_MINOR) \
-		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
-		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
-		--VERSION_IDENT="$(OMS_BUILDVERSION_DATE) $(OMS_BUILDVERSION_STATUS)" \
-		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
-		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
-		$(INSTALLER_DATAFILES_RPM)
-	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/098
-
-$(INTERMEDIATE_DIR)/098/$(OUTPUT_PACKAGE_PREFIX).deb:
-	@echo "========================= Performing Building DEB package (SSL 0.9.8)"
-	$(MKPATH) $(INSTALLER_TMPDIR)
-	$(MKPATH) $(INTERMEDIATE_DIR)/098
-
-	sudo $(RMDIR) $(STAGING_DIR)
-	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
-		--BASE_DIR=$(BASE_DIR) \
-		--TARGET_DIR=$(INTERMEDIATE_DIR) \
-		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
-		--STAGING_DIR=$(STAGING_DIR) \
-		--BUILD_TYPE=$(BUILD_TYPE) \
-		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
-		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/098/ruby \
-		--RUBY_ARCH=$(RUBY_ARCH) \
-		--RUBY_ARCM=$(RUBY_ARCM) \
-		--PFARCH=$(PF_ARCH) \
-		--PFDISTRO=$(PF_DISTRO) \
-		--PFMAJOR=$(PF_MAJOR) \
-		--PFMINOR=$(PF_MINOR) \
-		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
-		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
-		--VERSION_IDENT="$(OMS_BUILDVERSION_DATE) $(OMS_BUILDVERSION_STATUS)" \
-		$(DPKG_LOCATION) \
-		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
-		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
-		$(INSTALLER_DATAFILES_DPKG)
-	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/098
 
 $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm:
 	@echo "========================= Performing Building RPM package (SSL 1.0)"

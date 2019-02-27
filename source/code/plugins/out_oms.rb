@@ -39,6 +39,16 @@ module Fluent
       super
     end
 
+    def write_status_file(success, message)
+      fn = '/var/opt/microsoft/omsagent/log/ODSIngestion.status'
+      status = '{ "operation": "ODSIngestion", "success": "%s", "message": "%s" }' % [success, message]
+      begin
+        File.open(fn,'w') { |file| file.write(status) }
+      rescue => e
+        @log.debug "Error:'#{e}'"
+      end
+    end
+
     def handle_record(key, record)
       @log.trace "Handling record : #{key}"
       req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record, @compress)
@@ -53,18 +63,21 @@ module Fluent
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{key} x #{count} in #{time.round(2)}s"
+        write_status_file("true","Sending success")
         return true
       end
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."
       @log.debug "Error:'#{e}'"
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
+      write_status_file("false","Retryable exception")
       raise e.message
     rescue => e
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously
       # try and fail to resend it. (Infinite failure loop)
-      OMS::Log.error_once("Unexpecting exception, dropping data. Error:'#{e}'")
+      OMS::Log.error_once("Unexpected exception, dropping data. Error:'#{e}'")
+      write_status_file("false","Unexpected exception")
     end
 
     # This method is called when an event reaches to Fluentd.

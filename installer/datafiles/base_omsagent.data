@@ -3,7 +3,6 @@ SHELL_HEADER:            '#!/bin/sh'
 OMSHOME:                 '/opt/microsoft/omsagent'
 CONF_DIR:                '/etc/opt/microsoft/omsagent/conf'
 SYSCONF_DIR:             '/etc/opt/microsoft/omsagent/sysconf'
-PROC_LIMIT_CONF:         '/etc/security/limits.conf'
 SHORT_NAME:              'omsagent'
 SHORT_NAME_PREFIX:       'MSFT'
 LONG_NAME:               'Microsoft Operations Management Suite for UNIX/Linux agent'
@@ -60,6 +59,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/in_oms_omi.rb;                           source/code/plugins/in_oms_omi.rb;                     744; root; root
 /opt/microsoft/omsagent/plugin/oms_omi_lib.rb;                          source/code/plugins/oms_omi_lib.rb;                    744; root; root
 /opt/microsoft/omsagent/plugin/oms_common.rb;                           source/code/plugins/oms_common.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/blocklock.rb;                            source/code/plugins/blocklock.rb;                      744; root; root
 /opt/microsoft/omsagent/plugin/Libomi.so;                               intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
 /opt/microsoft/omsagent/plugin/filter_nagios_log.rb;                    source/code/plugins/filter_nagios_log.rb;              744; root; root
 /opt/microsoft/omsagent/plugin/nagios_parser_lib.rb;                    source/code/plugins/nagios_parser_lib.rb;              744; root; root
@@ -78,6 +78,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/filter_security_baseline.rb;             source/code/plugins/filter_security_baseline.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
 /opt/microsoft/omsagent/plugin/oms_audits.xml;                          source/code/plugins/oms_audits.xml;                    644; root; root
+/opt/microsoft/omsagent/plugin/docker_audits.xml;                       source/code/plugins/docker_audits.xml;                 644; root; root
 /opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root
 /opt/microsoft/omsagent/plugin/omsremediate;                            source/code/plugins/omsremediate_${{PFARCH}};          755; root; root
 /opt/microsoft/omsagent/plugin/out_oms_diag.rb;                         source/code/plugins/out_oms_diag.rb;                   744; root; root
@@ -172,13 +173,6 @@ chown -R omsagent:root /opt/microsoft/omsagent/plugin
 %Postinstall_200
 # Migrate to multi-homing config and structure, as well as update omsagent config files
 /opt/microsoft/omsagent/bin/omsadmin.sh -U
-# Set default process limit for the omsagent user, if none is already set
-cat ${{PROC_LIMIT_CONF}} | grep -E '^[[:space:]]*$AGENT_USER[[:space:]]+(hard|soft)[[:space:]]+nproc[[:space:]]+[0-9]+[[:space:]]*$' > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    /opt/microsoft/omsagent/bin/omsadmin.sh -N
-else
-    echo "Process limit has already been set in ${PROC_LIMIT_CONF}"
-fi
 
 %Postinstall_300
 if [ -f /etc/omsagent-onboard.conf ]; then

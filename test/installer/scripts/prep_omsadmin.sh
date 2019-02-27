@@ -25,7 +25,6 @@ sed -i s,MAINTENANCE_TASKS_SCRIPT=.*,MAINTENANCE_TASKS_SCRIPT=$BASE_DIR/source/c
 sed -i s,INSTALL_INFO=.*,INSTALL_INFO=$BASE_DIR/installer/conf/installinfo.txt,1 $OMSADMIN
 sed -i s,AGENT_USER=.*,AGENT_USER=$TEST_USER,1 $OMSADMIN
 sed -i s,AGENT_GROUP=.*,AGENT_GROUP=$TEST_GROUP,1 $OMSADMIN
-sed -i s,PROC_LIMIT_CONF=.*,PROC_LIMIT_CONF=$TESTDIR/limits.conf,1 $OMSADMIN
 
 cat <<EOF > $TESTDIR/process_stats
     PercentUserTime=2
@@ -43,69 +42,3 @@ OSManufacturer=Canonical Group Limited
 OSShortName=Ubuntu_14.04
 EOF
 
-cat <<EOF > $TESTDIR/limits.conf
-@$TEST_GROUP          hard           nproc                20
-*       hard    nproc   10
-omiagent    soft    nproc 75
-#        hard    nproc           75
-$TEST_USER soft nproc 200
-#    $TEST_USER hard nproc 20000
-EOF
-
-cat <<EOF > $TESTDIR/limits-default.conf
-@$TEST_GROUP          hard           nproc                20
-*       hard    nproc   10
-omiagent    soft    nproc 75
-#        hard    nproc           75
-$TEST_USER  hard  nproc  75
-#    $TEST_USER hard nproc 20000
-EOF
-
-cat <<EOF > $TESTDIR/limits-non-default.conf
-@$TEST_GROUP          hard           nproc                20
-*       hard    nproc   10
-omiagent    soft    nproc 75
-#        hard    nproc           75
-$TEST_USER  hard  nproc  5000
-#    $TEST_USER hard nproc 20000
-EOF
-
-cat <<EOF > $TESTDIR/limits-two-settings.conf
-@$TEST_GROUP          hard           nproc                20
-*       hard    nproc   10
-omiagent    soft    nproc 75
-#        hard    nproc           75
-$TEST_USER  hard  nproc  200
-$TEST_USER  hard  nproc  100
-#    $TEST_USER hard nproc 20000
-EOF
-
-cat <<EOF > $TESTDIR/limits-no-settings.conf
-@$TEST_GROUP          hard           nproc                20
-*       hard    nproc   10
-omiagent    soft    nproc 75
-#        hard    nproc           75
-#    $TEST_USER hard nproc 20000
-EOF
-
-# The following two represent the actual kind of file ending found on systems:
-cat <<EOF > $TESTDIR/limits-no-settings-endlabel.conf
-@$TEST_GROUP          hard           nproc                20
-*       hard    nproc   10
-omiagent    soft    nproc 75
-#        hard    nproc           75
-#    $TEST_USER hard nproc 20000
-
-# End of file
-EOF
-
-cat <<EOF > $TESTDIR/limits-new-settings-endlabel.conf
-@$TEST_GROUP          hard           nproc                20
-*       hard    nproc   10
-omiagent    soft    nproc 75
-#        hard    nproc           75
-#    $TEST_USER hard nproc 20000
-$TEST_USER  hard  nproc  20000
-
-# End of file
-EOF

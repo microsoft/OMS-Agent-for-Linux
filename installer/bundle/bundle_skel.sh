@@ -51,6 +51,8 @@ INVALID_PACKAGE_TYPE=4
 RUN_AS_ROOT=5
 INVALID_PACKAGE_ARCH=6
 # Accompanying packages issues:
+OMS_INSTALL_FAILED=17
+DSC_INSTALL_FAILED=18
 OMI_INSTALL_FAILED=19
 SCX_INSTALL_FAILED=20
 SCX_KITS_INSTALL_FAILED=21
@@ -59,12 +61,13 @@ USE_UPGRADE=23
 # Internal errors:
 INTERNAL_ERROR=30
 # Package pre-requisites fail
-UNSUPPORTED_OPENSSL=60
+UNSUPPORTED_OPENSSL=55 #60, temporary as 55 excludes from SLA
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
 INSTALL_SED=63
-INSTALL_CURL=64
+INSTALL_CURL=55 #64, temporary as 55 excludes from SLA
 INSTALL_GPG=65
+UNSUPPORTED_PKG_INSTALLER=66
 
 usage()
 {
@@ -224,21 +227,18 @@ verifyPrivileges()
 ulinux_detect_openssl_version()
 {
     TMPBINDIR=
-    # the system OpenSSL version is 0.9.8.  Likewise with OPENSSL_SYSTEM_VERSION_100 or OPENSSL_SYSTEM_VERSION_110
+    # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_110
     OPENSSL_SYSTEM_VERSION_FULL=`openssl version | awk '{print $2}'`
-    OPENSSL_SYSTEM_VERSION_098=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^0.9.8'; echo $?`
     OPENSSL_SYSTEM_VERSION_100=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
     OPENSSL_SYSTEM_VERSION_110=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.1.'; echo $?`
-    if [ $OPENSSL_SYSTEM_VERSION_098 = 0 ]; then
-        TMPBINDIR=098
-    elif [ $OPENSSL_SYSTEM_VERSION_100 = 0 ]; then
+    if [ $OPENSSL_SYSTEM_VERSION_100 = 0 ]; then
         TMPBINDIR=100
     elif [ $OPENSSL_SYSTEM_VERSION_110 = 0 ]; then
         TMPBINDIR=110
     else
         echo "Error: This system does not have a supported version of OpenSSL installed."
         echo "This system's OpenSSL version: $OPENSSL_SYSTEM_VERSION_FULL"
-        echo "Supported versions: 0.9.8*, 1.0.*, 1.1.*"
+        echo "Supported versions: 1.0.*, 1.1.*"
         cleanup_and_exit $UNSUPPORTED_OPENSSL
     fi
 }
@@ -252,7 +252,15 @@ ulinux_detect_installer()
     if [ $? -eq 0 ]; then
         INSTALLER=DPKG
     else
+      check_if_program_in_path rpm
+      if [ $? -eq 0 ]; then
         INSTALLER=RPM
+      else
+        #Exit with code 51 if system is not deb or rpm
+        echo "Error: This system does not have supported package manager"
+        echo "Supported Sytems: 'DPKG' & 'RPM'"
+        cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
+      fi
     fi
 }
 
@@ -323,33 +331,15 @@ install_if_program_does_not_exist_on_system()
 
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed (for future compatibility)
-pkg_add_list()
+pkg_add()
 {
     pkg_filename=$1
     pkg_name=$2
 
-    ulinux_detect_openssl_version
-    pkg_filename=$TMPBINDIR/$pkg_filename
-
-    echo "----- Installing package: $2 ($1) -----"
-    if [ "$INSTALLER" = "DPKG" ]; then
-        add_list="${add_list} ${pkg_filename}.deb"
-    else
-        add_list="${add_list} ${pkg_filename}.rpm"
-    fi
-}
-
-# $1 - The filename of the package to be installed
-# $2 - The package name of the package to be installed (for future compatibility)
-pkg_install()
-{
-    pkg_filename=$1
-    pkg_name=$2
+    echo "----- Installing package: $pkg_name ($pkg_filename) -----"
 
     ulinux_detect_openssl_version
     pkg_filename=$TMPBINDIR/$pkg_filename
-
-    echo "----- Installing package: $2 ($1) -----"
 
     if [ "$INSTALLER" = "DPKG" ]; then
         [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
@@ -413,34 +403,6 @@ pkg_upd() {
     fi
 }
 
-# $1 - The filename of the package to be installed
-# $2 - The package name of the package to be installed
-# $3 - Okay to upgrade the package? (Optional)
-pkg_upd_list()
-{
-    pkg_filename=$1
-    pkg_name=$2
-    pkg_allowed=$3
-
-    echo "----- Checking package: $2 ($1) -----"
-
-    if [ -z "${forceFlag}" -a -n "$3" ]; then
-        if [ $3 -ne 0 ]; then
-            echo "Skipping package since existing version >= version available"
-            return 0
-        fi
-    fi
-
-    ulinux_detect_openssl_version
-    pkg_filename=$TMPBINDIR/$pkg_filename
-
-    if [ "$INSTALLER" = "DPKG" ]; then
-        upd_list="${upd_list} ${pkg_filename}.deb"
-    else
-        upd_list="${upd_list} ${pkg_filename}.rpm"
-    fi
-}
-
 get_arch()
 {
     if [ $(getconf LONG_BIT) = 64 ]; then
@@ -455,11 +417,11 @@ compare_arch()
     #check if the user is trying to install the correct bundle (x64 vs. x86)
     echo "Checking host architecture ..."
     HOST_ARCH=$(get_arch)
-    
+
     case $OMS_PKG in
-        *"$HOST_ARCH") 
+        *"$HOST_ARCH")
             ;;
-        *)         
+        *)
             echo "Cannot install $OMS_PKG on ${HOST_ARCH} platform"
             cleanup_and_exit $INVALID_PACKAGE_ARCH
             ;;
@@ -467,8 +429,8 @@ compare_arch()
 }
 
 compare_install_type()
-{   
-    # If the bundle has an INSTALL_TYPE, check if the bundle being installed 
+{
+    # If the bundle has an INSTALL_TYPE, check if the bundle being installed
     # matches the installer on the machine (rpm vs.dpkg)
     if [ ! -z "$INSTALL_TYPE" ]; then
         if [ $INSTALLER != $INSTALL_TYPE ]; then
@@ -481,8 +443,8 @@ compare_install_type()
 python_ctypes_installed()
 {
     # Check for Python ctypes library (required for omsconfig)
-    hasCtypes=1    
-	
+    hasCtypes=1
+
     # Attempt to run python with the single import command
     python -c "import ctypes" > /dev/null 2>&1
     [ $? -eq 0 ] && hasCtypes=0
@@ -499,7 +461,15 @@ getInstalledVersion()
             local version="`dpkg -s $1 2> /dev/null | grep 'Version: '`"
             getVersionNumber "$version" "Version: "
         else
-            local version=`rpm -q $1 2> /dev/null`
+            # rpm based system can end up having multiple versions of a package.
+            # return the latest version of the package installed
+            local version=`rpm -q $1 | sort -V | tail -n 1 2> /dev/null`
+            local num_installed=`rpm -q $1 | wc -l 2> /dev/null`
+            if [ $num_installed -gt 1 ]; then
+               echo "WARNING: Multiple versions of $1 seem to be installed." >&2
+               echo "Please uninstall them. If the installer is run with --upgrade," >&2
+               echo "the package with latest version will remain installed." >&2
+            fi
             getVersionNumber $version ${1}-
         fi
     else
@@ -577,39 +547,20 @@ remove_and_install()
 
     local temp_status=0
 
-    if [ "$installMode" = "I" ]; then
-        pkg_install $OMI_PKG omi
-        temp_status=$?
+    pkg_add $OMI_PKG omi
+    temp_status=$?
 
-        if [ $temp_status -ne 0 ]; then
-            echo "$OMI_PKG package failed to install and exited with status $temp_status"
-            return $OMI_INSTALL_FAILED
-        fi
+    if [ $temp_status -ne 0 ]; then
+        echo "$OMI_PKG package failed to install and exited with status $temp_status"
+        return $OMI_INSTALL_FAILED
+    fi
 
-        pkg_install $SCX_PKG scx
-        temp_status=$?
+    pkg_add $SCX_PKG scx
+    temp_status=$?
 
-        if [ $temp_status -ne 0 ]; then
-            echo "$SCX_PKG package failed to install and exited with status $temp_status"
-            return $SCX_INSTALL_FAILED
-        fi
-    else
-        pkg_upd $OMI_PKG omi
-        temp_status=$?
-
-        if [ $temp_status -ne 0 ]; then
-            echo "$OMI_PKG package failed to upgrade and exited with status $temp_status"
-            return $OMI_INSTALL_FAILED
-        fi
-
-        pkg_upd $SCX_PKG scx
-        temp_status=$?
-
-        if [ $temp_status -ne 0 ]; then
-            echo "$SCX_PKG package failed to upgrade and exited with status $temp_status"
-            return $SCX_INSTALL_FAILED
-        fi
-
+    if [ $temp_status -ne 0 ]; then
+        echo "$SCX_PKG package failed to install and exited with status $temp_status"
+        return $SCX_INSTALL_FAILED
     fi
 
     return 0
@@ -1038,7 +989,7 @@ if [ -n "${checkVersionAndCleanUp}" ]; then
 
     # omsconfig
     versionInstalled=`getInstalledVersion omsconfig`
-    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`    
+    versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
     if shouldInstall_omsconfig; then shouldInstall="Yes"; else shouldInstall="No"; fi
     printf '%-15s%-15s%-15s%-15s\n' omsconfig $versionInstalled $versionAvailable "$shouldInstall"
 
@@ -1096,23 +1047,18 @@ case "$installMode" in
         omi_installed=$?
 
         if [ $scx_installed -ne 0 -a $omi_installed -ne 0 ]; then
-            echo "Installing OMS agent ..."
-
-            pkg_add_list $OMS_PKG omsagent
-
-            if shouldInstall_omsconfig; then pkg_add_list $DSC_PKG omsconfig; fi
 
             # Install OMI
             shouldInstall_omi
             if [ $? -eq 0 ]; then
-                pkg_install ${OMI_PKG} omi
+                pkg_add ${OMI_PKG} omi
                 OMI_EXIT_STATUS=$?
             fi
 
             # Install SCX
             shouldInstall_scx
             if [ $? -eq 0 ]; then
-                pkg_install ${SCX_PKG} scx
+                pkg_add ${SCX_PKG} scx
                 SCX_EXIT_STATUS=$?
             fi
 
@@ -1126,18 +1072,22 @@ case "$installMode" in
                 fi
             fi
 
-            # Now actually install of the "queued" packages
-            if [ -n "${add_list}" ]; then
-                if [ "$INSTALLER" = "DPKG" ]; then
-                    [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
-                    dpkg ${DPKG_CONF_QUALS} --install $FORCE ${add_list}
-                else
-                    [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-                    rpm -ivh $FORCE ${add_list}
+            # Install OMS Agent
+            pkg_add ${OMS_PKG} omsagent
+            TEMP_STATUS=$?
+            if [ $TEMP_STATUS -ne 0 ]; then
+               echo "$OMS_PKG package failed to install and exited with status $TEMP_STATUS"
+               cleanup_and_exit $OMS_INSTALL_FAILED
+            fi
+
+            # Install DSC
+            if shouldInstall_omsconfig; then
+                pkg_add ${DSC_PKG} omsconfig
+                TEMP_STATUS=$?
+                if [ $TEMP_STATUS -ne 0 ]; then
+                    echo "$DSC_PKG package failed to install and exited with status $TEMP_STATUS"
+                    cleanup_and_exit $DSC_INSTALL_FAILED
                 fi
-                KIT_STATUS=$?
-            else
-                echo "----- No base kits to install -----"
             fi
 
             # Install bundled providers
@@ -1187,14 +1137,6 @@ case "$installMode" in
         ;;
 
     U)
-        echo "Updating OMS agent ..."
-
-        shouldInstall_omsagent
-        pkg_upd_list $OMS_PKG omsagent $?
-
-        shouldInstall_omsconfig
-        pkg_upd_list $DSC_PKG omsconfig $?
-
         # Install OMI
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
@@ -1216,20 +1158,24 @@ case "$installMode" in
             fi
         fi
 
-        # Now actually install of the "queued" packages
-        if [ -n "${upd_list}" ]; then
-            if [ "$INSTALLER" = "DPKG" ]; then
-                [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
-                dpkg ${DPKG_CONF_QUALS} --install $FORCE ${upd_list}
-            else
-                [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-                rpm -Uvh $FORCE ${upd_list}
-            fi
-            KIT_STATUS=$?
-        else
-            echo "----- No base kits to update -----"
+        # Update OMS Agent
+        shouldInstall_omsagent
+        pkg_upd $OMS_PKG omsagent $?
+        TEMP_STATUS=$?
+        if [ $TEMP_STATUS -ne 0 ]; then
+            echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            cleanup_and_exit $OMS_INSTALL_FAILED
         fi
-		
+
+        # Update DSC
+        shouldInstall_omsconfig
+        pkg_upd $DSC_PKG omsconfig $?
+        TEMP_STATUS=$?
+        if [ $TEMP_STATUS -ne 0 ]; then
+            echo "$DSC_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            cleanup_and_exit $DSC_INSTALL_FAILED
+        fi
+
         if [ $KIT_STATUS -eq 0 ]; then
             # Remove fluentd conf for OMSConsistencyInvoker upon upgrade, if it exists
             rm -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf

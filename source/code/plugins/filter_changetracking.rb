@@ -33,7 +33,6 @@ module Fluent
     end
 
     def filter(tag, time, record)
-      OMS::Log.info_once("ChangeTracking: Got new data to send")
       return record
     end # filter
   end # class

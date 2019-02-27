@@ -22,6 +22,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
+      require_relative 'blocklock'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -86,7 +87,7 @@ module Fluent
       headers["Content-Length"] = msg.bytesize.to_s
 
       # If the request version is 2011-08-18 or newer, the ETag value will be returned
-      headers[OMS::CaseSensitiveString.new("x-ms-version")] = "2011-08-18"
+      headers[OMS::CaseSensitiveString.new("x-ms-version")] = "2016-05-31"
 
       req = Net::HTTP::Put.new(uri.request_uri, headers)
       req.body = msg
@@ -284,6 +285,16 @@ module Fluent
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.notify_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
     end # notify_blob_upload_complete
+    
+    def write_status_file(success, message)
+      fn = '/var/opt/microsoft/omsagent/log/ODSIngestionBlob.status'
+      status = '{ "operation": "ODSIngestionBlob", "success": "%s", "message": "%s" }' % [success, message]
+      begin
+        File.open(fn,'w') { |file| file.write(status) }
+      rescue => e
+        @log.debug "Error:'#{e}'"
+      end
+    end
 
     # parse the tag to get the settings and append the message to blob
     # parameters:
@@ -328,7 +339,19 @@ module Fluent
       @log.debug "Success getting the BLOB information in #{time.round(3)}s"
 
       start = Time.now
-      dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
+
+      if @num_threads > 1
+        # get a lock for the blob append to avoid storage errors when parallel threads are writing
+        BlockLock.lock
+        begin
+          dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
+        ensure
+          BlockLock.unlock
+        end
+      else
+        dataSize, etag = append_blob(blob_uri, records, filePath, blocks_committed)
+      end
+
       time = Time.now - start
       @log.debug "Success sending #{dataSize} bytes of data to BLOB #{time.round(3)}s"
 
@@ -336,16 +359,17 @@ module Fluent
       notify_blob_upload_complete(blob_uri, data_type, custom_data_type, blob_size, dataSize, etag)
       time = Time.now - start
       @log.trace "Success notify the data to BLOB #{time.round(3)}s"
-
+      write_status_file("true","Sending success")
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."
       @log.debug "Error:'#{e}'"
-      
+      write_status_file("false", "Retryable exception")
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
       # it must be generic exception, otherwise, fluentd will stuck.
       raise e.message
     rescue => e
-      OMS::Log.error_once("Unexpecting exception, dropping data. Error:'#{e}'")
+      OMS::Log.error_once("Unexpected exception, dropping data. Error:'#{e}'")
+      write_status_file("false", "Unexpected exception")
     end # handle_record
 
     # This method is called when an event reaches to Fluentd.

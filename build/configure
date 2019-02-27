@@ -224,6 +224,7 @@ apply_patch ${base_dir}/source/ext/patches/ruby/clear_options.patch ${base_dir}/
 
 # This patch is borrowed from the latest Ruby code as of 1/18/2017 and resolves the error "undefined symbol: SSLv3_method"
 # Upgrading to a version higher than Ruby 2.3 may already include this patch
+# Updating patch for extconf.rb in version Ruby 2.4.4.
 apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_dir}/source/ext/ruby/ext/openssl/extconf.rb
 
 # This patch is borrowed from FluentD 0.12.32 to resolve in_exec plugin failing repeatedly with command or parsing failing
@@ -250,26 +251,26 @@ fi
 if [ $ULINUX -eq 1 ]; then
     if [ `uname -m` = "x86_64" ]; then
     # We only build openssl 1.1 for x64 bit
-        if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 -o ! -d /usr/local_ssl_1.1.0 ]; then
+        if [ ! -d /usr/local_ssl_1.0.0 -o ! -d /usr/local_ssl_1.1.0 ]; then
             echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
             exit 1
         fi
     else
-        if [ ! -d /usr/local_ssl_0.9.8 -o ! -d /usr/local_ssl_1.0.0 ]; then
+        if [ ! -d /usr/local_ssl_1.0.0 ]; then
             echo "Missing /usr/local_ssl_* directories to build a ULINUX kit" >& 2
             exit 1
         fi
     fi
 fi
 
-if [ $ULINUX -eq 0 -a -d /usr/local_ssl_0.9.8 -a -d /usr/local_ssl_1.0.0 ]; then
+if [ $ULINUX -eq 0 -a -d /usr/local_ssl_1.0.0 -a -d /usr/local_ssl_1.1.0 ]; then
     echo "This appears to be a ULINUX system, but you're not doing a ULINUX build." >& 2
     echo "Given that OMI makes assumptions based on these directories, there is an" >& 2
     echo "extraordinarily good chance that your build will fail. You should do a" >& 2
     echo "ULINUX build (--enable-ulinux) on this system." >& 2
     echo "" >& 2
     echo "If you really do not want a universal (ULINUX) build, then run:" >& 2
-    echo "    sudo rm -rf /usr/local_ssl_0.9.8 /usr/local_ssl_1.0.0 /usr/local_ssl_1.1.0" >& 2
+    echo "    sudo rm -rf /usr/local_ssl_1.0.0 /usr/local_ssl_1.1.0" >& 2
     echo "and then re-run configure. IMPORTANT: Only try this on a private system," >& 2
     echo "Do NOT do this on a shared system without consulting your team!" >& 2
     exit 1
@@ -437,10 +438,6 @@ sudo rm -rf ${ruby_test_directory}
 [ ! -d ~/bin ] && mkdir ~/bin
 
 if [ "$ULINUX" = "1" ]; then
-    ssl_098_dirpath=/usr/local_ssl_0.9.8
-    ruby_configure_quals_098=( --with-openssl-dir=$ssl_098_dirpath
-        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
-
     ssl_100_dirpath=/usr/local_ssl_1.0.0
     ruby_configure_quals_100=( --with-openssl-dir=$ssl_100_dirpath
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
@@ -494,13 +491,10 @@ EOF
 
 if [ "$ULINUX" = "1" ]; then
     # SSL "lib" directory name can vary based on platform AND OpenSSL version ...OpenSSL 1.1 is supported only for x64 bit
-    ssl_098_libpath=`eval echo ${ssl_098_dirpath}/lib*`
     ssl_100_libpath=`eval echo ${ssl_100_dirpath}/lib*`
     if [ `uname -m` = "x86_64" ]; then
         ssl_110_libpath=`eval echo ${ssl_110_dirpath}/lib*`
     fi
-    echo "SSL_098_LIBPATH=${ssl_098_libpath}" >> config.mak
-    echo "RUBY_CONFIGURE_QUALS_098=( ${ruby_configure_quals_098[@]} )" >> config.mak
     echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
     if [ `uname -m` = "x86_64" ]; then

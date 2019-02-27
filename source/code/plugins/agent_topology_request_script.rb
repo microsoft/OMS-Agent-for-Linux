@@ -40,6 +40,9 @@ class AgentTopologyRequestOperatingSystem < StrongTypedClass
   strongtyped_arch     :ProcessorArchitecture
   strongtyped_accessor :Version, String
   strongtyped_accessor :InContainer, String
+  strongtyped_accessor :InContainerVersion, String
+  strongtyped_accessor :IsAKSEnvironment, String
+  strongtyped_accessor :K8SVersion, String
   strongtyped_accessor :Telemetry, AgentTopologyRequestOperatingSystemTelemetry
 end
  
@@ -59,8 +62,19 @@ class AgentTopologyRequest < StrongTypedClass
       raise ArgumentError, " Unable to read file #{os_info}; telemetry information will not be sent to server"
     end
 
-    if File.exist?('/root/.dockerenv') || File.exist?('/root/.dockerinit')
+    if File.exist?('/var/opt/microsoft/docker-cimprov/state/containerhostname')
       os.InContainer = "True"
+      containerimagetagfile = '/var/opt/microsoft/docker-cimprov/state/omscontainertag'
+      if File.exist?(containerimagetagfile) && File.readable?(containerimagetagfile)
+        os.InContainerVersion = File.read(containerimagetagfile)
+      end
+      if !ENV['AKS_RESOURCE_ID'].nil?
+        os.IsAKSEnvironment = "True"
+      end
+      k8sversionfile = "/var/opt/microsoft/docker-cimprov/state/kubeletversion"
+      if File.exist?(k8sversionfile) && File.readable?(k8sversionfile) 
+        os.K8SVersion = File.read(k8sversionfile)
+      end
     else
       os.InContainer = "False"
     end
@@ -82,7 +96,7 @@ class AgentTopologyRequest < StrongTypedClass
       end
     end
     
-    # Get OS info from scx-release
+       # Get OS info from scx-release
     File.open(os_info).each_line do |line|
       os.Name = line.sub("OSName=","").strip if line =~ /OSName/
       os.Manufacturer = line.sub("OSManufacturer=","").strip if line =~ /OSManufacturer/

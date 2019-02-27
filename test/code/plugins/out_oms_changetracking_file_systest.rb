@@ -54,7 +54,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
                     "ConfigChangeType"=> "Files",
                     "Collections"=> 
 		             [{"CollectionName"=>"/etc/yum.conf",
-		               "Contents"=>"",
+		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
 		               "DateModified"=>"2016-08-20T18:12:22.000Z",
 		               "FileSystemPath"=>"/etc/yum.conf",
@@ -79,7 +79,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
                     "ConfigChangeType"=> "Files",
                     "Collections"=> 
 		             [{"CollectionName"=>"/etc/yum.conf",
-		               "Contents"=>"",
+		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
 		               "DateModified"=>"2016-08-20T18:12:22.000Z",
 		               "FileSystemPath"=>"/etc/yum.conf",
@@ -89,7 +89,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
 		               "Owner"=>"root",
 		               "Size"=>"835"},
 		             {"CollectionName"=>"/etc/yum1.conf",
-		               "Contents"=>"",
+		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
 		               "DateModified"=>"2016-08-20T18:12:22.000Z",
 		               "FileSystemPath"=>"/etc/yum1.conf",
@@ -119,7 +119,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
                     "ConfigChangeType"=> "Files",
                     "Collections"=> 
 		             [{"CollectionName"=>"/etc/yum.conf",
-		               "Contents"=>"",
+		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
 		               "DateModified"=>"2016-08-20T18:12:22.000Z",
 		               "FileSystemPath"=>"/etc/yum.conf",
@@ -129,7 +129,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
 		               "Owner"=>"root",
 		               "Size"=>"835"},
 		             {"CollectionName"=>"/etc/yum1.conf",
-		               "Contents"=>"",
+		               "Contents"=>"1000",
 		               "DateCreated"=>"2016-08-20T18:12:22.000Z",
 		               "DateModified"=>"2016-08-20T18:12:22.000Z",
 		               "FileSystemPath"=>"/etc/yum1.conf",
@@ -149,7 +149,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
     expected_changed_record = {"DataItems"=>
   [{"Collections"=>
      [{"CollectionName"=>"/etc/yum.conf",
-       "Contents"=>"",
+       "Contents"=>"1000",
        "DateCreated"=>"2016-08-20T18:12:22.000Z",
        "DateModified"=>"2016-08-20T18:12:22.000Z",
        "FileContentBlobLink"=>
@@ -160,7 +160,7 @@ class OutOMSChangeTrackingFileTest < OutOMSSystemTestBase
        "Owner"=>"root",
        "Size"=>"835"},
       {"CollectionName"=>"/etc/yum1.conf",
-       "Contents"=>"",
+       "Contents"=>"1000",
        "DateCreated"=>"2016-08-20T18:12:22.000Z",
        "DateModified"=>"2016-08-20T18:12:22.000Z",
        "FileContentBlobLink"=>

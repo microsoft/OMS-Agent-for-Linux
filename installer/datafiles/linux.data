@@ -140,8 +140,6 @@ ${{OMS_SERVICE}} start
 if ${{PERFORMING_UPGRADE_NOT}}; then
     ${{OMS_SERVICE}} disable
     ${{CONF_SYSLOG}} purge
-    # Remove the omsagent user process limit from limits.conf - should not be done during upgrade
-    ${{OMSADMIN_SCRIPT}} -r
 fi
 
 

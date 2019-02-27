@@ -6,8 +6,9 @@ require_relative 'oms_common'
 module OMS
     class SecurityBaseline
 
-        def initialize(log)
+        def initialize(log, baselineType = "Linux")
             @log = log
+	    @baselineType = baselineType
         end
 
         # ------------------------------------------------------
@@ -81,7 +82,7 @@ module OMS
             security_baseline_summary_blob = calculate_summary(results, hostname, time)
 
             @log.info "Security Baseline Summary: " + security_baseline_summary_blob.inspect
-
+            
             return security_baseline_blob, security_baseline_summary_blob
         end # transform_and_wrap
     
@@ -119,8 +120,13 @@ module OMS
             end 
 
             all_assessed_rules = all_failed_rules + pass_rules
+        
+            if all_assessed_rules == 0
+                return nil
+            end
+	    
             percentage_of_passed_rules = (pass_rules * 100.0 / all_assessed_rules).round
-    
+            
             security_baseline_summary_blob = {
                 "DataType" => "SECURITY_BASELINE_SUMMARY_BLOB",
                 "IPName" => "Security",
@@ -134,7 +140,7 @@ module OMS
                         "PercentageOfPassedRules" => percentage_of_passed_rules,
                         "AssessmentId" => assessment_id,
                         "OSName" => "Linux",
-                        "BaselineType" => "Linux"
+                        "BaselineType" => @baselineType
                     }
                 ] 
             }
@@ -155,7 +161,7 @@ module OMS
                 "OSName" => "Linux",
                 "RuleType" => "Command",
                 "RuleId" => asm_baseline_result["ruleId"],
-                "BaselineType" => "Linux",
+                "BaselineType" => @baselineType,
                 "ActualResult" => asm_baseline_result["error_text"]
             }
             return oms

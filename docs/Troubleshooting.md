@@ -19,6 +19,8 @@ If none of these steps work for you the following channels for help are also ava
 - [I'm unable to connect through my proxy to OMS](#im-unable-to-connect-through-my-proxy-to-oms)
 - [I'm getting a 403 when I'm trying to onboard!](#im-getting-a-403-when-im-trying-to-onboard)
 - [I'm seeing a 500 Error and 404 Error in the log file right after onboarding](#im-seeing-a-500-error-and-404-error-in-the-log-file-right-after-onboarding)
+- [I'm getting Errno address already in use in omsagent log file](#im-getting-errno-address-already-in-use-in-omsagent-log-file)
+- [I'm unable to uninstall omsagent using purge option](#im-unable-to-uninstall-omsagent-using-purge-option)
 - [My Nagios data is not showing up in the OMS Portal!](#my-nagios-data-is-not-showing-up-in-the-oms-portal)
 - [I'm not seeing any Linux data in the OMS Portal](#im-not-seeing-any-linux-data-in-the-oms-portal)
 - [My portal side configuration for (Syslog/Linux Performance Counter) is not being applied](#my-portal-side-configuration-for-sysloglinux-performance-counter-is-not-being-applied)
@@ -27,13 +29,13 @@ If none of these steps work for you the following channels for help are also ava
 
 ## Important Log Locations and Log Collector Tool
 
- File | Path 
- ---- | ----- 
+ File | Path
+ ---- | -----
  OMS Agent for Linux Log File | `/var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log `
  OMS Agent Configuration Log File | `/var/opt/microsoft/omsconfig/omsconfig.log`
- 
+
  We recommend you to use our log collector tool to retrieve important logs for troubleshooting or before submitting a github issue. You can read more about the tool and how to run it [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/OMS_Linux_Agent_Log_Collector.md)
- 
+
 ## Important Configuration Files
 
  Category | File Location
@@ -41,11 +43,11 @@ If none of these steps work for you the following channels for help are also ava
  Syslog | `/etc/syslog-ng/syslog-ng.conf` or `/etc/rsyslog.conf` or `/etc/rsyslog.d/95-omsagent.conf`
  Performance, Nagios, Zabbix, OMS output and general agent | `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`
  Additional configurations | `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/*.conf`
- 
+
  **Note:** Editing configuration files for performance counters & syslog is overwritten if Portal Configuration is enabled. Disable configuration in the OMS Portal (all nodes) or for single nodes run the following:
- 
+
  `sudo su omsagent -c /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable`
- 
+
 ## Installation Error Codes
 
 | Error Code | Meaning |
@@ -53,15 +55,17 @@ If none of these steps work for you the following channels for help are also ava
 | NOT_DEFINED | Because the necessary dependencies are not installed, the auoms auditd plugin will not be installed | Installation of auoms failed; Install package auditd |
 | 2 | Invalid option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
 | 3 | No option provided to the shell bundle; Run `sudo sh ./omsagent-*.universal*.sh --help` for usage |
-| 4 | Invalid package type; `omsagent-*rpm*.sh` packages can only be installed on RPM-based systems, and `omsagent-*deb*.sh` packages can only be installed on Debian-based systems; We recommend that you use the universal installer from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
-| 5 | The shell bundle must be executed as root; Run your command using `sudo` |
-| 6 | Invalid package architecture; `omsagent-*x64.sh` packages can only be installed on 64-bit systems, and `omsagent-*x86.sh` packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
-| 20 | Installation of SCX/OMI failed; Look through the command output for the root failure |
-| 21 | Installation of SCX/Provider kits failed; Look through the command output for the root failure |
+| 4 | Invalid package type OR invalid proxy settings; omsagent-*rpm*.sh packages can only be installed on RPM-based systems, and omsagent-*deb*.sh packages can only be installed on Debian-based systems; We recommend that you use the universal installer from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest). Also [review](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting.md#im-unable-to-connect-through-my-proxy-to-oms) your proxy settings. |
+| 5 | The shell bundle must be executed as root OR there was 403 error returned during onboarding; Run your command using `sudo` |
+| 6 | Invalid package architecture OR there was error 200 error returned during onboarding; omsagent-*x64.sh packages can only be installed on 64-bit systems, and omsagent-*x86.sh packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
+| 17 | Installation of OMS package failed; Look through the command output for the root failure |
+| 19 | Installation of OMI package failed; Look through the command output for the root failure |
+| 20 | Installation of SCX package failed; Look through the command output for the root failure |
+| 21 | Installation of Provider kits failed; Look through the command output for the root failure |
 | 22 | Installation of bundled package failed; Look through the command output for the root failure |
 | 23 | SCX or OMI package already installed; Use `--upgrade` instead of `--install` to install the shell bundle |
 | 30 | Internal bundle error; File a [GitHub Issue](https://github.com/Microsoft/OMS-Agent-for-Linux/issues) with details from the output |
-| 60 | Unsupported version of OpenSSL; Install a version of OpenSSL meeting our [package requirements](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#package-requirements) |
+| 55 | Unsupported openssl version OR Cannot connect to Microsoft OMS service OR dpkg is locked OR Missing curl program |
 | 61 | Missing Python ctypes library; Install the Python ctypes library or package (python-ctypes) |
 | 62 | Missing tar program; Install tar |
 | 63 | Missing sed program; Install sed |
@@ -88,9 +92,9 @@ If none of these steps work for you the following channels for help are also ava
 ### Enable Debug Logging
 #### OMS output plugin debug
  FluentD allows for plugin specific logging levels allowing you to specify different log levels for inputs and outputs. To specify a different log level for OMS output edit the general agent configuration at `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`:
- 
+
  In the OMS output plugin, near the bottom of the configuration file, change the `log_level` property from `info` to `debug`
- 
+
  ```
  <match oms.** docker.**>
   type out_oms
@@ -157,7 +161,7 @@ Below the output plugin, uncomment the following section by removing the `#` in 
 * Check firewall settings on the Syslog server to ensure that messages are not being blocked
 * Simulate a Syslog message to OMS using `logger` command
   * `logger -p local0.err "This is my test message"`
-  
+
 ### I'm unable to connect through my proxy to OMS
 #### Probable Causes
 * The proxy specified during onboarding was incorrect
@@ -169,7 +173,7 @@ Below the output plugin, uncomment the following section by removing the `#` in 
   * Review documentation for OMS Proxy located [here](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#configuring-the-agent-for-use-with-an-http-proxy-server)
 * Double check that the following OMS Service endpoints are whitelisted
 
-Agent Resource | Ports 
+Agent Resource | Ports
 ---- | ----
 *.ods.opinsights.azure.com | Port 443
 *.oms.opinsights.azure.com | Port 443
@@ -188,6 +192,29 @@ ods.systemcenteradvisor.com | Port 443
 
 ### I'm seeing a 500 Error and 404 Error in the log file right after onboarding
 This is a known issue an occurs on first upload of Linux data into an OMS workspace. This does not affect data being sent or service experience.
+
+### I'm getting Errno address already in use in omsagent log file
+If you see `[error]: unexpected error error_class=Errno::EADDRINUSE error=#<Errno::EADDRINUSE: Address already in use - bind(2) for "127.0.0.1" port 25224>` in omsagent.log, it would mean that Linux Diagnostic extension (LAD) is installed side by side with OMS linux extension, and it is using same port for syslog data collection as omsagent.
+* As root execute the following commands (note that 25224 is an example and it is possible that in your environment you see a different port number used by LAD):
+```
+/opt/microsoft/omsagent/bin/configure_syslog.sh configure LAD 25229
+
+sed -i -e 's/25224/25229/' /etc/opt/microsoft/omsagent/LAD/conf/omsagent.d/syslog.conf
+```
+The user will then have to edit the correct rsyslogd or syslog_ng config file and change the LAD-related configuration to write to port 25229.
+* If the VM is running rsyslogd, the file to be modified is  `/etc/rsyslog.d/95-omsagent.conf` (if it exists, else `/etc/rsyslog`)
+* If the VM is running syslog_ng, the file to be modified is `/etc/syslog-ng/syslog-ng.conf`
+* Restart omsagent `sudo /opt/microsoft/omsagent/bin/service_control restart`
+* Restart syslog service
+
+### I'm unable to uninstall omsagent using purge option
+#### Probable Causes
+* Linux diagnostic extension is installed
+* Linux diagnostic extension was installed and uninstalled but you still see an error about omsagent being used by mdsd and can not be removed.
+
+#### Resolution
+* Uninstall LAD extension.
+* Remove LAD files from the machine if they present in the following location: `/var/lib/waagent/Microsoft.Azure.Diagnostics.LinuxDiagnostic-<version>/` and `/var/opt/microsoft/omsagent/LAD/`
 
 ### My Nagios data is not showing up in the OMS Portal!
 #### Probable Causes
@@ -230,7 +257,14 @@ This is a known issue an occurs on first upload of Linux data into an OMS worksp
 * If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`.
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`.
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
-* If `omsconfig.log` log file does not indicate that `PerformRequiredConfigurationChecks` operations are running periodically on the system, there might be a problem with the cron job/service. Make sure cron job exists under `/etc/cron.d/OMSConsistencyInvoker`. Also, make sure the cron service is running. You can use `service cron status` (Debian, Ubuntu, SUSE) or `service crond status` (RHEL, CentOS) to check the status of this service. If the service does not exist, you can install the binaries and start the service using the following:
+* If `omsconfig.log` log file does not indicate that `PerformRequiredConfigurationChecks` operations are running periodically on the system, there might be a problem with the cron job/service. Make sure cron job exists under `/etc/cron.d/OMSConsistencyInvoker`. If needed run the following commands to create the cron job:
+
+```
+mkdir -p /etc/cron.d/
+echo "*/15 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" | sudo tee /etc/cron.d/OMSConsistencyInvoker
+```
+
+Also, make sure the cron service is running. You can use `service cron status` (Debian, Ubuntu, SUSE) or `service crond status` (RHEL, CentOS, Oracle Linux) to check the status of this service. If the service does not exist, you can install the binaries and start the service using the following:
 
 ##### On Ubuntu/Debian:
 ```
@@ -257,13 +291,21 @@ sudo yum install -y crond
 sudo service crond start
 ```
 
+##### On Oracle Linux:
+```
+# To Install the service binaries
+sudo yum install -y cronie
+# To start the service
+sudo service crond start
+```
+
 ### My portal side configuration for (Syslog/Linux Performance Counter) is not being applied
 #### Probable Causes
 * The OMS Agent for Linux Configuration Agent has not picked up the latest portal side configuration
 * The changed settings in the portal were not applied
 
 #### Resolutions
-**Background:** `omsconfig` is the OMS Agent for Linux configuration agent that looks for new portal side configuration every 5 minutes. This configuration is then applied to the OMS Agent for Linux configuration files located at /etc/opt/microsoft/omsagent/conf/omsagent.conf. 
+**Background:** `omsconfig` is the OMS Agent for Linux configuration agent that looks for new portal side configuration every 5 minutes. This configuration is then applied to the OMS Agent for Linux configuration files located at /etc/opt/microsoft/omsagent/conf/omsagent.conf.
 
 * In some cases the OMS Agent for Linux configuration agent might not be able to communicate with the portal configuration service resulting in latest configuration not being applied.
  * Check that the `omsconfig` agent is installed
@@ -273,7 +315,7 @@ sudo service crond start
 * Check that the `omsconfig` agent can communicate with the OMS Portal Service
   * Run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/GetDscConfiguration.py'`
    * This command returns the Configuration that agent sees from the portal including Syslog settings, Linux Performance Counters, and Custom Logs
-   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration. 
+   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py'`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration.
 
 
 ### I'm Not Seeing My Custom Log Data in the OMS Portal
@@ -294,7 +336,7 @@ sudo service crond start
 * Check that the `omsconfig` agent can communicate with the OMS Portal Service
   * Run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/GetDscConfiguration.py'`
    * This command returns the Configuration that agent sees from the portal including Syslog settings, Linux Performance Counters, and Custom Logs
-   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration. 
+   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration.
 
 
 **Background:** Instead of the OMS Agent for Linux user running as a privileged user, `root` - The OMS Agent for Linux runs as the `omsagent` user. In most cases explicit permission must be granted to this user in order for certain files to be read.
@@ -306,7 +348,7 @@ sudo service crond start
  * `sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`
 
 ### I'm re-onboarding to a new workspace
-When you try to re-onboard an agent to a new workspace, OMS Agent configuration needs to be cleaned up before re-onboarding. To clean up old configuration from the agent, run the shell bundle with `--purge` 
+When you try to re-onboard an agent to a new workspace, OMS Agent configuration needs to be cleaned up before re-onboarding. To clean up old configuration from the agent, run the shell bundle with `--purge`
 
 ```
 sudo sh ./omsagent-*.universal.x64.sh --purge
@@ -338,7 +380,7 @@ You can continue re-onboarding after using the `--purge` option
 
 ### OMS Agent upgrade on-demand
 #### Probable Causes
-* OMS packages on the host are outdated 
+* OMS packages on the host are outdated
 
 #### Resolution (step by step)
 * Check the latest relase on [page](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/)
