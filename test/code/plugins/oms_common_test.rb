@@ -501,7 +501,27 @@ module OMS
       record = "syslog record"
       parsed_record = Common.parse_json_record_encoding(record);
       assert_equal(record.to_json, parsed_record, "parse json record no encoding failed");
-      
+
+      record = {}
+      record["DataItems"] = [ {"Message" => "German: Grüß dich"} ];
+      parsed_record = Common.parse_json_record_encoding(record);
+      assert_equal("{\"DataItems\":[{\"Message\":\"German: Grüß dich\"}]}", parsed_record, "parse json record utf-8 encoding failed");
+
+      record = {}
+      record["DataItems"] = [ {"Message" => "Russian: Здравствуйте"} ];
+      parsed_record = Common.parse_json_record_encoding(record);
+      assert_equal("{\"DataItems\":[{\"Message\":\"Russian: Здравствуйте\"}]}", parsed_record, "parse json record utf-8 encoding failed");
+
+      record = {}
+      record["DataItems"] = [ {"Message" => "Greek: Καλημέρα"} ];
+      parsed_record = Common.parse_json_record_encoding(record);
+      assert_equal("{\"DataItems\":[{\"Message\":\"Greek: Καλημέρα\"}]}", parsed_record, "parse json record utf-8 encoding failed");
+
+      record = {}
+      record["DataItems"] = [ {"Message" => "Japanese: おはようございます。"} ];
+      parsed_record = Common.parse_json_record_encoding(record);
+      assert_equal("{\"DataItems\":[{\"Message\":\"Japanese: おはようございます。\"}]}", parsed_record, "parse json record utf-8 encoding failed");
+
       record = {}
       record["DataItems"] = [ {"Message" => "iPhone\xAE"} ];
       parsed_record = Common.parse_json_record_encoding(record);
