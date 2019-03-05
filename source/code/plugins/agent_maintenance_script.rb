@@ -30,10 +30,10 @@ module MaintenanceModule
     require 'etc'
 
     require_relative 'oms_common'
-    require_relative 'agent_topology_request_script'
     require_relative 'oms_configuration'
+    require_relative 'agent_topology_request_script'
 
-    attr_reader :AGENT_USER, :load_config_return_code
+    attr_reader :AGENT_USER, :load_config_return_code, :query_interval
     attr_accessor :suppress_stdout
   
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path,
@@ -61,6 +61,8 @@ module MaintenanceModule
       @load_config_return_code = load_config
       @logger = log
       init_logger
+
+      @query_interval = '0m'
 
       @suppress_logging = false
     end
@@ -262,6 +264,27 @@ module MaintenanceModule
       return dsc_endpoint
     end
 
+    # Update the topology request frequency
+    def apply_query_interval(server_resp)
+      new_query_interval = ""
+
+      query_interval_regex = /queryInterval=\"(?<queryInterval>.*)\"\sid/
+      query_interval_regex.match(server_resp) { |match|
+        new_query_interval = match["queryInterval"]
+
+      }
+
+      if new_query_interval.empty?
+        log_error("Could not extract the query interval.")
+        return ERROR_EXTRACTING_ATTRIBUTES
+      end
+
+      # hestolz theres gonna be a problem... stupid time parsing
+      @query_interval = new_query_interval
+
+      return @query_interval
+    end
+
     # Pass the server response from an XML file to apply_dsc_endpoint and apply_certificate_update_endpoint
     # Save DSC_ENDPOINT and CERTIFICATE_UPDATE_ENDPOINT variables in file to be read outside of this script
     def apply_endpoints_file(xml_file, output_file)
@@ -387,10 +410,13 @@ module MaintenanceModule
         if res.code == "200"
           cert_apply_res = apply_certificate_update_endpoint(res.body)
           dsc_apply_res = apply_dsc_endpoint(res.body)
+          frequency_apply_res = apply_query_interval(res.body)
           if cert_apply_res.class != String
             return cert_apply_res
           elsif dsc_apply_res.class != String
             return dsc_apply_res
+          elsif frequency_apply_res != String
+            return frequency_apply_res
           else
             log_info("OMS agent management service topology request success")
             return 0

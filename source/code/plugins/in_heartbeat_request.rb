@@ -63,6 +63,8 @@ module Fluent
     # Any data produced by this is NOT sent to an output plugin or ODS
     def enumerate
       @maintenance_script.heartbeat
+      query_interval = @maintenance_script.query_interval
+      @run_interval = query_interval if query_interval != '0m'
     end
 
     def run_periodic

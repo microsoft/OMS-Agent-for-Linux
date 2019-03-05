@@ -130,7 +130,7 @@ module OMS
       @log.trace "Return #{res.length} metrics"
 
       res
-    end # publish_to_oms
+    end # convert_to_oms_format
 
     def aggregate(need_reset = true)
       @log.trace "Aggregate the states"
