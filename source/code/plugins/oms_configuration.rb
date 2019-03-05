@@ -14,6 +14,7 @@ module OMS
     @@Key = nil
 
     @@AgentId = nil
+    @@WorkspaceId = nil
     @@ODSEndpoint = nil
     @@DiagnosticEndpoint = nil
     @@GetBlobODSEndpoint = nil
@@ -176,8 +177,8 @@ module OMS
       end
 
       # load the configuration from the configuration file, cert, and key path
-      def load_configuration(conf_path, cert_path, key_path)
-        return true if @@ConfigurationLoaded
+      def load_configuration(conf_path, cert_path, key_path, force_reload=false)
+        return true if @@ConfigurationLoaded and !force_reload
         return false if !test_onboard_file(conf_path) or !test_onboard_file(cert_path) or !test_onboard_file(key_path)
 
         @@ProxyConfig = get_proxy_config(@@ProxyConfigFilePath)
@@ -236,6 +237,9 @@ module OMS
         end
 
         File.open(conf_path).each_line do |line|
+          if line =~ /WORKSPACE_ID/
+            @WorkspaceId = line.sub("WORKSPACE_ID=","").strip
+          end
           if line =~ /AZURE_RESOURCE_ID/
             # We have contract with AKS team about how to pass AKS specific resource id.
             # As per contract, AKS team before starting the agent will set environment variable 
@@ -289,6 +293,10 @@ module OMS
       def key
         @@Key
       end # getter key
+
+      def workspace_id
+        @@WorkspaceId
+      end # getter workspace_id
 
       def agent_id
         @@AgentId
