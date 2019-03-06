@@ -212,8 +212,19 @@ module OMS
 
         File.open(conf_path).each_line do |line|
           if line =~ /AZURE_RESOURCE_ID/
-            @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
-            Thread.new(&method(:update_azure_resource_id)) if @@AzureResIDThreadLock.try_lock
+            # We have contract with AKS team about how to pass AKS specific resource id.
+            # As per contract, AKS team before starting the agent will set environment variable 
+            # 'custom-resourceId'
+            @@AzureResourceId = ENV['custom-resourceId']
+            
+            # Only if environment variable is empty/nil load it from imds and refresh it periodically.
+            if @@AzureResourceId.nil ? || @@AzureResourceId.empty?
+              @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
+              Thread.new(&method(:update_azure_resource_id)) if @@AzureResIDThreadLock.try_lock
+            end
+            else
+              OMS::Log.warn_once("There is non empty value set for overriden-resourceId environment variable. It will be used")
+            end
           end
           if line =~ /OMSCLOUD_ID/
             @@OmsCloudId = line.sub("OMSCLOUD_ID=","").strip
