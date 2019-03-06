@@ -218,12 +218,17 @@ module OMS
             @@AzureResourceId = ENV['custom-resourceId']
             
             # Only if environment variable is empty/nil load it from imds and refresh it periodically.
-            if @@AzureResourceId.nil ? || @@AzureResourceId.empty?
+            if @@AzureResourceId.nil ? || @@AzureResourceId.empty?              
               @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
-              Thread.new(&method(:update_azure_resource_id)) if @@AzureResIDThreadLock.try_lock
+              if @@AzureResourceId.include? "Microsoft.ContainerService"
+                OMS::Log.info_once("Azure resource id in configuration file is for AKS. It will be used")    
+              end
+              else
+                Thread.new(&method(:update_azure_resource_id)) if @@AzureResIDThreadLock.try_lock
+              end
             end
             else
-              OMS::Log.warn_once("There is non empty value set for overriden-resourceId environment variable. It will be used")
+              OMS::Log.info_once("There is non empty value set for overriden-resourceId environment variable. It will be used")
             end
           end
           if line =~ /OMSCLOUD_ID/
