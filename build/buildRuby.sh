@@ -208,6 +208,9 @@ elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.
 echo "Installing Gyoku into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/gyoku-1.3.1.gem
 
+echo "Installing ISO8601 into Ruby ..."
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/iso8601-0.12.1.gem
+
 # Now do what we need for FluentD
 
 cd ${FLUENTD_DIR}

@@ -20,6 +20,9 @@ module Fluent
     config_param :os_info, :string, :default => '/etc/opt/microsoft/scx/conf/scx-release' #optional
     config_param :install_info, :string, :default => '/etc/opt/microsoft/omsagent/sysconf/installinfo.txt' #optional
 
+    MIN_QUERY_INTERVAL = 1
+    MAX_QUERY_INTERVAL = 60 * 60 * 24 * 7
+
     def configure (conf)
       super
       if !@omsadmin_conf_path
@@ -64,7 +67,7 @@ module Fluent
     def enumerate
       @maintenance_script.heartbeat
       query_interval = @maintenance_script.query_interval
-      @run_interval = query_interval if query_interval != '0m'
+      @run_interval = query_interval if query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
     end
 
     def run_periodic

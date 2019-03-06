@@ -26,6 +26,7 @@ module MaintenanceModule
     require 'net/http'
     require 'uri'
     require 'gyoku'
+    require 'iso8601'
     require 'syslog/logger'
     require 'etc'
 
@@ -62,7 +63,7 @@ module MaintenanceModule
       @logger = log
       init_logger
 
-      @query_interval = '0m'
+      @query_interval = 0
 
       @suppress_logging = false
     end
@@ -266,23 +267,21 @@ module MaintenanceModule
 
     # Update the topology request frequency
     def apply_query_interval(server_resp)
-      new_query_interval = ""
+      query_interval = ""
 
       query_interval_regex = /queryInterval=\"(?<queryInterval>.*)\"\sid/
       query_interval_regex.match(server_resp) { |match|
-        new_query_interval = match["queryInterval"]
-
+        query_interval = match["queryInterval"]
       }
 
-      if new_query_interval.empty?
+      if query_interval.empty?
         log_error("Could not extract the query interval.")
         return ERROR_EXTRACTING_ATTRIBUTES
       end
 
-      # hestolz theres gonna be a problem... stupid time parsing
-      @query_interval = new_query_interval
+      @query_interval = ISO8601::Duration.new(frequency_get_res).to_seconds
 
-      return @query_interval
+      return query_interval
     end
 
     # Pass the server response from an XML file to apply_dsc_endpoint and apply_certificate_update_endpoint
