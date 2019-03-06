@@ -523,7 +523,7 @@ module OMS
       assert_equal("{\"DataItems\":[{\"Message\":\"Japanese: おはようございます。\"}]}", parsed_record, "parse json record utf-8 encoding failed");
 
       record = {}
-      record["DataItems"] = [ {"Message" => "iPhone\xAE"} ];
+      record["DataItems"] = [ {"Message" => "iPhone\u00AE"} ];
       parsed_record = Common.parse_json_record_encoding(record);
       assert_equal("{\"DataItems\":[{\"Message\":\"iPhone®\"}]}", parsed_record, "parse json record utf-8 encoding failed");
     end
