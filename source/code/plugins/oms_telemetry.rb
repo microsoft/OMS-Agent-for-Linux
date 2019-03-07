@@ -1,12 +1,27 @@
 module OMS
 
-  class AgentTelemetryRequest < StrongTypedClass
+  require_relative 'agent_topology_request_script'
 
-    require_relative 'agent_topology_request_script'
-
-    strongtyped_accessor :WorkspaceId, String
-    strongtyped_accessor :AgentId, String
-    strongtyped_accessor :AgentVersion, String
+  class AgentResourceUsage < StrongTypedClass
+    strongtyped_accessor :OMSMaxMemory, Integer
+    strongtyped_accessor :OMSMaxPercentMemory, Integer
+    strongtyped_accessor :OMSMaxUserTime, Integer
+    strongtyped_accessor :OMSMaxSystemTime, Integer
+    strongtyped_accessor :OMSAvgMemory, Integer
+    strongtyped_accessor :OMSAvgPercentMemory, Integer
+    strongtyped_accessor :OMSAvgUserTime, Integer
+    strongtyped_accessor :OMSAvgSystemTime, Integer
+    strongtyped_accessor :OMIMaxMemory, Integer
+    strongtyped_accessor :OMIMaxPercentMemory, Integer
+    strongtyped_accessor :OMIMaxUserTime, Integer
+    strongtyped_accessor :OMIMaxSystemTime, Integer
+    strongtyped_accessor :OMIAvgMemory, Integer
+    strongtyped_accessor :OMIAvgPercentMemory, Integer
+    strongtyped_accessor :OMIAvgUserTime, Integer
+    strongtyped_accessor :OMIAvgSystemTime, Integer
+  end
+  
+  class AgentQoS < StrongTypedClass
     strongtyped_accessor :Operation, String
     strongtyped_accessor :OperationSuccess, Boolean
     strongtyped_accessor :Message, String
@@ -22,12 +37,24 @@ module OMS
     strongtyped_accessor :MaxLocalLatency, Integer
     strongtyped_accessor :AvgLocalLatency, Integer
   end
-
-  class Telemetry
-
+  
+  class Telemetry < StrongTypedClass
+    
     require_relative 'oms_common'
     require_relative 'oms_configuration'
-
+    
+    strongtyped_accessor :WorkspaceId, String
+    strongtyped_accessor :AgentId, String
+    strongtyped_accessor :AgentVersion, String
+    strongtyped_accessor :OSType, String
+    strongtyped_accessor :OSDistro, String
+    strongtyped_accessor :OSVersion, String
+    strongtyped_accessor :IsAzure, Boolean
+    strongtyped_accessor :Solutions, String
+    strongtyped_accessor :ConfigMgrEnabled, Boolean
+    strongtyped_accessor :ResourceUsage, AgentResourceUsage
+    strongtyped_accessor :QoS, AgentQoS
+    
     # Operation Types
     SEND_BATCH = "SendBatch"
     CREATE_BATCH = "CreateBatch"
@@ -40,33 +67,51 @@ module OMS
     # can add calls in         OMS::Common.start_request(req, http) or create_ods_request to call into this class
 
     # should record source (tag/datatyle), eventcount, size, latencies (3)
-    @@qos_events = []
+    @qos_events = []
+    @ru_points = { omscpu: [], omsmem: [], omicpu: [], omimem: []}
 
     def push_qos_event(operation, operation_success, message, key, record)
 
     end # push_qos_event
 
+    def poll_resource_usage()
+      if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(conf_omsadmin)
+       process_stats = ""
+       # If there is no PID file, the omsagent process has not started, so no telemetry
+       if File.exist?(pid_file) and File.readable?(pid_file)
+         pid = File.read(pid_file)
+         process_stats = `/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '#{pid}'\" | grep =`
+       end
+
+       process_stats.each_line do |line|
+         telemetry.PercentUserTime = line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
+         telemetry.PercentPrivilegedTime = line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
+         telemetry.UsedMemory = line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
+         telemetry.PercentUsedMemory = line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
+       end
+    end # poll_resource_usage
 
     def aggregate_stats()
 
     end # aggregate_stats
-
-
-    def send_qos()
-      telemetry = AgentTelemetryRequest.new
-      
-      # null checking?
-      telemetry.WorkspaceId = OMS::Configuration.workspace_id
-      telemetry.AgentId = OMS::Configuration.agent_id
-      telemetry.AgentVersion = OMS::Common.get_agent_version
-
-      
-
-    end # send_qos
+  
 
   end # class Telemetry
 
 end # module OMS
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -146,3 +191,64 @@ def heartbeat
     return ERROR_SENDING_HTTP
   end
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def get_telemetry_data(os_info, conf_omsadmin, pid_file)
+  os = AgentTopologyRequestOperatingSystem.new
+  telemetry = AgentTopologyRequestOperatingSystemTelemetry.new
+
+  if !File.exist?(os_info) && !File.readable?(os_info)
+    raise ArgumentError, " Unable to read file #{os_info}; telemetry information will not be sent to server"
+  end
+
+  if File.exist?('/var/opt/microsoft/docker-cimprov/state/containerhostname')
+    os.InContainer = "True"
+    containerimagetagfile = '/var/opt/microsoft/docker-cimprov/state/omscontainertag'
+    if File.exist?(containerimagetagfile) && File.readable?(containerimagetagfile)
+      os.InContainerVersion = File.read(containerimagetagfile)
+    end
+    if !ENV['AKS_RESOURCE_ID'].nil?
+      os.IsAKSEnvironment = "True"
+    end
+    k8sversionfile = "/var/opt/microsoft/docker-cimprov/state/kubeletversion"
+    if File.exist?(k8sversionfile) && File.readable?(k8sversionfile) 
+      os.K8SVersion = File.read(k8sversionfile)
+    end
+  else
+    os.InContainer = "False"
+  end
+
+  # Get process stats from omsagent for telemetry
+  if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(conf_omsadmin)
+    process_stats = ""
+    # If there is no PID file, the omsagent process has not started, so no telemetry
+    if File.exist?(pid_file) and File.readable?(pid_file)
+      pid = File.read(pid_file)
+      process_stats = `/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '#{pid}'\" | grep =`
+    end
+
+    process_stats.each_line do |line|
+      telemetry.PercentUserTime = line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
+      telemetry.PercentPrivilegedTime = line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
+      telemetry.UsedMemory = line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
+      telemetry.PercentUsedMemory = line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
+    end
+  end
