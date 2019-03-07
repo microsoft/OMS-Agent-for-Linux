@@ -63,6 +63,11 @@ module Fluent
       if !azure_resource_id.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
       end
+      
+      azure_region = OMS::Configuration.azure_region if define?(OMS::Configuration.azure_region)
+      if !azure_region.to_s.empty?
+        headers[OMS::CaseSensitiveString.new("x-ms-AzureRegion")] = azure_region
+      end
 
       omscloud_id = OMS::Configuration.omscloud_id if defined?(OMS::Configuration.omscloud_id)
       if !omscloud_id.to_s.empty?
