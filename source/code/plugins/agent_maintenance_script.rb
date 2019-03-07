@@ -279,7 +279,8 @@ module MaintenanceModule
         return ERROR_EXTRACTING_ATTRIBUTES
       end
 
-      @query_interval = ISO8601::Duration.new(frequency_get_res).to_seconds
+      @query_interval = ISO8601::Duration.new(query_interval).to_seconds
+      log_info("OMS agent management service topology request interval now #{@query_interval}") if @verbose
 
       return query_interval
     end
@@ -414,7 +415,7 @@ module MaintenanceModule
             return cert_apply_res
           elsif dsc_apply_res.class != String
             return dsc_apply_res
-          elsif frequency_apply_res != String
+          elsif frequency_apply_res.class != String
             return frequency_apply_res
           else
             log_info("OMS agent management service topology request success")
