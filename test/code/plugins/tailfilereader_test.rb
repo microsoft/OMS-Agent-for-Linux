@@ -18,14 +18,14 @@ class TailFileReaderTest < Test::Unit::TestCase
 
   def create(opt={}, file)
     $options = opt
-    Tailscript::NewTail.new(file)
+    Tailscript::NewTail.new(file.join(","))
   end
 
   def test_initialize
     file = ["#{TMP_DIR}/tail.txt"]
     File.open(file[0], "w") 
     tailreader = create({}, file)
-    assert_equal(tailreader.paths, ["#{TMP_DIR}/tail.txt"])
+    assert_equal(tailreader.paths, "#{TMP_DIR}/tail.txt")
   end
   
   def test_rotate
@@ -100,7 +100,7 @@ class TailFileReaderTest < Test::Unit::TestCase
     tailreader.start
     output = $stdout.string.split("\n")
 
-    assert_equal(tailreader.paths, files)
+    assert_equal(tailreader.paths, files.join(","))
     assert_equal(2, output.length)
     assert_equal("test 3", output[0])
     assert_equal("test c", output[1])
