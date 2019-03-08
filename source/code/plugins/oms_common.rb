@@ -1,3 +1,4 @@
+# frozen-string-literal: true
 module OMS
 
   MSDockerCImprovHostnameFilePath = '/var/opt/microsoft/docker-cimprov/state/containerhostname'

@@ -1,3 +1,4 @@
+# frozen-string-literal: true
 require 'yajl'
 require 'fluent/input'
 require 'fluent/event'
@@ -47,7 +48,7 @@ module Fluent
       
       unless @pos_file
         raise ConfigError, "'pos_file' is required to keep track of file"
-      end 
+      end
 
       unless @tag 
         raise ConfigError, "'tag' is required on sudo tail"
@@ -56,7 +57,7 @@ module Fluent
       unless @run_interval
         raise ConfigError, "'run_interval' is required for periodic tailing"      
       end
- 
+
       @parser = Plugin.new_parser(conf['format'])
       @parser.configure(conf)
     end
@@ -99,7 +100,7 @@ module Fluent
     end
  
     def set_system_command
-      @command = "sudo " << RUBY_DIR << TAILSCRIPT << %Q{'#{@path}'} <<  " -p #{@pos_file}"
+      @command = "sudo ".dup << RUBY_DIR << TAILSCRIPT << %Q{'#{@path}'} <<  " -p #{@pos_file}"
     end
 
     def run_periodic

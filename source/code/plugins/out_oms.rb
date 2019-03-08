@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Fluent
 
   class OutputOMS < BufferedOutput
@@ -49,21 +50,32 @@ module Fluent
       end
     end
 
+    def write_stats(msg, upload_time, count, size)
+      fn = '/var/opt/microsoft/omsagent/log/stats_out_oms.log'
+      status = '{"oms_up_time":%d, "oms_events":%d, "oms_up_size":%d, "msg":"%s"}' % [upload_time*1000, count, size, msg]
+      begin
+        File.open(fn,'a') { |file| file.puts status }
+      rescue => e
+        @log.debug "Error:'#{e}'"
+      end
+    end
+
     def handle_record(key, record)
       @log.trace "Handling record : #{key}"
       req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record, @compress)
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
         start = Time.now
-          
+
         # This method will raise on failure alerting the engine to retry sending this data
         OMS::Common.start_request(req, http)
-          
+
         ends = Time.now
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{key} x #{count} in #{time.round(2)}s"
         write_status_file("true","Sending success")
+        write_stats("success", time, count, req.body.size)
         return true
       end
     rescue OMS::RetryRequestException => e
@@ -84,14 +96,13 @@ module Fluent
     # Convert the event to a raw string.
     def format(tag, time, record)
       if record != {}
-        @log.trace "Buffering #{tag}"
         return [tag, record].to_msgpack
       else
         return ""
       end
     end
 
-    # This method is called every flush interval. Send the buffer chunk to OMS. 
+    # This method is called every flush interval. Send the buffer chunk to OMS.
     # 'chunk' is a buffer chunk that includes multiple formatted
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)
@@ -100,12 +111,12 @@ module Fluent
         raise OMS::RetryRequestException, 'Missing configuration. Make sure to onboard.'
       end
 
-      # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
+      # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       unmergable_records = []
       chunk.msgpack_each {|(tag, record)|
         if record.has_key?('DataType') and record.has_key?('IPName')
-          key = "#{record['DataType']}.#{record['IPName']}".upcase
+          key = "#{record['DataType']}.#{record['IPName']}".dup.upcase
 
           if datatypes.has_key?(key)
             # Merge instances of the same datatype and ipname together
@@ -132,7 +143,7 @@ module Fluent
       }
     end
 
-  private
+    private
 
     class ChunkErrorHandler
       include Configurable
@@ -168,16 +179,16 @@ module Fluent
           @error_handlers[tag].emit(record)
         }
       end
-   
-    private
+
+      private
 
       def create_error_handlers(router)
         nop_handler = NopErrorHandler.new
         Hash.new() { |hash, tag|
           etag = OMS::Common.create_error_tag tag
           hash[tag] = router.match?(etag) ?
-                      ErrorHandler.new(router, etag) :
-                      nop_handler
+                          ErrorHandler.new(router, etag) :
+                          nop_handler
         }
       end
 

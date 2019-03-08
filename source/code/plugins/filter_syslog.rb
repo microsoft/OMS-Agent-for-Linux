@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Fluent
   class SyslogFilter < Filter
 
@@ -16,6 +17,7 @@ module Fluent
     def configure(conf)
       super
       @ip_cache = OMS::IPcache.new @ip_cache_refresh_interval
+      @tags_cache = {}
     end
 
     def start
@@ -38,7 +40,7 @@ module Fluent
 
       host_ip = @ip_cache.get_ip(hostname)
       if host_ip.nil?
-          OMS::Log.warn_once("Failed to get the IP for #{hostname}.")
+        OMS::Log.warn_once("Failed to get the IP for #{hostname}.")
       else
         record["HostIP"] = host_ip
       end
@@ -49,7 +51,10 @@ module Fluent
       end
 
       # The tag should looks like this : oms.syslog.authpriv.notice
-      tags = tag.split('.')
+      if !@tags_cache.has_key?(tag)
+        @tags_cache[tag] = tag.split('.')
+      end
+      tags = @tags_cache[tag]
       if tags.size == 4
         record["Facility"] = tags[2]
         record["Severity"] = tags[3]
@@ -61,9 +66,9 @@ module Fluent
       record.delete "message"
 
       wrapper = {
-        "DataType"=>"LINUX_SYSLOGS_BLOB",
-        "IPName"=>"logmanagement",
-        "DataItems"=>[record]
+          "DataType"=>"LINUX_SYSLOGS_BLOB",
+          "IPName"=>"logmanagement",
+          "DataItems"=>[record]
       }
 
       wrapper

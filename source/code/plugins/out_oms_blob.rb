@@ -1,14 +1,15 @@
+# frozen-string-literal: true
 module Fluent
 
   class OutputOMSBlob < BufferedOutput
 
     Plugin.register_output('out_oms_blob', self)
-	
+
     # Endpoint URL ex. localhost.local/api/
 
     def initialize
       super
-	  
+
       require 'base64'
       require 'digest'
       require 'json'
@@ -29,7 +30,6 @@ module Fluent
     config_param :cert_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.crt'
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
     config_param :blob_uri_expiry, :string, :default => '00:10:00'
-    config_param :url_suffix_template, :string, :default => "custom_data_type + '/00000000-0000-0000-0000-000000000002/' + OMS::Common.get_hostname + '/' + OMS::Configuration.agent_id + '/' + suffix + '.log'"
     config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf'
 
     def configure(conf)
@@ -70,7 +70,7 @@ module Fluent
       if !azure_resource_id.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
       end
-      
+
       omscloud_id = OMS::Configuration.omscloud_id
       if !omscloud_id.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
@@ -111,7 +111,7 @@ module Fluent
         data_type_id = "#{data_type}.#{custom_data_type}"
       end
 
-      url_suffix = eval(url_suffix_template)
+      url_suffix = "#{custom_data_type}/00000000-0000-0000-0000-000000000002/#{OMS::Common.get_hostname}/#{OMS::Configuration.agent_id}/#{suffix}.log"
 
       data = {
         "ContainerType" => container_type,
@@ -175,7 +175,7 @@ module Fluent
       end
 
       # concatenate the messages
-      msg = ''
+      msg = String.new ''
       msgs.each { |s| msg << "#{s}\r\n" if s.to_s.length > 0 }
       dataSize = msg.length
 
@@ -289,12 +289,22 @@ module Fluent
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.notify_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
     end # notify_blob_upload_complete
-    
+
     def write_status_file(success, message)
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestionBlob.status'
       status = '{ "operation": "ODSIngestionBlob", "success": "%s", "message": "%s" }' % [success, message]
       begin
         File.open(fn,'w') { |file| file.write(status) }
+      rescue => e
+        @log.debug "Error:'#{e}'"
+      end
+    end
+
+    def write_stats(msg, upload_time, count, size)
+      fn = '/var/opt/microsoft/omsagent/log/stats_out_oms_blob.log'
+      status = '{"blob_up_time":%d, "blob_events":%d, "blob_up_size":%d, "msg":"%s"}' % [upload_time*1000, count, size, msg]
+      begin
+        File.open(fn,'a') { |file| file.puts status }
       rescue => e
         @log.debug "Error:'#{e}'"
       end
@@ -358,6 +368,7 @@ module Fluent
 
       time = Time.now - start
       @log.debug "Success sending #{dataSize} bytes of data to BLOB #{time.round(3)}s"
+      write_stats("success", time, records.length, dataSize)
 
       start = Time.now
       notify_blob_upload_complete(blob_uri, data_type, custom_data_type, blob_size, dataSize, etag)
@@ -368,6 +379,7 @@ module Fluent
       @log.info "Encountered retryable exception. Will retry sending data later."
       @log.debug "Error:'#{e}'"
       write_status_file("false", "Retryable exception")
+      write_stats("Retryable exception : '#{e}'",time, records.length, dataSize)
       # Re-raise the exception to inform the fluentd engine we want to retry sending this chunk of data later.
       # it must be generic exception, otherwise, fluentd will stuck.
       raise e.message
@@ -379,11 +391,10 @@ module Fluent
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
-      @log.trace "Buffering #{tag}"
       [tag, record].to_msgpack
     end
 
-    # This method is called every flush interval. Send the buffer chunk to OMS. 
+    # This method is called every flush interval. Send the buffer chunk to OMS.
     # 'chunk' is a buffer chunk that includes multiple formatted
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)
@@ -392,7 +403,7 @@ module Fluent
         raise 'Missing configuration. Make sure to onboard. Will continue to buffer data.'
       end
 
-      # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
+      # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       chunk.msgpack_each {|(tag, record)|
         if !datatypes.has_key?(tag)
