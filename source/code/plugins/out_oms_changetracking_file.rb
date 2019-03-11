@@ -15,7 +15,7 @@ module Fluent
       require 'net/http'
       require 'net/https'
       require 'openssl'
-      require 'rexml/document'
+      require 'nokogiri'
       require 'securerandom'
       require 'socket'
       require 'uri'
@@ -202,14 +202,19 @@ module Fluent
       end
 
       # append blocks
-      # if the msg is longer than 4MB (to be safe, we use 4,000,000), we should break it into multiple blocks
-      chunk_size = 4000000
-      blocks_uncommitted = []
+      # if the msg is longer than 100MB (to be safe, blob limitation is 100MB), we should break it into multiple blocks
       blocks_committed = []
-      while msg.to_s.length > 0 do
-        chunk = msg.slice!(0, chunk_size)
-        blocks_uncommitted << upload_block(uri, chunk)
+      chunk_size = 100000000
+      blocks_uncommitted = []
+      if msg.to_s.length <= chunk_size
+        blocks_uncommitted << upload_block(uri, msg)
+      else
+        while msg.to_s.length > 0 do
+          chunk = msg.slice!(0, chunk_size)
+          blocks_uncommitted << upload_block(uri, chunk)
+        end
       end
+
       @log.info "uncommitted blocks : #{blocks_uncommitted}"
       # commit blocks
       commit_blocks(uri, blocks_committed, blocks_uncommitted, file_path)
@@ -246,11 +251,14 @@ module Fluent
     #   blocks_uncommitted: string[]. uncommitted block id list, which are just uploaded
     #   file_path: string. file path
     def commit_blocks(uri, blocks_committed, blocks_uncommitted, file_path)
-      doc = REXML::Document.new "<BlockList />"
-      blocks_committed.each { |blockid| doc.root.add_element(REXML::Element.new("Committed").add_text(blockid)) }
-      blocks_uncommitted.each { |blockid| doc.root.add_element(REXML::Element.new("Uncommitted").add_text(blockid)) }
+      builder = Nokogiri::XML::Builder.new do |xml|
+        xml.BlockList {
+          blocks_committed.each { |blockid| xml.Committed blockid }
+          blocks_uncommitted.each { |blockid| xml.Uncommitted blockid }
+        }
+      end
+      commit_msg = builder.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML + Nokogiri::XML::Node::SaveOptions::NO_DECLARATION)
 
-      commit_msg = doc.to_s
       #@log.info "commit message : #{commit_msg}"
 
       blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
