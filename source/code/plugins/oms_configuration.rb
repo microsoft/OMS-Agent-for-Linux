@@ -105,8 +105,7 @@ module OMS
             return nil if imds_instance_json_compute['location'].empty?
             return imds_instance_json_compute['location']
           rescue => e
-            # this may be a container instance or a non-Azure VM
-            OMS::Log.warn_once("Could not fetch Azure Resource ID from IMDS, Reason: #{e}")
+            # this may be a container instance or a non-Azure VM            
             return nil
           end
       end  
