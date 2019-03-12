@@ -4,6 +4,23 @@ module OMS
   IPV6_REGEX = '\h{4}:\h{4}:\h{4}:\h{4}:\h{4}:\h{4}:\h{4}:\h{4}'
   IPV4_Approximate_REGEX = '\d+\.\d+\.\d+\.\d+'
 
+  # Error codes and categories:
+  # User configuration/parameters:
+  INVALID_OPTION_PROVIDED = 2
+  NON_PRIVELEGED_USER_ERROR_CODE = 3
+  # System configuration:
+  MISSING_CONFIG_FILE = 4
+  MISSING_CONFIG = 5
+  MISSING_CERTS = 6
+  # Service/network-related:
+  HTTP_NON_200 = 7
+  ERROR_SENDING_HTTP = 8
+  ERROR_EXTRACTING_ATTRIBUTES = 9
+  MISSING_CERT_UPDATE_ENDPOINT = 10
+  # Internal errors:
+  ERROR_GENERATING_CERTS = 11
+  ERROR_WRITING_TO_FILE = 12
+
   class RetryRequestException < Exception
     # Throw this exception to tell the fluentd engine to retry and
     # inform the output plugin that it is indeed retryable
@@ -487,6 +504,44 @@ module OMS
       # Internal methods
       # (left public for easy testing, though protected may be better later)
 
+      # Return logger from provided log facility
+      def init_logger(log_facility)
+
+        facility = case log_facility
+          # Custom log facilities supported by both Ruby and bash logger
+          when "auth"     then Syslog::LOG_AUTHPRIV  # LOG_AUTH is deprecated
+          when "authpriv" then Syslog::LOG_AUTHPRIV
+          when "cron"     then Syslog::LOG_CRON
+          when "daemon"   then Syslog::LOG_DAEMON
+          when "ftp"      then Syslog::LOG_FTP
+          when "kern"     then Syslog::LOG_KERN
+          when "lpr"      then Syslog::LOG_LRP
+          when "mail"     then Syslog::LOG_MAIL
+          when "news"     then Syslog::LOG_NEWS
+          when "security" then Syslog::LOG_SECURITY
+          when "syslog"   then Syslog::LOG_SYSLOG
+          when "user"     then Syslog::LOG_USER
+          when "uucp"     then Syslog::LOG_UUCP
+
+          when "local0"   then Syslog::LOG_LOCAL0
+          when "local1"   then Syslog::LOG_LOCAL1
+          when "local2"   then Syslog::LOG_LOCAL2
+          when "local3"   then Syslog::LOG_LOCAL3
+          when "local4"   then Syslog::LOG_LOCAL4
+          when "local5"   then Syslog::LOG_LOCAL5
+          when "local6"   then Syslog::LOG_LOCAL6
+          when "local7"   then Syslog::LOG_LOCAL7
+
+          # default logger will be local0
+          else Syslog::LOG_LOCAL0
+        end
+
+        if !Syslog.opened?
+          Syslog::Logger.syslog = Syslog.open("omsagent", Syslog::LOG_PID, facility)
+        end
+        return Syslog::Logger.new
+      end
+
       def clean_hostname_string(hnBuffer)
         return "" if hnBuffer.nil? # So give the rest of the program a string to deal with.
         hostname_buffer = hnBuffer.strip
@@ -747,6 +802,22 @@ module OMS
         return @@AgentVersion
       end
 
+      # Return the certificate text as a single formatted string
+      def get_cert_server(cert_path)
+        cert_server = ""
+
+        cert_file_contents = File.readlines(cert_path)
+        for i in 1..(cert_file_contents.length-2) #skip first and last line in file
+          line = cert_file_contents[i]
+          cert_server.concat(line[0..-2])
+          if i < (cert_file_contents.length-2)
+            cert_server.concat(" ")
+          end
+        end
+
+        return cert_server
+      end
+
       def format_time(time)
         Time.at(time).utc.iso8601(3) # UTC with milliseconds
       end
@@ -833,6 +904,20 @@ module OMS
         end
         return req
       end # create_ods_request
+
+      # Return a POST request with the specified headers, URI, and body, and an
+      #     HTTP to execute that request
+      def form_post_request_and_http(headers, uri_string, body, cert, key)
+        uri = URI.parse(uri_string)
+        req = Net::HTTP::Post.new(uri.request_uri, headers)
+        req.body = body
+
+        http = OMS::Common.create_secure_http(uri, get_proxy_info)
+        http.cert = cert
+        http.key = key
+
+        return req, http
+      end # form-post_request_and_http
 
       # parses the json record with appropriate encoding
       # parameters:
