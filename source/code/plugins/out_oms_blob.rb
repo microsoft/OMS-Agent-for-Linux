@@ -189,12 +189,16 @@ module Fluent
       end
 
       # append blocks
-      # if the msg is longer than 4MB (to be safe, we use 4,000,000), we should break it into multiple blocks
-      chunk_size = 4000000
+      # if the msg is longer than 100MB (to be safe, blob limitation is 100MB), we should break it into multiple blocks
+      chunk_size = 100000000
       blocks_uncommitted = []
-      while msg.to_s.length > 0 do
-        chunk = msg.slice!(0, chunk_size)
-        blocks_uncommitted << upload_block(uri, chunk)
+      if msg.to_s.length <= chunk_size
+        blocks_uncommitted << upload_block(uri, msg)
+      else
+        while msg.to_s.length > 0 do
+          chunk = msg.slice!(0, chunk_size)
+          blocks_uncommitted << upload_block(uri, chunk)
+        end
       end
 
       # commit blocks
