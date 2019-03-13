@@ -12,6 +12,7 @@ module OMS
 
   class Common
     require 'json'
+    require 'yajl'
     require 'net/http'
     require 'net/https'
     require 'time'
@@ -798,6 +799,11 @@ module OMS
           headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
         end
 
+        azure_region = OMS::Configuration.azure_region if define?(OMS::Configuration.azure_region)
+        if !azure_region.to_s.empty?
+          headers[OMS::CaseSensitiveString.new("x-ms-AzureRegion")] = azure_region
+        end
+        
         omscloud_id = OMS::Configuration.omscloud_id
         if !omscloud_id.to_s.empty?
           headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
@@ -838,16 +844,18 @@ module OMS
       def parse_json_record_encoding(record)
         msg = nil
         begin
-          msg = JSON.dump(record)
+          msg = Yajl.dump(record)
         rescue => error 
           # failed encoding, encode to utf-8, iso-8859-1 and try again
           begin
+            OMS::Log.warn_once("Yajl.dump() failed due to encoding, will try iso-8859-1 for #{record}: #{error}")
+
             if !record["DataItems"].nil?
               record["DataItems"].each do |item|
                 item["Message"] = item["Message"].encode('utf-8', 'iso-8859-1')
               end
             end
-            msg = JSON.dump(record)
+            msg = Yajl.dump(record)
           rescue => error
             # at this point we've given up up, we don't recognize
             # the encode, so return nil and log_warning for the 
