@@ -36,6 +36,7 @@ module OMS
     require 'digest'
     require 'date'
     require 'securerandom'
+    require 'syslog/logger'
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
@@ -504,44 +505,6 @@ module OMS
       # Internal methods
       # (left public for easy testing, though protected may be better later)
 
-      # Return logger from provided log facility
-      def init_logger(log_facility)
-
-        facility = case log_facility
-          # Custom log facilities supported by both Ruby and bash logger
-          when "auth"     then Syslog::LOG_AUTHPRIV  # LOG_AUTH is deprecated
-          when "authpriv" then Syslog::LOG_AUTHPRIV
-          when "cron"     then Syslog::LOG_CRON
-          when "daemon"   then Syslog::LOG_DAEMON
-          when "ftp"      then Syslog::LOG_FTP
-          when "kern"     then Syslog::LOG_KERN
-          when "lpr"      then Syslog::LOG_LRP
-          when "mail"     then Syslog::LOG_MAIL
-          when "news"     then Syslog::LOG_NEWS
-          when "security" then Syslog::LOG_SECURITY
-          when "syslog"   then Syslog::LOG_SYSLOG
-          when "user"     then Syslog::LOG_USER
-          when "uucp"     then Syslog::LOG_UUCP
-
-          when "local0"   then Syslog::LOG_LOCAL0
-          when "local1"   then Syslog::LOG_LOCAL1
-          when "local2"   then Syslog::LOG_LOCAL2
-          when "local3"   then Syslog::LOG_LOCAL3
-          when "local4"   then Syslog::LOG_LOCAL4
-          when "local5"   then Syslog::LOG_LOCAL5
-          when "local6"   then Syslog::LOG_LOCAL6
-          when "local7"   then Syslog::LOG_LOCAL7
-
-          # default logger will be local0
-          else Syslog::LOG_LOCAL0
-        end
-
-        if !Syslog.opened?
-          Syslog::Logger.syslog = Syslog.open("omsagent", Syslog::LOG_PID, facility)
-        end
-        return Syslog::Logger.new
-      end
-
       def clean_hostname_string(hnBuffer)
         return "" if hnBuffer.nil? # So give the rest of the program a string to deal with.
         hostname_buffer = hnBuffer.strip
@@ -824,6 +787,49 @@ module OMS
 
       def format_time_str(time)
         DateTime.parse(time).strftime("%FT%H:%M:%S.%3NZ")
+      end
+
+      # Helper method that returns true if a file exists and is non-empty
+      def file_exists_nonempty(file_path)
+        return true if !file_path.nil? and File.exist?(file_path) and !File.zero?(file_path)
+      end
+
+      # Return logger from provided log facility
+      def get_logger(log_facility)
+
+        facility = case log_facility
+          # Custom log facilities supported by both Ruby and bash logger
+          when "auth"     then Syslog::LOG_AUTHPRIV  # LOG_AUTH is deprecated
+          when "authpriv" then Syslog::LOG_AUTHPRIV
+          when "cron"     then Syslog::LOG_CRON
+          when "daemon"   then Syslog::LOG_DAEMON
+          when "ftp"      then Syslog::LOG_FTP
+          when "kern"     then Syslog::LOG_KERN
+          when "lpr"      then Syslog::LOG_LRP
+          when "mail"     then Syslog::LOG_MAIL
+          when "news"     then Syslog::LOG_NEWS
+          when "security" then Syslog::LOG_SECURITY
+          when "syslog"   then Syslog::LOG_SYSLOG
+          when "user"     then Syslog::LOG_USER
+          when "uucp"     then Syslog::LOG_UUCP
+
+          when "local0"   then Syslog::LOG_LOCAL0
+          when "local1"   then Syslog::LOG_LOCAL1
+          when "local2"   then Syslog::LOG_LOCAL2
+          when "local3"   then Syslog::LOG_LOCAL3
+          when "local4"   then Syslog::LOG_LOCAL4
+          when "local5"   then Syslog::LOG_LOCAL5
+          when "local6"   then Syslog::LOG_LOCAL6
+          when "local7"   then Syslog::LOG_LOCAL7
+
+          # default logger will be local0
+          else Syslog::LOG_LOCAL0
+        end
+
+        if !Syslog.opened?
+          Syslog::Logger.syslog = Syslog.open("omsagent", Syslog::LOG_PID, facility)
+        end
+        return Syslog::Logger.new
       end
 
       def create_error_tag(tag)

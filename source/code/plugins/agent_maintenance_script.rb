@@ -42,7 +42,7 @@ module MaintenanceModule
       @CERTIFICATE_UPDATE_ENDPOINT = nil
 
       @load_config_return_code = load_config
-      @logger = log ? log : init_logger(@LOG_FACILITY)
+      @logger = log ? log : OMS::Common.get_logger(@LOG_FACILITY)
 
       @query_interval = 0
 
@@ -68,7 +68,7 @@ module MaintenanceModule
     # Return variable derived from install_info.txt (like "LinuxMonitoringAgent/1.2.0-148")
     def get_user_agent
       user_agent = "LinuxMonitoringAgent/"
-      if file_exists_nonempty(@install_info)
+      if OMS::Common.file_exists_nonempty(@install_info)
         user_agent.concat(File.readlines(@install_info)[0].split.first)
       end
       return user_agent
@@ -95,11 +95,6 @@ module MaintenanceModule
     def log_debug(message)
       print("debug\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @logger.debug(message) if !@suppress_logging
-    end
-
-    # Helper method that returns true if a file exists and is non-empty
-    def file_exists_nonempty(file_path)
-      return true if !file_path.nil? and File.exist?(file_path) and !File.zero?(file_path)
     end
 
     # Load necessary configuration values from omsadmin.conf
@@ -230,7 +225,7 @@ module MaintenanceModule
     # Pass the server response from an XML file to apply_dsc_endpoint and apply_certificate_update_endpoint
     # Save DSC_ENDPOINT and CERTIFICATE_UPDATE_ENDPOINT variables in file to be read outside of this script
     def apply_endpoints_file(xml_file, output_file)
-      if !file_exists_nonempty(xml_file)
+      if !OMS::Common.file_exists_nonempty(xml_file)
         return OMS::MISSING_CONFIG_FILE
       end
 
@@ -277,7 +272,7 @@ module MaintenanceModule
           @WORKSPACE_ID.empty? or @AGENT_GUID.empty? or @URL_TLD.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
         return OMS::MISSING_CONFIG
-      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+      elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
         log_error("Certificates for topology request do not exist")
         return OMS::MISSING_CERTS
       end
@@ -410,7 +405,7 @@ module MaintenanceModule
       if !error.nil?
         log_error("Error generating certs: #{error.message}")
         return OMS::ERROR_GENERATING_CERTS
-      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+      elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
         log_error("Error generating certs")
         return OMS::ERROR_GENERATING_CERTS
       end
@@ -446,7 +441,7 @@ module MaintenanceModule
       elsif @CERTIFICATE_UPDATE_ENDPOINT.nil? or @CERTIFICATE_UPDATE_ENDPOINT.empty?
         log_error("Missing CERTIFICATE_UPDATE_ENDPOINT from configuration")
         return OMS::MISSING_CONFIG
-      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+      elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
         log_error("No certificates exist; cannot renew certificates")
         return OMS::MISSING_CERTS
       end

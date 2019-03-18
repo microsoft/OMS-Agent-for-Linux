@@ -41,8 +41,8 @@ module Fluent
     end
 
     def start
-      @telemetry_script = OMS::AgentTelemetry.new(@omsadmin_conf_path, @cert_path,
-                              @key_path, @pid_path, @proxy_path, @os_info, @install_info, @log)
+      @telemetry_script = OMS::Telemetry.new(@omsadmin_conf_path, @cert_path,
+                              @key_path, @pid_path, @proxy_path, @os_info, @install_info, @log, false)
 
       if @query_interval and @poll_interval
         @query_finished = false
