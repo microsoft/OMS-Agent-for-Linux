@@ -1,3 +1,5 @@
+require 'optparse'
+
 module OMS
 
   require_relative 'agent_topology_request_script'
@@ -23,7 +25,7 @@ module OMS
   
   class AgentQoS < StrongTypedClass
     strongtyped_accessor :Operation, String
-    strongtyped_accessor :OperationSuccess, Boolean
+    strongtyped_accessor :OperationSuccess, String
     strongtyped_accessor :Message, String
     strongtyped_accessor :Source, String
     strongtyped_accessor :BatchCount, Integer
@@ -42,15 +44,15 @@ module OMS
     strongtyped_accessor :OSType, String
     strongtyped_accessor :OSDistro, String
     strongtyped_accessor :OSVersion, String
-    strongtyped_accessor :IsAzure, Boolean
-    strongtyped_accessor :ConfigMgrEnabled, Boolean
+    strongtyped_accessor :IsAzure, String
+    strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :ResourceUsage, AgentResourceUsage
     strongtyped_accessor :QoS, AgentQoS    
   end
   
   class Telemetry
 
-    requre 'JSON'
+    require 'json'
 
     require_relative 'oms_common'
     require_relative 'oms_configuration'
@@ -61,7 +63,7 @@ module OMS
     CREATE_BATCH = "CreateBatch"
     # ?
 
-    def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info)
+    def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log, verbose)
       @pids = {oms: 0, omi: 0}
       @qos_events = [] # should record source (tag/datatype), eventcount, size, latencies (3)
       @ru_points = {oms: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []},
@@ -69,20 +71,41 @@ module OMS
 
       @omsadmin_conf_path = omsadmin_conf_path
       @cert_path = cert_path
-      @key_path = key path
+      @key_path = key_path
       @pid_path = pid_path
       @proxy_path = proxy_path
       @os_info = os_info
       @install_info = install_info
+      @log = log ? log : OMS::Common.get_logger(log)
+      @verbose = verbose
       @workspace_id = nil
       @agent_guid = nil
       @url_tld = nil
     end # initialize
 
+    # Logging methods
+    def log_info(message)
+      print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
+      @log.info(message) if !@suppress_logging
+      p message
+    end
+
+    def log_error(message)
+      print("error\t#{message}\n") if !@suppress_logging and !@suppress_stdout
+      @log.error(message) if !@suppress_logging
+      p message
+    end
+
+    def log_debug(message)
+      print("debug\t#{message}\n") if !@suppress_logging and !@suppress_stdout
+      @log.debug(message) if !@suppress_logging
+      p message
+    end
+
     def load_config
       if !File.exist?(@omsadmin_conf_path)
         log_error("Missing configuration file: #{@omsadmin_conf_path}")
-        return MISSING_CONFIG_FILE
+        return OMS::MISSING_CONFIG_FILE
       end
 
       File.open(@omsadmin_conf_path, "r").each_line do |line|
@@ -137,11 +160,12 @@ module OMS
     end # poll_resource_usage
 
     def array_avg(array)
-      return Integer(array.reduce(:+) / array.size.to_f)
+      return array.empty? ? 0 : Integer(array.reduce(:+) / array.size.to_f)
     end # array_avg
 
     def calculate_resource_usage()
       resource_usage = AgentResourceUsage.new
+      p @ru_points.to_json
       resource_usage.OMSMaxMemory        = @ru_points[:oms][:amt_mem].max
       resource_usage.OMSMaxPercentMemory = @ru_points[:oms][:pct_mem].max
       resource_usage.OMSMaxUserTime      = @ru_points[:oms][:usr_cpu].max
@@ -162,20 +186,24 @@ module OMS
     end
 
     def calculate_qos()
-      qos = AgentQos.new
+      qos = AgentQoS.new
 
 
       return qos
     end
 
     def create_body()
-      strongtyped_accessor :OSType, String
-      strongtyped_accessor :OSDistro, String
-      strongtyped_accessor :OSVersion, String
-      strongtyped_accessor :IsAzure, Boolean
-      strongtyped_accessor :ConfigMgrEnabled, Boolean
-      resource_usage = calculate_resource_usage
-      qos = calculate_qos
+      agent_telemetry = AgentTelemetry.new
+      agent_telemetry.OSType = "Linux"
+      File.open(@os_info).each_line do |line|
+        agent_telemetry.OSDistro = line.sub("OSName=","").strip if line =~ /OSName/
+        agent_telemetry.OSVersion = line.sub("OSVersion=","").strip if line =~ /OSVersion/
+      end
+      agent_telemetry.IsAzure = "false" #OMS::Configuration.get_azure_resid_from_imds ? "true" : "false"
+      agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable") ? "true" : "false"
+      agent_telemetry.ResourceUsage = calculate_resource_usage
+      agent_telemetry.QoS = calculate_qos
+      return agent_telemetry
     end
 
     def heartbeat()
@@ -187,13 +215,13 @@ module OMS
       end
 
       # Check necessary inputs
-      if @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @URL_TLD.nil? or
-        @WORKSPACE_ID.empty? or @AGENT_GUID.empty? or @URL_TLD.empty?
+      if @workspace_id.nil? or @agent_guid.nil? or @url_tld.nil? or
+        @workspace_id.empty? or @agent_guid.empty? or @url_tld.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
-        return MISSING_CONFIG
-      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+        return OMS::MISSING_CONFIG
+      elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
         log_error("Certificates for topology request do not exist")
-        return MISSING_CERTS
+        return OMS::MISSING_CERTS
       end
 
       # Generate the request body
@@ -207,7 +235,7 @@ module OMS
       headers[OMS::CaseSensitiveString.new("Accept-Language")] = "en-US"
 
       # Form POST request and HTTP
-      uri = "https://#{@WORKSPACE_ID}.oms.#{@URL_TLD}/AgentService.svc/AgentTelemetry"
+      uri = "https://#{@workspace_id}.oms.#{@url_tld}/AgentService.svc/AgentTelemetry"
       req,http = OMS::Common.form_post_request_and_http(headers, uri, body,
                       OpenSSL::X509::Certificate.new(File.open(@cert_path)),
                       OpenSSL::PKey::RSA.new(File.open(@key_path)))
@@ -238,33 +266,54 @@ module OMS
           end
         else
           log_error("Error sending OMS agent management service topology request . HTTP code #{res.code}")
-          return HTTP_NON_200
+          return OMS::HTTP_NON_200
         end
       else
         log_error("Error sending OMS agent management service topology request . No HTTP code")
-        return ERROR_SENDING_HTTP
+        return OMS::ERROR_SENDING_HTTP
       end
 
       # clear arrays
     end # heartbeat
 
   end # class Telemetry
-
 end # module OMS
 
+# Define the usage of this telemetry script
+def usage
+  basename = File.basename($0)
+  necessary_inputs = "<omsadmin_conf> <cert> <key> <pid> <proxy> <os_info> <install_info>"
+  print("\nTelemetry tool for OMS Agent\n"\
+        "ruby #{basename} #{necessary_inputs}\n"\
+        "\nOptional: Add -v for verbose output\n")
+end
 
+if __FILE__ == $0
+  options = {}
+  OptionParser.new do |opts|
+    opts.on("-v", "--verbose") do |v|
+      options[:verbose] = true
+    end
+  end.parse!
 
+  if (ARGV.length < 7)
+    usage
+    exit 0
+  end
 
+  omsadmin_conf_path = ARGV[0]
+  cert_path = ARGV[1]
+  key_path = ARGV[2]
+  pid_path = ARGV[3]
+  proxy_path = ARGV[4]
+  os_info = ARGV[5]
+  install_info = ARGV[6]
 
+  telemetry = OMS::Telemetry.new(omsadmin_conf_path, cert_path, key_path,
+                    pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
+  ret_code = 0
 
+  telemetry.heartbeat
 
-
-
-
-
-       # Get OS info from scx-release
-       File.open(os_info).each_line do |line|
-        os.Name = line.sub("OSName=","").strip if line =~ /OSName/
-        os.Manufacturer = line.sub("OSManufacturer=","").strip if line =~ /OSManufacturer/
-        os.Version = line.sub("OSVersion=","").strip if line =~ /OSVersion/
-      end
+  exit ret_code
+end
