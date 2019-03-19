@@ -42,7 +42,7 @@ Collection of the following 3rd party security log types is supported:
         ```
         #OMS_facility = local4  
         filter f_local4_oms { facility(local4); };  
-        destination security_oms { tcp("127.0.0.1" port(25226)); };  
+        destination security_oms { udp("127.0.0.1" port(25226)); };  
         log { source(src); filter(f_local4_oms); destination(security_oms); };  
         ```
 
