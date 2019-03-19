@@ -77,7 +77,7 @@ module OMS
       @os_info = os_info
       @install_info = install_info
       @log = log ? log : OMS::Common.get_logger(log)
-      @verbose = verbose
+      @verbose = true #verbose
       @workspace_id = nil
       @agent_guid = nil
       @url_tld = nil
@@ -137,7 +137,8 @@ module OMS
             @pids[key] = Integer(File.read(@pid_path))
           end
         when :omi
-          @pids[key] = Integer(`pgrep -U omsagent omi`)
+          pid = `pgrep -U omsagent omi`
+          @pids[key] = pid.empty? ? nil : Integer(`pgrep -U omsagent omi`)
         end
       end
     end
@@ -147,13 +148,19 @@ module OMS
       command = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, "\
                 "PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '%s'\" | grep ="
 
-      if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(conf_omsadmin)
+      if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(@omsadmin_conf_path)
         @pids.each do |key, value|
-          `#{command % value}`.each_line do |line|
-            @ru_points[key][:usr_cpu] << line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
-            @ru_points[key][:sys_cpu] << line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
-            @ru_points[key][:amt_mem] << line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
-            @ru_points[key][:pct_mem] << line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
+          if !value.nil?
+            `#{command % value}`.each_line do |line|
+              @ru_points[key][:usr_cpu] << line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
+              @ru_points[key][:sys_cpu] << line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
+              @ru_points[key][:amt_mem] << line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
+              @ru_points[key][:pct_mem] << line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
+              # log_info(@ru_points[key][:usr_cpu][-1]) if @verbose
+              # log_info(@ru_points[key][:sys_cpu][-1]) if @verbose
+              # log_info(@ru_points[key][:amt_mem][-1]) if @verbose
+              # log_info(@ru_points[key][:pct_mem][-1]) if @verbose
+            end
           end
         end
       end
@@ -165,7 +172,6 @@ module OMS
 
     def calculate_resource_usage()
       resource_usage = AgentResourceUsage.new
-      p @ru_points.to_json
       resource_usage.OMSMaxMemory        = @ru_points[:oms][:amt_mem].max
       resource_usage.OMSMaxPercentMemory = @ru_points[:oms][:pct_mem].max
       resource_usage.OMSMaxUserTime      = @ru_points[:oms][:usr_cpu].max
@@ -238,7 +244,7 @@ module OMS
       uri = "https://#{@workspace_id}.oms.#{@url_tld}/AgentService.svc/AgentTelemetry"
       req,http = OMS::Common.form_post_request_and_http(headers, uri, body,
                       OpenSSL::X509::Certificate.new(File.open(@cert_path)),
-                      OpenSSL::PKey::RSA.new(File.open(@key_path)))
+                      OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
       
       log_info("Generated telemetry request:\n#{req.body}") if @verbose
 
@@ -313,6 +319,7 @@ if __FILE__ == $0
                     pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
   ret_code = 0
 
+  telemetry.poll_resource_usage
   telemetry.heartbeat
 
   exit ret_code
