@@ -1050,11 +1050,13 @@ copy_no_port_omsagent_d_conf()
     # which do not depend on a workspace-specific port being set
     # Parameter: workspace-specific omsagent.d directory
     cp -p $SYSCONF_DIR/omsagent.d/heartbeat.conf $1
+    cp -p $SYSCONF_DIR/omsagent.d/telemetry.conf $1
     cp -p $SYSCONF_DIR/omsagent.d/operation.conf $1
     cp -p $SYSCONF_DIR/omi_mapping.json $1
     cp -p $SYSCONF_DIR/omsagent.d/container.conf $1 2> /dev/null
 
     update_path $1/heartbeat.conf
+    update_path $1/telemetry.conf
     update_path $1/operation.conf
     if [ -f $1/container.conf ] ; then
         update_path $1/container.conf
