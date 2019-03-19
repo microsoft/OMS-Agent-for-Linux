@@ -135,13 +135,6 @@ module MaintenanceModule
       }
     end
 
-    # Extract proxy setting information from proxy configuration file
-    def get_proxy_info
-      proxy = {}
-      proxy = OMS::Configuration.get_proxy_config(@proxy_path)
-      return proxy
-    end
-
     # Updates the CERTIFICATE_UPDATE_ENDPOINT variable and renews certificate if requested
     def apply_certificate_update_endpoint(server_resp, check_for_renew_request = true)
       update_attr = ""
@@ -299,7 +292,7 @@ module MaintenanceModule
       req,http = OMS::Common.form_post_request_and_http(headers, "https://#{@WORKSPACE_ID}.oms.#{@URL_TLD}/"\
                 "AgentService.svc/LinuxAgentTopologyRequest", body_hb_xml,
                 OpenSSL::X509::Certificate.new(File.open(@cert_path)),
-                OpenSSL::PKey::RSA.new(File.open(@key_path)))
+                OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
 
       log_info("Generated topology request:\n#{req.body}") if @verbose
 
@@ -467,7 +460,7 @@ module MaintenanceModule
 :@xmlns => "http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/"}}))
 
       req,http = OMS::Common.form_post_request_and_http(headers = {}, @CERTIFICATE_UPDATE_ENDPOINT,
-                     renew_certs_xml, cert_old, key_old)
+                     renew_certs_xml, cert_old, key_old, @proxy_path)
 
       log_info("Generated renew certificates request:\n#{req.body}") if @verbose
 

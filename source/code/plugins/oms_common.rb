@@ -913,17 +913,17 @@ module OMS
 
       # Return a POST request with the specified headers, URI, and body, and an
       #     HTTP to execute that request
-      def form_post_request_and_http(headers, uri_string, body, cert, key)
+      def form_post_request_and_http(headers, uri_string, body, cert, key, proxy)
         uri = URI.parse(uri_string)
         req = Net::HTTP::Post.new(uri.request_uri, headers)
         req.body = body
 
-        http = OMS::Common.create_secure_http(uri, get_proxy_info)
+        http = create_secure_http(uri, OMS::Configuration.get_proxy_config(proxy))
         http.cert = cert
         http.key = key
 
         return req, http
-      end # form-post_request_and_http
+      end # form_post_request_and_http
 
       # parses the json record with appropriate encoding
       # parameters:
