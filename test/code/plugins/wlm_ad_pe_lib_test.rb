@@ -56,7 +56,7 @@ class WlmAutoDiscoverySourceTest < Test::Unit::TestCase
        "PossibleDaemons" => ["dummy","dummy2"]
     }]
     expected_result = {"DataItems"=> [{
-       "EncodedVMMetadata"=>"eyJDb21tYW5kTmFtZSI9PiJ0ZXN0Y29tbWFuZCIsICJEdW1teVNlcnZpY2UiPT4iMSIsICJUaW1lU3RhbXAiPT4iMjAxOC0wNC0xM1QwOTo0NTozOS44OTdaIiwgIkhvc3QiPT4iTW9ja0hvc3ROYW1lIiwgIk9TVHlwZSI9PiJMaW51eCJ9"}],
+       "EncodedVMMetadata"=>"eyJDb21tYW5kTmFtZSI6InRlc3Rjb21tYW5kIiwiRHVtbXlTZXJ2aWNlIjoiMSIsIlRpbWVTdGFtcCI6IjIwMTgtMDQtMTNUMDk6NDU6MzkuODk3WiIsIkhvc3QiOiJNb2NrSG9zdE5hbWUiLCJPU1R5cGUiOiJMaW51eCIsIkF1dG9EaXNjb3ZlcnkiOiIxIn0="}],
        "DataType"=>"WLM_DATA_TYPE",
        "IPName"=>"WLM_IP"}
 
@@ -83,7 +83,11 @@ class WlmAutoDiscoverySourceTest < Test::Unit::TestCase
     result = wlm_pe.get_data(time.to_s, "WLM_DATA_TYPE", "WLM_IP")
     
     #if none of the services where found by all the commands listed. There should be no data out of the get_data method.
-    assert_equal(nil, result)
+    expected_result = {"DataItems"=>[{
+       "EncodedVMMetadata"=>"eyJUaW1lU3RhbXAiOiIyMDE4LTA0LTEzVDA5OjQ1OjM5Ljg5N1oiLCJIb3N0IjoiTW9ja0hvc3ROYW1lIiwiT1NUeXBlIjoiTGludXgiLCJBdXRvRGlzY292ZXJ5IjoiMSJ9"}],
+       "DataType"=>"WLM_DATA_TYPE",
+       "IPName"=>"WLM_IP"}
+    assert_equal(expected_result, result)
 
   end
 

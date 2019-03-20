@@ -77,19 +77,18 @@ module WLM
         execute_parse(service_config)
       end #each
 
-      if(!@data_items.empty?)
-        @data_items["TimeStamp"] = time 
-        @data_items["Host"] = @common.get_hostname
-        @data_items["OSType"] = "Linux"
-        auto_discovery_data =  {
-          "EncodedVMMetadata" => Base64.strict_encode64(@data_items.to_s)
-        }
-        return {
-          "DataType" => data_type, 
-          "IPName" => ip, 
-          "DataItems"=> [auto_discovery_data]
-        }
-      end #if
+      @data_items["TimeStamp"] = time 
+      @data_items["Host"] = @common.get_hostname
+      @data_items["OSType"] = "Linux"
+      @data_items["AutoDiscovery"] = "1";
+      auto_discovery_data =  {
+        "EncodedVMMetadata" => Base64.strict_encode64(@data_items.to_json.to_s)
+      }
+      return {
+        "DataType" => data_type, 
+        "IPName" => ip, 
+        "DataItems"=> [auto_discovery_data]
+      }
     end #discover
 
     private 
