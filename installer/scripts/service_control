@@ -649,7 +649,7 @@ printUsage()
     Where script commands are any of the following:
         -h or help
         disable:         To disable the OMS service, leaving it installed.
-        endable:         To enable the OMS service after being disabled.
+        enable:         To enable the OMS service after being disabled.
         find-systemd-dir To establish directory of your OS's systemd, if it has one.
         is-running:         Boolean whether or not omsagent is running.  This is a 1
                          for true, and 0 for false, unlike script booleans (Legacy).

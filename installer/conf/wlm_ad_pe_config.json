@@ -1,0 +1,18 @@
+[
+  {
+    "ServiceName" : "Apache HttpServer",
+    "PossibleDaemons": ["httpd", "apache2"]
+  },
+  {
+    "ServiceName" : "MongoDB",
+    "PossibleDaemons" : ["mongodb", "mongod"]
+  },
+  {
+    "ServiceName" : "Tomcat",
+    "PossibleDaemons" : ["tomcat", "tomcat6", "tomcat7", "tomcat8"]
+  },
+  {
+    "ServiceName" : "MySql",
+    "PossibleDaemons" : ["mysql"]
+  }
+]

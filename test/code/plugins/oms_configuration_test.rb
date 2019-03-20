@@ -123,7 +123,7 @@ module OMS
       assert_equal(TEST_NOTIFY_BLOB_ODS_ENDPOINT, Configuration.notify_blob_ods_endpoint.to_s, "NotifyBlobUpload ODS Endpoint should be loaded")
       assert_not_equal(nil, Configuration.cert, "Certificate should be loaded")
       assert_not_equal(nil, Configuration.key, "Key should be loaded")
-      assert_equal([], $log.logs, "There was an error loading the configuration")
+      assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
     end
 
     def test_load_configuration_wrong_path()
@@ -147,7 +147,7 @@ module OMS
       # Should retry the second time since it did not find anything before
       success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
       assert_equal(true, success, 'Configuration should be loaded')
-      assert_equal([], $log.logs, "There was an error loading the configuration")
+      assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
     end
 
     def test_parse_proxy_config()
