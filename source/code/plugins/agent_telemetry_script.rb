@@ -4,6 +4,10 @@ module OMS
 
   require_relative 'agent_topology_request_script'
 
+  # Operation Types
+  SEND_BATCH = "SendBatch"
+  CREATE_BATCH = "CreateBatch"
+
   class AgentResourceUsage < StrongTypedClass
     strongtyped_accessor :OMSMaxMemory, Integer
     strongtyped_accessor :OMSMaxPercentMemory, Integer
@@ -44,7 +48,7 @@ module OMS
     strongtyped_accessor :OSType, String
     strongtyped_accessor :OSDistro, String
     strongtyped_accessor :OSVersion, String
-    strongtyped_accessor :IsAzure, String
+    strongtyped_accessor :Region, String
     strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :ResourceUsage, AgentResourceUsage
     strongtyped_accessor :QoS, AgentQoS    
@@ -57,11 +61,9 @@ module OMS
     require_relative 'oms_common'
     require_relative 'oms_configuration'
     require_relative 'agent_maintenance_script'
-
-    # Operation Types
-    SEND_BATCH = "SendBatch"
-    CREATE_BATCH = "CreateBatch"
     # ?
+
+    @@qos_events = []
 
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log, verbose)
       @pids = {oms: 0, omi: 0}
@@ -77,7 +79,7 @@ module OMS
       @os_info = os_info
       @install_info = install_info
       @log = log ? log : OMS::Common.get_logger(log)
-      @verbose = true #verbose
+      @verbose = true # verbose
       @workspace_id = nil
       @agent_guid = nil
       @url_tld = nil
@@ -85,21 +87,18 @@ module OMS
 
     # Logging methods
     def log_info(message)
-      print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
+      print("info\t#{message}\n") if !@suppress_logging
       @log.info(message) if !@suppress_logging
-      p message
     end
 
     def log_error(message)
-      print("error\t#{message}\n") if !@suppress_logging and !@suppress_stdout
+      print("error\t#{message}\n") if !@suppress_logging
       @log.error(message) if !@suppress_logging
-      p message
     end
 
     def log_debug(message)
-      print("debug\t#{message}\n") if !@suppress_logging and !@suppress_stdout
+      print("debug\t#{message}\n") if !@suppress_logging
       @log.debug(message) if !@suppress_logging
-      p message
     end
 
     def load_config
@@ -125,8 +124,10 @@ module OMS
 
     end # infer_source
 
-    def push_qos_event(operation, operation_success, message, key)
-
+    # Must be a class method in order to be exposed to all out_*.rb pushing qos events
+    def self.push_qos_event(operation, operation_success, message, data_type, batch)
+      # gotta get rid of batch right away since its thicc
+      log_error(data_type)
     end # push_qos_event
 
     def get_pids()
@@ -134,11 +135,10 @@ module OMS
         case key
         when :oms
           if File.exist?(@pid_path) and File.readable?(@pid_path)
-            @pids[key] = Integer(File.read(@pid_path))
+            @pids[key] = File.read(@pid_path).to_i
           end
         when :omi
-          pid = `pgrep -U omsagent omi`
-          @pids[key] = pid.empty? ? nil : Integer(`pgrep -U omsagent omi`)
+          @pids[key] = `pgrep -U omsagent omiagent`.to_i
         end
       end
     end
@@ -150,24 +150,25 @@ module OMS
 
       if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(@omsadmin_conf_path)
         @pids.each do |key, value|
-          if !value.nil?
+          if !value.zero?
             `#{command % value}`.each_line do |line|
               @ru_points[key][:usr_cpu] << line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
               @ru_points[key][:sys_cpu] << line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
               @ru_points[key][:amt_mem] << line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
               @ru_points[key][:pct_mem] << line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
-              # log_info(@ru_points[key][:usr_cpu][-1]) if @verbose
-              # log_info(@ru_points[key][:sys_cpu][-1]) if @verbose
-              # log_info(@ru_points[key][:amt_mem][-1]) if @verbose
-              # log_info(@ru_points[key][:pct_mem][-1]) if @verbose
             end
+          else # pad with zeros when OMI might not be running
+            @ru_points[key][:usr_cpu] << 0
+            @ru_points[key][:sys_cpu] << 0
+            @ru_points[key][:amt_mem] << 0
+            @ru_points[key][:pct_mem] << 0
           end
         end
       end
     end # poll_resource_usage
 
     def array_avg(array)
-      return array.empty? ? 0 : Integer(array.reduce(:+) / array.size.to_f)
+      return (array.reduce(:+) / array.size.to_f).to_i
     end # array_avg
 
     def calculate_resource_usage()
@@ -188,6 +189,7 @@ module OMS
       resource_usage.OMIAvgPercentMemory = array_avg(@ru_points[:omi][:pct_mem])
       resource_usage.OMIAvgUserTime      = array_avg(@ru_points[:omi][:usr_cpu])
       resource_usage.OMIAvgSystemTime    = array_avg(@ru_points[:omi][:sys_cpu])
+      log_info(resource_usage.inspect) if @verbose
       return resource_usage
     end
 
@@ -205,10 +207,11 @@ module OMS
         agent_telemetry.OSDistro = line.sub("OSName=","").strip if line =~ /OSName/
         agent_telemetry.OSVersion = line.sub("OSVersion=","").strip if line =~ /OSVersion/
       end
-      agent_telemetry.IsAzure = "false" #OMS::Configuration.get_azure_resid_from_imds ? "true" : "false"
-      agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable") ? "true" : "false"
+      agent_telemetry.Region = OMS::Configuration.azure_region
+      agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable").to_s
       agent_telemetry.ResourceUsage = calculate_resource_usage
       agent_telemetry.QoS = calculate_qos
+      log_info(agent_telemetry.inspect)
       return agent_telemetry
     end
 
@@ -317,10 +320,11 @@ if __FILE__ == $0
 
   telemetry = OMS::Telemetry.new(omsadmin_conf_path, cert_path, key_path,
                     pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
-  ret_code = 0
+
+  OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
 
   telemetry.poll_resource_usage
   telemetry.heartbeat
 
-  exit ret_code
+  exit 0
 end
