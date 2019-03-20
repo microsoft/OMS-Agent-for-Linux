@@ -20,6 +20,7 @@ module OMS
     @@NotifyBlobODSEndpoint = nil
     @@OmsCloudId = nil
     @@AzureResourceId = nil
+    @@AzureRegion = nil
     @@AzureIMDSEndpoint = "http://169.254.169.254/metadata/instance?api-version=2017-12-01"
     @@AzureResIDThreadLock = Mutex.new
     @@ProxyConfig = nil
@@ -80,17 +81,41 @@ module OMS
           # Convert nammed matches to a hash
           Hash[ matches.names.map{ |name| name.to_sym}.zip( matches.captures ) ]
       end
+      
+      def get_azure_region_from_imds()
+          begin
+            uri = URI.parse(@@AzureIMDSEndpoint)
+            http_get_req = Net::HTTP::Get.new(uri, initheader = {'Metadata' => 'true'})
 
+            http_req = Net::HTTP.new(uri.host, uri.port)
+
+            http_req.open_timeout = 3
+            http_req.read_timeout = 2
+
+            res = http_req.start() do |http|
+              http.request(http_get_req)
+            end
+
+            imds_instance_json = JSON.parse(res.body)
+
+            return nil if !imds_instance_json.has_key?("compute") || imds_instance_json['compute'].empty? #classic vm
+
+            imds_instance_json_compute = imds_instance_json['compute']
+            return nil unless imds_instance_json_compute.has_key?("location")
+            return nil if imds_instance_json_compute['location'].empty?
+            return imds_instance_json_compute['location']
+          rescue => e
+            # this may be a container instance or a non-Azure VM            
+            return nil
+          end
+      end  
+      
       def get_azure_resid_from_imds()
           begin
             uri = URI.parse(@@AzureIMDSEndpoint)
             http_get_req = Net::HTTP::Get.new(uri, initheader = {'Metadata' => 'true'})
 
-            if @@ProxyConfig.empty?
-              http_req = Net::HTTP.new(uri.host, uri.port)
-            else
-              http_req = Net::HTTP.new(uri.host, uri.port, @@ProxyConfig[:addr], @@ProxyConfig[:port], @@ProxyConfig[:user], @@ProxyConfig[:pass])
-            end
+            http_req = Net::HTTP.new(uri.host, uri.port)
 
             http_req.open_timeout = 3
             http_req.read_timeout = 2
@@ -212,8 +237,22 @@ module OMS
 
         File.open(conf_path).each_line do |line|
           if line =~ /AZURE_RESOURCE_ID/
-            @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
-            Thread.new(&method(:update_azure_resource_id)) if @@AzureResIDThreadLock.try_lock
+            # We have contract with AKS team about how to pass AKS specific resource id.
+            # As per contract, AKS team before starting the agent will set environment variable 
+            # 'custom-resourceId'
+            @@AzureResourceId = ENV['custom-resourceId']
+            
+            # Only if environment variable is empty/nil load it from imds and refresh it periodically.
+            if @@AzureResourceId.nil? || @@AzureResourceId.empty?              
+              @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
+              if @@AzureResourceId.include? "Microsoft.ContainerService"
+                OMS::Log.info_once("Azure resource id in configuration file is for AKS. It will be used")                  
+              else
+                Thread.new(&method(:update_azure_resource_id)) if @@AzureResIDThreadLock.try_lock
+              end            
+            else
+              OMS::Log.info_once("There is non empty value set for overriden-resourceId environment variable. It will be used")
+            end
           end
           if line =~ /OMSCLOUD_ID/
             @@OmsCloudId = line.sub("OMSCLOUD_ID=","").strip
@@ -232,7 +271,13 @@ module OMS
           OMS::Log.error_once("Error loading certs: #{e}")
           return false
         end
-
+    
+        @@AzureRegion = get_azure_region_from_imds()
+        if @@AzureRegion.nil? || @@AzureRegion.empty?
+          OMS::Log.warn_once("Azure region value is not set. This must be onpremise machine")
+          @@AzureRegion = "OnPremise"
+        end
+        
         @@ConfigurationLoaded = true
         return true        
       end # load_configuration
@@ -277,6 +322,9 @@ module OMS
         @@UUID
       end # getter for VM uuid
 
+      def azure_region
+        @@AzureRegion
+      end  
     end # Class methods
         
   end # class Common

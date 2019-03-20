@@ -16,12 +16,13 @@ module Tailscript
       @log.formatter = proc do |severity, time, progname, msg|
         "#{severity} #{msg}\n"
       end
+      @log.info "Received paths : #{paths}"
     end
 
     attr_reader :paths
 
     def file_exists(path)
-      if system("sudo test -f #{path}")
+      if File.exist?(path)
         @log.info "Following tail of #{path}"
         return path
       else
