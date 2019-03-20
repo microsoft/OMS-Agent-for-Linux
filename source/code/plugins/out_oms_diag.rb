@@ -48,6 +48,7 @@ module Fluent
         time = ends - start
         count = record[OMS::Diag::RECORD_DATAITEMS].size
         @log.debug "Success sending diagnotic logs #{ipname} x #{count} in #{time.round(2)}s"
+        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, true, "", ipname, record, time)
         return true
       end
     rescue OMS::RetryRequestException => e

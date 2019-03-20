@@ -394,6 +394,7 @@ module Fluent
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{key} x #{count} in #{time.round(2)}s"
+        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, true, "", key, record, time)
         return true
       end
     rescue OMS::RetryRequestException => e
