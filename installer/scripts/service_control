@@ -524,6 +524,15 @@ find_systemd_dir()
 
 enable_omsagent_service()
 {
+    # set the GC parameters for Ruby
+    export RUBY_GC_HEAP_GROWTH_FACTOR=1.1
+    export RUBY_GC_MALLOC_LIMIT=4000100
+    export RUBY_GC_MALLOC_LIMIT_MAX=16000100
+    export RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR=1.1
+    export RUBY_GC_OLDMALLOC_LIMIT=16000100
+    export RUBY_GC_OLDMALLOC_LIMIT_MAX=16000100
+    export RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR=0.9
+
     if [ ! -f $CONF_DIR/.service_registered ] && [ -f $OMSADMIN_CONF ]; then
         echo "INFO:  Configuring OMS agent service $WORKSPACE_ID ..."
         if [ ! -f $BIN_DIR/$OMSAGENT_WS ]; then
@@ -640,7 +649,7 @@ printUsage()
     Where script commands are any of the following:
         -h or help
         disable:         To disable the OMS service, leaving it installed.
-        endable:         To enable the OMS service after being disabled.
+        enable:         To enable the OMS service after being disabled.
         find-systemd-dir To establish directory of your OS's systemd, if it has one.
         is-running:         Boolean whether or not omsagent is running.  This is a 1
                          for true, and 0 for false, unlike script booleans (Legacy).

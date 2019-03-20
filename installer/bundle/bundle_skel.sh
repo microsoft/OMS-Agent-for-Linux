@@ -461,7 +461,15 @@ getInstalledVersion()
             local version="`dpkg -s $1 2> /dev/null | grep 'Version: '`"
             getVersionNumber "$version" "Version: "
         else
-            local version=`rpm -q $1 2> /dev/null`
+            # rpm based system can end up having multiple versions of a package.
+            # return the latest version of the package installed
+            local version=`rpm -q $1 | sort -V | tail -n 1 2> /dev/null`
+            local num_installed=`rpm -q $1 | wc -l 2> /dev/null`
+            if [ $num_installed -gt 1 ]; then
+               echo "WARNING: Multiple versions of $1 seem to be installed." >&2
+               echo "Please uninstall them. If the installer is run with --upgrade," >&2
+               echo "the package with latest version will remain installed." >&2
+            fi
             getVersionNumber $version ${1}-
         fi
     else

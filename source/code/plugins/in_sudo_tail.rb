@@ -13,7 +13,6 @@ module Fluent
     def initialize
       super
       @command = nil
-      @paths = []
     end
 
     attr_accessor :command
@@ -99,30 +98,8 @@ module Fluent
       $log.info "#{line}" if line.start_with?('INFO')
     end
  
-    def readable_path(path)
-      if system("sudo test -r #{path}")
-        OMS::Log.info_once("Following tail of #{path}")
-        return path
-      else
-        OMS::Log.warn_once("#{path} is not readable. Cannot tail the file.")
-      end
-    end
-
     def set_system_command
-      @paths = @path.split(',').map {|path| path.strip }
-      date = Time.now
-      paths = ""
-      @paths.each { |path|
-        path = date.strftime(path)
-        if path.include?('*')
-          Dir.glob(path).select { |p|
-            paths += readable_path(p) + " "
-          }
-        else
-          paths += readable_path(path) + " "
-        end
-      }
-      @command = "sudo " << RUBY_DIR << TAILSCRIPT << paths <<  " -p #{@pos_file}"
+      @command = "sudo " << RUBY_DIR << TAILSCRIPT << %Q{'#{@path}'} <<  " -p #{@pos_file}"
     end
 
     def run_periodic
@@ -139,7 +116,6 @@ module Fluent
       end
       until @finished
         begin
-          sleep @run_interval
           Open3.popen3(@command) {|writeio, readio, errio, wait_thread|
             writeio.close
             while line = readio.gets
@@ -152,6 +128,7 @@ module Fluent
             
             wait_thread.value #wait until child process terminates
           }
+          sleep @run_interval
         rescue
           $log.error "sudo_tail failed to run or shutdown child proces", error => $!.to_s, :error_class => $!.class.to_s
           $log.warn_backtrace $!.backtrace
