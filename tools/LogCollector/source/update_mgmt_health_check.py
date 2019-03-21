@@ -97,9 +97,10 @@ def check_os_version():
 
     os_version = platform.platform()
     supported_os_url = "https://docs.microsoft.com/en-us/azure/automation/automation-update-management#clients"
-    # We support (Ubuntu 14.04, Ubuntu 16.04, SuSE 11, SuSE 12, Redhat 6, Redhat 7, CentOs 6, CentOs 7)
+    # We support (Ubuntu 14.04, Ubuntu 16.04, Ubuntu 18.04, SuSE 11, SuSE 12, Redhat 6, Redhat 7, CentOs 6, CentOs 7)
     if re.search("Ubuntu-14.04", os_version, re.IGNORECASE) or \
        re.search("Ubuntu-16.04", os_version, re.IGNORECASE) or \
+       re.search("Ubuntu-18.04", os_version, re.IGNORECASE) or \
        re.search("SuSE-11", os_version, re.IGNORECASE) or \
        re.search("SuSE-12", os_version, re.IGNORECASE) or \
        re.search("redhat-6", os_version, re.IGNORECASE) or \
