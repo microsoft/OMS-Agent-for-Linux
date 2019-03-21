@@ -405,7 +405,7 @@ fi
 #
 # Determine Ruby configuration based on our configuration
 
-RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,sdbm,tk,win32,win32ole"
+RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,pty,racc,rbconfig,readline,sdbm,tk,win32,win32ole"
 
 if [ $NOOPTIMIZE -eq 1 ]; then
     ruby_optimize_flag=-O2
