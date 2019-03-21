@@ -33,7 +33,7 @@ module OMS
     strongtyped_accessor :Message, String
     strongtyped_accessor :Source, String
     strongtyped_accessor :BatchCount, Integer
-    strongtyped_accessor :MinBatcheventCount, Integer
+    strongtyped_accessor :MinBatchEventCount, Integer
     strongtyped_accessor :MaxBatchEventCount, Integer
     strongtyped_accessor :AvgBatchEventCount, Integer
     strongtyped_accessor :MinBatchSize, Integer
@@ -42,6 +42,7 @@ module OMS
     strongtyped_accessor :MinLocalLatency, Integer
     strongtyped_accessor :MaxLocalLatency, Integer
     strongtyped_accessor :AvgLocalLatency, Integer
+    strongtyped_accessor :NetworkLatency, Integer
   end
 
   class AgentTelemetry < StrongTypedClass
@@ -51,23 +52,23 @@ module OMS
     strongtyped_accessor :Region, String
     strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :ResourceUsage, AgentResourceUsage
-    strongtyped_accessor :QoS, AgentQoS    
+    strongtyped_accessor :QoS, Array # of AgentQoS
   end
   
   class Telemetry
 
     require 'json'
+    require 'objspace'
 
+    require_relative 'omslog'
     require_relative 'oms_common'
     require_relative 'oms_configuration'
     require_relative 'agent_maintenance_script'
-    # ?
 
-    @@qos_events = []
+    @@qos_events = {}
 
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log, verbose)
       @pids = {oms: 0, omi: 0}
-      @qos_events = [] # should record source (tag/datatype), eventcount, size, latencies (3)
       @ru_points = {oms: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []},
                     omi: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []}}
 
@@ -120,14 +121,31 @@ module OMS
       return 0
     end
 
-    def infer_source(datatype_ipname)
-
-    end # infer_source
-
     # Must be a class method in order to be exposed to all out_*.rb pushing qos events
-    def self.push_qos_event(operation, operation_success, message, data_type, batch)
-      # gotta get rid of batch right away since its thicc
-      log_error(data_type)
+    def self.push_qos_event(operation, operation_success, message, source, batch, count, time)
+      event = { op: operation, op_success: operation_success, m: message, s: ObjectSpace.memsize_of(batch), c: count, t: time }
+      # event[:s] = ObjectSpace.memsize_of(batch)
+      if batch.is_a? Array # custom log record is simply an array
+        # can't really do anything
+      elsif batch.is_a? Hash and batch.has_key?('DataItems') and batch['DataItems'][0].has_key?('Timestamp')
+        records = batch['DataItems']
+        OMS::Log.warn_once(records[0]['Timestamp'].class.to_s)
+        now = Time.now
+        times = records.map { |record| now - Time.parse(record['Timestamp']) }
+        event[:min_l] = times[-1] # records appear in order, so last record will have lowest latency
+        event[:max_l] = times[0]
+        event[:sum_l] = times.sum
+      else
+        # maybe don't do anything?
+      end
+
+      if @@qos_events.has_key?(source)
+        @@qos_events[source] << event
+      else
+        @@qos_events[source] = [event]
+      end
+      OMS::Log.warn_once(event.to_json)
+      # OMS::Log.warn_once(batch.to_json)
     end # push_qos_event
 
     def get_pids()
@@ -189,13 +207,37 @@ module OMS
       resource_usage.OMIAvgPercentMemory = array_avg(@ru_points[:omi][:pct_mem])
       resource_usage.OMIAvgUserTime      = array_avg(@ru_points[:omi][:usr_cpu])
       resource_usage.OMIAvgSystemTime    = array_avg(@ru_points[:omi][:sys_cpu])
-      log_info(resource_usage.inspect) if @verbose
       return resource_usage
     end
 
     def calculate_qos()
-      qos = AgentQoS.new
+      # for now, since we are only instrumented to emit upload success, only merge based on source
 
+      qos = []
+      @@qos_events.each do |source, events|
+        qos_event = AgentQoS.new
+        qos_event.Source = source
+        qos_event.Message = events[0][:m]
+        qos_event.OperationSuccess = events[0][:op_success]
+        qos_event.BatchCount = events.size
+        qos_event.Operation = event[:op]
+
+        counts = events.map { |event| event[:c] }
+        qos_event.MinBatchEventCount = counts.min
+        qos_event.MaxBatchEventCount = counts.max
+        qos_event.AvgBatchEventCount = counts.sum / counts.size
+
+        size = events.map { |event| event[:s] }
+        qos_event.MinBatchSize = size.min
+        qos_event.MaxBatchSize = size.max
+        qos_event.AvgBatchSize = size.sum / size.sum
+
+        qos_event.MinLocalLatency = event[-1][:min_l]
+        qos_event.MaxLocalLatency = event[0][:max_l]
+        qos_event.AvgLocalLatency = (events.map{ |event| event[:sum_l] }).sum / counts.sum
+
+        qos_event.NetworkLatency = (events.map { |event| event[:t] }).sum / events.size
+      end
 
       return qos
     end
@@ -216,6 +258,8 @@ module OMS
     end
 
     def heartbeat()
+      log_error("Agent Telemetry Script Heartbeat.")
+
       # Reload config in case of updates since last topology request
       @load_config_return_code = load_config
       if @load_config_return_code != 0

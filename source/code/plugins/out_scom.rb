@@ -51,7 +51,7 @@ module Fluent
         ends = Time.now
         time = ends - start
         @log.debug "Success sending #{tag} in #{time.round(2)}s"
-        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, true, "", tag, record, time)
+        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, true, "", tag, record, record.size, time)
         return true
       end
     rescue SCOM::RetryRequestException => e
