@@ -6,7 +6,6 @@ module OMS
 
   # Operation Types
   SEND_BATCH = "SendBatch"
-  CREATE_BATCH = "CreateBatch"
 
   class AgentResourceUsage < StrongTypedClass
     strongtyped_accessor :OMSMaxMemory, Integer
@@ -58,7 +57,7 @@ module OMS
   class Telemetry
 
     require 'json'
-    require 'objspace'
+    # require 'objspace'
 
     require_relative 'omslog'
     require_relative 'oms_common'
@@ -90,7 +89,7 @@ module OMS
     def log_info(message)
       print("info\t#{message}\n") if !@suppress_logging
       @log.info(message) if !@suppress_logging
-    end
+    end 
 
     def log_error(message)
       print("error\t#{message}\n") if !@suppress_logging
@@ -123,8 +122,8 @@ module OMS
 
     # Must be a class method in order to be exposed to all out_*.rb pushing qos events
     def self.push_qos_event(operation, operation_success, message, source, batch, count, time)
-      event = { op: operation, op_success: operation_success, m: message, s: ObjectSpace.memsize_of(batch), c: count, t: time }
-      # event[:s] = ObjectSpace.memsize_of(batch)
+      # event = { op: operation, op_success: operation_success, m: message, s: ObjectSpace.memsize_of(batch), c: count, t: time }
+      event = { op: operation, op_success: operation_success, m: message, c: count, t: time }
       if batch.is_a? Array # custom log record is simply an array
         # can't really do anything
       elsif batch.is_a? Hash and batch.has_key?('DataItems') and batch['DataItems'][0].has_key?('Timestamp')
@@ -207,13 +206,14 @@ module OMS
       resource_usage.OMIAvgPercentMemory = array_avg(@ru_points[:omi][:pct_mem])
       resource_usage.OMIAvgUserTime      = array_avg(@ru_points[:omi][:usr_cpu])
       resource_usage.OMIAvgSystemTime    = array_avg(@ru_points[:omi][:sys_cpu])
+      @ru_points.clear
       return resource_usage
     end
 
     def calculate_qos()
       # for now, since we are only instrumented to emit upload success, only merge based on source
-
       qos = []
+
       @@qos_events.each do |source, events|
         qos_event = AgentQoS.new
         qos_event.Source = source
@@ -232,13 +232,14 @@ module OMS
         qos_event.MaxBatchSize = size.max
         qos_event.AvgBatchSize = size.sum / size.sum
 
-        qos_event.MinLocalLatency = event[-1][:min_l]
-        qos_event.MaxLocalLatency = event[0][:max_l]
-        qos_event.AvgLocalLatency = (events.map{ |event| event[:sum_l] }).sum / counts.sum
+        qos_event.MinLocalLatency = event[-1][:min_l] * 100
+        qos_event.MaxLocalLatency = event[0][:max_l] * 100
+        qos_event.AvgLocalLatency = ((events.map{ |event| event[:sum_l] }).sum / counts.sum) * 100
 
         qos_event.NetworkLatency = (events.map { |event| event[:t] }).sum / events.size
       end
 
+      @@qos_events.clear
       return qos
     end
 
@@ -253,12 +254,12 @@ module OMS
       agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable").to_s
       agent_telemetry.ResourceUsage = calculate_resource_usage
       agent_telemetry.QoS = calculate_qos
-      log_info(agent_telemetry.inspect)
+      log_info(agent_telemetry.inspect) if @verbose
       return agent_telemetry
     end
 
     def heartbeat()
-      log_error("Agent Telemetry Script Heartbeat.")
+      log_info("Agent Telemetry Script Heartbeat.")
 
       # Reload config in case of updates since last topology request
       @load_config_return_code = load_config
@@ -307,26 +308,17 @@ module OMS
         log_info("OMS agent management service topology request response code: #{res.code}") if @verbose
       
         if res.code == "200"
-          cert_apply_res = apply_certificate_update_endpoint(res.body)
-          dsc_apply_res = apply_dsc_endpoint(res.body)
-          if cert_apply_res.class != String
-            return cert_apply_res
-          elsif dsc_apply_res.class != String
-            return dsc_apply_res
-          else
-            log_info("OMS agent management service topology request success")
-            return 0
-          end
+          log_info("OMS agent management service topology request success")
+          return 0
         else
-          log_error("Error sending OMS agent management service topology request . HTTP code #{res.code}")
+          log_error("Error sending OMS agent management service topology request. HTTP code #{res.code}")
           return OMS::HTTP_NON_200
         end
       else
-        log_error("Error sending OMS agent management service topology request . No HTTP code")
+        log_error("Error sending OMS agent management service topology request. No HTTP code")
         return OMS::ERROR_SENDING_HTTP
       end
 
-      # clear arrays
     end # heartbeat
 
   end # class Telemetry
@@ -361,6 +353,11 @@ if __FILE__ == $0
   proxy_path = ARGV[4]
   os_info = ARGV[5]
   install_info = ARGV[6]
+
+  require 'fluent/log'
+  require 'fluent/engine'
+  
+  $log = Fluent::Log.new(STDERR, Fluent::Log::LEVEL_TRACE)
 
   telemetry = OMS::Telemetry.new(omsadmin_conf_path, cert_path, key_path,
                     pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])

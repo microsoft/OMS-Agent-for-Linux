@@ -195,8 +195,8 @@ module MaintenanceModule
       return dsc_endpoint
     end
 
-    # Update the topology request frequency
-    def apply_query_interval(server_resp)
+    # Update the topology and telemetry request frequencies
+    def apply_query_intervals(server_resp)
       query_interval = ""
 
       query_interval_regex = /queryInterval=\"(?<queryInterval>.*)\"\sid/
@@ -310,7 +310,8 @@ module MaintenanceModule
         if res.code == "200"
           cert_apply_res = apply_certificate_update_endpoint(res.body)
           dsc_apply_res = apply_dsc_endpoint(res.body)
-          frequency_apply_res = apply_query_interval(res.body)
+          log_info(res.body)
+          frequency_apply_res = apply_query_intervals(res.body)
           if cert_apply_res.class != String
             return cert_apply_res
           elsif dsc_apply_res.class != String
