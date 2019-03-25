@@ -35,9 +35,9 @@ module OMS
     strongtyped_accessor :MinBatchEventCount, Integer
     strongtyped_accessor :MaxBatchEventCount, Integer
     strongtyped_accessor :AvgBatchEventCount, Integer
-    strongtyped_accessor :MinBatchSize, Integer
-    strongtyped_accessor :MaxBatchSize, Integer
-    strongtyped_accessor :AvgBatchSize, Integer
+    strongtyped_accessor :MinEventSize, Integer
+    strongtyped_accessor :MaxEventSize, Integer
+    strongtyped_accessor :AvgEventSize, Integer
     strongtyped_accessor :MinLocalLatency, Integer
     strongtyped_accessor :MaxLocalLatency, Integer
     strongtyped_accessor :AvgLocalLatency, Integer
@@ -57,7 +57,6 @@ module OMS
   class Telemetry
 
     require 'json'
-    # require 'objspace'
 
     require_relative 'omslog'
     require_relative 'oms_common'
@@ -122,29 +121,29 @@ module OMS
 
     # Must be a class method in order to be exposed to all out_*.rb pushing qos events
     def self.push_qos_event(operation, operation_success, message, source, batch, count, time)
-      # event = { op: operation, op_success: operation_success, m: message, s: ObjectSpace.memsize_of(batch), c: count, t: time }
       event = { op: operation, op_success: operation_success, m: message, c: count, t: time }
-      if batch.is_a? Array # custom log record is simply an array
-        # can't really do anything
-      elsif batch.is_a? Hash and batch.has_key?('DataItems') and batch['DataItems'][0].has_key?('Timestamp')
+      if batch.is_a? Hash and batch.has_key?('DataItems') and batch['DataItems'][0].has_key?('Timestamp')
         records = batch['DataItems']
-        OMS::Log.warn_once(records[0]['Timestamp'].class.to_s)
         now = Time.now
         times = records.map { |record| now - Time.parse(record['Timestamp']) }
-        event[:min_l] = times[-1] # records appear in order, so last record will have lowest latency
+        event[:min_l] = times[-1] # Records appear in order, so last record will have lowest latency
         event[:max_l] = times[0]
         event[:sum_l] = times.sum
-      else
-        # maybe don't do anything?
+        sizes = records.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize) # Remove possible nil entries with compact
+      elsif batch.is_a? Array
+        # These other logs, such as custom logs, don't have a parsed timestamp.
+        sizes = batch.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize)
       end
+      event[:min_s] = sizes.min
+      event[:max_s] = sizes.max
+      event[:sum_s] = sizes.sum
 
       if @@qos_events.has_key?(source)
         @@qos_events[source] << event
       else
         @@qos_events[source] = [event]
       end
-      OMS::Log.warn_once(event.to_json)
-      # OMS::Log.warn_once(batch.to_json)
+      OMS::Log.warn_once("Source: %s %s" % [source, event.to_json])
     end # push_qos_event
 
     def get_pids()
@@ -185,7 +184,7 @@ module OMS
     end # poll_resource_usage
 
     def array_avg(array)
-      return (array.reduce(:+) / array.size.to_f).to_i
+      return (array.reduce(0, :+) / array.size.to_f).to_i
     end # array_avg
 
     def calculate_resource_usage()
@@ -227,12 +226,11 @@ module OMS
         qos_event.MaxBatchEventCount = counts.max
         qos_event.AvgBatchEventCount = counts.sum / counts.size
 
-        size = events.map { |event| event[:s] }
-        qos_event.MinBatchSize = size.min
-        qos_event.MaxBatchSize = size.max
-        qos_event.AvgBatchSize = size.sum / size.sum
+        qos_event.MinEventSize = events.map { |event| event[:min_s] }.min
+        qos_event.MaxEventSize = events.map { |event| event[:max_s] }.max
+        qos_event.AvgEventSize = events.map { |event| event[:max_s] }.sum / counts.sum
 
-        qos_event.MinLocalLatency = event[-1][:min_l] * 100
+        qos_event.MinLocalLatency = event[-1][:min_l] * 100 # Latest batch will have smallest minimum latency
         qos_event.MaxLocalLatency = event[0][:max_l] * 100
         qos_event.AvgLocalLatency = ((events.map{ |event| event[:sum_l] }).sum / counts.sum) * 100
 
