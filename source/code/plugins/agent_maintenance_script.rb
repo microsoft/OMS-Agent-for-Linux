@@ -8,7 +8,6 @@ module MaintenanceModule
     require 'net/http'
     require 'uri'
     require 'gyoku'
-    require 'iso8601'
     require 'syslog/logger'
     require 'etc'
 
@@ -16,7 +15,7 @@ module MaintenanceModule
     require_relative 'oms_configuration'
     require_relative 'agent_topology_request_script'
 
-    attr_reader :AGENT_USER, :load_config_return_code, :query_interval
+    attr_reader :AGENT_USER, :load_config_return_code
     attr_accessor :suppress_stdout
   
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path,
@@ -43,8 +42,6 @@ module MaintenanceModule
 
       @load_config_return_code = load_config
       @logger = log ? log : OMS::Common.get_logger(@LOG_FACILITY)
-
-      @query_interval = 0
 
       @suppress_logging = false
     end
@@ -195,26 +192,6 @@ module MaintenanceModule
       return dsc_endpoint
     end
 
-    # Update the topology and telemetry request frequencies
-    def apply_query_intervals(server_resp)
-      query_interval = ""
-
-      query_interval_regex = /queryInterval=\"(?<queryInterval>.*)\"\sid/
-      query_interval_regex.match(server_resp) { |match|
-        query_interval = match["queryInterval"]
-      }
-
-      if query_interval.empty?
-        log_error("Could not extract the query interval.")
-        return OMS::ERROR_EXTRACTING_ATTRIBUTES
-      end
-
-      @query_interval = ISO8601::Duration.new(query_interval).to_seconds
-      log_info("OMS agent management service topology request interval now #{@query_interval}") if @verbose
-
-      return query_interval
-    end
-
     # Pass the server response from an XML file to apply_dsc_endpoint and apply_certificate_update_endpoint
     # Save DSC_ENDPOINT and CERTIFICATE_UPDATE_ENDPOINT variables in file to be read outside of this script
     def apply_endpoints_file(xml_file, output_file)
@@ -310,8 +287,7 @@ module MaintenanceModule
         if res.code == "200"
           cert_apply_res = apply_certificate_update_endpoint(res.body)
           dsc_apply_res = apply_dsc_endpoint(res.body)
-          log_info(res.body)
-          frequency_apply_res = apply_query_intervals(res.body)
+          frequency_apply_res = OMS::Configuration.apply_request_intervals(res.body)
           if cert_apply_res.class != String
             return cert_apply_res
           elsif dsc_apply_res.class != String

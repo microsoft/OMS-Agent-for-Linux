@@ -9,6 +9,8 @@ module Fluent
     def initialize
       super
       require_relative 'agent_maintenance_script'
+      require_relative 'oms_configuration'
+      require_relative 'omslog'
     end
 
     config_param :run_interval, :time, :default => '20m'
@@ -66,7 +68,7 @@ module Fluent
     # Any data produced by this is NOT sent to an output plugin or ODS
     def enumerate
       @maintenance_script.heartbeat
-      query_interval = @maintenance_script.query_interval
+      query_interval = OMS::Configuration.topology_interval
       @run_interval = query_interval if query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
     end
 

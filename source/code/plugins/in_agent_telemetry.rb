@@ -9,6 +9,7 @@ module Fluent
     def initialize
       super
       require_relative 'agent_telemetry_script'
+      require_relative 'oms_configuration'
     end
 
     config_param :query_interval, :time, :default => '5m'
@@ -78,7 +79,7 @@ module Fluent
     
     def query
       @telemetry_script.heartbeat
-      query_interval = @telemetry_script.query_interval
+      query_interval = OMS::Configuration.telemetry_interval
       @query_interval = query_interval if query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
     end
 

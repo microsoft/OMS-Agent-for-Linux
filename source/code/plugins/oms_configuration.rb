@@ -5,6 +5,7 @@ module OMS
   class Configuration
     require 'openssl'
     require 'uri'
+    require 'iso8601'
 
     require_relative 'omslog'
     
@@ -27,6 +28,8 @@ module OMS
     @@ProxyConfig = nil
     @@ProxyConfigFilePath = "/etc/opt/microsoft/omsagent/proxy.conf"
     @@UUID = nil
+    @@TopologyInterval = nil
+    @@TelemetryInterval = nil
  
     class << self
       
@@ -286,6 +289,36 @@ module OMS
         return true        
       end # load_configuration
 
+      # Update the topology and telemetry request frequencies
+      def apply_request_intervals(server_resp)
+        topology_interval = ""
+        telemetry_interval = ""
+
+        request_interval_regex = /queryInterval=\"(?<topologyInterval>.*)\"\stelemetryReportInterval=\"(?<telemetryInterval>.*)\"\sid/
+        request_interval_regex.match(server_resp) { |match|
+          topology_interval = match["topologyInterval"]
+          telemetry_interval = match["telemetryInterval"]
+        }
+
+        if topology_interval.empty?
+          OMS::Log.error_once("Could not extract the topology request interval.")
+          return OMS::ERROR_EXTRACTING_ATTRIBUTES
+        end
+
+        if telemetry_interval.empty?
+          OMS::Log.error_once("Could not extract the telemetry request interval.")
+          return OMS::ERROR_EXTRACTING_ATTRIBUTES
+        end
+
+        @@TopologyInterval = ISO8601::Duration.new(topology_interval).to_seconds
+        OMS::Log.info_once("OMS agent management service topology request interval now #{@@TopologyInterval}")
+
+        @@TelemetryInterval = ISO8601::Duration.new(telemetry_interval).to_seconds
+        OMS::Log.info_once("OMS agent management service telemetry request interval now #{@@TelemetryInterval}")
+
+        return ""
+      end # apply_request_intervals
+
       def cert
         @@Cert
       end # getter cert
@@ -332,7 +365,16 @@ module OMS
 
       def azure_region
         @@AzureRegion
-      end  
+      end
+
+      def topology_interval
+        @@TopologyInterval
+      end
+
+      def telemetry_interval
+        @@TelemetryInterval
+      end
+
     end # Class methods
         
   end # class Common
