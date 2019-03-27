@@ -184,7 +184,7 @@ module OMS
     end # poll_resource_usage
 
     def array_avg(array)
-      return (array.reduce(0, :+) / array.size.to_f).to_i
+      return array.size ? (array.reduce(0, :+) / array.size.to_f).to_i : 0
     end # array_avg
 
     def calculate_resource_usage()
@@ -251,14 +251,11 @@ module OMS
       agent_telemetry.Region = OMS::Configuration.azure_region
       agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable").to_s
       agent_telemetry.ResourceUsage = calculate_resource_usage
-      agent_telemetry.QoS = calculate_qos
-      log_info(agent_telemetry.inspect) if @verbose
+      agent_telemetry.QoS = calculate_qos 
       return agent_telemetry
     end
 
     def heartbeat()
-      log_info("Agent Telemetry Script Heartbeat.")
-
       # Reload config in case of updates since last topology request
       @load_config_return_code = load_config
       if @load_config_return_code != 0
@@ -277,13 +274,13 @@ module OMS
       end
 
       # Generate the request body
-      body = create_body.to_json
+      body = obj_to_hash(create_body).to_json
 
       # Form headers
       headers = {}
       req_date = Time.now.utc.strftime("%Y-%m-%dT%T.%N%:z")
       headers[OMS::CaseSensitiveString.new("x-ms-Date")] = req_date
-      headers["User-Agent"] = "LinuxMonitoringAgent".concat(OMS::Common.get_agent_version)
+      headers["User-Agent"] = "LinuxMonitoringAgent/".concat(OMS::Common.get_agent_version)
       headers[OMS::CaseSensitiveString.new("Accept-Language")] = "en-US"
 
       # Form POST request and HTTP
@@ -291,7 +288,7 @@ module OMS
       req,http = OMS::Common.form_post_request_and_http(headers, uri, body,
                       OpenSSL::X509::Certificate.new(File.open(@cert_path)),
                       OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
-      
+
       log_info("Generated telemetry request:\n#{req.body}") if @verbose
 
       # Submit request
