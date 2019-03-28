@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module OMS
 
   MSDockerCImprovHostnameFilePath = '/var/opt/microsoft/docker-cimprov/state/containerhostname'
@@ -747,6 +749,10 @@ module OMS
         return @@AgentVersion
       end
 
+      def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
+        utctime.strftime("%FT%T.%#{fraction_digits}NZ")
+      end
+
       def format_time(time)
         Time.at(time).utc.iso8601(3) # UTC with milliseconds
       end
@@ -965,15 +971,15 @@ module OMS
     end
 
     def get_ip(hostname)
-      @cache_lock.synchronize {
-        if @cache.has_key?(hostname)
-          return @cache[hostname]
-        else
-          ip = get_ip_from_socket(hostname)
+      if @cache.has_key?(hostname)
+        return @cache[hostname]
+      else
+        ip = get_ip_from_socket(hostname)
+        @cache_lock.synchronize {
           @cache[hostname] = ip
-          return ip
-        end
-      }
+        }
+        return ip
+      end
     end
 
     private

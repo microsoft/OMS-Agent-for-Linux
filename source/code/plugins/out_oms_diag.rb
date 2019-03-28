@@ -66,9 +66,7 @@ module Fluent
     # Convert the event to a raw string.
     def format(tag, time, record)
       if record != {}
-        @log.trace "Buffering diagnostic log with tag #{tag}"
-        retval = record.to_msgpack
-        return retval
+        return record.to_msgpack
       else
         return ""
       end
