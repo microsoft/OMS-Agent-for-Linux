@@ -70,6 +70,8 @@ module OMS
     require_relative 'oms_configuration'
     require_relative 'agent_maintenance_script'
 
+    attr_accessor :suppress_stdout
+
     @@qos_events = {}
 
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log = nil, verbose = false)
@@ -84,28 +86,29 @@ module OMS
       @proxy_path = proxy_path
       @os_info = os_info
       @install_info = install_info
-      @log = log ? log : OMS::Common.get_logger(nil)
-      @verbose = true # verbose
+      @log = log.nil? ? OMS::Common.get_logger(nil) : log
+      @verbose = verbose
       @workspace_id = nil
       @agent_guid = nil
       @url_tld = nil
 
+      @suppress_stdout = false
       @suppress_logging = false
     end # initialize
 
     # Logging methods
     def log_info(message)
-      print("info\t#{message}\n") if !@suppress_logging
+      print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.info(message) if !@suppress_logging
     end 
 
     def log_error(message)
-      print("error\t#{message}\n") if !@suppress_logging
+      print("error\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.error(message) if !@suppress_logging
     end
 
     def log_debug(message)
-      print("debug\t#{message}\n") if !@suppress_logging
+      print("debug\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.debug(message) if !@suppress_logging
     end
 
@@ -152,7 +155,6 @@ module OMS
       else
         @@qos_events[source] = [event]
       end
-      OMS::Log.warn_once("Source: %s %s" % [source, event.to_json])
     end # push_qos_event
 
     def get_pids()
@@ -226,28 +228,36 @@ module OMS
       # for now, since we are only instrumented to emit upload success, only merge based on source
       qos = []
 
-      @@qos_events.each do |source, events|
+      @@qos_events.each do |source, batches|
         qos_event = AgentQoS.new
         qos_event.Source = source
-        qos_event.Message = events[0][:m]
-        qos_event.OperationSuccess = events[0][:op_success]
-        qos_event.BatchCount = events.size
-        qos_event.Operation = event[:op]
+        qos_event.Message = batches[0][:m]
+        qos_event.OperationSuccess = batches[0][:op_success]
+        qos_event.BatchCount = batches.size
+        qos_event.Operation = batches[0][:op]
 
-        counts = events.map { |event| event[:c] }
+        counts = batches.map { |batch| batch[:c] }
         qos_event.MinBatchEventCount = counts.min
         qos_event.MaxBatchEventCount = counts.max
-        qos_event.AvgBatchEventCount = counts.sum / counts.size
+        qos_event.AvgBatchEventCount = array_avg(counts)
 
-        qos_event.MinEventSize = events.map { |event| event[:min_s] }.min
-        qos_event.MaxEventSize = events.map { |event| event[:max_s] }.max
-        qos_event.AvgEventSize = events.map { |event| event[:max_s] }.sum / counts.sum
+        qos_event.MinEventSize = batches.map { |batch| batch[:min_s] }.min
+        qos_event.MaxEventSize = batches.map { |batch| batch[:max_s] }.max
+        qos_event.AvgEventSize = batches.map { |batch| batch[:max_s] }.sum / counts.sum
 
-        qos_event.MinLocalLatency = event[-1][:min_l] * 100 # Latest batch will have smallest minimum latency
-        qos_event.MaxLocalLatency = event[0][:max_l] * 100
-        qos_event.AvgLocalLatency = ((events.map{ |event| event[:sum_l] }).sum / counts.sum) * 100
+        if batches[0].has_key? :min_l
+          qos_event.MinLocalLatency = (batches[-1][:min_l] * 100).to_i # Latest batch will have smallest minimum latency
+          qos_event.MaxLocalLatency = (batches[0][:max_l] * 100).to_i
+          qos_event.AvgLocalLatency = ((batches.map { |batch| batch[:sum_l] }).sum / counts.sum.to_f).to_i * 100
+        else
+          qos_event.MinLocalLatency = 0
+          qos_event.MaxLocalLatency = 0
+          qos_event.AvgLocalLatency = 0
+        end
 
-        qos_event.NetworkLatency = (events.map { |event| event[:t] }).sum / events.size
+        qos_event.NetworkLatency = ((batches.map { |batch| batch[:t] }).sum / batches.size.to_f).to_i * 100 # average
+
+        qos << qos_event
       end
 
       @@qos_events.clear
@@ -326,7 +336,6 @@ module OMS
         log_error("Error sending OMS agent management service telemetry request. No HTTP code")
         return OMS::ERROR_SENDING_HTTP
       end
-
     end # heartbeat
 
   end # class Telemetry
