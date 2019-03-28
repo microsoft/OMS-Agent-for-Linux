@@ -243,7 +243,7 @@ module OMS
             @@AzureResourceId = ENV['customResourceId']
             
             # Only if environment variable is empty/nil load it from imds and refresh it periodically.
-            if @AzureResourceId.nil? || @@AzureResourceId.empty?              
+            if @@AzureResourceId.nil? || @@AzureResourceId.empty?              
               @@AzureResourceId = line.sub("AZURE_RESOURCE_ID=","").strip
               if @@AzureResourceId.include? "Microsoft.ContainerService"
                 OMS::Log.info_once("Azure resource id in configuration file is for AKS. It will be used")                  
