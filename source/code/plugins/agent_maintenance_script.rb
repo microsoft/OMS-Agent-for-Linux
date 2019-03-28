@@ -40,7 +40,7 @@ module MaintenanceModule
       @CERTIFICATE_UPDATE_ENDPOINT = nil
 
       @load_config_return_code = load_config
-      @logger = log.nil? ? log : OMS::Common.get_logger(@LOG_FACILITY)
+      @logger = log.nil? ? OMS::Common.get_logger(@LOG_FACILITY) : log
 
       @suppress_logging = false
     end
