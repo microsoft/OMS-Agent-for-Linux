@@ -420,7 +420,6 @@ ruby_configure_quals=(
     --disable-install-doc
     --disable-install-rdoc
     --without-gmp
-    --with-jemalloc
     --with-out-ext=${RUBY_EXTENSIONS}
   )
 
