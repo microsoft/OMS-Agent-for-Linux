@@ -185,7 +185,7 @@ def xml_contains_telemetry(xmlstring)
 
   return false
 end
-              
+
 if __FILE__ == $0
   options = {}
   OptionParser.new do |opts|
