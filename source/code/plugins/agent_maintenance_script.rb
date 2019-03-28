@@ -8,7 +8,6 @@ module MaintenanceModule
     require 'net/http'
     require 'uri'
     require 'gyoku'
-    require 'syslog/logger'
     require 'etc'
 
     require_relative 'oms_common'
@@ -41,7 +40,7 @@ module MaintenanceModule
       @CERTIFICATE_UPDATE_ENDPOINT = nil
 
       @load_config_return_code = load_config
-      @logger = log ? log : OMS::Common.get_logger(@LOG_FACILITY)
+      @logger = log.nil? ? log : OMS::Common.get_logger(@LOG_FACILITY)
 
       @suppress_logging = false
     end

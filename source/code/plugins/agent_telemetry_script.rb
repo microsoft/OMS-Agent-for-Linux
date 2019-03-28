@@ -50,8 +50,15 @@ module OMS
     strongtyped_accessor :OSVersion, String
     strongtyped_accessor :Region, String
     strongtyped_accessor :ConfigMgrEnabled, String
-    strongtyped_accessor :ResourceUsage, AgentResourceUsage
-    strongtyped_accessor :QoS, Array # of AgentQoS
+    strongtyped_accessor :AgentResourceUsage, AgentResourceUsage
+    strongtyped_accessor :AgentQoS, Array # of AgentQoS
+
+    def serialize
+      qos_hash = self.AgentQoS.map! { |qos| obj_to_hash(qos) }
+      hash = obj_to_hash(self)
+      hash["AgentQoS"] = qos_hash
+      return hash.to_json
+    end
   end
   
   class Telemetry
@@ -65,7 +72,7 @@ module OMS
 
     @@qos_events = {}
 
-    def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log, verbose)
+    def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log = nil, verbose = false)
       @pids = {oms: 0, omi: 0}
       @ru_points = {oms: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []},
                     omi: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []}}
@@ -77,11 +84,13 @@ module OMS
       @proxy_path = proxy_path
       @os_info = os_info
       @install_info = install_info
-      @log = log ? log : OMS::Common.get_logger(log)
+      @log = log ? log : OMS::Common.get_logger(nil)
       @verbose = true # verbose
       @workspace_id = nil
       @agent_guid = nil
       @url_tld = nil
+
+      @suppress_logging = false
     end # initialize
 
     # Logging methods
@@ -184,7 +193,11 @@ module OMS
     end # poll_resource_usage
 
     def array_avg(array)
-      return array.size ? (array.reduce(0, :+) / array.size.to_f).to_i : 0
+      if array.empty?
+        return 0
+      else
+        return (array.reduce(0, :+) / array.size.to_f).to_i
+      end
     end # array_avg
 
     def calculate_resource_usage()
@@ -250,8 +263,8 @@ module OMS
       end
       agent_telemetry.Region = OMS::Configuration.azure_region
       agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable").to_s
-      agent_telemetry.ResourceUsage = calculate_resource_usage
-      agent_telemetry.QoS = calculate_qos 
+      agent_telemetry.AgentResourceUsage = calculate_resource_usage
+      agent_telemetry.AgentQoS = calculate_qos
       return agent_telemetry
     end
 
@@ -274,7 +287,7 @@ module OMS
       end
 
       # Generate the request body
-      body = obj_to_hash(create_body).to_json
+      body = create_body.serialize
 
       # Form headers
       headers = {}
@@ -300,17 +313,17 @@ module OMS
       end
 
       if !res.nil?
-        log_info("OMS agent management service topology request response code: #{res.code}") if @verbose
+        log_info("OMS agent management service telemetry request response code: #{res.code}") if @verbose
       
         if res.code == "200"
-          log_info("OMS agent management service topology request success")
+          log_info("OMS agent management service telemetry request success")
           return 0
         else
-          log_error("Error sending OMS agent management service topology request. HTTP code #{res.code}")
+          log_error("Error sending OMS agent management service telemetry request. HTTP code #{res.code}")
           return OMS::HTTP_NON_200
         end
       else
-        log_error("Error sending OMS agent management service topology request. No HTTP code")
+        log_error("Error sending OMS agent management service telemetry request. No HTTP code")
         return OMS::ERROR_SENDING_HTTP
       end
 
