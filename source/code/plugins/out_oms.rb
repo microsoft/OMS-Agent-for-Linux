@@ -85,12 +85,9 @@ module Fluent
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
-      if record != {}
-        @log.trace "Buffering #{tag}"
-        return [tag, record].to_msgpack
-      else
-        return ""
-      end
+      return -"" if record == {}
+
+      return [tag, record].to_msgpack
     end
 
     # This method is called every flush interval. Send the buffer chunk to OMS. 

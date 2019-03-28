@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module OMS
   class Security
     require_relative 'omslog'
@@ -14,9 +16,8 @@ module OMS
     def self.get_data_type(ident)
       return nil if ident.nil?
 
-      @@LOG_TYPE_MAPPING.each do |key, data_type|
-        return data_type if ident.start_with?(key)
-      end
+      return 'SECURITY_CEF_BLOB' if ident.start_with?('CEF')
+      return 'SECURITY_CISCO_ASA_BLOB' if ident.start_with?('%ASA')
 
       OMS::Log.warn_once("Failed to find data type for record with ident: '#{ident}'")
       nil
