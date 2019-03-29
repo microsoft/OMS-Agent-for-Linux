@@ -53,7 +53,6 @@ class AgentTopologyRequest < StrongTypedClass
   strongtyped_accessor :AuthenticationCertificate, String
   strongtyped_accessor :OperatingSystem, AgentTopologyRequestOperatingSystem
 
-  
   def get_telemetry_data(os_info, conf_omsadmin, pid_file)
     os = AgentTopologyRequestOperatingSystem.new
     telemetry = AgentTopologyRequestOperatingSystemTelemetry.new

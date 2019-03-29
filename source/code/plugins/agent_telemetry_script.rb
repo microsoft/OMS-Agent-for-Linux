@@ -2,7 +2,7 @@ require 'optparse'
 
 module OMS
 
-  require_relative 'agent_topology_request_script'
+  require_relative 'agent_topology_request_script' # for StrongTypedClass
 
   # Operation Types
   SEND_BATCH = "SendBatch"
@@ -38,10 +38,10 @@ module OMS
     strongtyped_accessor :MinEventSize, Integer
     strongtyped_accessor :MaxEventSize, Integer
     strongtyped_accessor :AvgEventSize, Integer
-    strongtyped_accessor :MinLocalLatency, Integer
-    strongtyped_accessor :MaxLocalLatency, Integer
-    strongtyped_accessor :AvgLocalLatency, Integer
-    strongtyped_accessor :NetworkLatency, Integer
+    strongtyped_accessor :MinLocalLatencyInMs, Integer
+    strongtyped_accessor :MaxLocalLatencyInMs, Integer
+    strongtyped_accessor :AvgLocalLatencyInMs, Integer
+    strongtyped_accessor :NetworkLatencyInMs, Integer
   end
 
   class AgentTelemetry < StrongTypedClass
@@ -220,8 +220,16 @@ module OMS
       resource_usage.OMIAvgPercentMemory = array_avg(@ru_points[:omi][:pct_mem])
       resource_usage.OMIAvgUserTime      = array_avg(@ru_points[:omi][:usr_cpu])
       resource_usage.OMIAvgSystemTime    = array_avg(@ru_points[:omi][:sys_cpu])
-      @ru_points.clear
+      clear_ru_points
       return resource_usage
+    end
+
+    def clear_ru_points
+      @ru_points.each do |process, metrics|
+        metrics.each do |key, value|
+          value.clear
+        end
+      end
     end
 
     def calculate_qos()
@@ -243,19 +251,19 @@ module OMS
 
         qos_event.MinEventSize = batches.map { |batch| batch[:min_s] }.min
         qos_event.MaxEventSize = batches.map { |batch| batch[:max_s] }.max
-        qos_event.AvgEventSize = batches.map { |batch| batch[:max_s] }.sum / counts.sum
+        qos_event.AvgEventSize = batches.map { |batch| batch[:sum_s] }.sum / counts.sum
 
         if batches[0].has_key? :min_l
-          qos_event.MinLocalLatency = (batches[-1][:min_l] * 100).to_i # Latest batch will have smallest minimum latency
-          qos_event.MaxLocalLatency = (batches[0][:max_l] * 100).to_i
-          qos_event.AvgLocalLatency = ((batches.map { |batch| batch[:sum_l] }).sum / counts.sum.to_f).to_i * 100
+          qos_event.MinLocalLatencyInMs = (batches[-1][:min_l] * 1000).to_i # Latest batch will have smallest minimum latency
+          qos_event.MaxLocalLatencyInMs = (batches[0][:max_l] * 1000).to_i
+          qos_event.AvgLocalLatencyInMs = (((batches.map { |batch| batch[:sum_l] }).sum / counts.sum.to_f) * 1000).to_i
         else
-          qos_event.MinLocalLatency = 0
-          qos_event.MaxLocalLatency = 0
-          qos_event.AvgLocalLatency = 0
+          qos_event.MinLocalLatencyInMs = 0
+          qos_event.MaxLocalLatencyInMs = 0
+          qos_event.AvgLocalLatencyInMs = 0
         end
 
-        qos_event.NetworkLatency = ((batches.map { |batch| batch[:t] }).sum / batches.size.to_f).to_i * 100 # average
+        qos_event.NetworkLatencyInMs = (((batches.map { |batch| batch[:t] }).sum / batches.size.to_f) * 1000).to_i # average
 
         qos << qos_event
       end
