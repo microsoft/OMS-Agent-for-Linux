@@ -73,6 +73,8 @@ module OMS
     attr_reader :ru_points
     attr_accessor :suppress_stdout
 
+    QOS_EVENTS_LIMIT = 100
+
     @@qos_events = {}
 
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log = nil, verbose = false)
@@ -158,6 +160,9 @@ module OMS
       event[:sum_s] = sizes.sum
 
       if @@qos_events.has_key?(source)
+        if @@qos_events[source].size >= QOS_EVENTS_LIMIT
+          @@qos_events[source].shift # remove oldest qos event to cap memory use
+        end
         @@qos_events[source] << event
       else
         @@qos_events[source] = [event]
