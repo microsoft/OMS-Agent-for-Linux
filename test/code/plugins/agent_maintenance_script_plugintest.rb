@@ -28,7 +28,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
                         "UUID=274E8EF9-2B6F-8A45-801B-AAEE62710796\n"\
 
   VALID_HEARTBEAT_RESP = "<?xml version=\"1.0\" encoding=\"utf-8\"?><LinuxAgentTopologyResponse "\
-                         "queryInterval=\"PT1H\" id=\"628a6594-a618-4da4-a989-bcd9a322d403\" "\
+                         "queryInterval=\"PT1H\" telemetryReportInterval=\"PT10M\" id=\"628a6594-a618-4da4-a989-bcd9a322d403\" "\
                          "xmlns=\"http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/\" "\
                          "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/"\
                          "XMLSchema-instance\"><CertificateUpdateEndpoint updateCertificate=\"false\">"\

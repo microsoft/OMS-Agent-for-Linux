@@ -25,7 +25,7 @@ module OMS
     strongtyped_accessor :OMIAvgUserTime, Integer
     strongtyped_accessor :OMIAvgSystemTime, Integer
   end
-  
+
   class AgentQoS < StrongTypedClass
     strongtyped_accessor :Operation, String
     strongtyped_accessor :OperationSuccess, String
@@ -60,7 +60,7 @@ module OMS
       return hash.to_json
     end
   end
-  
+
   class Telemetry
 
     require 'json'
@@ -70,6 +70,7 @@ module OMS
     require_relative 'oms_configuration'
     require_relative 'agent_maintenance_script'
 
+    attr_reader :ru_points
     attr_accessor :suppress_stdout
 
     @@qos_events = {}
@@ -86,11 +87,15 @@ module OMS
       @proxy_path = proxy_path
       @os_info = os_info
       @install_info = install_info
-      @log = log.nil? ? OMS::Common.get_logger(nil) : log
-      @verbose = verbose
+
       @workspace_id = nil
       @agent_guid = nil
       @url_tld = nil
+      @log_facility = nil
+
+      @load_config_return_code = load_config
+      @log = log.nil? ? OMS::Common.get_logger(@log_facility) : log
+      @verbose = verbose
 
       @suppress_stdout = false
       @suppress_logging = false
@@ -100,7 +105,7 @@ module OMS
     def log_info(message)
       print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.info(message) if !@suppress_logging
-    end 
+    end
 
     def log_error(message)
       print("error\t#{message}\n") if !@suppress_logging and !@suppress_stdout
@@ -125,6 +130,8 @@ module OMS
           @agent_guid = line.sub("AGENT_GUID=","").strip
         elsif line =~ /^URL_TLD/
           @url_tld = line.sub("URL_TLD=","").strip
+        elsif line =~ /^LOG_FACILITY/
+          @LOG_FACILITY = line.sub("LOG_FACILITY=","").strip
         end
       end
 
@@ -156,6 +163,14 @@ module OMS
         @@qos_events[source] = [event]
       end
     end # push_qos_event
+
+    def self.array_avg(array)
+      if array.empty?
+        return 0
+      else
+        return (array.reduce(0, :+) / array.size.to_f).to_i
+      end
+    end # array_avg
 
     def get_pids()
       @pids.each do |key, value|
@@ -194,32 +209,24 @@ module OMS
       end
     end # poll_resource_usage
 
-    def array_avg(array)
-      if array.empty?
-        return 0
-      else
-        return (array.reduce(0, :+) / array.size.to_f).to_i
-      end
-    end # array_avg
-
     def calculate_resource_usage()
       resource_usage = AgentResourceUsage.new
       resource_usage.OMSMaxMemory        = @ru_points[:oms][:amt_mem].max
       resource_usage.OMSMaxPercentMemory = @ru_points[:oms][:pct_mem].max
       resource_usage.OMSMaxUserTime      = @ru_points[:oms][:usr_cpu].max
       resource_usage.OMSMaxSystemTime    = @ru_points[:oms][:sys_cpu].max
-      resource_usage.OMSAvgMemory        = array_avg(@ru_points[:oms][:amt_mem])
-      resource_usage.OMSAvgPercentMemory = array_avg(@ru_points[:oms][:pct_mem])
-      resource_usage.OMSAvgUserTime      = array_avg(@ru_points[:oms][:usr_cpu])
-      resource_usage.OMSAvgSystemTime    = array_avg(@ru_points[:oms][:sys_cpu])
+      resource_usage.OMSAvgMemory        = Telemetry.array_avg(@ru_points[:oms][:amt_mem])
+      resource_usage.OMSAvgPercentMemory = Telemetry.array_avg(@ru_points[:oms][:pct_mem])
+      resource_usage.OMSAvgUserTime      = Telemetry.array_avg(@ru_points[:oms][:usr_cpu])
+      resource_usage.OMSAvgSystemTime    = Telemetry.array_avg(@ru_points[:oms][:sys_cpu])
       resource_usage.OMIMaxMemory        = @ru_points[:omi][:amt_mem].max
       resource_usage.OMIMaxPercentMemory = @ru_points[:omi][:pct_mem].max
       resource_usage.OMIMaxUserTime      = @ru_points[:omi][:usr_cpu].max
       resource_usage.OMIMaxSystemTime    = @ru_points[:omi][:sys_cpu].max
-      resource_usage.OMIAvgMemory        = array_avg(@ru_points[:omi][:amt_mem])
-      resource_usage.OMIAvgPercentMemory = array_avg(@ru_points[:omi][:pct_mem])
-      resource_usage.OMIAvgUserTime      = array_avg(@ru_points[:omi][:usr_cpu])
-      resource_usage.OMIAvgSystemTime    = array_avg(@ru_points[:omi][:sys_cpu])
+      resource_usage.OMIAvgMemory        = Telemetry.array_avg(@ru_points[:omi][:amt_mem])
+      resource_usage.OMIAvgPercentMemory = Telemetry.array_avg(@ru_points[:omi][:pct_mem])
+      resource_usage.OMIAvgUserTime      = Telemetry.array_avg(@ru_points[:omi][:usr_cpu])
+      resource_usage.OMIAvgSystemTime    = Telemetry.array_avg(@ru_points[:omi][:sys_cpu])
       clear_ru_points
       return resource_usage
     end
@@ -247,7 +254,7 @@ module OMS
         counts = batches.map { |batch| batch[:c] }
         qos_event.MinBatchEventCount = counts.min
         qos_event.MaxBatchEventCount = counts.max
-        qos_event.AvgBatchEventCount = array_avg(counts)
+        qos_event.AvgBatchEventCount = Telemetry.array_avg(counts)
 
         qos_event.MinEventSize = batches.map { |batch| batch[:min_s] }.min
         qos_event.MaxEventSize = batches.map { |batch| batch[:max_s] }.max
