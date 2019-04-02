@@ -73,7 +73,7 @@ module OMS
     attr_reader :ru_points
     attr_accessor :suppress_stdout
 
-    QOS_EVENTS_LIMIT = 100
+    QOS_EVENTS_LIMIT = 1000
 
     @@qos_events = {}
 
