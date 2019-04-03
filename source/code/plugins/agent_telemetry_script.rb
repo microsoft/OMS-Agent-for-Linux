@@ -165,8 +165,12 @@ module OMS
       @pids.each do |key, value|
         case key
         when :oms
-          if File.exist?(@pid_path) and File.readable?(@pid_path)
-            @pids[key] = File.read(@pid_path).to_i
+          begin
+            if File.exist?(@pid_path) and File.readable?(@pid_path)
+              @pids[key] = File.read(@pid_path).to_i
+            end
+          rescue => e
+            log_error("Error reading omsagent pid file. #{e}")
           end
         when :omi
           @pids[key] = `pgrep -U omsagent omiagent`.to_i
