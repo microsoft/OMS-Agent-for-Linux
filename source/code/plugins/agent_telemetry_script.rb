@@ -90,12 +90,13 @@ module OMS
       @os_info = os_info
       @install_info = install_info
 
-      @workspace_id = nil
-      @agent_guid = nil
-      @url_tld = nil
-      @log_facility = nil
+      @load_config_return_code = OMS::Configuration.load_configuration(@omsadmin_conf_path, @cert_path, @key_path)
 
-      @load_config_return_code = load_config
+      @workspace_id = OMS::Configuration.workspace_id
+      @agent_guid = OMS::Configuration.agent_guid
+      @url_tld = OMS::Configuration.url_tld
+      @log_facility = OMS::Configuration.log_facility
+
       @log = log.nil? ? OMS::Common.get_logger(@log_facility) : log
       @verbose = verbose
 
@@ -117,27 +118,6 @@ module OMS
     def log_debug(message)
       print("debug\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.debug(message) if !@suppress_logging
-    end
-
-    def load_config
-      if !File.exist?(@omsadmin_conf_path)
-        log_error("Missing configuration file: #{@omsadmin_conf_path}")
-        return OMS::MISSING_CONFIG_FILE
-      end
-
-      File.open(@omsadmin_conf_path, "r").each_line do |line|
-        if line =~ /^WORKSPACE_ID/
-          @workspace_id = line.sub("WORKSPACE_ID=","").strip
-        elsif line =~ /^AGENT_GUID/
-          @agent_guid = line.sub("AGENT_GUID=","").strip
-        elsif line =~ /^URL_TLD/
-          @url_tld = line.sub("URL_TLD=","").strip
-        elsif line =~ /^LOG_FACILITY/
-          @LOG_FACILITY = line.sub("LOG_FACILITY=","").strip
-        end
-      end
-
-      return 0
     end
 
     # Must be a class method in order to be exposed to all out_*.rb pushing qos events
@@ -299,13 +279,6 @@ module OMS
     end
 
     def heartbeat()
-      # Reload config in case of updates since last topology request
-      @load_config_return_code = load_config
-      if @load_config_return_code != 0
-        log_error("Error loading configuration from #{@omsadmin_conf_path}")
-        return @load_config_return_code
-      end
-
       # Check necessary inputs
       if @workspace_id.nil? or @agent_guid.nil? or @url_tld.nil? or
         @workspace_id.empty? or @agent_guid.empty? or @url_tld.empty?
@@ -398,8 +371,6 @@ if __FILE__ == $0
 
   telemetry = OMS::Telemetry.new(omsadmin_conf_path, cert_path, key_path,
                     pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
-
-  OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
 
   telemetry.poll_resource_usage
   telemetry.heartbeat
