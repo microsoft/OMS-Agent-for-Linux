@@ -17,7 +17,7 @@ module OMS
     TEST_NOTIFY_BLOB_ODS_ENDPOINT = 'https://www.fakeods.com/ContainerService.svc/PostBlobUploadNotification'
     TEST_TOPOLOGY_INTERVAL = 7200.0
     TEST_TELEMETRY_INTERVAL = 600.0
-    TEST_TOPOLOGY_RESPONSE = '<?xml version="1.0" encoding="utf-8"?>' \ 
+    TEST_TOPOLOGY_RESPONSE = '<?xml version="1.0" encoding="utf-8"?>' \
                              '<LinuxAgentTopologyResponse queryInterval="PT2H" telemetryReportInterval="PT10M" ' \
                              'id="ccb89298-086e-4a77-ba5e-5b525156d692" ' \
                              'xmlns="http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/" ' \
