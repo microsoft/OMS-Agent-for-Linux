@@ -492,12 +492,15 @@ EOF
 if [ "$ULINUX" = "1" ]; then
     # SSL "lib" directory name can vary based on platform AND OpenSSL version ...OpenSSL 1.1 is supported only for x64 bit
     ssl_100_libpath=`eval echo ${ssl_100_dirpath}/lib*`
-    ssl_110_libpath=`eval echo ${ssl_110_dirpath}/lib*`
-
+    if [ `uname -m` = "x86_64" ]; then
+        ssl_110_libpath=`eval echo ${ssl_110_dirpath}/lib*`
+    fi
     echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
-    echo "SSL_110_LIBPATH=${ssl_110_libpath}" >> config.mak
-    echo "RUBY_CONFIGURE_QUALS_110=( ${ruby_configure_quals_110[@]} )" >> config.mak    
+    if [ `uname -m` = "x86_64" ]; then
+        echo "SSL_110_LIBPATH=${ssl_110_libpath}" >> config.mak
+        echo "RUBY_CONFIGURE_QUALS_110=( ${ruby_configure_quals_110[@]} )" >> config.mak
+    fi
 fi
 
 # Fix permissions in case they aren't executable - and then configure AUOMS
