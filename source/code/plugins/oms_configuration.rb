@@ -21,6 +21,9 @@ module OMS
     @@GetBlobODSEndpoint = nil
     @@NotifyBlobODSEndpoint = nil
     @@OmsCloudId = nil
+    @@AgentGUID = nil
+    @@URLTLD = nil
+    @@LogFacility = nil
     @@AzureResourceId = nil
     @@AzureRegion = nil
     @@AzureIMDSEndpoint = "http://169.254.169.254/metadata/instance?api-version=2017-12-01"
@@ -240,8 +243,8 @@ module OMS
         end
 
         File.open(conf_path).each_line do |line|
-          if line =~ /WORKSPACE_ID/
-            @WorkspaceId = line.sub("WORKSPACE_ID=","").strip
+          if line =~ /^WORKSPACE_ID/
+            @@WorkspaceId = line.sub("WORKSPACE_ID=","").strip
           end
           if line =~ /AZURE_RESOURCE_ID/
             # We have contract with AKS team about how to pass AKS specific resource id.
@@ -263,6 +266,15 @@ module OMS
           end
           if line =~ /OMSCLOUD_ID/
             @@OmsCloudId = line.sub("OMSCLOUD_ID=","").strip
+          end
+          if line =~ /^AGENT_GUID/
+            @@AgentGUID = line.sub("AGENT_GUID=","").strip
+          end
+          if line =~ /^URL_TLD/
+            @@URLTLD = line.sub("URL_TLD=","").strip
+          end
+          if line =~ /^LOG_FACILITY/
+            @@LogFacility = line.sub("LOG_FACILITY=","").strip
           end
           if line =~ /UUID/
             @@UUID = line.sub("UUID=","").strip
@@ -358,6 +370,18 @@ module OMS
       def omscloud_id
         @@OmsCloudId
       end
+
+      def agent_guid
+        @@AgentGUID
+      end # getter agent_guid
+
+      def url_tld
+        @@URLTLD
+      end # getter url_tld
+
+      def log_facility
+        @@LogFacility
+      end # getter log_facility
 
       def uuid
         @@UUID
