@@ -38,8 +38,14 @@ SEPOLICY_SRC_DIR=$(BASE_DIR)/installer/selinux
 SEPOLICY_DIR=$(INTERMEDIATE_DIR)/selinux
 SEPOLICY_DIR_EL6=$(INTERMEDIATE_DIR)/selinux.el6
 
+ifeq ($(ULINUX),1)
+# Doesn't matter what version of SSL/Ruby we use to compile or link the OMI plugin
+RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/100/ruby
+OMI_LIBRARY_DIR := $(OMI_ROOT)/output_openssl_1.0.0/lib
+else
 RUBY_DEST_DIR := $(INTERMEDIATE_DIR)/ruby
 OMI_LIBRARY_DIR := $(OMI_ROOT)/output/lib
+endif
 
 OMI_LIBRARY_LIB_BASE := $(OMI_LIBRARY_DIR)/libbase.a
 
@@ -197,9 +203,11 @@ ifeq ($(ULINUX),1)
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.0.0 output
 	$(MAKE) -C $(DSC_DIR) dsc100
 	$(MAKE) -C $(DSC_DIR) dsckit100
+ifeq ($(PF_ARCH),x64)
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.1.0 output
 	$(MAKE) -C $(DSC_DIR) dsc110
 	$(MAKE) -C $(DSC_DIR) dsckit110
+endif
 	cd $(OMI_ROOT); $(RMDIR) output
 endif
 
@@ -384,10 +392,10 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
 
 	# Remove ssl_100 and ssl_110 from omi filenames
-	cd $(INTERMEDIATE_DIR)/100; mv omi-*ssl*.deb `ls omi-*ssl*.deb | sed "s/\.ssl_100\./\./g"`
-	cd $(INTERMEDIATE_DIR)/100; mv omi-*ssl*.rpm `ls omi-*ssl*.rpm | sed "s/\.ssl_100\./\./g"`
-	cd $(INTERMEDIATE_DIR)/110; mv omi-*ssl*.deb `ls omi-*ssl*.deb | sed "s/\.ssl_110\./\./g"`
-	cd $(INTERMEDIATE_DIR)/110; mv omi-*ssl*.rpm `ls omi-*ssl*.rpm | sed "s/\.ssl_110\./\./g"`
+	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
+	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
+	cd $(INTERMEDIATE_DIR)/110; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_110\./\./g"`
+	cd $(INTERMEDIATE_DIR)/110; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_110\./\./g"`
 
 	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
 
