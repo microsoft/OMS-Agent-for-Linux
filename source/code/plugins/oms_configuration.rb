@@ -239,8 +239,8 @@ module OMS
           if line =~ /AZURE_RESOURCE_ID/
             # We have contract with AKS team about how to pass AKS specific resource id.
             # As per contract, AKS team before starting the agent will set environment variable 
-            # 'custom-resourceId'
-            @@AzureResourceId = ENV['custom-resourceId']
+            # 'customResourceId'
+            @@AzureResourceId = ENV['customResourceId']
             
             # Only if environment variable is empty/nil load it from imds and refresh it periodically.
             if @@AzureResourceId.nil? || @@AzureResourceId.empty?              
