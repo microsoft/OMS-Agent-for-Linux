@@ -791,7 +791,7 @@ module OMS
 
       # Helper method that returns true if a file exists and is non-empty
       def file_exists_nonempty(file_path)
-        return true if !file_path.nil? and File.exist?(file_path) and !File.zero?(file_path)
+        return !file_path.nil? and File.exist?(file_path) and !File.zero?(file_path)
       end
 
       # Return logger from provided log facility

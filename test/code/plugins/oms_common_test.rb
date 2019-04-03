@@ -516,7 +516,7 @@ module OMS
       body = { mock: "data", foo: "bar" }.to_json
       cert = "this is a mock cert"
       key = "this is a mock key"
-      proxy = {}
+      proxy = ""
 
       req, http = Common.form_post_request_and_http(headers, uri, body, cert, key, proxy)
       assert_not_equal(nil, http, "http is nil")
