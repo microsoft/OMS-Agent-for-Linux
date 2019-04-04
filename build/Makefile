@@ -262,9 +262,10 @@ $(RUBY_DEST_DIR) :
 	#
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
+	# Only build SSL v1.1.0 as SSL v1.0.0 is old.
 ifeq ($(ULINUX),1)
-	@$(ECHO) "========================= Performing Building Ruby for SSL v1.0.0 ..."
-	$(BASE_DIR)/build/buildRuby.sh 100
+	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
+	$(BASE_DIR)/build/buildRuby.sh 110
 ifeq ($(PF_ARCH),x64)
 	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
 	$(BASE_DIR)/build/buildRuby.sh 110
