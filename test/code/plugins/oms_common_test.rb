@@ -522,7 +522,7 @@ module OMS
       assert_not_equal(nil, http, "http is nil")
       assert_not_equal(nil, req, "request is nil")
       assert_equal('{"mock":"data","foo":"bar"}', req.body, "request body is incorrect")
-      assert-equal("LinuxMonitoringAgent/0.0.0-0", req["User-Agent"], "request headers are incorrect")
+      assert_equal("LinuxMonitoringAgent/0.0.0-0", req["User-Agent"], "request headers are incorrect")
       assert_equal(cert, http.cert, "http cert is incorrect")
       assert_equal(key, http.key, "http key is incorrect")
     end
