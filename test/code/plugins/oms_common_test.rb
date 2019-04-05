@@ -476,7 +476,7 @@ module OMS
     def test_file_exists_nonempty
       assert_equal(false, Common.file_exists_nonempty(nil), "should detect nil file path")
       assert_equal(false, Common.file_exists_nonempty("/dev/null/impossible"), "should detect nonexistent file path")
-      assert_equal(true, Common.file_exists_nonempty(@tmp_conf_file.path), "file does exist")
+      assert_equal(true, Common.file_exists_nonempty("/"), "file does exist")
     end
 
     def test_get_logger
