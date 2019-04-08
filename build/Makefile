@@ -334,8 +334,7 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PAC
 	@echo "========================= Performing Building DEB shell bundle"
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX_DEB).tar "DPKG"
 
-ifeq ($(PF_ARCH),x64)
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
+	$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb \
 	$(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
 
@@ -410,74 +409,6 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLU
 	# Build the tar file containing .deb packages
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb 110/*.deb oss-kits/*
 
-else
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
-	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
-
-	@echo "========================= Performing Building .tar file"
-
-	# Gather the DSC bits that we need
-	$(RM) $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb}
-
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
-	cd $(INTERMEDIATE_DIR)/100; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_100././'` ; $(MV) $$SOURCE $$DEST; done
-
-	# Pick up the OSS (Open Source) providers
-	$(RMDIR) $(INTERMEDIATE_DIR)/oss-kits
-	$(MKPATH) $(INTERMEDIATE_DIR)/oss-kits
-	cd $(BASE_DIR)/installer/oss-kits; $(COPY) $(OMS_OSS_KITS) $(INTERMEDIATE_DIR)/oss-kits
-	chmod +x $(INTERMEDIATE_DIR)/oss-kits/*.sh
-
-	# Pick up other bundled packages
-	$(RMDIR) $(INTERMEDIATE_DIR)/bundles
-	$(MKPATH) $(INTERMEDIATE_DIR)/bundles
-	cd $(AUOMS_TARGET_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
-	$(COPY) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
-
-	# Gather the SCX bits that we need
-	# Note: We take care to only copy the latest version if there are multiple versions
-	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
-
-	# Extract SCX bundle script
-	$(RMDIR) $(INTERMEDIATE_DIR)/scxbundle.*
-	cd $(INTERMEDIATE_DIR); $(SHELL) scx-*.sh --extract
-
-	# Gather SCX packages
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
-
-	# Gather apache and mysql cimprov bundle scripts from SCX
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
-
-	# Gather OMI packages from omi-kits
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
-
-	# Remove ssl_100 from omi filenames
-	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
-	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
-
-	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
-
-	# Build the tar file containing both .rpm and .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 100/*.{deb,rpm} oss-kits/* bundles/*
-
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm 
-
-	@echo "========================= Performing Building RPM .tar file"
-
-	# Build the tar file containing .rpm packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 100/*.rpm oss-kits/*
-
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
-
-	@echo "========================= Performing Building DEB .tar file"
-
-	# Build the tar file containing .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb oss-kits/*
-endif
-
 $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm:
 	@echo "========================= Performing Building RPM package (SSL 1.0)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
@@ -535,7 +466,6 @@ $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb:
 		$(INSTALLER_DATAFILES_DPKG)
 	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/100
 
-ifeq ($(PF_ARCH),x64)
 $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm:
 	@echo "========================= Performing Building RPM package (SSL 1.1)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
@@ -592,37 +522,6 @@ $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb:
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)
 	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/110
-endif
-else
-
-kit : $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).$(PACKAGE_SUFFIX)
-
-$(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).$(PACKAGE_SUFFIX) : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB)
-
-	@echo "========================= Performing Building installation package"
-	$(MKPATH) $(INSTALLER_TMPDIR)
-	sudo $(RMDIR) $(STAGING_DIR)
-	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
-		--BASE_DIR=$(BASE_DIR) \
-		--TARGET_DIR=$(TARGET_DIR) \
-		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
-		--STAGING_DIR=$(STAGING_DIR) \
-		--BUILD_TYPE=$(BUILD_TYPE) \
-		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
-		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/ruby \
-		--RUBY_ARCH=$(RUBY_ARCH) \
-		--RUBY_ARCM=$(RUBY_ARCM) \
-		--PFARCH=$(PF_ARCH) \
-		--PFDISTRO=$(PF_DISTRO) \
-		--PFMAJOR=$(PF_MAJOR) \
-		--PFMINOR=$(PF_MINOR) \
-		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
-		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
-		--VERSION_IDENT="$(OMS_BUILDVERSION_DATE) $(OMS_BUILDVERSION_STATUS)" \
-		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
-		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
-		$(INSTALLER_DATAFILES_CURRENT)
-
 endif
 
 #--------------------------------------------------------------------------------
