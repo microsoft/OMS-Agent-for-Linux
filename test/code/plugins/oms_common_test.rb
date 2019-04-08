@@ -481,6 +481,7 @@ module OMS
 
     def test_get_logger
       assert_equal(Syslog::LOG_LOCAL0, Common.get_logger(nil).facility, "default log facility should be local0")
+      Syslog.close
       assert_equal(Syslog::LOG_USER, Common.get_logger("user").facility, "correct log facility not parsed")
     end
 
