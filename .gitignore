@@ -1,5 +1,5 @@
 # git ignore file for omsagent project
-
+.idea
 /intermediate
 /target
 /build/config.mak

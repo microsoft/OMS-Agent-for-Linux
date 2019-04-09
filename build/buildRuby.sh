@@ -199,6 +199,12 @@ elevate make install
 
 export PATH=${RUBY_DESTDIR}/bin:$PATH
 
+if [ $RUNNING_FOR_TEST -eq 1 ]; then
+    echo "Installing Metaclass and Mocha (for UnitTest) into Ruby ..."
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/metaclass-0.0.4.gem
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mocha-1.8.0.gem
+fi
+
 echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
