@@ -5,10 +5,9 @@ module OMS
   class Configuration
     require 'openssl'
     require 'uri'
-    require 'iso8601'
 
     require_relative 'omslog'
-    
+
     @@ConfigurationLoaded = false
 
     @@Cert = nil
@@ -33,16 +32,16 @@ module OMS
     @@UUID = nil
     @@TopologyInterval = nil
     @@TelemetryInterval = nil
- 
+
     class << self
-      
+
       # test the onboard file existence
       def test_onboard_file(file_name)
         if !File.file?(file_name)
           OMS::Log.error_once("Could not find #{file_name} Make sure to onboard.")
           return false
         end
-      
+
         if !File.readable?(file_name)
           OMS::Log.error_once("Could not read #{file_name} Check that the read permissions are set for the omsagent user")
           return false
@@ -112,11 +111,11 @@ module OMS
             return nil if imds_instance_json_compute['location'].empty?
             return imds_instance_json_compute['location']
           rescue => e
-            # this may be a container instance or a non-Azure VM            
+            # this may be a container instance or a non-Azure VM
             return nil
           end
-      end  
-      
+      end
+
       def get_azure_resid_from_imds()
           begin
             uri = URI.parse(@@AzureIMDSEndpoint)
@@ -298,38 +297,15 @@ module OMS
         end
         
         @@ConfigurationLoaded = true
-        return true        
+        return true
       end # load_configuration
 
-      # Update the topology and telemetry request frequencies
-      def apply_request_intervals(server_resp)
-        topology_interval = ""
-        telemetry_interval = ""
-
-        request_interval_regex = /queryInterval=\"(?<topologyInterval>.*)\"\stelemetryReportInterval=\"(?<telemetryInterval>.*)\"\sid/
-        request_interval_regex.match(server_resp) { |match|
-          topology_interval = match["topologyInterval"]
-          telemetry_interval = match["telemetryInterval"]
-        }
-
-        if topology_interval.empty?
-          OMS::Log.error_once("Could not extract the topology request interval.")
-          return OMS::ERROR_EXTRACTING_ATTRIBUTES
-        end
-
-        if telemetry_interval.empty?
-          OMS::Log.error_once("Could not extract the telemetry request interval.")
-          return OMS::ERROR_EXTRACTING_ATTRIBUTES
-        end
-
-        @@TopologyInterval = ISO8601::Duration.new(topology_interval).to_seconds
+      def set_request_intervals(topology_interval, telemetry_interval)
+        @@TopologyInterval = topology_interval
+        @@TelemetryInterval = telemetry_interval
         OMS::Log.info_once("OMS agent management service topology request interval now #{@@TopologyInterval}")
-
-        @@TelemetryInterval = ISO8601::Duration.new(telemetry_interval).to_seconds
         OMS::Log.info_once("OMS agent management service telemetry request interval now #{@@TelemetryInterval}")
-
-        return ""
-      end # apply_request_intervals
+      end
 
       def cert
         @@Cert
