@@ -124,18 +124,23 @@ module OMS
     def self.push_qos_event(operation, operation_success, message, source, batch, count, time)
       begin
         event = { op: operation, op_success: operation_success, m: message, c: count, t: time }
-        if batch.is_a? Hash and batch.has_key?('DataItems') and batch['DataItems'][0].has_key?('Timestamp')
+        if batch.is_a? Hash and batch.has_key?('DataItems')
           records = batch['DataItems']
-          now = Time.now
-          times = records.map { |record| now - Time.parse(record['Timestamp']) }
-          event[:min_l] = times[-1] # Records appear in order, so last record will have lowest latency
-          event[:max_l] = times[0]
-          event[:sum_l] = times.sum
+          if batch['DataItems'][0].has_key?('Timestamp')
+            now = Time.now
+            times = records.map { |record| now - Time.parse(record['Timestamp']) }
+            event[:min_l] = times[-1] # Records appear in order, so last record will have lowest latency
+            event[:max_l] = times[0]
+            event[:sum_l] = times.sum
+          end
           sizes = records.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize) # Remove possible nil entries with compact
         elsif batch.is_a? Array
-          # These other logs, such as custom logs, don't have a parsed timestamp.
+          # These other logs, such as custom logs, don't have a parsed timestamp
           sizes = batch.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize)
+        else
+          return
         end
+
         event[:min_s] = sizes.min
         event[:max_s] = sizes.max
         event[:sum_s] = sizes.sum
@@ -149,7 +154,7 @@ module OMS
           @@qos_events[source] = [event]
         end
       rescue => e
-        log_error("Error pushing QoS event. #{e}")
+        OMS::Log.error_once("Error pushing QoS event. #{e}")
       end
     end # push_qos_event
 

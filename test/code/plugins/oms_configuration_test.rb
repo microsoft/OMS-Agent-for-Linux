@@ -136,8 +136,8 @@ module OMS
       assert_not_equal(nil, Configuration.key, "Key should be loaded")
       assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
       assert_equal("", Configuration.apply_request_intervals(TEST_TOPOLOGY_RESPONSE), "There was an error parsing the request intervals")
-      assert_equal(TEST_TOPOLOGY_INTERVAL, Configuration.topology_interval, "")
-      assert_equal(TEST_TELEMETRY_INTERVAL, Configuration.telemetry_interval, "")
+      assert_equal(TEST_TOPOLOGY_INTERVAL, Configuration.topology_interval, "Incorrect topology interval parsed")
+      assert_equal(TEST_TELEMETRY_INTERVAL, Configuration.telemetry_interval, "Incorrect telemetry interval parsed")
     end
 
     def test_load_configuration_wrong_path()

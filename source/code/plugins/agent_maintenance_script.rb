@@ -9,6 +9,7 @@ module MaintenanceModule
     require 'uri'
     require 'gyoku'
     require 'etc'
+    require 'iso8601'
 
     require_relative 'oms_common'
     require_relative 'oms_configuration'
@@ -227,6 +228,39 @@ module MaintenanceModule
       return 0
     end
 
+    # Update the topology and telemetry request frequencies
+    def apply_request_intervals(server_resp)
+      topology_interval = ""
+      telemetry_interval = ""
+
+      request_interval_regex = /queryInterval=\"(?<topologyInterval>.*)\"\stelemetryReportInterval=\"(?<telemetryInterval>.*)\"\sid/
+      request_interval_regex.match(server_resp) { |match|
+        topology_interval = match["topologyInterval"]
+        telemetry_interval = match["telemetryInterval"]
+      }
+
+      if topology_interval.empty?
+        log_error("Topology request interval not found in homing service response.")
+        return OMS::ERROR_EXTRACTING_ATTRIBUTES
+      end
+
+      if telemetry_interval.empty?
+        log_error("Telemetry request interval not found in homing service response.")
+        return OMS::ERROR_EXTRACTING_ATTRIBUTES
+      end
+
+      begin
+        topology_interval = ISO8601::Duration.new(topology_interval).to_seconds
+        telemetry_interval = ISO8601::Duration.new(telemetry_interval).to_seconds
+      rescue => e
+        OMS::Log.error_once("Error parsing request intervals. #{e}")
+      end
+
+      OMS::Configuration.set_request_intervals(topology_interval, telemetry_interval) if defined?(OMS::Configuration.set_request_intervals)
+
+      return ""
+    end # apply_request_intervals
+
     # Perform a topology request against the OMS endpoint
     def heartbeat
       # Reload config in case of updates since last topology request
@@ -286,7 +320,7 @@ module MaintenanceModule
         if res.code == "200"
           cert_apply_res = apply_certificate_update_endpoint(res.body)
           dsc_apply_res = apply_dsc_endpoint(res.body)
-          frequency_apply_res = OMS::Configuration.apply_request_intervals(res.body)
+          frequency_apply_res = apply_request_intervals(res.body)
           if cert_apply_res.class != String
             return cert_apply_res
           elsif dsc_apply_res.class != String
