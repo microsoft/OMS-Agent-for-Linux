@@ -247,12 +247,18 @@ module MaintenanceModule
 
     # Update the topology and telemetry request frequencies
     def apply_request_intervals(server_resp)
+      return "" if !defined?(OMS::Configuration.set_request_intervals)
+      
       topology_interval = ""
       telemetry_interval = ""
 
-      request_interval_regex = /queryInterval=\"(?<topologyInterval>.*)\"\stelemetryReportInterval=\"(?<telemetryInterval>.*)\"\sid/
-      request_interval_regex.match(server_resp) { |match|
+      topology_interval_regex = /queryInterval=\"(?<topologyInterval>.*?)\"/
+      topology_interval_regex.match(server_resp) { |match|
         topology_interval = match["topologyInterval"]
+      }
+
+      telemetry_interval_regex = /telemetryReportInterval=\"(?<telemetryInterval>.*?)\"/
+      telemetry_interval_regex.match(server_resp) { |match|
         telemetry_interval = match["telemetryInterval"]
       }
 
@@ -273,7 +279,7 @@ module MaintenanceModule
         OMS::Log.error_once("Error parsing request intervals. #{e}")
       end
 
-      OMS::Configuration.set_request_intervals(topology_interval, telemetry_interval) if defined?(OMS::Configuration.set_request_intervals)
+      OMS::Configuration.set_request_intervals(topology_interval, telemetry_interval)
 
       return ""
     end # apply_request_intervals
