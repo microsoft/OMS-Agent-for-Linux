@@ -45,9 +45,9 @@ class AgentTopologyRequestOperatingSystem < StrongTypedClass
   strongtyped_accessor :K8SVersion, String
   strongtyped_accessor :Telemetry, AgentTopologyRequestOperatingSystemTelemetry
 end
- 
+
 class AgentTopologyRequest < StrongTypedClass
-   
+
   strongtyped_accessor :FullyQualfiedDomainName, String
   strongtyped_accessor :EntityTypeId, String
   strongtyped_accessor :AuthenticationCertificate, String

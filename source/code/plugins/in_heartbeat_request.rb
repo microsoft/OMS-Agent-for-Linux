@@ -67,8 +67,10 @@ module Fluent
     # Any data produced by this is NOT sent to an output plugin or ODS
     def enumerate
       @maintenance_script.heartbeat
-      query_interval = OMS::Configuration.topology_interval
-      @run_interval = query_interval if query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
+      if defined?(OMS::Configuration.topology_interval)
+        query_interval = OMS::Configuration.topology_interval
+        @run_interval = query_interval if query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
+      end
     end
 
     def run_periodic
