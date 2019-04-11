@@ -44,18 +44,22 @@ module Fluent
 
     def start
       super
-      @telemetry_script = OMS::Telemetry.new(@omsadmin_conf_path, @cert_path, @key_path, @pid_path,
-                                             @proxy_path, @os_info, @install_info, @log)
+      if defined?(OMS::Configuration.telemetry_interval) # ensure new modules are in place, otherwise do not start
+        @telemetry_script = OMS::Telemetry.new(@omsadmin_conf_path, @cert_path, @key_path, @pid_path,
+                                              @proxy_path, @os_info, @install_info, @log)
 
-      if @query_interval and @poll_interval
-        @finished = false
-        @thread = Thread.new(&method(:run_periodic))
+        if @query_interval and @poll_interval
+          @finished = false
+          @thread = Thread.new(&method(:run_periodic))
+        end
       end
     end
 
-    def shutdown 
-      @finished = true 
-      @thread.join
+    def shutdown
+      if defined?(OMS::Configuration.telemetry_interval)
+        @finished = true 
+        @thread.join
+      end
       super
     end
 

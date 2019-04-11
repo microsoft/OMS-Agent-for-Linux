@@ -182,8 +182,8 @@ module OMS
       end
 
       # load the configuration from the configuration file, cert, and key path
-      def load_configuration(conf_path, cert_path, key_path, force_reload=false)
-        return true if @@ConfigurationLoaded and !force_reload
+      def load_configuration(conf_path, cert_path, key_path)
+        return true if @@ConfigurationLoaded
         return false if !test_onboard_file(conf_path) or !test_onboard_file(cert_path) or !test_onboard_file(key_path)
 
         @@ProxyConfig = get_proxy_config(@@ProxyConfigFilePath)
