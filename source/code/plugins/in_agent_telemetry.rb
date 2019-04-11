@@ -10,7 +10,6 @@ module Fluent
       super
       require_relative 'agent_telemetry_script'
       require_relative 'oms_configuration'
-      require_relative 'omslog'
     end
 
     config_param :query_interval, :time, :default => '5m'

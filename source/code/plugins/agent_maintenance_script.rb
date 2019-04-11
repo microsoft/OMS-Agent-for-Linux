@@ -228,6 +228,22 @@ module MaintenanceModule
       return 0
     end
 
+    # Return the certificate text as a single formatted string
+    def get_cert_server(cert_path)
+      cert_server = ""
+
+      cert_file_contents = File.readlines(cert_path)
+      for i in 1..(cert_file_contents.length-2) # skip first and last line in file
+        line = cert_file_contents[i]
+        cert_server.concat(line[0..-2])
+        if i < (cert_file_contents.length-2)
+          cert_server.concat(" ")
+        end
+      end
+
+      return cert_server
+    end
+
     # Update the topology and telemetry request frequencies
     def apply_request_intervals(server_resp)
       topology_interval = ""
@@ -283,7 +299,7 @@ module MaintenanceModule
       # Generate the request body
       begin
         body_hb_xml = AgentTopologyRequestHandler.new.handle_request(@os_info, @omsadmin_conf_path,
-            @AGENT_GUID, OMS::Common.get_cert_server(@cert_path), @pid_path, telemetry=true)
+            @AGENT_GUID, get_cert_server(@cert_path), @pid_path, telemetry=true)
         if !xml_contains_telemetry(body_hb_xml)
           log_debug("No Telemetry data was appended to OMS agent management service topology request")
         end
@@ -462,7 +478,7 @@ module MaintenanceModule
 
       # Form POST request
       renew_certs_req = AgentRenewCertificateRequest.new
-      renew_certs_req.NewCertificate = OMS::Common.get_cert_server(@cert_path)
+      renew_certs_req.NewCertificate = get_cert_server(@cert_path)
 
       renew_certs_xml = "<?xml version=\"1.0\"?>\n"
       renew_certs_xml.concat(Gyoku.xml({ "CertificateUpdateRequest" => {:content! => obj_to_hash(renew_certs_req), \

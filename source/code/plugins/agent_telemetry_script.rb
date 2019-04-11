@@ -2,7 +2,7 @@ require 'optparse'
 
 module OMS
 
-  require_relative 'agent_topology_request_script' # for StrongTypedClass
+  require_relative 'agent_common'
 
   # Operation Types
   SEND_BATCH = "SendBatch"
