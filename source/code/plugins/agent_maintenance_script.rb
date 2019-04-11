@@ -14,6 +14,7 @@ module MaintenanceModule
     require_relative 'oms_common'
     require_relative 'oms_configuration'
     require_relative 'agent_topology_request_script'
+    require_relative 'agent_common'
 
     attr_reader :AGENT_USER, :load_config_return_code
     attr_accessor :suppress_stdout

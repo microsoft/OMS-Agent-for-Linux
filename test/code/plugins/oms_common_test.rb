@@ -8,7 +8,7 @@ require 'flexmock/test_unit'
 require 'syslog/logger'
 require_relative 'omstestlib'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/oms_common'
-
+require_relative ENV['BASE_DIR'] + '/source/code/plugins/agent_common'
 
 module OMS
 
