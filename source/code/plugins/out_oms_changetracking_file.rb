@@ -23,6 +23,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
+      require_relative 'agent_telemetry_script'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
