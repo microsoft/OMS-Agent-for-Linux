@@ -14,8 +14,8 @@ before_install:
 
 install:
   - cd ../..
-  - git clone https://github.com/Microsoft/Build-OMS-Agent-for-Linux.git Microsoft/Build-OMS-Agent-for-Linux
-  - cd Microsoft/Build-OMS-Agent-for-Linux
+  - git clone https://github.com/Microsoft/Build-OMS-Agent-for-Linux.git Microsoft/Build-OMS
+  - cd Microsoft/Build-OMS
   # change url from ssh to https for submodules, travis-ci cannot download a submodule that isn’t on a public url
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules 
   - git submodule update --init --recursive auoms auoms-kits dsc dsc-kits omi omi-kits opsmgr-kits pal scxcore-kits
@@ -32,15 +32,15 @@ before_script:
   # PR validation during check-in will be setup in github in the settings section of our repo
   - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then git fetch origin refs/pull/$TRAVIS_PULL_REQUEST/head ; git checkout FETCH_HEAD; fi 
   - cd build
-  # pwd: /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux/omsagent/build
+  # pwd: /home/travis/build/Microsoft/Build-OMS/omsagent/build
   # Since 'build' is a keyword for travis-CI, change Makefile to substitute 'omsagent/build' instead of 'build'
   - sed -i 's/(subst \/build,,$(CURDIR))/(subst omsagent\/build,omsagent,$(CURDIR))/' Makefile 
   # Substitue 'build' in Makefile for auoms as well
   - sed -i 's/(subst \/build,,$(CURDIR))/(subst auoms\/build,auoms,$(CURDIR))/' ../../auoms/build/Makefile
-  - docker pull abenbachir/oms-centos5:2.0 || true
+  - docker pull abenbachir/oms-centos6:1.0 || true
 
 script:
   # System tests are not run because OMS-Agent-for-Linux-testconfig.git is a private repo
-  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5:2.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux; make unittest"
-  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5:2.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux; make"
+  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS:/home/scratch/Build-OMS abenbachir/oms-centos6:1.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux; make unittest"
+  - travis_wait 50 docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS:/home/scratch/Build-OMS abenbachir/oms-centos6:1.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux; make"
 
