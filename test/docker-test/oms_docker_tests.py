@@ -27,8 +27,8 @@ from datetime import datetime, timedelta
 from json2html import *
 from verify_e2e import check_e2e
 
-E2E_DELAY = 2 # Delay (minutes) before checking for data
-LONG_DELAY = 2 # Delay (minutes) before rechecking agent
+E2E_DELAY = 10 # Delay (minutes) before checking for data
+LONG_DELAY = 250 # Delay (minutes) before rechecking agent
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7"]
 hostnames = []
 install_times = {}
