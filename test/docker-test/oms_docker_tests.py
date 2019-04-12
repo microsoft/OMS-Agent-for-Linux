@@ -81,7 +81,7 @@ def get_time_diff(timevalue1, timevalue2):
     return minutes, seconds
 
 # Remove intermediate log and html files
-os.system('rm ./*.log ./*.html ./omsfiles/omsresults* 2> /dev/null')
+os.system('rm -rf ./*.log ./*.html ./omsfiles/omsresults* ./results 2> /dev/null')
 
 result_html_file = open("finalresult.html", 'a+')
 
@@ -130,8 +130,8 @@ def main():
             sys.stdout.flush()
             sleep(60)
         print('')
+        install_times.clear()
         for image in images:
-            install_times.clear()
             install_times.update({image: datetime.now()})
             container = image + '-container'
             inject_logs(container)
@@ -493,7 +493,7 @@ def create_report(messages):
 def mv_result_files():
     if not os.path.exists('results'):
         os.makedirs('results')
-    
+
     file_types = ['*result.*', '*-omsagent.log']
     for files in file_types:
         for f in glob(files):
