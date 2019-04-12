@@ -51,9 +51,8 @@ class AgentTopologyRequest < StrongTypedClass
   strongtyped_accessor :FullyQualfiedDomainName, String
   strongtyped_accessor :EntityTypeId, String
   strongtyped_accessor :AuthenticationCertificate, String
-  strongtyped_accessor :OperatingSystem, AgentTopologyRequestOperatingSystem    
+  strongtyped_accessor :OperatingSystem, AgentTopologyRequestOperatingSystem
 
-  
   def get_telemetry_data(os_info, conf_omsadmin, pid_file)
     os = AgentTopologyRequestOperatingSystem.new
     telemetry = AgentTopologyRequestOperatingSystemTelemetry.new
@@ -185,7 +184,7 @@ def xml_contains_telemetry(xmlstring)
 
   return false
 end
-              
+
 if __FILE__ == $0
   options = {}
   OptionParser.new do |opts|

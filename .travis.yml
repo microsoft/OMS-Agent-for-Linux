@@ -40,7 +40,7 @@ before_script:
   - docker pull abenbachir/oms-centos5:2.0 || true
 
 script:
+  # System tests are not run because OMS-Agent-for-Linux-testconfig.git is a private repo
+  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5:2.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux; make unittest"
   - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5:2.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux; make"
-# System tests are not run because OMS-Agent-for-Linux-testconfig.git is a private repo
-  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5:2.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make unittest"
 
