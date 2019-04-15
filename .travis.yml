@@ -1,19 +1,13 @@
 language: c
 dist: trusty   # Travis build machine is Ubuntu Trusty 14.04 x64
 sudo: required # A sudo enabled, full VM is used for building instead of a docker container
-
+services:
+  - docker
 git:
   submodules: false
 
 before_install:
   - sudo apt-get update -qq
-  # Pre-reqs for building omsagent and omi
-  - sudo apt-get install -qq pkg-config make ruby bison g++ rpm librpm-dev libpam0g-dev libssl-dev libmysqlclient-dev libkrb5-dev libjemalloc-dev
-  # Pre-reqs for building auoms
-  - sudo apt-get install cmake libboost-dev libboost-test-dev libaudit-dev libauparse-dev unzip
-  - sudo groupadd omiusers
-  - rvm use system                 # Use system ruby (v1.9.3p484) instead of ruby provided by rvm
-  - sed -i 's/--no-ri//' ~/.gemrc  # ri data from installed gems is required for our build
 
 # Travis-CI automatically clones the OMS-Agent-for-Linux repo since this is where this .travis.yml file is located
 # We will ignore this clone and clone the superproject Build-OMS-Agent-for-Linux as follows
@@ -24,7 +18,7 @@ install:
   - cd Microsoft/Build-OMS-Agent-for-Linux
   # change url from ssh to https for submodules, travis-ci cannot download a submodule that isn’t on a public url
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules 
-  - git submodule update --init --recursive dsc omi opsmgr-kits pal auoms scxcore-kits
+  - git submodule update --init --recursive auoms auoms-kits dsc dsc-kits omi omi-kits opsmgr-kits pal scxcore-kits
   - git clone https://github.com/Microsoft/OMS-Agent-for-Linux.git omsagent 
   - cd omsagent
   # change url from ssh to https for submodules ruby and fluentd
@@ -43,7 +37,10 @@ before_script:
   - sed -i 's/(subst \/build,,$(CURDIR))/(subst omsagent\/build,omsagent,$(CURDIR))/' Makefile 
   # Substitue 'build' in Makefile for auoms as well
   - sed -i 's/(subst \/build,,$(CURDIR))/(subst auoms\/build,auoms,$(CURDIR))/' ../../auoms/build/Makefile
+  - docker pull abenbachir/oms-centos5:2.0 || true
 
 script:
-  - ./configure --enable-debug
-  - make && make unittest # System tests are not run because OMS-Agent-for-Linux-testconfig.git is a private repo
+  # System tests are not run because OMS-Agent-for-Linux-testconfig.git is a private repo
+  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5:2.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux; make unittest"
+  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5:2.0 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux; make"
+
