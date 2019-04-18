@@ -880,8 +880,8 @@ module OMS
         msg = nil
 
         begin
-          msg = JSON.dump(records)
-        rescue JSON::GeneratorError => error
+          msg = Yajl.dump(records)
+        rescue => error
           OMS::Log.warn_once("Unable to dump to JSON string. #{error}")
           begin
             # failed to dump, encode to utf-8, iso-8859-1 and try again
@@ -897,16 +897,12 @@ module OMS
               end
             end
 
-            msg = JSON.dump(records)
+            msg = Yajl.dump(records)
           rescue => error
             # at this point we've given up, we don't recognize the encode,
             # so return nil and log_warning for the record
             OMS::Log.warn_once("Skipping due to failed encoding for #{records}: #{error}")
           end
-        rescue => error
-          # unexpected error when dumpping the records into JSON string
-          # skip here and return nil
-          OMS::Log.warn_once("Skipping due to unexpected error for #{records}: #{error}")
         end
 
         return msg
