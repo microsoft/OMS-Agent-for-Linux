@@ -32,6 +32,7 @@ elevate()
 
     # Write out the environment variables to preserve
     echo "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\"" >> $ENV_FILE
+    echo "export PATH=\"$PATH\"" >> $ENV_FILE
 
     # Write out the actual script that will be sudo elevated
     echo "#! /bin/bash" >> $SUDO_FILE
@@ -199,6 +200,12 @@ elevate make install
 
 export PATH=${RUBY_DESTDIR}/bin:$PATH
 
+if [ $RUNNING_FOR_TEST -eq 1 ]; then
+    echo "Installing Metaclass and Mocha (for UnitTest) into Ruby ..."
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/metaclass-0.0.4.gem
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mocha-1.8.0.gem
+fi
+
 echo "Installing Bundler into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
 
@@ -208,21 +215,24 @@ elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.
 echo "Installing Gyoku into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/gyoku-1.3.1.gem
 
+echo "Installing ISO8601 into Ruby ..."
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/iso8601-0.12.1.gem
+
 # Now do what we need for FluentD
 
 cd ${FLUENTD_DIR}
 
 if [ ! -d ${FLUENTD_DIR}/vendor/cache ]; then
     echo "========================= Performing Fetching FluentD dependencies for Ruby"
-    bundle install
-    bundle package --all
+    elevate bundle install
+    elevate bundle package --all
     echo "*** Be sure to check all files in 'vendor/cache' into TFS ***"
 fi
 
 echo "========================= Performing Building FluentD"
 cd ${FLUENTD_DIR}
-bundle install --local
-bundle exec rake build
+elevate bundle install --local
+elevate bundle exec rake build
 elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.40.gem
 
 echo "========================= Performing Stripping Binaries"

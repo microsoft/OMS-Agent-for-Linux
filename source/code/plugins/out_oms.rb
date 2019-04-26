@@ -16,6 +16,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
+      require_relative 'agent_telemetry_script'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -64,6 +65,7 @@ module Fluent
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{key} x #{count} in #{time.round(2)}s"
         write_status_file("true","Sending success")
+        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", key, record, count, time)
         return true
       end
     rescue OMS::RetryRequestException => e

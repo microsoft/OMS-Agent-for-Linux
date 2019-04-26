@@ -254,8 +254,8 @@ The user will then have to edit the correct rsyslogd or syslog_ng config file an
 * If using a proxy, check proxy troubleshooting steps above
 * In some Azure distribution systems omid OMI server daemon does not start after Virtual machine is rebooted. This will result in not seeing Audit, ChangeTracking or UpdateManagement solution related data. Workaround is manually start omi server by running `sudo /opt/omi/bin/service_control restart`
 * After OMI package is manually upgraded to a newer version it has to be manually restarted for OMS Agent to conitnue functioning. This step is required for some distros where OMI server does not automatically start after upgrade. Please run `sudo /opt/omi/bin/service_control restart` to restart OMI.
-* If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`.
-* In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`.
+* If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`
+* In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
 * If `omsconfig.log` log file does not indicate that `PerformRequiredConfigurationChecks` operations are running periodically on the system, there might be a problem with the cron job/service. Make sure cron job exists under `/etc/cron.d/OMSConsistencyInvoker`. If needed run the following commands to create the cron job:
 

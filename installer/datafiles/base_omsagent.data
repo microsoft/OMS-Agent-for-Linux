@@ -26,6 +26,7 @@ MAINTAINER:              'Microsoft Corporation'
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking_inventory.mof;    installer/conf/omsagent.d/change_tracking_inventory.mof;    644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf;            installer/conf/omsagent.d/monitor.conf;                644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/heartbeat.conf;          installer/conf/omsagent.d/heartbeat.conf;              644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/telemetry.conf;          installer/conf/omsagent.d/telemetry.conf;              644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management.conf;      installer/conf/omsagent.d/patch_management.conf;          644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management_inventory.mof;  installer/conf/omsagent.d/patch_management_inventory.mof;        644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.d/update_management.conf;  installer/conf/omsagent.d/update_management.conf;          644; root; root
@@ -116,6 +117,9 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/agent_topology_request_script.rb;        source/code/plugins/agent_topology_request_script.rb;  744; root; root
 /opt/microsoft/omsagent/plugin/in_heartbeat_request.rb;                 source/code/plugins/in_heartbeat_request.rb;           744; root; root
 /opt/microsoft/omsagent/plugin/agent_maintenance_script.rb;             source/code/plugins/agent_maintenance_script.rb;       744; root; root
+/opt/microsoft/omsagent/plugin/in_agent_telemetry.rb;                   source/code/plugins/in_agent_telemetry.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/agent_telemetry_script.rb;               source/code/plugins/agent_telemetry_script.rb;         744; root; root
+/opt/microsoft/omsagent/plugin/agent_common.rb;                         source/code/plugins/agent_common.rb;                   744; root; root
 
 /opt/microsoft/omsagent/plugin/filter_hdinsight.rb;                     source/code/plugins/filter_hdinsight.rb;               744; root; root
 /opt/microsoft/omsagent/plugin/filter_scom_simple_match.rb;             source/code/plugins/filter_scom_simple_match.rb;       744; root; root

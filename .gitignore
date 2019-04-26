@@ -1,5 +1,5 @@
 # git ignore file for omsagent project
-
+.idea
 /intermediate
 /target
 /build/config.mak
@@ -7,4 +7,5 @@
 /test/config
 /build/x64
 /build/x86
+/test/docker-test/*[.html, .log, .pyc]
 .vscode

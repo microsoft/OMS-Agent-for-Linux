@@ -21,6 +21,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
+      require_relative 'agent_telemetry_script'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -142,6 +143,7 @@ module Fluent
           time = Time.now - start
           @log.trace "Success sending #{dataSize} bytes of data through API #{time.round(3)}s"
           write_status_file("true", "Sending success")
+          OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", tag, records, records.count, time)
         else
           raise "The log type '#{log_type}' is not valid. it should match #{@logtype_regex}"
         end

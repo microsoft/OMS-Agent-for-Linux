@@ -98,7 +98,7 @@ module OmiModule
         }
         transformed_record["Collections"] = transformed_record_collections
         
-        # Data_items example record: [{"Timestamp":"2015-10-01T23:26:23Z","Host":"buntu14","ObjectName":"Processor","InstanceName":"0","Collections":[{"CounterName":"% Processor Time","Value":"0"}]}]
+        # Data_items example record: [{"Timestamp":"2015-10-01T23:26:23Z","Host":"Ubuntu14","ObjectName":"Processor","InstanceName":"0","Collections":[{"CounterName":"% Processor Time","Value":"0"}]}]
         data_items.push(transformed_record)
       }
       

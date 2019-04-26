@@ -121,7 +121,7 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb
 
-all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
+all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb

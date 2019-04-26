@@ -1013,6 +1013,216 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/gyoku-1.3.1/ri/Gyoku/Array/cdesc-Array.ri
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/gyoku-1.3.1/ri/cache.ri;          ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/gyoku-1.3.1/ri/cache.ri;   644; root; root
 
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/%3c%3d%3e-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/%3c%3d%3e-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/atom-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/atom-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/cdesc-Atomic.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/cdesc-Atomic.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/eql%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/eql%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/hash-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/hash-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/to_f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/to_f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/to_i-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/to_i-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/to_s-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/to_s-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/valid_atom%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/valid_atom%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/valid_base%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/valid_base%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/value-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic/value-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/cdesc-ISO8601.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/cdesc-ISO8601.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/%2b-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/%2b-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/%2d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/%2d-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/%3d%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/%3d%3d-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atomize-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atomize-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atomize_ordinal-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atomize_ordinal-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atomize_week_date-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atomize_week_date-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atoms-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/atoms-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/cdesc-Date.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/cdesc-Date.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/compose-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/compose-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/eql%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/eql%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/hash-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/hash-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse_date-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse_date-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse_ordinal-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse_ordinal-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse_weekdate-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/parse_weekdate-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/separator-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/separator-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/%2b-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/%2b-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/%2d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/%2d-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/%3d%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/%3d%3d-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/atoms-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/atoms-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/cdesc-DateTime.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/cdesc-DateTime.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/eql%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/eql%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/hash-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/hash-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/parse_date-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/parse_date-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/parse-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/parse-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/parse_time-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/parse_time-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/second-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/second-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/to_a-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/to_a-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/to_f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/to_f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/to_s-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/to_s-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/valid_representation%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/valid_representation%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/valid_separators%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime/valid_separators%3f-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/to_a-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/to_a-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/week-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date/week-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/cdesc-Days.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/cdesc-Days.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/symbol-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/symbol-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days/to_seconds-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%2b-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%2b-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%2d%40-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%2d%40-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%2d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%2d-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%3d%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/%3d%3d-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/abs-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/abs-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/atomize-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/atomize-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/atoms-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/atoms-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/cdesc-Duration.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/cdesc-Duration.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/compare_bases-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/compare_bases-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/days-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/days-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/decompose_atom-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/decompose_atom-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/eql%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/eql%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/fetch_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/fetch_seconds-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/hash-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/hash-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/hours-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/hours-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/minutes-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/minutes-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/months-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/months-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/months_to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/months_to_seconds-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/parse-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/parse-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/parse_tokens-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/parse_tokens-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/pattern-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/pattern-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/seconds-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/seconds_to_iso-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/seconds_to_iso-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/sign-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/sign-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/sign_to_i-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/sign_to_i-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_date_s-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_date_s-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_pattern-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_pattern-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_seconds-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_s-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_s-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_time_s-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/to_time_s-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/validate_base-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/validate_base-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/valid_fractions%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/valid_fractions%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/valid_pattern%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/valid_pattern%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/weeks-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/weeks-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/years-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration/years-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/cdesc-Errors.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/cdesc-Errors.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/DurationBaseError/cdesc-DurationBaseError.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/DurationBaseError/cdesc-DurationBaseError.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/DurationBaseError/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/DurationBaseError/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/IntervalError/cdesc-IntervalError.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/IntervalError/cdesc-IntervalError.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/InvalidFractions/cdesc-InvalidFractions.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/InvalidFractions/cdesc-InvalidFractions.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/InvalidFractions/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/InvalidFractions/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/RangeError/cdesc-RangeError.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/RangeError/cdesc-RangeError.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/RangeError/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/RangeError/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/StandardError/cdesc-StandardError.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/StandardError/cdesc-StandardError.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/TypeError/cdesc-TypeError.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/TypeError/cdesc-TypeError.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/UnknownPattern/cdesc-UnknownPattern.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/UnknownPattern/cdesc-UnknownPattern.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/UnknownPattern/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/UnknownPattern/new-c.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/cdesc-Hours.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/cdesc-Hours.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/symbol-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/symbol-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours/to_seconds-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/cdesc-Minutes.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/cdesc-Minutes.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/symbol-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/symbol-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes/to_seconds-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/calculation-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/calculation-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/cdesc-Months.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/cdesc-Months.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/symbol-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/symbol-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months/to_seconds-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/cdesc-Seconds.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/cdesc-Seconds.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/symbol-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/symbol-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds/to_seconds-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/%2b-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/%2b-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/%2d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/%2d-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/%3d%3d-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/%3d%3d-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/atomize-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/atomize-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/atoms-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/atoms-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/cdesc-Time.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/cdesc-Time.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/compose-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/compose-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/eql%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/eql%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/hash-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/hash-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/%3c%3d%3e-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/%3c%3d%3e-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/cdesc-TimeInterval.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/cdesc-TimeInterval.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/disjoint%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/disjoint%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/empty%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/empty%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/end_time-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/end_time-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/eql%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/eql%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/first-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/first-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/from_atoms-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/from_atoms-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/from_datetimes-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/from_datetimes-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/from_duration-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/from_duration-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/guard_from_datetimes-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/guard_from_datetimes-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/guard_from_duration-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/guard_from_duration-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/hash-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/hash-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/include%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/include%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/intersect%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/intersect%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/intersection-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/intersection-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/last-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/last-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/length-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/length-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/limits-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/limits-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/member%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/member%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse_start_subpattern-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse_start_subpattern-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse_subpattern-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/parse_subpattern-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/pattern-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/pattern-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/size-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/size-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/sort_pair-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/sort_pair-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/start_time-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/start_time-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/subset%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/subset%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/superset%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/superset%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/to_f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/to_f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/to_s-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/to_s-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/tuple_by_both-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/tuple_by_both-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/tuple_by_end-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/tuple_by_end-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/tuple_by_start-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/tuple_by_start-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/valid_atoms%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/valid_atoms%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/valid_date_time%3f-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/valid_date_time%3f-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/valid_date_time%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval/valid_date_time%3f-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/parse_second-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/parse_second-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/parse_time-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/parse_time-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/parse_timezone-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/parse_timezone-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/require_separator-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/require_separator-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/second-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/second-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/separator-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/separator-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/to_a-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/to_a-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/to_s-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/to_s-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/valid_zone%3f-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time/valid_zone%3f-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/cdesc-Weeks.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/cdesc-Weeks.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/symbol-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/symbol-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks/to_seconds-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/adjusted_factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/adjusted_factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/cdesc-Years.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/cdesc-Years.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/factor-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/factor-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/new-c.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/symbol-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/symbol-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/to_seconds-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/to_seconds-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/year-i.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years/year-i.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/cache.ri;       ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/cache.ri; 644; root; root
+
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/fluentd-0.12.40/ri/Gem/cdesc-Gem.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/fluentd-0.12.40/ri/Gem/cdesc-Gem.ri; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/fluentd-0.12.40/ri/DRb/cdesc-DRb.ri; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/doc/fluentd-0.12.40/ri/DRb/cdesc-DRb.ri; 644; root; root
@@ -4717,6 +4927,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/rake-10.4.2.gemspec;   ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/parallel_tests-0.15.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/specifications/parallel_tests-0.15.3.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/cool.io-1.5.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/specifications/cool.io-1.5.3.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/gyoku-1.3.1.gemspec;   ${{RUBY_INT}}/lib/ruby/gems/2.4.0/specifications/gyoku-1.3.1.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/iso8601-0.12.1.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/specifications/iso8601-0.12.1.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/tzinfo-data-1.2017.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/specifications/tzinfo-data-1.2017.3.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/bundler-1.10.6.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/specifications/bundler-1.10.6.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/specifications/multi_json-1.12.2.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/specifications/multi_json-1.12.2.gemspec; 644; root; root
@@ -4889,6 +5100,32 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/.gitignore;          ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/.travis.yml;         ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/.travis.yml;  644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/gyoku.gemspec;       ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/gyoku.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/Rakefile;            ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/Rakefile;     644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601.rb;   ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/atomic.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/atomic.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/date.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/date.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/date_time.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/date_time.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/days.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/days.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/duration.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/duration.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/errors.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/errors.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/hours.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/hours.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/minutes.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/minutes.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/months.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/months.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/seconds.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/seconds.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/time_interval.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/time_interval.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/time.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/time.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/version.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/weeks.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/weeks.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/years.rb; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601/years.rb; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/Gemfile;          ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/Gemfile;   644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/README.md;        ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/README.md; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/LICENSE;          ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/LICENSE;   644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/CONTRIBUTING.md;  ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/CONTRIBUTING.md; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/iso8601.gemspec;  ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/iso8601.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/Rakefile;         ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/Rakefile;  644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/simplecov-0.7.0/cucumber.yml;    ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/simplecov-0.7.0/cucumber.yml; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/simplecov-0.7.0/simplecov.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.4.0/gems/simplecov-0.7.0/simplecov.gemspec; 644; root; root
@@ -8184,6 +8421,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/parallel-1.12.0.gem;            ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/test-unit-3.2.0.gem;            ${{RUBY_INT}}/lib/ruby/gems/2.4.0/cache/test-unit-3.2.0.gem;     644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/rake-10.4.2.gem;                ${{RUBY_INT}}/lib/ruby/gems/2.4.0/cache/rake-10.4.2.gem;         644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/gyoku-1.3.1.gem;                ${{RUBY_INT}}/lib/ruby/gems/2.4.0/cache/gyoku-1.3.1.gem;         644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/iso8601-0.12.1.gem;             ${{RUBY_INT}}/lib/ruby/gems/2.4.0/cache/iso8601-0.12.1.gem;      644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/simplecov-html-0.7.1.gem;       ${{RUBY_INT}}/lib/ruby/gems/2.4.0/cache/simplecov-html-0.7.1.gem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/oj-2.17.0.gem;                  ${{RUBY_INT}}/lib/ruby/gems/2.4.0/cache/oj-2.17.0.gem;           644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/cache/rr-1.1.2.gem;                   ${{RUBY_INT}}/lib/ruby/gems/2.4.0/cache/rr-1.1.2.gem;            644; root; root
@@ -8390,6 +8628,30 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/gyoku-1.3.1/ri/Gyoku/Hash; 755; root; roo
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/gyoku-1.3.1/ri/Gyoku/XMLKey; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/gyoku-1.3.1/ri/Gyoku/XMLValue; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/gyoku-1.3.1/ri/Gyoku/Array; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1;  755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Atomic; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Date; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/DateTime; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Days; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Duration; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/DurationBaseError; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/IntervalError; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/InvalidFractions; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/RangeError; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/StandardError; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/TypeError; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Errors/UnknownPattern; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Hours; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Minutes; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Months; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Seconds; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Time; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/TimeInterval; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Weeks; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/iso8601-0.12.1/ri/ISO8601/Years; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/fluentd-0.12.40; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/fluentd-0.12.40/ri; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/doc/fluentd-0.12.40/ri/Gem; 755; root; root
@@ -8893,6 +9155,9 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/lib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/lib/gyoku; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/spec; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/gyoku-1.3.1/spec/gyoku; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/iso8601-0.12.1/lib/iso8601; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/simplecov-0.7.0; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/simplecov-0.7.0/lib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.4.0/gems/simplecov-0.7.0/lib/simplecov; 755; root; root

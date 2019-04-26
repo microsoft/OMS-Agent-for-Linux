@@ -7,18 +7,22 @@ module OMS
     require 'uri'
 
     require_relative 'omslog'
-    
+
     @@ConfigurationLoaded = false
 
     @@Cert = nil
     @@Key = nil
 
     @@AgentId = nil
+    @@WorkspaceId = nil
     @@ODSEndpoint = nil
     @@DiagnosticEndpoint = nil
     @@GetBlobODSEndpoint = nil
     @@NotifyBlobODSEndpoint = nil
     @@OmsCloudId = nil
+    @@AgentGUID = nil
+    @@URLTLD = nil
+    @@LogFacility = nil
     @@AzureResourceId = nil
     @@AzureRegion = nil
     @@AzureIMDSEndpoint = "http://169.254.169.254/metadata/instance?api-version=2017-12-01"
@@ -26,16 +30,18 @@ module OMS
     @@ProxyConfig = nil
     @@ProxyConfigFilePath = "/etc/opt/microsoft/omsagent/proxy.conf"
     @@UUID = nil
- 
+    @@TopologyInterval = nil
+    @@TelemetryInterval = nil
+
     class << self
-      
+
       # test the onboard file existence
       def test_onboard_file(file_name)
         if !File.file?(file_name)
           OMS::Log.error_once("Could not find #{file_name} Make sure to onboard.")
           return false
         end
-      
+
         if !File.readable?(file_name)
           OMS::Log.error_once("Could not read #{file_name} Check that the read permissions are set for the omsagent user")
           return false
@@ -105,11 +111,11 @@ module OMS
             return nil if imds_instance_json_compute['location'].empty?
             return imds_instance_json_compute['location']
           rescue => e
-            # this may be a container instance or a non-Azure VM            
+            # this may be a container instance or a non-Azure VM
             return nil
           end
-      end  
-      
+      end
+
       def get_azure_resid_from_imds()
           begin
             uri = URI.parse(@@AzureIMDSEndpoint)
@@ -236,6 +242,9 @@ module OMS
         end
 
         File.open(conf_path).each_line do |line|
+          if line =~ /^WORKSPACE_ID/
+            @@WorkspaceId = line.sub("WORKSPACE_ID=","").strip
+          end
           if line =~ /AZURE_RESOURCE_ID/
             # We have contract with AKS team about how to pass AKS specific resource id.
             # As per contract, AKS team before starting the agent will set environment variable 
@@ -256,6 +265,15 @@ module OMS
           end
           if line =~ /OMSCLOUD_ID/
             @@OmsCloudId = line.sub("OMSCLOUD_ID=","").strip
+          end
+          if line =~ /^AGENT_GUID/
+            @@AgentGUID = line.sub("AGENT_GUID=","").strip
+          end
+          if line =~ /^URL_TLD/
+            @@URLTLD = line.sub("URL_TLD=","").strip
+          end
+          if line =~ /^LOG_FACILITY/
+            @@LogFacility = line.sub("LOG_FACILITY=","").strip
           end
           if line =~ /UUID/
             @@UUID = line.sub("UUID=","").strip
@@ -279,8 +297,15 @@ module OMS
         end
         
         @@ConfigurationLoaded = true
-        return true        
+        return true
       end # load_configuration
+
+      def set_request_intervals(topology_interval, telemetry_interval)
+        @@TopologyInterval = topology_interval
+        @@TelemetryInterval = telemetry_interval
+        OMS::Log.info_once("OMS agent management service topology request interval now #{@@TopologyInterval}")
+        OMS::Log.info_once("OMS agent management service telemetry request interval now #{@@TelemetryInterval}")
+      end
 
       def cert
         @@Cert
@@ -289,6 +314,10 @@ module OMS
       def key
         @@Key
       end # getter key
+
+      def workspace_id
+        @@WorkspaceId
+      end # getter workspace_id
 
       def agent_id
         @@AgentId
@@ -318,13 +347,34 @@ module OMS
         @@OmsCloudId
       end
 
+      def agent_guid
+        @@AgentGUID
+      end # getter agent_guid
+
+      def url_tld
+        @@URLTLD
+      end # getter url_tld
+
+      def log_facility
+        @@LogFacility
+      end # getter log_facility
+
       def uuid
         @@UUID
       end # getter for VM uuid
 
       def azure_region
         @@AzureRegion
-      end  
+      end
+
+      def topology_interval
+        @@TopologyInterval
+      end
+
+      def telemetry_interval
+        @@TelemetryInterval
+      end
+
     end # Class methods
         
   end # class Common

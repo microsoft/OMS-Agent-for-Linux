@@ -23,6 +23,7 @@ module Fluent
       require_relative 'oms_configuration'
       require_relative 'oms_common'
       require_relative 'blocklock'
+      require_relative 'agent_telemetry_script'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -369,6 +370,7 @@ module Fluent
       time = Time.now - start
       @log.trace "Success notify the data to BLOB #{time.round(3)}s"
       write_status_file("true","Sending success")
+      OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", tag, records, records.size, time)
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."
       @log.debug "Error:'#{e}'"
