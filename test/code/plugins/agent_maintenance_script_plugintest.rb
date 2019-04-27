@@ -1,7 +1,7 @@
 require 'test/unit'
 require 'tempfile'
 require_relative '../../../source/code/plugins/agent_maintenance_script.rb'
-require_relative '../../../source/code/plugins/oms_common'
+require_relative '../../../source/code/plugins/agent_common'
 require_relative 'omstestlib'
 
 class MaintenanceUnitTest < Test::Unit::TestCase

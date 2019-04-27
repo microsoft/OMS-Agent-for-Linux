@@ -10,7 +10,7 @@ module Fluent
       require_relative 'wlm_source_lib'
     end
 
-    config_param :source
+    config_param :source #required
     config_param :interval, :time, :default => nil
     config_param :tag, :string, :default => "oms.wlm.ad"  
     config_param :config_path, :string, :default => "/etc/opt/microsoft/omsagent/conf/omsagent.d/wlm_ad_pe_config.json"
@@ -22,7 +22,7 @@ module Fluent
     end
 
     def start
-      # The WlmAutoDiscoverLib is a factory containing a list of strategies that 
+      # The WlmSourceLib is a factory that selects the appropriate source from the config file
       begin 
         @wlm_source_lib = WLM::WlmSourceLib.new(@source, @config_path)
         if @interval

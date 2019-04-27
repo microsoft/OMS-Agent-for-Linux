@@ -10,7 +10,6 @@ module Fluent
       super
       require_relative 'agent_telemetry_script'
       require_relative 'oms_configuration'
-      require_relative 'omslog'
     end
 
     config_param :query_interval, :time, :default => '5m'
@@ -44,18 +43,22 @@ module Fluent
 
     def start
       super
-      @telemetry_script = OMS::Telemetry.new(@omsadmin_conf_path, @cert_path, @key_path, @pid_path,
-                                             @proxy_path, @os_info, @install_info, @log)
+      if defined?(OMS::Configuration.telemetry_interval) # ensure new modules are in place, otherwise do not start
+        @telemetry_script = OMS::Telemetry.new(@omsadmin_conf_path, @cert_path, @key_path, @pid_path,
+                                              @proxy_path, @os_info, @install_info, @log)
 
-      if @query_interval and @poll_interval
-        @finished = false
-        @thread = Thread.new(&method(:run_periodic))
+        if @query_interval and @poll_interval
+          @finished = false
+          @thread = Thread.new(&method(:run_periodic))
+        end
       end
     end
 
-    def shutdown 
-      @finished = true 
-      @thread.join
+    def shutdown
+      if defined?(OMS::Configuration.telemetry_interval)
+        @finished = true
+        @thread.join
+      end
       super
     end
 
@@ -66,7 +69,7 @@ module Fluent
         if now > next_heartbeat
           @telemetry_script.heartbeat
           query_interval = OMS::Configuration.telemetry_interval
-          @query_interval = query_interval if query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
+          @query_interval = query_interval if !query_interval.nil? and query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
           next_heartbeat = now + @query_interval
         end
         @telemetry_script.poll_resource_usage

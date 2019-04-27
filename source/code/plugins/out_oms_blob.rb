@@ -23,6 +23,7 @@ module Fluent
       require_relative 'oms_configuration'
       require_relative 'oms_common'
       require_relative 'blocklock'
+      require_relative 'agent_telemetry_script'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -385,7 +386,6 @@ module Fluent
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
-      @log.trace "Buffering #{tag}"
       [tag, record].to_msgpack
     end
 

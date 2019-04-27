@@ -12,6 +12,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'scom_configuration'
       require_relative 'scom_common'
+      require_relative 'agent_telemetry_script'
     end
 
     desc 'Parameter to enable/disable SCOM server authentication'
