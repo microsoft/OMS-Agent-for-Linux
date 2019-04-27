@@ -2,30 +2,7 @@ require 'optparse'
 require 'gyoku'
 require 'rexml/document'
 
-class StrongTypedClass
-  def self.strongtyped_accessor(name, type)
-    # setter
-    self.class_eval("def #{name}=(value);
-      if !value.is_a? #{type} and !value.nil?
-        raise ArgumentError, \"Invalid data type. #{name} should be type #{type}\"
-      end
-      @#{name}=value
-    end")
-    
-    # getter
-    self.class_eval("def #{name};@#{name};end")
-  end
-
-  def self.strongtyped_arch(name)
-    # setter
-    self.class_eval("def #{name}=(value);
-      if (value != 'x64' && value != 'x86')
-        raise ArgumentError, \"Invalid data for ProcessorArchitecture.\"
-      end
-      @#{name}=value
-    end")
-  end
-end
+require_relative 'agent_common'
 
 class AgentTopologyRequestOperatingSystemTelemetry < StrongTypedClass
   strongtyped_accessor :PercentUserTime, Integer
@@ -45,9 +22,9 @@ class AgentTopologyRequestOperatingSystem < StrongTypedClass
   strongtyped_accessor :K8SVersion, String
   strongtyped_accessor :Telemetry, AgentTopologyRequestOperatingSystemTelemetry
 end
- 
+
 class AgentTopologyRequest < StrongTypedClass
-   
+
   strongtyped_accessor :FullyQualfiedDomainName, String
   strongtyped_accessor :EntityTypeId, String
   strongtyped_accessor :AuthenticationCertificate, String
@@ -94,7 +71,7 @@ class AgentTopologyRequest < StrongTypedClass
         telemetry.PercentUsedMemory = line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
       end
     end
-    
+
        # Get OS info from scx-release
     File.open(os_info).each_line do |line|
       os.Name = line.sub("OSName=","").strip if line =~ /OSName/
@@ -112,7 +89,6 @@ class AgentTopologyRequest < StrongTypedClass
     end
   end
 end
-
 
 def obj_to_hash(obj)
   hash = {}
@@ -191,7 +167,7 @@ if __FILE__ == $0
     opts.on("-t", "--[no-]telemetry") do |t|
       options[:telemetry] = t 
     end
-  end.parse!  
+  end.parse!
 
   topology_request_xml = AgentTopologyRequestHandler.new.handle_request(ARGV[1], ARGV[2],
       ARGV[3], ARGV[4], ARGV[5], options[:telemetry])

@@ -231,6 +231,9 @@ apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_
 # Updating FluentD to version 0.12.32 or later may already include this patch
 apply_patch ${base_dir}/source/ext/patches/fluentd/in_exec.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_exec.rb
 
+# Patching in_syslog.rb to support configurable syslog delimiter
+apply_patch ${base_dir}/source/ext/patches/fluentd/in_syslog.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_syslog.rb
+
 # No errors allowed from this point forward
 set -e
 

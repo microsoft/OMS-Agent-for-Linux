@@ -1,0 +1,20 @@
+--- ../source/ext/fluentd/lib/fluent/plugin/in_syslog.rb	2019-04-15 15:49:46.112195768 -0700
++++ ../source/ext/fluentd/lib/fluent/plugin/in_syslog.rb.new	2019-04-15 16:04:08.530462598 -0700
+@@ -110,6 +110,8 @@
+     # 13 is the default value of rsyslog and syslog-ng
+     desc 'The default PRI value (0 - 191 are available)'
+     config_param :default_priority, :integer, default: 13
++    desc 'The delimiter value "\n"'
++    config_param :delimiter, :string, default: "\n" # syslog family add "\n" to each message
+ 
+     def configure(conf)
+       super
+@@ -251,7 +253,7 @@
+         SocketUtil::UdpHandler.new(@usock, log, @message_length_limit, callback, @resolve_hostname)
+       else
+         # syslog family add "\n" to each message and this seems only way to split messages in tcp stream
+-        Coolio::TCPServer.new(@bind, @port, SocketUtil::TcpHandler, log, "\n", callback, @resolve_hostname)
++        Coolio::TCPServer.new(@bind, @port, SocketUtil::TcpHandler, log, @delimiter, callback, @resolve_hostname)
+       end
+     end
+ 
