@@ -13,6 +13,7 @@ enable_purify_server=""
 enable_omi_tools=""
 enable_omi_tools_flag=0
 opensource_distro=0
+enable_ruby_jemalloc=""
 build_type=Release
 ULINUX=0
 NOULINIX=0
@@ -171,6 +172,11 @@ do
       opensource_distro=1
     ;;
 
+    --enable-ruby-jemalloc)
+      echo "Configured Jemalloc for Ruby"
+      enable_ruby_jemalloc="--with-jemalloc"
+    ;;
+
     *)
       echo "configure: invalid option '$opt'" >& 2
       echo "Try configure --help' for more information." >& 2
@@ -200,6 +206,7 @@ OPTIONS:
     --[no]enable-ulinux         Specifies platform as ULINUX (Linux only);
                                 ULINUX is assumed on universal build systems
     --enable-open-source        Build for open source distribution
+    --enable-ruby-jemalloc      Enable building ruby with jemalloc
 
 EOF
     exit 0
@@ -426,6 +433,7 @@ ruby_configure_quals=(
     --with-out-ext=${RUBY_EXTENSIONS}
   )
 
+ruby_config_quals_jemalloc=$enable_ruby_jemalloc
 ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
 
 ruby_test_directory="${home_dir}/bin/omsagent_test_ruby"
@@ -488,6 +496,7 @@ PACKAGE_SUFFIX=$PKG_SUFFIX
 RUBY_CONFIGURE_QUALS=( ${ruby_configure_quals[@]} )
 RUBY_CONFIGURE_QUALS_SYSINS="$ruby_config_quals_sysins"
 RUBY_CONFIGURE_QUALS_TESTINS="$ruby_config_quals_testins"
+RUBY_CONFIGURE_QUALS_JEMALLOC="${ruby_config_quals_jemalloc}"
 RUBY_TEST_DIRECTORY="$ruby_test_directory"
 
 EOF
