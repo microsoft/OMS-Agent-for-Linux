@@ -6,3 +6,7 @@
 	path = source/ext/fluentd
 	url = git@github.com:fluent/fluentd.git
 	ignore = dirty
+[submodule "source/ext/jemalloc"]
+	path = source/ext/jemalloc
+	url = git@github.com:jemalloc/jemalloc.git
+	branch = stable-4

@@ -5,6 +5,7 @@ RUBY_DEST:                '/opt/microsoft/omsagent/ruby'
 
 ${{RUBY_DEST}}/lib/pkgconfig/ruby-2.4.pc;                                ${{RUBY_INT}}/lib/pkgconfig/ruby-2.4.pc;                         644; root; root
 
+${{RUBY_DEST}}/lib/libjemalloc.so.2;                                     ${{RUBY_INT}}/lib/libjemalloc.so.2;                              755; root; root
 ${{RUBY_DEST}}/lib/libruby-static.a;                                     ${{RUBY_INT}}/lib/libruby-static.a;                              644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/2.4.0/date.rb;                                   ${{RUBY_INT}}/lib/ruby/2.4.0/date.rb;                            644; root; root
