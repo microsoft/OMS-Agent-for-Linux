@@ -29,7 +29,7 @@ AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.0.0-13
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
 #      of the Ruby installed with the OMSAgent
-RUBY_VER := 2.4.0
+RUBY_VER := $(RUBY_VERSION_MAJOR_MINOR)
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 JEMALLOC_DIR := $(BASE_DIR)/source/ext/jemalloc
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
@@ -127,7 +127,9 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
-	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
+	cd $(BASE_DIR)/source/ext/ruby; git clean -dfx; git reset --hard
+
+compile_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy
 
 sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp
 
@@ -150,14 +152,14 @@ clean-ruby : clean
 	# Warning: This step will clean out checked out files from Ruby directory
 	#
 	@echo "Cleaning RUBY source directory ..."
-	cd $(RUBY_DIR); git clean -dfx
+	cd $(RUBY_DIR); git clean -dfx; git reset --hard
 	#
 	# Warning: This step will clean out checked out files from fluentd directory
 	#
 	@echo "Cleaning fluentd source directory ..."
-	cd $(FLUENTD_DIR); git clean -dfx
+	cd $(FLUENTD_DIR); git clean -dfx; git reset --hard
 	@echo "Cleaning jemalloc source directory ..."
-	cd $(JEMALLOC_DIR); git clean -dfx
+	cd $(JEMALLOC_DIR); git clean -dfx; git reset --hard
 
 clean-dsc : clean
 	-make -C $(DSC_DIR) clean

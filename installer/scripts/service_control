@@ -524,14 +524,14 @@ find_systemd_dir()
 
 enable_omsagent_service()
 {
-    # set the GC parameters for Ruby
-    export RUBY_GC_HEAP_GROWTH_FACTOR=1.1
-    export RUBY_GC_MALLOC_LIMIT=4000100
-    export RUBY_GC_MALLOC_LIMIT_MAX=16000100
-    export RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR=1.1
-    export RUBY_GC_OLDMALLOC_LIMIT=16000100
-    export RUBY_GC_OLDMALLOC_LIMIT_MAX=16000100
-    export RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR=0.9
+#    Don't use GC parameters for Ruby this will increase CPU usage
+#    export RUBY_GC_HEAP_GROWTH_FACTOR=1.1
+#    export RUBY_GC_MALLOC_LIMIT=4000100
+#    export RUBY_GC_MALLOC_LIMIT_MAX=16000100
+#    export RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR=1.1
+#    export RUBY_GC_OLDMALLOC_LIMIT=16000100
+#    export RUBY_GC_OLDMALLOC_LIMIT_MAX=16000100
+#    export RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR=0.9
 
     if [ ! -f $CONF_DIR/.service_registered ] && [ -f $OMSADMIN_CONF ]; then
         echo "INFO:  Configuring OMS agent service $WORKSPACE_ID ..."

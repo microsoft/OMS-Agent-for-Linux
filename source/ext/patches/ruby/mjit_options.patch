@@ -1,0 +1,14 @@
+--- ../source/ext/ruby/mjit.c	2019-05-08 19:58:55.015602598 -0700
++++ ../source/ext/ruby/mjit.c.new	2019-05-08 19:57:41.387349288 -0700
+@@ -565,9 +565,9 @@
+ 
+ /* Default permitted number of units with a JIT code kept in
+    memory.  */
+-#define DEFAULT_CACHE_SIZE 1000
++#define DEFAULT_CACHE_SIZE 10000
+ /* A default threshold used to add iseq to JIT. */
+-#define DEFAULT_MIN_CALLS_TO_ADD 5
++#define DEFAULT_MIN_CALLS_TO_ADD 1000
+ /* Minimum value for JIT cache size.  */
+ #define MIN_CACHE_SIZE 10
+ 

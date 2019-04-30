@@ -39,6 +39,6 @@ before_script:
 
 script:
   # System tests are not run because OMS-Agent-for-Linux-testconfig.git is a private repo
-  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos6-x64:latest /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux --enable-ruby-jemalloc; make unittest"
+  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos6-x64:latest /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux --enable-ruby-jemalloc; make unittest; make compile_only"
   #- docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos5-x64:latest /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux --enable-ruby-jemalloc; make"
 

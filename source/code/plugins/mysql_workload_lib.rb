@@ -176,7 +176,7 @@ class MysqlWorkload_Lib
     key_cache_hit_pct = Hash.new
     key_reads = get_value(global_stats,'Key_reads')
     key_read_requests = get_value(global_stats,'Key_read_requests')
-    value = 0 #initialize
+    value = 0.0 #initialize
     if key_read_requests.to_f != 0
       value = (key_reads.to_f / key_read_requests.to_f) * 100
     end
@@ -185,7 +185,7 @@ class MysqlWorkload_Lib
 
     # add MySQL Worst Case RAM Usage
     server_max_ram= Hash.new
-    value = 0 #reset
+    value = 0.0 #reset
     key_buffer_size = get_value(env_var_stats, 'key_buffer_size')
     read_buffer_size  = get_value(env_var_stats, 'read_buffer_size')
     sort_buffer_size = get_value(env_var_stats, 'sort_buffer_size')
@@ -221,7 +221,7 @@ class MysqlWorkload_Lib
     key_cache_write_pct = Hash.new()
     key_writes = get_value(global_stats,"Key_writes")
     key_writes_requests = get_value(global_stats,"Key_writes_requests")
-    value = 0
+    value = 0.0
     if(key_writes_requests.to_f != 0)
       value = (key_writes.to_f)/(key_writes_requests.to_f) * 100
     end
@@ -232,7 +232,7 @@ class MysqlWorkload_Lib
     query_cache_hit_pct = Hash.new()
     qcache_hits = get_value(global_stats,"Qcache_hits")
     com_select = get_value(global_stats,"Com_select")
-    value = 0
+    value = 0.0
     if (qcache_hits.to_f + com_select.to_f) != 0
       value = qcache_hits.to_f/(qcache_hits.to_f + com_select.to_f)*100
     end
@@ -242,7 +242,7 @@ class MysqlWorkload_Lib
     #add Query Cache Low memory Prunes
     query_cache_prunes_pct = Hash.new()
     qcache_prunes = get_value(global_stats,"Qcache_lowmem_prunes")
-    value = 0
+    value = 0.0
     if queries.to_f != 0
       value = (qcache_prunes.to_f/queries.to_f) * 100
     end
@@ -253,7 +253,7 @@ class MysqlWorkload_Lib
     table_hit_pct = Hash.new()
     open_tables = get_value(global_stats,"Open_tables")
     opened_tables = get_value(global_stats,"Opened_tables")
-    value = 0
+    value = 0.0
     if opened_tables.to_f != 0
       value = open_tables.to_f/opened_tables.to_f * 100
     end
@@ -264,7 +264,7 @@ class MysqlWorkload_Lib
     table_lock_pct = Hash.new()
     table_lock_waited = get_value(global_stats,"Table_locks_waited")
     table_lock_immediate = get_value(global_stats,"Table_locks_immediate")
-    value = 0
+    value = 0.0
     if (table_lock_waited.to_f + table_lock_immediate.to_f) != 0
       value = table_lock_waited.to_f/(table_lock_waited.to_f + table_lock_immediate.to_f) * 100
     end
@@ -275,7 +275,7 @@ class MysqlWorkload_Lib
     idb_hit_pct = Hash.new()
     innodb_buffer_pool_reads = get_value(global_stats,"Innodb_buffer_pool_reads")
     innodb_buffer_pool_read_requests = get_value(global_stats,"Innodb_buffer_pool_read_requests")
-    value = 0
+    value = 0.0
     if (innodb_buffer_pool_reads.to_f + innodb_buffer_pool_read_requests.to_f) != 0
       value = innodb_buffer_pool_reads.to_f/(innodb_buffer_pool_reads.to_f + innodb_buffer_pool_read_requests.to_f) * 100
     end
@@ -286,7 +286,7 @@ class MysqlWorkload_Lib
     idb_use_pct = Hash.new()
     innodb_buffer_pool_pages_data = get_value(global_stats,"Innodb_buffer_pool_pages_data")
     innodb_buffer_pool_pages_total = get_value(global_stats,"Innodb_buffer_pool_pages_total")
-    value = 0
+    value = 0.0
     if( innodb_buffer_pool_pages_total.to_f != 0)
       value = innodb_buffer_pool_pages_data.to_f/innodb_buffer_pool_pages_total.to_f * 100
     end
@@ -303,7 +303,7 @@ class MysqlWorkload_Lib
     handler_read_rnd_next = get_value(global_stats,"Handler_read_rnd_next")
     full_scan_reads = handler_read_rnd.to_f + handler_read_rnd_next.to_f
     all_row_access  = handler_read_rnd.to_f + handler_read_first.to_f + handler_read_key.to_f + handler_read_next.to_f + handler_read_prev.to_f + handler_read_rnd_next.to_f
-    value = 0 #reset
+    value = 0.0 #reset
     if all_row_access != 0
       value = full_scan_reads/all_row_access * 100
     end
