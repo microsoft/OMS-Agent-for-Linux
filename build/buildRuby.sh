@@ -9,6 +9,7 @@
 #
 #   Parameter may be one of:
 #       "110": Build for SSL v1.1.0
+#       "101": Build for SSL v1.0.1
 #       "100": Build for SSL v1.0.0
 #       blank: Build for the local system
 #       test:  Build for test purposes
@@ -94,12 +95,20 @@ case $RUBY_BUILD_TYPE in
         RUNNING_FOR_TEST=1
 	;;
 
+#    100)
+#        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
+#        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+#
+#        export LD_LIBRARY_PATH=$SSL_100_LIBPATH:$LD_LIBRARY_PATH
+#        export PKG_CONFIG_PATH=${SSL_100_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+#        ;;
+
     100)
         INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_101[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
-        export LD_LIBRARY_PATH=$SSL_100_LIBPATH:$LD_LIBRARY_PATH
-        export PKG_CONFIG_PATH=${SSL_100_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+        export LD_LIBRARY_PATH=$SSL_101_LIBPATH:$LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH=${SSL_101_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
         ;;
 
     110)
@@ -180,19 +189,16 @@ fi
 
 cd ${RUBY_SRCDIR}
 sudo rm -rf ${RUBY_SRCDIR}/.ext
-git clean -dfx
-
-# Restore the configure script
-
-cp ${PATCHES_SRCDIR}/ruby/configure ${RUBY_SRCDIR}
+git clean -q -dfx
 
 # Configure and build Ruby
 
 cd ${RUBY_SRCDIR}
 echo "========================= Performing Running Ruby configure"
 echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS[@]} ..."
-touch configure
-./configure "${RUBY_CONFIGURE_QUALS[@]}"
+# Restore the configure script
+autoconf
+./configure "${RUBY_CONFIGURE_QUALS[@]}" &> /dev/null
 
 #
 # "Fix" the source tree.
@@ -203,7 +209,7 @@ touch configure
 echo "========================= Performing Repairing Ruby sources"
 
 # RUBY_REPAIR_LIST is set reletive to the Ruby source directory
-RUBY_REPAIR_LIST="enc/unicode/9.0.0/name2ctype.h"
+RUBY_REPAIR_LIST="enc/unicode/*/name2ctype.h"
 
 cd ${RUBY_SRCDIR}
 git checkout -- ${RUBY_REPAIR_LIST}
@@ -240,7 +246,7 @@ if [ $RUNNING_FOR_TEST -eq 1 ]; then
 fi
 
 echo "Installing Bundler into Ruby ..."
-elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.10.6.gem
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.17.3.gem
 
 echo "Installing Builder into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.3.gem
@@ -267,6 +273,8 @@ cd ${FLUENTD_DIR}
 elevate bundle install --local
 elevate bundle exec rake build
 elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.40.gem
+# Ruby 2.6 has JIT disabled by default, let enable it.
+# sed -i 's/bin\/ruby/bin\/ruby --jit/g' ${OMS_AGENTDIR}/ruby/bin/fluentd
 
 echo "========================= Performing Stripping Binaries"
 sudo find ${RUBY_DESTDIR} -name \*.so -print -exec strip {} \;

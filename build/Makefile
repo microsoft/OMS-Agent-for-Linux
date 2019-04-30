@@ -29,7 +29,7 @@ AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
 #      of the Ruby installed with the OMSAgent
-RUBY_VER := 2.4.0
+RUBY_VER := 2.5.0
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
 JEMALLOC_DIR := $(BASE_DIR)/source/ext/jemalloc
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
@@ -128,6 +128,8 @@ all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LI
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
+
+build : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy
 
 sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp
 
