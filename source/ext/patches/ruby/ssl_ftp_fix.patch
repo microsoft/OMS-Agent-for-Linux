@@ -1,0 +1,19 @@
+--- ../source/ext/ruby/lib/net/ftp.rb	2019-05-16 18:36:21.755933032 -0700
++++ ../source/ext/ruby/lib/net/ftp.rb.new	2019-05-16 18:35:19.727760952 -0700
+@@ -233,7 +233,7 @@
+         @ssl_context.session_cache_mode =
+           OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
+           OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
+-        @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
++#        @ssl_context.session_new_cb = proc {|sock, sess| @ssl_session = sess }
+         @ssl_session = nil
+         if options[:private_data_connection].nil?
+           @private_data_connection = true
+@@ -353,6 +353,7 @@
+       if @ssl_context.verify_mode != VERIFY_NONE
+         ssl_sock.post_connection_check(@host)
+       end
++      @ssl_session = ssl_sock.session
+       return ssl_sock
+     end
+     private :start_tls_session
