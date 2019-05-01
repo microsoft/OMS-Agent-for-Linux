@@ -516,8 +516,8 @@ if [ "$ULINUX" = "1" ]; then
 fi
 
 # Fix permissions in case they aren't executable - and then configure AUOMS
-chmod ug+x ${auoms_dir}/build/configure
-(cd ${auoms_dir}/build && ./configure ${auoms_configure_quals})
+#chmod ug+x ${auoms_dir}/build/configure
+#(cd ${auoms_dir}/build && ./configure ${auoms_configure_quals})
 
 # Display some information for our own configuration
 if [ $NOOPTIMIZE -eq 1 ]; then
