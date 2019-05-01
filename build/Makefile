@@ -11,6 +11,7 @@ SCX_CORE_KITS := $(shell cd ../../scxcore-kits; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
 AUOMS_DIR := $(shell cd ../../auoms; pwd -P)
+AUOMS_KITS_DIR := $(shell cd ../../auoms-kits; pwd -P)
 
 PF_POSIX := 1
 include $(BASE_DIR)/build/config.mak
@@ -23,6 +24,7 @@ endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
 AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
@@ -122,7 +124,7 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb
 
-all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
+all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
 	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
@@ -162,13 +164,7 @@ clean-dsc : clean
 	-$(RMDIR) $(DSC_DIR)/config.mak $(DSC_DIR)/intermediate $(DSC_DIR)/output $(DSC_DIR)/release
 	-$(RM) $(DSC_DIR)/omi-1.0.8
 
-clean-auoms : clean
-	-make -C $(AUOMS_DIR)/build distclean
-	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@$(ECHO) "!!!!! PLEASE RE-RUN THE ./configure SCRIPT !!!!!"
-	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-
-distclean : clean clean-ruby clean-dsc clean-auoms
+distclean : clean clean-ruby clean-dsc
 	-$(RMDIR) $(OMI_ROOT)/output*
 
 	# reset all submodules
@@ -243,12 +239,6 @@ $(SEPOLICY_DIR)/omsagent-logrotate.pp : $(SEPOLICY_SRC_DIR)/omsagent-logrotate.t
 	$(MKPATH) $(SEPOLICY_DIR)
 	touch $(SEPOLICY_DIR)/omsagent-logrotate.pp
 endif
-
-#--------------------------------------------------------------------------------
-# Build AUOMS project
-
-$(AUOMS_TARGET_DIR)/auoms-bundle-test.sh :
-	$(MAKE) -C $(AUOMS_DIR)/build all
 
 #--------------------------------------------------------------------------------
 # Build the version of Ruby that we test with
@@ -347,7 +337,7 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PAC
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX_DEB).tar "DPKG"
 
 ifeq ($(PF_ARCH),x64)
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb \
 	$(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
 
@@ -373,8 +363,8 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Pick up other bundled packages
 	$(RMDIR) $(INTERMEDIATE_DIR)/bundles
 	$(MKPATH) $(INTERMEDIATE_DIR)/bundles
-	cd $(AUOMS_TARGET_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
-	$(COPY) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
+	cd $(AUOMS_KITS_RELEASE_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+	$(COPY) $(AUOMS_KITS_RELEASE_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
@@ -423,7 +413,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLU
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb 110/*.deb oss-kits/*
 
 else
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building .tar file"
@@ -444,8 +434,8 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Pick up other bundled packages
 	$(RMDIR) $(INTERMEDIATE_DIR)/bundles
 	$(MKPATH) $(INTERMEDIATE_DIR)/bundles
-	cd $(AUOMS_TARGET_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
-	$(COPY) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
+	cd $(AUOMS_KITS_RELEASE_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+	$(COPY) $(AUOMS_KITS_RELEASE_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
