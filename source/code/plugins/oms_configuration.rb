@@ -147,7 +147,7 @@ module OMS
             if (imds_instance_json_compute['vmScaleSetName'].empty?)
               azure_resource_id = azure_resource_id + 'virtualMachines/' + imds_instance_json_compute['name']
             else
-              azure_resource_id = azure_resource_id + 'virtualMachineScaleSets/' + imds_instance_json_compute['vmScaleSetName'] + '/virtualMachines/' + imds_instance_json_compute['name']
+              azure_resource_id = azure_resource_id + 'virtualMachineScaleSets/' + imds_instance_json_compute['vmScaleSetName'] + '/virtualMachines/' + imds_instance_json_compute['name'].split('_')[-1]
             end
 
             return azure_resource_id
