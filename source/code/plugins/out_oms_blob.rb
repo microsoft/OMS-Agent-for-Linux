@@ -386,7 +386,6 @@ module Fluent
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
-      @log.trace "Buffering #{tag}"
       [tag, record].to_msgpack
     end
 

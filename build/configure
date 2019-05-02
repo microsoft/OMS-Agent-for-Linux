@@ -13,6 +13,7 @@ enable_purify_server=""
 enable_omi_tools=""
 enable_omi_tools_flag=0
 opensource_distro=0
+enable_ruby_jemalloc=""
 build_type=Release
 ULINUX=0
 NOULINIX=0
@@ -171,6 +172,11 @@ do
       opensource_distro=1
     ;;
 
+    --enable-ruby-jemalloc)
+      echo "Configured Jemalloc for Ruby"
+      enable_ruby_jemalloc="--with-jemalloc"
+    ;;
+
     *)
       echo "configure: invalid option '$opt'" >& 2
       echo "Try configure --help' for more information." >& 2
@@ -200,6 +206,7 @@ OPTIONS:
     --[no]enable-ulinux         Specifies platform as ULINUX (Linux only);
                                 ULINUX is assumed on universal build systems
     --enable-open-source        Build for open source distribution
+    --enable-ruby-jemalloc      Enable building ruby with jemalloc
 
 EOF
     exit 0
@@ -230,6 +237,9 @@ apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_
 # This patch is borrowed from FluentD 0.12.32 to resolve in_exec plugin failing repeatedly with command or parsing failing
 # Updating FluentD to version 0.12.32 or later may already include this patch
 apply_patch ${base_dir}/source/ext/patches/fluentd/in_exec.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_exec.rb
+
+# Patching in_syslog.rb to support configurable syslog delimiter
+apply_patch ${base_dir}/source/ext/patches/fluentd/in_syslog.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_syslog.rb
 
 # No errors allowed from this point forward
 set -e
@@ -423,6 +433,7 @@ ruby_configure_quals=(
     --with-out-ext=${RUBY_EXTENSIONS}
   )
 
+ruby_config_quals_jemalloc=$enable_ruby_jemalloc
 ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
 
 ruby_test_directory="${home_dir}/bin/omsagent_test_ruby"
@@ -485,6 +496,7 @@ PACKAGE_SUFFIX=$PKG_SUFFIX
 RUBY_CONFIGURE_QUALS=( ${ruby_configure_quals[@]} )
 RUBY_CONFIGURE_QUALS_SYSINS="$ruby_config_quals_sysins"
 RUBY_CONFIGURE_QUALS_TESTINS="$ruby_config_quals_testins"
+RUBY_CONFIGURE_QUALS_JEMALLOC="${ruby_config_quals_jemalloc}"
 RUBY_TEST_DIRECTORY="$ruby_test_directory"
 
 EOF
@@ -504,8 +516,8 @@ if [ "$ULINUX" = "1" ]; then
 fi
 
 # Fix permissions in case they aren't executable - and then configure AUOMS
-chmod ug+x ${auoms_dir}/build/configure
-(cd ${auoms_dir}/build && ./configure ${auoms_configure_quals})
+#chmod ug+x ${auoms_dir}/build/configure
+#(cd ${auoms_dir}/build && ./configure ${auoms_configure_quals})
 
 # Display some information for our own configuration
 if [ $NOOPTIMIZE -eq 1 ]; then

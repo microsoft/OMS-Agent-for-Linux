@@ -32,6 +32,7 @@ elevate()
 
     # Write out the environment variables to preserve
     echo "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\"" >> $ENV_FILE
+    echo "export PATH=\"$PATH\"" >> $ENV_FILE
 
     # Write out the actual script that will be sudo elevated
     echo "#! /bin/bash" >> $SUDO_FILE
@@ -59,7 +60,9 @@ OMS_AGENTDIR=/opt/microsoft/omsagent
 PATCHES_SRCDIR=${BASE_DIR}/source/ext/patches
 RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby
 FLUENTD_DIR=${BASE_DIR}/source/ext/fluentd
-
+JEMALLOC_SRCDIR=${BASE_DIR}/source/ext/jemalloc
+JEMALLOC_DSTDIR=/usr
+JEMALLOC_LIBPATH=${JEMALLOC_DSTDIR}/lib
 # Has configure script been run?
 
 if [ ! -f ${BASE_DIR}/build/config.mak ]; then
@@ -86,13 +89,13 @@ RUNNING_FOR_TEST=0
 
 case $RUBY_BUILD_TYPE in
     test)
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
         RUNNING_FOR_TEST=1
 	;;
 
     100)
         INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_100_LIBPATH:$LD_LIBRARY_PATH
         export PKG_CONFIG_PATH=${SSL_100_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
@@ -100,7 +103,7 @@ case $RUBY_BUILD_TYPE in
 
     110)
         INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_110[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_110[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_110_LIBPATH:$LD_LIBRARY_PATH
         export PKG_CONFIG_PATH=${SSL_110_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
@@ -108,7 +111,7 @@ case $RUBY_BUILD_TYPE in
 
     *)
         INT_APPEND_DIR=""
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         if [ -n "$RUBY_BUILD_TYPE" ]; then
             echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, 100, 110 or blank" >& 2
@@ -123,6 +126,7 @@ echo "Beginning Ruby build process ..."
 echo "  Build directory:   ${BASE_DIR}"
 echo "  Ruby sources:      ${RUBY_SRCDIR}"
 echo "  Ruby destination:  ${RUBY_DESTDIR}"
+echo "  Ruby jemalloc:     '${RUBY_CONFIGURE_QUALS_JEMALLOC}'"
 echo "  Configuration:     ${RUBY_CONFIGURE_QUALS[@]}"
 
 # Did we pick up Ruby destintion directory properly?
@@ -147,6 +151,18 @@ fi
 if [ -d ${OMS_AGENTDIR} -a ${RUNNING_FOR_TEST} -eq 0 ]; then
     echo "FATAL: OMS agent is already installed at '${OMS_AGENTDIR}'! Must remove agent to build agent ..." >& 2
     exit 1
+fi
+
+if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ]; then
+    if [ ! -d ${JEMALLOC_SRCDIR} ]; then
+        echo "Fatal: Jemalloc source code not found at ${JEMALLOC_SRCDIR}" >& 2; exit 1
+    fi
+
+    echo "========================= Performing Building Jemalloc"
+    cd ${JEMALLOC_SRCDIR}
+    ./autogen.sh --prefix=${JEMALLOC_DSTDIR} --libdir=${JEMALLOC_LIBPATH}
+    make && make install_bin install_include install_lib
+    ldconfig
 fi
 
 # Clean the version of Ruby from any existing files that aren't part of source
@@ -199,6 +215,12 @@ elevate make install
 
 export PATH=${RUBY_DESTDIR}/bin:$PATH
 
+sudo touch ${RUBY_DESTDIR}/lib/libjemalloc.so.2
+if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ] && [ -e $JEMALLOC_LIBPATH/libjemalloc.so.2 ]; then
+    echo "=========================== Copy JEMALLOC to ruby lib directory"
+    sudo cp $JEMALLOC_LIBPATH/libjemalloc.so.2 ${RUBY_DESTDIR}/lib/
+fi
+
 if [ $RUNNING_FOR_TEST -eq 1 ]; then
     echo "Installing Metaclass and Mocha (for UnitTest) into Ruby ..."
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/metaclass-0.0.4.gem
@@ -223,15 +245,15 @@ cd ${FLUENTD_DIR}
 
 if [ ! -d ${FLUENTD_DIR}/vendor/cache ]; then
     echo "========================= Performing Fetching FluentD dependencies for Ruby"
-    bundle install
-    bundle package --all
+    elevate bundle install
+    elevate bundle package --all
     echo "*** Be sure to check all files in 'vendor/cache' into TFS ***"
 fi
 
 echo "========================= Performing Building FluentD"
 cd ${FLUENTD_DIR}
-bundle install --local
-bundle exec rake build
+elevate bundle install --local
+elevate bundle exec rake build
 elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.40.gem
 
 echo "========================= Performing Stripping Binaries"
