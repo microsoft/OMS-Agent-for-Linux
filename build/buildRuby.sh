@@ -161,8 +161,8 @@ if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ]; then
     echo "========================= Performing Building Jemalloc"
     cd ${JEMALLOC_SRCDIR}
     ./autogen.sh --prefix=${JEMALLOC_DSTDIR} --libdir=${JEMALLOC_LIBPATH}
-    make && make install_bin install_include install_lib
-    ldconfig
+    make && elevate make install_bin install_include install_lib
+    elevate ldconfig
 fi
 
 # Clean the version of Ruby from any existing files that aren't part of source
