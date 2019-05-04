@@ -276,7 +276,13 @@ module OMS
             @@LogFacility = line.sub("LOG_FACILITY=","").strip
           end
           if line =~ /UUID/
-            @@UUID = line.sub("UUID=","").strip
+            uuid_str = line.sub("UUID=","").strip
+            uuid_regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+            if uuid_str =~ uuid_regex
+              @@UUID = uuid_str
+            else
+              @@UUID = "00000000-0000-0000-0000-000000000000" 
+            end          
           end
         end
 
