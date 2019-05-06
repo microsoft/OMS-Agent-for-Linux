@@ -165,7 +165,7 @@ if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ]; then
         ./autogen.sh --prefix=${JEMALLOC_DSTDIR} --libdir=${JEMALLOC_DSTDIR}/lib
         make
         sudo make install_bin install_include install_lib
-        sudo ldconfig
+        elevate ldconfig
     fi
 
 #    export PATH=${JEMALLOC_SRCDIR}/bin:$PATH
