@@ -78,8 +78,8 @@ If you are using a distro or version that is not currently supported and doesn't
 ## [Troubleshooting Guide](https://docs.microsoft.com/azure/azure-monitor/platform/agent-linux-troubleshoot)
 
 ## Supported Scenarios
-- [Heartbeat data collection](https://docs.microsoft.com/azure/log-analytics/log-analytics-queries?toc=/azure/azure-monitor/toc.json#write-a-query) 
-- 
+- ### [Heartbeat data collection](https://docs.microsoft.com/azure/log-analytics/log-analytics-queries?toc=/azure/azure-monitor/toc.json#write-a-query) 
+
 - ### [Syslog data collection](https://docs.microsoft.com/azure/azure-monitor/platform/data-sources-syslog) 
 
 - ### [Docker collection](https://docs.microsoft.com/azure/azure-monitor/insights/containers) 
