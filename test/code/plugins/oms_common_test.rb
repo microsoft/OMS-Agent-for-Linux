@@ -569,28 +569,42 @@ module OMS
       assert($log.logs.empty?, "No exception should be logged")
     end
     
-    def test_safe_dump_simple_hash_array_firsterror_encoding_success
+    def test_safe_dump_non_ascii_hash_array_noerror
       $log = MockLog.new
+      
+      records = [ { "ID" => 1, "Japan" => "にほん" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Japan\":\"にほん\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+      
+      records = [ { "ID" => 1, "China" => "中国" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"China\":\"中国\"}]", json, "parse json record utf-8 encoding failed: #{json}");
 
-      records = [ { "ID" => 1, "Message" => "iPhone\xAE" } ];
+      records = [ { "ID" => 1, "Morocco" => "ﺎﻠﻤﻏﺮﺑ" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Morocco\":\"ﺎﻠﻤﻏﺮﺑ\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "India" => "भारत" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"India\":\"भारत\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "South Korea" => "대한 민국" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"South Korea\":\"대한 민국\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "Russia" => "Россия" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Russia\":\"Россия\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "Greece" => "Καλημέρα" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Greece\":\"Καλημέρα\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "Message" => "iPhone\u00AE" } ];
       json = Common.safe_dump_simple_hash_array(records);
       assert_equal("[{\"ID\":1,\"Message\":\"iPhone®\"}]", json, "parse json record utf-8 encoding failed: #{json}");
-      assert_not_equal(0, $log.logs.length, "Exception should be logged")
-      assert($log.logs[-1].include?("source sequence is illegal/malformed utf-8"), "Except error in log: '#{$log.logs}'")
-    end
-
-    def test_safe_dump_simple_hash_array_firsterror_encoding_error
-      $log = MockLog.new
-
-      json = nil
-      records = [ { "ID" => 1, "Message\xAE" => "iPhone\xAE" } ];
-      assert_nothing_raised(RuntimeError, "No RuntimeError to dump unexpected type") do
-        json = Common.safe_dump_simple_hash_array(records);
-      end
-
-      assert_not_equal(0, $log.logs.length, "Exception should be logged")
-      assert($log.logs[-1].include?("source sequence is illegal/malformed utf-8"), "Except error in log: '#{$log.logs}'")
-      assert_equal(nil, json, "Expect nil: #{json}")
+      
+      assert($log.logs.empty?, "No exception should be logged")
     end
 
     def test_get_current_timezone
