@@ -13,7 +13,7 @@ if [ "$(uname -m)" == "x86_64" ]; then
                 exit 1
             fi
         else
-            echo "  Docker is not listening on /var/run/docker.sock. Docker agent will not be installed." 1>&2
+            echo "  Docker is not listening on /var/run/docker.sock. Docker agent will not be installed" 1>&2
             exit 1
         fi
     else
