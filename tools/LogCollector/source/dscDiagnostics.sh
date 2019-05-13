@@ -124,4 +124,19 @@ ls -al /tmp | tee -a ${log_file}
 echo '-------------------------------------------------' | tee -a ${log_file}
 echo '=================================================' | tee -a ${log_file}
 
+echo '=================================================' | tee -a ${log_file}
+echo "************* OMS Config Host Info **************" | tee -a ${log_file}
+echo '=================================================' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "find /opt/dsc/ " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+find /opt/dsc/ | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -alR /opt/dsc/ " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -alR /opt/dsc/ | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo '=================================================' | tee -a ${log_file}
+
 tar -cvf $output_path.tar.gz ./$output_path
