@@ -89,7 +89,7 @@ fi
 
 # We need to use sudo for commands in the following block, if not running as root
 SUDO=''
-if (( $EUID != 0 )); then
+if [ "$EUID" != 0 ]; then
     SUDO='sudo'
 fi
 
