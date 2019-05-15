@@ -26,6 +26,7 @@ If none of these steps work for you the following channels for help are also ava
 - [My portal side configuration for (Syslog/Linux Performance Counter) is not being applied](#my-portal-side-configuration-for-sysloglinux-performance-counter-is-not-being-applied)
 - [I'm not seeing my Custom Log Data in the OMS Potal](#im-not-seeing-my-custom-log-data-in-the-oms-portal)
 - [I'm re-onboarding to a new workspace](#im-re-onboarding-to-a-new-workspace)
+- [I see omiagent using 100% CPU](#i-see-omiagent-using-100-cpu)
 
 ## Important Log Locations and Log Collector Tool
 
@@ -389,3 +390,76 @@ You can continue re-onboarding after using the `--purge` option
 wget https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_GA_v1.4.2-124/omsagent-1.4.2-124.universal.x64.sh
 ```
 * Upgrade packages by executing `sudo sh ./omsagent-*.universal.x64.sh --upgrade`
+
+### I see omiagent using 100% CPU
+#### Probable Causes
+A regression in nss-pem package [v1.0.3-5.el7](https://centos.pkgs.org/7/centos-x86_64/nss-pem-1.0.3-5.el7.x86_64.rpm.html)
+caused a severe performance issue, that we've been seeing come up a lot in Redhat/Centos 7.x distributions.
+
+To learn more about this issue, check the following documentation: 
+* Bug [1667121](https://bugzilla.redhat.com/show_bug.cgi?id=1667121) performance regression in libcurl caused by the use of PK11_CreateManagedGenericObject() [rhel-7.6.z]
+
+#### Debugging omiagent high CPU
+Performance related bugs don't happen all the time, and they are very difficult to reproduce.
+If you experience such issue with omiagent you should use the script omiHighCPUDiagnostics.sh which will collect 
+the stack trace of the omiagent when exceeding a certain threshold.
+
+* Download the script
+```
+wget https://raw.githubusercontent.com/microsoft/OMS-Agent-for-Linux/master/tools/LogCollector/source/omiHighCPUDiagnostics.sh
+```
+* Run diagnostics for 24 hours with 30% CPU threshold
+```
+bash omiHighCPUDiagnostics.sh --runtime-in-min 1440 --cpu-threshold 30
+```
+* Callstack will be dumped in omiagent_trace file, If you notice many Curl and NSS function calls as below example, follow resolution steps in the following section.
+```
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
+0x00007fbfc7bd6736 in pem_FindObjectsInit () from /lib64/libnsspem.so
+#0  0x00007fbfc7bd6736 in pem_FindObjectsInit () from /lib64/libnsspem.so
+#1  0x00007fbfc7bdddb8 in nssCKFWSession_FindObjectsInit () from /lib64/libnsspem.so
+#2  0x00007fbfc7be2f19 in NSSCKFWC_FindObjectsInit () from /lib64/libnsspem.so
+#3  0x00007fbfd795f85f in find_objects () from /lib64/libnss3.so
+#4  0x00007fbfd795fe08 in nssToken_FindObjectsByTemplate () from /lib64/libnss3.so
+#5  0x00007fbfd7960e19 in nssToken_FindTrustForCertificate () from /lib64/libnss3.so
+#6  0x00007fbfd79599c3 in nssTrustDomain_FindTrustForCertificate () from /lib64/libnss3.so
+#7  0x00007fbfd795dd4c in nssTrust_GetCERTCertTrustForCert () from /lib64/libnss3.so
+#8  0x00007fbfd795e0f8 in stan_GetCERTCertificate () from /lib64/libnss3.so
+#9  0x00007fbfd7957e7d in nssCertificate_GetDecoding () from /lib64/libnss3.so
+#10 0x00007fbfd795ce38 in nssCertificateArray_FindBestCertificate () from /lib64/libnss3.so
+#11 0x00007fbfd7920f48 in PK11_FindCertFromNickname () from /lib64/libnss3.so
+#12 0x00007fbfd8d186dc in nss_load_cert () from /opt/omi/lib/libcurl.so.3
+#13 0x00007fbfd8d5186c in nss_connect_common () from /opt/omi/lib/libcurl.so.3
+#14 0x00007fbfd8d47aee in Curl_ssl_connect_nonblocking () from /opt/omi/lib/libcurl.so.3
+#15 0x00007fbfd8d1eddd in Curl_http_connect () from /opt/omi/lib/libcurl.so.3
+#16 0x00007fbfd8d2e735 in Curl_protocol_connect () from /opt/omi/lib/libcurl.so.3
+#17 0x00007fbfd8d41e5b in multi_runsingle () from /opt/omi/lib/libcurl.so.3
+#18 0x00007fbfd8d423b1 in curl_multi_perform () from /opt/omi/lib/libcurl.so.3
+#19 0x00007fbfd8d39623 in curl_easy_perform () from /opt/omi/lib/libcurl.so.3
+#20 0x00007fbfd9281b23 in Pull_SendStatusReport (lcmContext=<optimized out>, metaConfig=<optimized out>, statusReport=0x7fbf83da7450, isStatusReport=<optimized out>, getActionStatusCode=<optimized out>, extendedError=0x7fbfd5bafbe0) at WebPullClient.c:2919
+#21 0x00007fbfd926964c in ReportStatusToServer (lcmContext=0x0, errorMessage=0x0, errorSource=0x0, resourceId=0x0, errorCode=0, bLastReport=0 '\000', isStatusReport=1, instanceMIError=0x0) at LocalConfigManagerHelper.c:4817
+#22 0x00007fbfd926a28b in SetLCMStatusBusy () at LocalConfigManagerHelper.c:6733
+#23 0x00007fbfd9273a25 in Invoke_TestConfiguration_Internal (param=0x1760410) at LocalConfigurationManager.c:2330
+#24 0x00007fbfd9294b97 in _Wrapper (param=0x7fbfd00008c0) at thread.c:33
+#25 0x00007fbfdbe25dd5 in start_thread () from /lib64/libpthread.so.0
+#26 0x00007fbfdb068ead in clone () from /lib64/libc.so.6
+```
+
+#### Resolution (step by step)
+* Upgrade the nss-pem package to [v1.0.3-5.el7_6.1](https://centos.pkgs.org/7/centos-updates-x86_64/nss-pem-1.0.3-5.el7_6.1.x86_64.rpm.html).
+```
+sudo yum upgrade nss-pem 
+```
+* If nss-pem is not available for upgrade (mostly happens on Centos), then downgrade curl to 7.29.0-46.
+* If by mistake you run "yum update", then curl will be upgraded to 7.29.0-51 and the issue will happen again.
+```
+sudo yum downgrade curl libcurl
+```
+* Restart OMI:
+```
+sudo scxadmin -restart
+```
+
+
+
