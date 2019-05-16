@@ -61,6 +61,7 @@ USE_UPGRADE=23
 # Internal errors:
 INTERNAL_ERROR=30
 # Package pre-requisites fail
+DEPENDENCY_MISSING=52 #https://github.com/Azure/azure-marketplace/wiki/Extension-Build-Notes-Best-Practices#error-codes-and-messages-output-to-stderr
 UNSUPPORTED_OPENSSL=55 #60, temporary as 55 excludes from SLA
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
@@ -552,7 +553,12 @@ remove_and_install()
 
     if [ $temp_status -ne 0 ]; then
         echo "$OMI_PKG package failed to install and exited with status $temp_status"
-        return $OMI_INSTALL_FAILED
+        
+        if [ $temp_status -eq 2 ]; then # dpkg is messed up
+            return $DEPENDENCY_MISSING
+        else
+            return $OMI_INSTALL_FAILED
+        fi        
     fi
 
     pkg_add $SCX_PKG scx
@@ -560,7 +566,12 @@ remove_and_install()
 
     if [ $temp_status -ne 0 ]; then
         echo "$SCX_PKG package failed to install and exited with status $temp_status"
-        return $SCX_INSTALL_FAILED
+        
+        if [ $temp_status -eq 2 ]; then # dpkg is messed up
+            return $DEPENDENCY_MISSING
+        else
+            return $SCX_INSTALL_FAILED
+        fi
     fi
 
     return 0
