@@ -170,6 +170,47 @@ class TailFileReaderTest < Test::Unit::TestCase
     assert_equal("test @", output[3])
     assert_equal("test $", output[4])
 
+  end
+
+  def test_mulitple_paths_specific_files_addition
+    files = ["#{TMP_DIR}/tail1.txt", "#{TMP_DIR}/tail2.txt", "#{TMP_DIR}/tail3.txt"]
+    tailreader = create({:pos_file => @pos_file}, files)
+    $stdout = StringIO.new
+
+    input1 = File.open(files[0], 'w') 
+    input1.puts "test 1"
+    input1.puts "test 2"
+    input1.flush 
+
+    input2 = File.open(files[1], 'w')
+    input2.puts "test a"
+    input2.puts "test b"
+    input2.flush
+    input3 = File.open(files[2], 'w')
+
+    tailreader.start
+    #Not adding anything to file 1
+    input2.puts "test e"
+    input2.flush
+    input3.puts "test @"
+    input3.puts "test $"
+    input3.puts "test %%"
+    input3.puts "test &^"
+    input3.flush
+    input2.puts "test f"
+    input2.flush
+    
+    tailreader.start
+    output = $stdout.string.split("\n")
+
+    assert_equal(tailreader.paths, files.join(","))
+    assert_equal(6, output.length)
+    assert_equal("test e", output[0])
+    assert_equal("test f", output[1])
+    assert_equal("test @", output[2])
+    assert_equal("test $", output[3])
+    assert_equal("test %%", output[4])
+    assert_equal("test &^", output[5])
 
   end
 end
