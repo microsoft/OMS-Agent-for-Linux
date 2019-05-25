@@ -728,7 +728,12 @@ class NPMDServerTest < Test::Unit::TestCase
         }
 
         # Step 9
-        d2.run
+        begin
+            d2.run
+        rescue IOError
+            raise unless ["stream closed","closed stream"].include? $!.message
+            died
+        end
 
         # Step 10
         error_logs = parse_diag_logs_from_emits(d2.emits)
