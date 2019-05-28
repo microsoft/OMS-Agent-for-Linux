@@ -15,7 +15,7 @@ module Fluent
       require 'net/http'
       require 'net/https'
       require 'openssl'
-      require 'rexml/document'
+      require 'nokogiri'
       require 'securerandom'
       require 'socket'
       require 'uri'
@@ -233,11 +233,13 @@ module Fluent
     #   blocks_uncommitted: string[]. uncommitted block id list, which are just uploaded
     #   file_path: string. file path
     def commit_blocks(uri, blocks_committed, blocks_uncommitted, file_path)
-      doc = REXML::Document.new "<BlockList />"
-      blocks_committed.each { |blockid| doc.root.add_element(REXML::Element.new("Committed").add_text(blockid)) }
-      blocks_uncommitted.each { |blockid| doc.root.add_element(REXML::Element.new("Uncommitted").add_text(blockid)) }
-
-      commit_msg = doc.to_s
+      builder = Nokogiri::XML::Builder.new do |xml|
+        xml.BlockList {
+          blocks_committed.each { |blockid| xml.Committed blockid }
+          blocks_uncommitted.each { |blockid| xml.Uncommitted blockid }
+        }
+      end
+      commit_msg = builder.to_xml(:save_with => Nokogiri::XML::Node::SaveOptions::AS_XML + Nokogiri::XML::Node::SaveOptions::NO_DECLARATION)
 
       blocklist_uri = URI.parse("#{uri.to_s}&comp=blocklist")
       request_id = SecureRandom.uuid
