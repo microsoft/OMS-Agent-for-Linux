@@ -16,7 +16,7 @@ module Tailscript
       @log.formatter = proc do |severity, time, progname, msg|
         "#{severity} #{msg}\n"
       end
-      @log.info "Received paths : #{paths}"
+      @log.info "Received paths from sudo tail plugin : #{paths}"
     end
 
     attr_reader :paths
@@ -39,12 +39,31 @@ module Tailscript
         path = date.strftime(path)
         if path.include?('*')
           Dir.glob(path).select { |p|
-            @log.info "Following tail of #{p}"
-            expanded_paths << p
+          begin
+            is_file = !File.directory?(p)
+            if File.readable?(p) && is_file
+              @log.info "Following tail of #{p}"
+              expanded_paths << p
+            elsif !File.readable?(p)
+              @log.warn "#{p} is excluded since it's unreadable or doesn't have proper permissions."
+            else
+              @log.warn "#{p} is a directory and thus cannot be tailed"
+            end
+          rescue Errno::ENOENT
+            @log.debug("#{p} is missing after refreshing file list")
+          end
           }
         else
           file = file_exists(path)
-          expanded_paths << file unless file.nil?
+          if !file.nil?
+            if File.readable?(path) && !File.directory?(path)
+              expanded_paths << file 
+            elsif !File.readable?(path)
+              @log.warn "#{path} is excluded since it's unreadable or doesn't have proper permissions."
+            else
+              @log.warn "#{path} is a directory and thus cannot be tailed"
+            end
+          end
         end
       }
       return expanded_paths
