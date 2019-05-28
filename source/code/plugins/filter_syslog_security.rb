@@ -28,6 +28,10 @@ module Fluent
       super
     end
 
+    def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
+      utctime.strftime("%FT%T.%#{fraction_digits}NZ")
+    end
+
     def filter(tag, time, record)
       # Get the data type name (blob in ODS) from record tag
       # Only records that can be associated to a blob are processed
@@ -41,8 +45,8 @@ module Fluent
           'indent' => ident,
           # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
           # The time may be slightly in the future from the ingestion time.
-          'Timestamp' => OMS::Common.fast_utc_to_iso8601_format(Time.now.utc),
-          'EventTime' => OMS::Common.fast_utc_to_iso8601_format(Time.at(time).utc),
+          'Timestamp' => fast_utc_to_iso8601_format(Time.now.utc),
+          'EventTime' => fast_utc_to_iso8601_format(Time.at(time).utc),
           'Message' => "#{ident}: #{record['message']}",
           'Facility' =>  tags[tags.size - 2],
           'Severity' => tags[tags.size - 1]
