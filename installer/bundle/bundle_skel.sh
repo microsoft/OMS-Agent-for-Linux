@@ -400,7 +400,12 @@ pkg_rm()
         if [ "$installMode" = "P" ]; then
             dpkg --purge ${1}
         else
-            dpkg --remove ${1}
+			# for OMI alone, always purge so that config is removed
+			if [ "$1" = "omi" ]; then
+				dpkg --purge ${1}
+			else
+				dpkg --remove ${1}
+			fi
         fi
     else
         rpm --erase ${1}

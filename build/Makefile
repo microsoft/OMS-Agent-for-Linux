@@ -24,7 +24,7 @@ endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
 AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
-AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.0.0-12
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.0.0-13
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
