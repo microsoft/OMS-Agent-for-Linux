@@ -30,6 +30,7 @@ OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
 OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
+OMI_SERVICE="/opt/omi/bin/service_control"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -61,6 +62,7 @@ USE_UPGRADE=23
 # Internal errors:
 INTERNAL_ERROR=30
 # Package pre-requisites fail
+DEPENDENCY_MISSING=52 #https://github.com/Azure/azure-marketplace/wiki/Extension-Build-Notes-Best-Practices#error-codes-and-messages-output-to-stderr
 UNSUPPORTED_OPENSSL=55 #60, temporary as 55 excludes from SLA
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
@@ -329,6 +331,34 @@ install_if_program_does_not_exist_on_system()
     fi
 }
 
+isDiskSpaceSufficient()
+{
+    pkg_filename=$1
+
+    spaceAvailableOpt=`df /opt|awk '{print $3}'|grep -e "^[1-9]" 2>/dev/null`
+    if [ $? -ne 0 -o "$spaceAvailableOpt"a = ""a ]; then
+        return 1
+    fi
+
+    if [ "$INSTALLER" = "DPKG" ]; then
+         spaceRequired=`dpkg -f $pkg_filename Installed-Size 2>/dev/null`
+         if [ $? -ne 0 -o "$spaceRequired"a = ""a ]; then
+             return 1
+         fi
+         spaceRequired=`expr $spaceRequired \* 1024`
+    else
+         spaceRequired=`rpm --queryformat='%12{SIZE}  %{NAME}\n' -qp $pkg_filename|awk '{print $1}' 2>/dev/null`
+         if [ $? -ne 0 -o "$spaceRequired"a = ""a ]; then
+             return 1
+         fi
+    fi
+
+    if [ $spaceAvailableOpt -gt $spaceRequired ]; then
+        return 0
+    fi
+    return 1
+}
+
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed (for future compatibility)
 pkg_add()
@@ -343,10 +373,20 @@ pkg_add()
 
     if [ "$INSTALLER" = "DPKG" ]; then
         [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
+        isDiskSpaceSufficient ${pkg_filename}.deb
+        if [ $? -ne 0 ]; then
+           return $DEPENDENCY_MISSING
+        fi
+
         dpkg ${DPKG_CONF_QUALS} --install $FORCE ${pkg_filename}.deb
         return $?
     else
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+        isDiskSpaceSufficient ${pkg_filename}.rpm
+        if [ $? -ne 0 ];
+           return $DEPENDENCY_MISSING
+        fi
+
         rpm -ivh $FORCE ${pkg_filename}.rpm
         return $?
     fi
@@ -360,7 +400,12 @@ pkg_rm()
         if [ "$installMode" = "P" ]; then
             dpkg --purge ${1}
         else
-            dpkg --remove ${1}
+			# for OMI alone, always purge so that config is removed
+			if [ "$1" = "omi" ]; then
+				dpkg --purge ${1}
+			else
+				dpkg --remove ${1}
+			fi
         fi
     else
         rpm --erase ${1}
@@ -522,7 +567,6 @@ shouldInstall_scx()
     check_version_installable $versionInstalled $versionAvailable
 }
 
-
 remove_and_install()
 {
 
@@ -552,7 +596,34 @@ remove_and_install()
 
     if [ $temp_status -ne 0 ]; then
         echo "$OMI_PKG package failed to install and exited with status $temp_status"
-        return $OMI_INSTALL_FAILED
+        
+        if [ $temp_status -eq 2 ]; then # dpkg is messed up
+            return $DEPENDENCY_MISSING
+        else
+            return $OMI_INSTALL_FAILED
+        fi        
+    fi
+
+    ${OMI_SERVICE} reload
+    temp_status=$?
+
+    if [ $temp_status -ne 0 ]; then
+        if [ $temp_status -eq 2 ]; then
+            ErrStr="System Issue with daemon control tool "
+            ErrCode=$DEPENDENCY_MISSING
+        elif [ $temp_status -eq 3 ]; then # dpkg is messed up
+            ErrStr="omi server conf file missing"
+            ErrCode=$DEPENDENCY_MISSING
+        else
+            ErrStr="OMI installation failed"
+            ErrCode=$OMI_INSTALL_FAILED
+        fi
+        echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+        return $ErrCode
+    fi
+
+    if [ -f /usr/sbin/scxadmin ]; then
+        rm -f /usr/sbin/scxadmin
     fi
 
     pkg_add $SCX_PKG scx
@@ -1055,9 +1126,34 @@ case "$installMode" in
                 OMI_EXIT_STATUS=$?
             fi
 
+            ${OMI_SERVICE} reload
+            temp_status=$?
+
+            if [ $temp_status -ne 0 ]; then
+                if [ $temp_status -eq 2 ]; then
+                    ErrStr="System Issue with daemon control tool "
+                    ErrCode=$DEPENDENCY_MISSING
+                elif [ $temp_status -eq 3 ]; then # dpkg is messed up
+                    ErrStr="omi server conf file missing"
+                    ErrCode=$DEPENDENCY_MISSING
+                else
+                    ErrStr="OMI installation failed"
+                    ErrCode=$OMI_INSTALL_FAILED
+                fi
+
+                echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+                return $ErrCode
+             fi
+
+
             # Install SCX
             shouldInstall_scx
             if [ $? -eq 0 ]; then
+
+                if [ -f /usr/sbin/scxadmin ]; then
+                    rm -f /usr/sbin/scxadmin
+                fi
+
                 pkg_add ${SCX_PKG} scx
                 SCX_EXIT_STATUS=$?
             fi

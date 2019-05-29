@@ -62,7 +62,8 @@ RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby
 FLUENTD_DIR=${BASE_DIR}/source/ext/fluentd
 JEMALLOC_SRCDIR=${BASE_DIR}/source/ext/jemalloc
 JEMALLOC_DSTDIR=/usr
-JEMALLOC_LIBPATH=${JEMALLOC_DSTDIR}/lib
+JEMALLOC_LIBPATH=${JEMALLOC_SRCDIR}/lib
+JEMALLOC_LIB_SO=${JEMALLOC_LIBPATH}/libjemalloc.so.2
 # Has configure script been run?
 
 if [ ! -f ${BASE_DIR}/build/config.mak ]; then
@@ -158,11 +159,20 @@ if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ]; then
         echo "Fatal: Jemalloc source code not found at ${JEMALLOC_SRCDIR}" >& 2; exit 1
     fi
 
-    echo "========================= Performing Building Jemalloc"
-    cd ${JEMALLOC_SRCDIR}
-    ./autogen.sh --prefix=${JEMALLOC_DSTDIR} --libdir=${JEMALLOC_LIBPATH}
-    make && elevate make install_bin install_include install_lib
-    elevate ldconfig
+    if [ ! -e ${JEMALLOC_LIB_SO} ]; then
+        echo "========================= Performing Building Jemalloc"
+        cd ${JEMALLOC_SRCDIR}
+        ./autogen.sh --prefix=${JEMALLOC_DSTDIR} --libdir=${JEMALLOC_DSTDIR}/lib
+        make
+        sudo make install_bin install_include install_lib
+        sudo ldconfig
+    fi
+
+#    export PATH=${JEMALLOC_SRCDIR}/bin:$PATH
+#    LDFLAGS=\"-L${JEMALLOC_LIB_SO}\"
+#    RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "CPPFLAGS=-I${JEMALLOC_SRCDIR}/include"  )
+#    export LD_LIBRARY_PATH=${JEMALLOC_LIBPATH}:$LD_LIBRARY_PATH
+#    export PKG_CONFIG_PATH=${JEMALLOC_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
 fi
 
 # Clean the version of Ruby from any existing files that aren't part of source
@@ -215,10 +225,12 @@ elevate make install
 
 export PATH=${RUBY_DESTDIR}/bin:$PATH
 
-sudo touch ${RUBY_DESTDIR}/lib/libjemalloc.so.2
-if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ] && [ -e $JEMALLOC_LIBPATH/libjemalloc.so.2 ]; then
+
+if [ -e ${JEMALLOC_LIB_SO} ]; then
     echo "=========================== Copy JEMALLOC to ruby lib directory"
-    sudo cp $JEMALLOC_LIBPATH/libjemalloc.so.2 ${RUBY_DESTDIR}/lib/
+    sudo cp --force $JEMALLOC_LIB_SO ${RUBY_DESTDIR}/lib/
+else
+    sudo touch ${RUBY_DESTDIR}/lib/libjemalloc.so.2
 fi
 
 if [ $RUNNING_FOR_TEST -eq 1 ]; then
