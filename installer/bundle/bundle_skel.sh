@@ -383,7 +383,7 @@ pkg_add()
     else
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         isDiskSpaceSufficient ${pkg_filename}.rpm
-        if [ $? -ne 0 ];
+        if [ $? -ne 0 ]; then
            return $DEPENDENCY_MISSING
         fi
 
