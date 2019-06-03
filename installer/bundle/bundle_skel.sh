@@ -1238,10 +1238,32 @@ case "$installMode" in
         pkg_upd ${OMI_PKG} omi $?
         OMI_EXIT_STATUS=$?
 
+         if [ $temp_status -ne 0 ]; then
+            if [ $temp_status -eq 2 ]; then
+                ErrStr="System Issue with daemon control tool "
+                ErrCode=$DEPENDENCY_MISSING
+            elif [ $temp_status -eq 3 ]; then # dpkg is messed up
+                  ErrStr="omi server conf file missing"
+                  ErrCode=$DEPENDENCY_MISSING
+            else
+                  ErrStr="OMI installation failed"
+                  ErrCode=$OMI_INSTALL_FAILED
+            fi
+
+            echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+            return $ErrCode
+        fi
         # Install SCX
         shouldInstall_scx
-        pkg_upd $SCX_PKG scx $?
-        SCX_EXIT_STATUS=$?
+        if [ $? -eq 0 ]; then
+
+            if [ -f /usr/sbin/scxadmin ]; then
+                rm -f /usr/sbin/scxadmin
+            fi
+
+            pkg_upd $SCX_PKG scx $?
+            SCX_EXIT_STATUS=$?
+        fi
 
         # Try to re-update if any of OMI or SCX update failed
         if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then
