@@ -256,6 +256,9 @@ apply_patch ${base_dir}/source/ext/patches/ruby/ssl_http_fix.patch ${base_dir}/s
 # This patch increase the minimum limit for jit to be triggered and increase the cache size to be able to jit more functions
 apply_patch ${base_dir}/source/ext/patches/ruby/mjit_options.patch ${base_dir}/source/ext/ruby/mjit.c
 
+# Patching log.rb in order to support qos error reporting
+apply_patch ${base_dir}/source/ext/patches/fluentd/log.patch ${base_dir}/source/ext/fluentd/lib/fluent/log.rb
+
 # No errors allowed from this point forward
 set -e
 

@@ -283,14 +283,15 @@ module OMS
         @@qos_events.each do |source, batches|
           qos_event.Source = source
           if source == INTERNAL
-            top = batches.sort_by { |message, event| -event[:c] }[0 ... 10] # take up to the top 10
+            top = batches.sort_by { |message, event| -event[:c] }[0 ... 10] # take up to the top 10 by message count
             top.each do |pair|
+              event = pair[1] # sort_by returns length-two array with key, value
               qos_event = AgentQoS.new
               qos_event.Source = source
-              qos_event.Operation = pair[1][:op]
-              qos_event.OperationSuccess = pair[1][:op_success]
-              qos_event.Message = pair[1][:m]
-              qos_event.BatchCount = pair[1][:c]
+              qos_event.Operation = event[:op]
+              qos_event.OperationSuccess = event[:op_success]
+              qos_event.Message = event[:m]
+              qos_event.BatchCount = event[:c]
               qos << qos_event
             end
           else
