@@ -1237,8 +1237,10 @@ case "$installMode" in
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
         OMI_EXIT_STATUS=$?
+	${OMI_SERVICE} reload
+	temp_status=$?
 
-         if [ $temp_status -ne 0 ]; then
+	if [ $temp_status -ne 0 ]; then
             if [ $temp_status -eq 2 ]; then
                 ErrStr="System Issue with daemon control tool "
                 ErrCode=$DEPENDENCY_MISSING
@@ -1253,6 +1255,7 @@ case "$installMode" in
             echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
             return $ErrCode
         fi
+	
         # Install SCX
         shouldInstall_scx
         if [ $? -eq 0 ]; then
