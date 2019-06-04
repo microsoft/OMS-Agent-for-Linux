@@ -335,7 +335,7 @@ isDiskSpaceSufficient()
 {
     pkg_filename=$1
 
-    spaceAvailableOpt=`df /opt|awk '{print $3}'|grep -e "^[1-9]" 2>/dev/null`
+    spaceAvailableOpt=`expr $(stat -f --printf="%a" /opt) \* $(stat -f --printf="%s" /opt)`
     if [ $? -ne 0 -o "$spaceAvailableOpt"a = ""a ]; then
         return 1
     fi
