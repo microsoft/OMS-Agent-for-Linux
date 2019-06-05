@@ -333,7 +333,7 @@ install_if_program_does_not_exist_on_system()
 
 isDiskSpaceSufficient()
 {
-    pkg_filename=$1
+    local pkg_filename=$1
 
     spaceAvailableOpt=`expr $(stat -f --printf="%a" /opt) \* $(stat -f --printf="%s" /opt)`
     if [ $? -ne 0 -o "$spaceAvailableOpt"a = ""a ]; then
