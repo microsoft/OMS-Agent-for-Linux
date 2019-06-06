@@ -208,7 +208,7 @@ module OMS
             log_error("Error reading omsagent pid file. #{e}")
           end
         when :omi
-          @pids[key] = `pgrep -U omsagent omiagent`.to_i
+          @pids[key] = `pgrep -U omsagent dsc_host`.to_i
         end
       end
     end
