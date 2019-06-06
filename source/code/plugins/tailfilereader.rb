@@ -53,18 +53,12 @@ module Tailscript
             @log.debug("#{p} is missing after refreshing file list")
           end
           }
-          if File.exist?(@pos_file)
-            @log.debug "The position file at #{@pos_file} is #{File.read(@pos_file).split("\n")}"
-          end 
 
         else
           file = file_exists(path)
           if !file.nil?
             if File.readable?(path) && !File.directory?(path)
               expanded_paths << file 
-              if File.exist?(@pos_file)
-                @log.debug "The position file at #{@pos_file} is #{File.read(@pos_file).split("\n")}"
-              end 
             elsif !File.readable?(path)
               @log.warn "#{path} is excluded since it's unreadable or doesn't have proper permissions."
             else
