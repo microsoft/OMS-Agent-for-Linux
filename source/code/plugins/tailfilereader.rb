@@ -53,7 +53,6 @@ module Tailscript
             @log.debug("#{p} is missing after refreshing file list")
           end
           }
-
         else
           file = file_exists(path)
           if !file.nil?
