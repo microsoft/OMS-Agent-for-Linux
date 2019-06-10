@@ -6,7 +6,7 @@
 
 # This script is a skeleton bundle file for ULINUX only for project OMS.
 
-PATH=/usr/sbin:/usr/bin:/sbin:/bin
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
 umask 022
 
 # Can't use something like 'readlink -e $0' because that doesn't work everywhere
