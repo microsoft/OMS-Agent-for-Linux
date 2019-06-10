@@ -229,18 +229,20 @@ verifyPrivileges()
 ulinux_detect_openssl_version()
 {
     TMPBINDIR=
-    # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_110
+    # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_11X
     OPENSSL_SYSTEM_VERSION_FULL=`openssl version | awk '{print $2}'`
-    OPENSSL_SYSTEM_VERSION_100=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
-    OPENSSL_SYSTEM_VERSION_110=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.1.'; echo $?`
-    if [ $OPENSSL_SYSTEM_VERSION_100 = 0 ]; then
+    OPENSSL_SYSTEM_VERSION_10X=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
+    OPENSSL_SYSTEM_VERSION_100_ONLY=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.0'; echo $?`
+    OPENSSL_SYSTEM_VERSION_11X=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.1.'; echo $?`
+
+    if [ $OPENSSL_SYSTEM_VERSION_100_ONLY = 1 ] && [ $OPENSSL_SYSTEM_VERSION_10X = 0 ]; then
         TMPBINDIR=100
-    elif [ $OPENSSL_SYSTEM_VERSION_110 = 0 ]; then
+    elif [ $OPENSSL_SYSTEM_VERSION_11X = 0 ]; then
         TMPBINDIR=110
     else
         echo "Error: This system does not have a supported version of OpenSSL installed."
         echo "This system's OpenSSL version: $OPENSSL_SYSTEM_VERSION_FULL"
-        echo "Supported versions: 1.0.*, 1.1.*"
+        echo "Supported versions: 1.0.1 onward (1.0.0 was deprecated), 1.1.*"
         cleanup_and_exit $UNSUPPORTED_OPENSSL
     fi
 }
