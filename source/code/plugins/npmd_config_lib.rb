@@ -123,25 +123,18 @@ module NPMDConfig
         end
 
         # Only accessible method
-        def self.createXmlFromUIConfigHash(configHash)
+        def self.createJsonFromUIConfigHash(configHash)
             begin
                 _subnetInfo = getProcessedSubnetHash(configHash["Subnets"])
-                _doc = REXML::Document.new
-                _doc.add_element("Configuration")
-                _agentsElement = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
-                _doc.root.elements << _agentsElement
-                _networksElement = createNetworkElements(configHash["Networks"], _subnetInfo["IDs"])
-                _doc.root.elements << _networksElement
-                _rulesElement = createRuleElements(configHash["Rules"], _subnetInfo["IDs"])
-                _doc.root.elements << _rulesElement
+                _doc = {"Configuration" => {}}            
+                _doc["Configuration"] ["Agents"] = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
+                _doc["Configuration"] ["Networks"] = createNetworkElements(configHash["Networks"], _subnetInfo["IDs"])
+                _doc["Configuration"] ["Rules"] = createRuleElements(configHash["Rules"], _subnetInfo["IDs"])
+                _doc["Configuration"] ["Epm"] = createEpmElements(configHash["Epm"])
+                _doc["Configuration"] ["ER"] = createERElements(configHash["ER"])
 
-                _formatter = REXML::Formatters::Pretty.new(2)
-                _formatter.compact = true
-
-                _xml = String.new
-                _formatter.write(_doc, _xml)
-
-                _xml
+                _configJson = _doc.to_json
+                _configJson
             rescue StandardError => e
                 Logger::logError "Got error creating XML from UI Hash: #{e}", Logger::resc
                 raise "Got error creating AgentXml: #{e}"
@@ -173,54 +166,57 @@ module NPMDConfig
         end
 
         def self.createAgentElements(agentArray, maskHash)
-            _agents = REXML::Element.new("Agents")
+            _agents = {"Agent" => []}
             agentArray.each do |x|
-                _agent = REXML::Element.new("Agent")
-                _agent.add_attribute("Name", x["Guid"])
-                _agent.add_attribute("Capabilities", x["Capability"])
+                _agent = {}
+                _agent["Name"] = x["Guid"];
+                _agent["Capabilities"] = x["Capability"];
+                _agent["IPConfiguration"] = [];
+                
                 x["IPs"].each do |ip|
-                    _ipConfig = REXML::Element.new("IPConfiguration")
-                    _ipConfig.add_attribute("IP", ip["IP"])
-                    _subnetMask = maskHash[ip["SubnetName"]]
+                    _ipConfig = {}
+                    _ipConfig["IP"] = ip["IP"];
+                    _subnetMask = maskHash[ip["SubnetName"]];
                     if _subnetMask.nil?
                         Logger::logWarn "Did not find subnet mask for subnet name #{ip["SubnetName"]} in hash", 2*Logger::loop
                         @@agent_ip_drops += 1
                     else
-                        _ipConfig.add_attribute("Mask", maskHash[ip["SubnetName"]])
-                        _agent.elements << _ipConfig
+                        _ipConfig["Mask"] = maskHash[ip["SubnetName"]];
                     end
+                    _agent["IPConfiguration"].push(_ipConfig);
                 end
-                if _agent.elements.empty?
+                _agents["Agent"].push(_agent);
+                if _agents.empty?
                     @@agent_drops += 1
-                else
-                    _agents.elements << _agent
+
                 end
             end
             _agents
         end
 
         def self.createNetworkElements(networkArray, subnetIdHash)
-            _networks = REXML::Element.new("Networks")
+            _networks = {"Network" => []}
             networkArray.each do |x|
-                _network = REXML::Element.new("Network")
-                _network.add_attribute("Name", x["Name"])
+                _network = {}
+                _network["Name"] = x["Name"];
+                _network["Subnet"] = []
                 x["Subnets"].each do |sn|
+                    _subnet = {}
                     _subnetId = subnetIdHash[sn]
                     if _subnetId.nil?
                         Logger::logWarn "Did not find subnet id for subnet name #{sn} in hash", 2*Logger::loop
                         @@network_subnet_drops += 1
                     else
-                        _snConfig = REXML::Element.new("Subnet")
-                        _snConfig.add_attribute("ID", subnetIdHash[sn])
-                        _snConfig.add_attribute("Disabled", "False")
-                        _snConfig.add_attribute("Tag", "")
-                        _network.elements << _snConfig
+                        _subnet["ID"] = subnetIdHash[sn];
+                        _subnet["Disabled"]  = ["False"] # TODO
+                        _subnet["Tag"]  = "" # TODO
                     end
+                    _network["Subnet"].push(_subnet);
                 end
+                _networks["Network"].push(_network);
                 if _network.elements.empty?
                     @@network_drops += 1
-                else
-                    _networks.elements << _network
+                    
                 end
             end
             _networks
@@ -256,28 +252,44 @@ module NPMDConfig
         end
 
         def self.createRuleElements(ruleArray, subnetIdHash)
-            _rules = REXML::Element.new("Rules")
+            #_rules = REXML::Element.new("Rules")
+            _rules = {"Rule" => []}
             ruleArray.each do |x|
-                _rule = REXML::Element.new("Rule")
-                _rule.add_attribute("Name", x["Name"])
-                _rule.add_attribute("Description", "")
-                _rule.add_attribute("Protocol", x["Protocol"])
-                _netTestMtx = createActOnElements(x["Rules"], subnetIdHash, "NetworkTestMatrix")
-                if _netTestMtx.elements.empty?
+                #_rule = REXML::Element.new("Rule")
+                _rule = {}
+                _rule["Name"] = x["Name"];
+                _rule["Description"] = ""; # TODO
+                _rule["Protocol"] = x["Protocol"];
+                _rule["NetworkTestMatrix"] = [];
+                _rule["AlertConfiguration"] = [];
+                _rule["Exceptions"] = [];
+                _rule["DiscoverPaths"] = "False" #TODO
+                #_netTestMtx = createActOnElements(x["Rules"], subnetIdHash, "NetworkTestMatrix")
+                if _rule["NetworkTestMatrix"].empty?
                     Logger::logWarn "Skipping rule #{x["Name"]} as network test matrix is empty", Logger::loop
                     @@rule_drops += 1
                 else
-                    _alertConfig = REXML::Element.new("AlertConfiguration")
-                    _alertConfig.add_element("Loss", {"Threshold" => x["LossThreshold"] })
-                    _alertConfig.add_element("Latency", {"Threshold" => x["LatencyThreshold"]})
-                    _exceptions = createActOnElements(x["Exceptions"], subnetIdHash, "Exceptions")
-                    _rule.elements << _alertConfig
-                    _rule.elements << _netTestMtx
-                    _rule.elements << _exceptions
-                    _rules.elements << _rule
+                    #_alertConfig = REXML::Element.new("AlertConfiguration")
+                    _alertConfig = {};
+                    _alertConfig["Loss"]  = {"Threshold" => x["LossThreshold"] })
+                    _alertConfig["Latency"]  = {"Threshold" => x["LatencyThreshold"]})
+                    _rule["AlertConfiguration"].push(_alertConfig);
+                    #_exceptions = createActOnElements(x["Exceptions"], subnetIdHash, "Exceptions")
+                    _subnetPair = {};
+
                 end
             end
             _rules
+        end
+
+        def self.createEpmElements(epmArray)
+            _epm = {}
+            _epm
+        end
+
+        def self.createERElements(erArray)
+            _er = {}
+            _er
         end
     end
 
@@ -421,9 +433,9 @@ module NPMDConfig
     def self.GetAgentConfigFromUIConfig(uiXml)
         _uiHash = UIConfigParser.parse(uiXml)
         AgentConfigCreator.resetErrorCheck()
-        _agentXml = AgentConfigCreator.createXmlFromUIConfigHash(_uiHash)
+        _agentJson = AgentConfigCreator.createJsonFromUIConfigHash(_uiHash)
         _errorStr = AgentConfigCreator.getErrorSummary()
-        return _agentXml, _errorStr
+        return _agentJson, _errorStr
     end
 end
 
@@ -445,8 +457,9 @@ module NPMContract
                                 "PrefixLength",
                                 "AddressType",
                                 "SubType",
-                                "AgentId",
-                                "TimeGenerated"]
+                                "TimeGenerated",
+                                "OSType",
+                                "NPMAgentEnvironment"]
 
     CONTRACT_PATH_DATA_KEYS  = ["SourceNetwork",
                                 "SourceNetworkNodeInterface",
