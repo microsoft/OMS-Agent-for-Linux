@@ -51,6 +51,7 @@ module NPMDConfig
     require 'rexml/document'
     require 'json'
     require 'ipaddr'
+    require 'socket'
 
     # Need to have method to get the subnetmask
     class ::IPAddr
@@ -222,9 +223,9 @@ module NPMDConfig
             _networks
         end
 
-        def self.createActOnElements(actOnArray, subnetIdHash, xmlElemName)
-            _xmlElement = REXML::Element.new(xmlElemName)
-            actOnArray.each do |a|
+        def self.createActOnElements(elemArray, subnetIdHash)
+            _networkTestMatrix = {"SubnetPair" => []}
+            elemArray.each do |a|
                 _sSubnetId = "*"
                 _dSubnetId = "*"
                 if a["SS"] != "*" and a["SS"] != ""
@@ -240,43 +241,41 @@ module NPMDConfig
                     Logger::logWarn "Did not find subnet id for destination subnet name #{a["DS"].to_s} in hash", 2*Logger::loop
                     @@rule_subnetpair_drops += 1
                 else
-                    _snPair = REXML::Element.new("SubnetPair")
-                    _snPair.add_attribute("SourceSubnet", _sSubnetId)
-                    _snPair.add_attribute("SourceNetwork", a["SN"])
-                    _snPair.add_attribute("DestSubnet", _dSubnetId)
-                    _snPair.add_attribute("DestNetwork", a["DN"])
-                    _xmlElement.elements << _snPair
+                    # Process each subnetpair
+                    _snPair = {}
+                    _snPair["SourceSubnet"] = _sSubnetId
+                    _snPair["SourceNetwork"] = a["SN"]
+                    _snPair["DestSubnet"] = _dSubnetId
+                    _snPair["DestNetwork"] = a["DN"]
+                    _networkTestMatrix["SubnetPair"].push(_snPair);
                 end
             end
-            _xmlElement
+            _networkTestMatrix
         end
 
         def self.createRuleElements(ruleArray, subnetIdHash)
-            #_rules = REXML::Element.new("Rules")
             _rules = {"Rule" => []}
             ruleArray.each do |x|
                 #_rule = REXML::Element.new("Rule")
                 _rule = {}
                 _rule["Name"] = x["Name"];
-                _rule["Description"] = ""; # TODO
+                _rule["Description"] = x["Description"]
                 _rule["Protocol"] = x["Protocol"];
-                _rule["NetworkTestMatrix"] = [];
-                _rule["AlertConfiguration"] = [];
-                _rule["Exceptions"] = [];
-                _rule["DiscoverPaths"] = "False" #TODO
-                #_netTestMtx = createActOnElements(x["Rules"], subnetIdHash, "NetworkTestMatrix")
+                _rule["NetworkTestMatrix"] = createActOnElements(x["Rules"], subnetIdHash);
+                _rule["AlertConfiguration"] = {};
+                _rule["Exceptions"] = createActOnElements(x["Exceptions"], subnetIdHash);
+                _rule["DiscoverPaths"] = x["DiscoverPaths"]
+                
                 if _rule["NetworkTestMatrix"].empty?
                     Logger::logWarn "Skipping rule #{x["Name"]} as network test matrix is empty", Logger::loop
                     @@rule_drops += 1
                 else
-                    #_alertConfig = REXML::Element.new("AlertConfiguration")
+                    # Alert Configuration
                     _alertConfig = {};
                     _alertConfig["Loss"]  = {"Threshold" => x["LossThreshold"] })
                     _alertConfig["Latency"]  = {"Threshold" => x["LatencyThreshold"]})
                     _rule["AlertConfiguration"].push(_alertConfig);
-                    #_exceptions = createActOnElements(x["Exceptions"], subnetIdHash, "Exceptions")
-                    _subnetPair = {};
-
+                    
                 end
             end
             _rules
@@ -291,6 +290,7 @@ module NPMDConfig
             _er = {}
             _er
         end
+
     end
 
     # This class holds the methods for parsing
@@ -320,12 +320,17 @@ module NPMDConfig
                     Logger::logWarn "found nothing for path #{RootConfigTag}/#{SolnConfigV3Tag} in config string"
                     return nil
                 end
+                
+                @agentData = JSON.parse(_config.elements[AgentInfoTag].text())
 
                 _h = Hash.new
                 _h[KeyNetworks] = getNetworkHashFromJson(_config.elements[NetworkInfoTag].text())
                 _h[KeySubnets]  = getSubnetHashFromJson(_config.elements[SubnetInfoTag].text())
                 _h[KeyAgents]   = getAgentHashFromJson(_config.elements[AgentInfoTag].text())
                 _h[KeyRules]    = getRuleHashFromJson(_config.elements[RuleInfoTag].text())
+                _h[KeyEpm]      = getEpmHashFromJson(_config.elements[EpmInfoTag].text())
+                _h[KeyER]       = getERHashFromJson(_config.elements[ERInfoTag].text())
+                
                 _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil? or _h[KeyRules].nil?)
                 return _h
 
@@ -338,17 +343,56 @@ module NPMDConfig
 
         private
 
-        RootConfigTag   = "Configuration"
-        SolnConfigV3Tag = "NetworkMonitoringAgentConfigurationV3"
-        NetworkInfoTag  = "NetworkNameToNetworkMap"
-        SubnetInfoTag   = "SubnetIdToSubnetMap"
-        AgentInfoTag    = "AgentFqdnToAgentMap"
-        RuleInfoTag     = "RuleNameToRuleMap"
-        Version         = "Version"
-        KeyNetworks     = "Networks"
-        KeySubnets      = "Subnets"
-        KeyAgents       = "Agents"
-        KeyRules        = "Rules"
+        RootConfigTag           = "Configuration"
+        SolnConfigV3Tag         = "NetworkMonitoringAgentConfigurationV3"
+        NetworkInfoTag          = "NetworkNameToNetworkMap"
+        SubnetInfoTag           = "SubnetIdToSubnetMap"
+        AgentInfoTag            = "AgentFqdnToAgentMap"
+        RuleInfoTag             = "RuleNameToRuleMap"
+        EpmInfoTag              = "EPMConfiguration"
+        EpmTestInfoTag          = "TestIdToTestMap"
+        EpmEndpointInfoTag      = "EndpointIdToEndpointMap"
+        EpmAgentInfoTag         = "AgentIdToTestIdsMap"
+        ERInfoTag               = "erConfiguration"
+        ERPrivatePeeringInfoTag = "erPrivateTestIdToERTestMap";
+        ERMSPeeringInfoTag      = "erMSTestIdToERTestMap";
+        ERCircuitInfoTag        = "erCircuitIdToCircuitResourceIdMap";
+        Version                 = "Version"
+        KeyNetworks             = "Networks"
+        KeySubnets              = "Subnets"
+        KeyAgents               = "Agents"
+        KeyRules                = "Rules"
+        KeyEpm                  = "Epm"
+        KeyER                   = "ER"
+
+        # Hash of {AgentID => {AgentContract}}
+        @agentData = {}
+
+
+        def self.getCurrentAgentId()
+            begin
+                _agentId = ""
+                _ips = []
+                addr_infos = Socket.getifaddrs
+                addr_infos.each do |addr_info|
+                    if addr_info.addr and (addr_info.addr.ipv4? or addr_info.addr.ipv6?)
+                        _ips.push(addr_info.addr.ip_address)
+                    end
+                end
+                
+                @agentData.each do |key, value|
+                    next if value.nil? or !(value["IPs"].is_a?Array)
+                    value["IPs"].each do |ip|
+                        for ipAddr in _ips
+                            if ip["Value"] == ipAddr
+                                _agentId = key
+                            end
+                        end
+                    end
+                end
+                return _agentId
+            end
+        end
 
         def self.getNetworkHashFromJson(text)
             begin
@@ -418,6 +462,9 @@ module NPMDConfig
                     _rule["Protocol"] = value["Protocol"] unless value["Protocol"].nil?
                     _rule["Rules"] = value["ActOn"]
                     _rule["Exceptions"] = value["Exceptions"]
+                    _rule["DiscoverPaths"] = value["DiscoverPaths"]
+                    _rule["Description"] = value["Description"]
+                    _rule["Enabled"] = value["Enabled"]
                     _a << _rule
                 end
                 _a
@@ -425,6 +472,32 @@ module NPMDConfig
                 Logger::logError "Error in Json Parse in rule data: #{e}", Logger::resc
                 nil
             end
+        end
+
+        def self.getEpmHashFromJson(text)
+            begin
+                _h = JSON.parse(text)
+                _a = Array.new
+                _h.each do |key, value|
+                    
+                end
+            rescue JSON::ParserError => e
+                Logger::logError "Error in Json Parse in EPM data: #{e}", Logger::resc
+                nil
+            end 
+        end
+
+        def self.getERHashFromJson(text)
+            begin
+                _h = JSON.parse(text)
+                _a = Array.new
+                _h.each do |key, value|
+
+                end
+            rescue JSON::ParserError => e
+                Logger::logError "Error in Json Parse in ER data: #{e}", Logger::resc
+                nil
+            end 
         end
 
     end
