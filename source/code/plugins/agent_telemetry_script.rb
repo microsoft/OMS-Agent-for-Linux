@@ -6,12 +6,11 @@ module OMS
 
   # Operation Types
   SEND_BATCH = "SendBatch"
-  LOG_WARN = "LogWarn"
   LOG_ERROR = "LogError"
   LOG_FATAL = "LogFatal"
 
   # Sources
-  INTERNAL = "Internal"
+  INTERNAL = "INTERNAL"
 
   class AgentResourceUsage < StrongTypedClass
     strongtyped_accessor :OMSMaxMemory, Integer
@@ -178,7 +177,7 @@ module OMS
     def self.push_qos_event(operation, operation_success, message, source, batch, count, time)
       begin
         event = { op: operation, op_success: operation_success, m: message, c: count }
-        if [LOG_WARN, LOG_ERROR, LOG_ERROR].include?(operation)
+        if [LOG_ERROR, LOG_FATAL].include?(operation)
           handle_log_event(event, source)
         else
           handle_std_event(event, source, batch, time)
@@ -282,7 +281,7 @@ module OMS
       begin
         @@qos_events.each do |source, batches|
           if source == INTERNAL
-            top = batches.sort_by { |message, event| -event[:c] }[0 ... 10] # take up to the top 10 by message count
+            top = batches.sort_by { |message, event| -event[:c] }[0 ... 5] # take up to the top 5 by message count
             top.each do |pair|
               event = pair[1] # sort_by returns length-two array with key, value
               qos_event = AgentQoS.new
