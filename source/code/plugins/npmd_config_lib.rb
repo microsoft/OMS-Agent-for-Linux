@@ -379,7 +379,7 @@ module NPMDConfig
                         _ips.push(addr_info.addr.ip_address)
                     end
                 end
-                
+
                 @agentData.each do |key, value|
                     next if value.nil? or !(value["IPs"].is_a?Array)
                     value["IPs"].each do |ip|
@@ -477,22 +477,57 @@ module NPMDConfig
         def self.getEpmHashFromJson(text)
             begin
                 _h = JSON.parse(text)
-                _a = Array.new
-                _h.each do |key, value|
-                    
+                _agentId = getCurrentAgentId()
+                if _agentId.empty?
+                    return nil
+                else
+                    _epmRules = {"Rules" => {}}
+                    # Check all tests related to current agent id and push their configurations to current agent
+                    _testIds = _h[EpmAgentInfoTag][_agentId]
+                    _testIds.each do |testId|
+                        _test = _h[EpmTestInfoTag][testId]
+                        _rule = Hash.new
+                        _rule["ID"] = testId
+                        _rule["Name"] = _test["Name"]
+                        _rule["Poll"] = _test["Poll"]
+                        _rule["AppThresholdLatency"] = _test["AppThreshold"]["Latency"]
+                        _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"]["Loss"]
+                        _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"]["Latency"]
+                        _rule["CMResourceId"] = _test["CMResourceId"]
+
+                        # Collect endpoints details
+                        _rule["Endpoints"] = {}
+
+                        # Get the list of endpoint ids
+                        _endpoints = _test["Endpoints"]
+                        _endpoints.each do |ep|
+                            _endpointHash = Hash.new
+                            _endpoint = _test[EpmEndpointInfoTag][ep]
+                            _endpointHash["Id"] = ep
+                            _endpointHash["URL"] = _endpoint["url"]
+                            _endpointHash["Port"] = _endpoint["port"]
+                            _endpointHash["Protocol"] = _endpoint["protocol"]
+                            _rule["Endpoints"].push(_endpointHash)
+                        end
+                        _epmRules["Rules"].push(_rule) if !_rule.empty?
+                        end
+                    end
+                    _epmRules if !_epmRules["Rules"].empty?
                 end
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in EPM data: #{e}", Logger::resc
                 nil
-            end 
+            end
         end
 
         def self.getERHashFromJson(text)
             begin
                 _h = JSON.parse(text)
-                _a = Array.new
-                _h.each do |key, value|
-
+                _agentId = getCurrentAgentId()
+                if _agentId.empty?
+                    return nil
+                else
+                    _erRules = {"Rules" => {}}
                 end
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in ER data: #{e}", Logger::resc
