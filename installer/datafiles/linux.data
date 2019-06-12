@@ -85,12 +85,23 @@ if [ $? -ne 0 ]; then
     groupadd -r nxautomation
 fi
 
+# create the 'nxautomation' home directory directory if it does not already exist
+NXAUTOMATION_RUN_DIR=/home/nxautomation/run
+if [ ! -d "$NXAUTOMATION_RUN_DIR" ]; then
+    mkdir -p "$NXAUTOMATION_RUN_DIR"
+fi
+
 # Add the 'nxautomation' service account if it does not already exist
 egrep -q "^nxautomation:" /etc/passwd
 if [ $? -ne 0 ]; then
     echo "Creating nxautomation service account ..."
-    useradd -r -c "nxOMSAutomation" -d /var/opt/microsoft/omsagent/run -g nxautomation -s /bin/bash nxautomation
+    useradd -r -c "nxOMSAutomation" -d $NXAUTOMATION_RUN_DIR -g nxautomation -s /bin/bash nxautomation
 fi
+
+# set appropriate permissions on the nxautomation home directory
+NXAUTOMATION_HOME_DIR=/home/nxautomation
+chown -R nxautomation:omiusers $NXAUTOMATION_HOME_DIR
+chmod -R 750 $NXAUTOMATION_HOME_DIR
 
 # Ensure nxautomation is in the nxautomation group (primary), omsagent group (secondary) and omiusers group (secondary)
 /usr/sbin/usermod -g nxautomation -a -G omsagent,omiusers nxautomation 1> /dev/null 2> /dev/null
