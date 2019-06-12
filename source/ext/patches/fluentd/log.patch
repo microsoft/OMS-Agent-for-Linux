@@ -13,19 +13,11 @@
          record['message'] = message.dup
          @engine.push_log_event("#{@tag}.#{level}", time.to_i, record)
 +
-+        operation = ""
-+
-+        case level
-+        when LEVEL_WARN
-+          operation = OMS::LOG_WARN
++        case Log.str_to_level(level.to_s)
 +        when LEVEL_ERROR
-+          operation = OMS::LOG_ERROR
++          OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL, [], 1, 0)
 +        when LEVEL_FATAL
-+          operation = OMS::LOG_FATAL
-+        end
-+
-+        if !operation.empty?
-+          OMS::Telemetry.push_qos_event(operation, true, message, OMS::INTERNAL, [], 1, 0)
++          OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", message, OMS::INTERNAL, [], 1, 0)
 +        end
        end
  

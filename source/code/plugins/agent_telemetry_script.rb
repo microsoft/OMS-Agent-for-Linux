@@ -164,7 +164,7 @@ module OMS
       if @@qos_events.has_key?(source)
         if @@qos_events[source].size >= QOS_EVENTS_LIMIT
           return # cap memory use
-        elsif @@qos_event[source].has_key?(event[:m])
+        elsif @@qos_events[source].has_key?(event[:m])
           @@qos_events[source][event[:m]][:c] += 1
         else
           @@qos_events[source][event[:m]] = event
@@ -281,7 +281,6 @@ module OMS
 
       begin
         @@qos_events.each do |source, batches|
-          qos_event.Source = source
           if source == INTERNAL
             top = batches.sort_by { |message, event| -event[:c] }[0 ... 10] # take up to the top 10 by message count
             top.each do |pair|
