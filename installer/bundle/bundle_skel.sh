@@ -335,7 +335,12 @@ isDiskSpaceSufficient()
 {
     local pkg_filename=$1
 
-    spaceAvailableOpt=`expr $(stat -f --printf="%a" /opt) \* $(stat -f --printf="%s" /opt)`
+    if [ ! -d "/opt" ]; then
+        spaceAvailableOpt=`expr $(stat -f --printf="%a" /) \* $(stat -f --printf="%s" /)`
+    else
+        spaceAvailableOpt=`expr $(stat -f --printf="%a" /opt) \* $(stat -f --printf="%s" /opt)`
+    fi
+
     if [ $? -ne 0 -o "$spaceAvailableOpt"a = ""a ]; then
         return 1
     fi
