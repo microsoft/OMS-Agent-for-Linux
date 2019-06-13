@@ -443,7 +443,7 @@ module Fluent
         return
       rescue Exception => e
         @log.info  "Exception occured, retrying with secondry key. Error:'#{e}'"
-        OMS::Log.error_once ("Exception occured, retrying with secondry key. Error:'#{e}'")
+        OMS::Log.error_once ("Exception occured, retrying with secondary key. Error:'#{e}'")
       end 
 
       if isPrimaryTokenInUse
