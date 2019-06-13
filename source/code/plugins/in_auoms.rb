@@ -64,7 +64,7 @@ module Fluent
     def run
       @loop.run(@blocking_timeout)
     rescue
-      @log.error "unexpected error", error: $!.to_s
+      @log.error "unexpected auoms error", error: $!.to_s
       @log.error_backtrace
     end
 
@@ -116,7 +116,7 @@ module Fluent
       def on_read_json(data)
         @y << data
       rescue
-        @log.error "Unexpected error", error: $!.to_s, data: data
+        @log.error "Unexpected auoms error while reading json", error: $!.to_s, data: data
         @log.error_backtrace
         close
       end
@@ -124,7 +124,7 @@ module Fluent
       def on_read_msgpack(data)
         @u.feed_each(data, &@on_message)
       rescue
-        @log.error "Unexpected error", error: $!.to_s
+        @log.error "Unexpected auoms error while reading msgpack", error: $!.to_s
         @log.error_backtrace
         close
       end

@@ -94,7 +94,7 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
         sleep @check_status_interval
       end 
       rescue => e
-        $log.error e
+        $log.error "DSC check status failed. Error: #{e}"
       end
     end       
 
