@@ -1149,7 +1149,7 @@ case "$installMode" in
                 fi
 
                 echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
-                return $ErrCode
+                OMI_EXIT_STATUS=$ErrCode
              fi
 
 
@@ -1260,7 +1260,7 @@ case "$installMode" in
             fi
 
             echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
-            return $ErrCode
+            OMI_EXIT_STATUS=$ErrCode
         fi
 	
         # Install SCX
