@@ -451,14 +451,21 @@ ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
 ruby_test_directory="${home_dir}/bin/omsagent_test_ruby"
 ruby_config_quals_testins="--prefix=${ruby_test_directory}"
 
+plugin_test_directory="${home_dir}/bin/plugin"
+
 # Delete the OMS test version of Ruby if it exists
 # (Note that it's normally owned by root; so sudo elevate)
-sudo rm -rf ${ruby_test_directory}
+sudo rm -rf ${ruby_test_directory} ${plugin_test_directory}
 
 # Create a ~/bin directory (if it doesn't exist) as user
 # This is done so that, if user doesn't have a ~/bin directory,
 # they'll have one owned by the user (and not by root)
 [ ! -d ~/bin ] && mkdir ~/bin
+
+# Due to the require_relative in fluentd's patched log.rb,
+# we need to move plugins to their expected paths based on ruby_test_directory
+mkdir ${plugin_test_directory}
+cp ../source/code/plugins/* ${plugin_test_directory}
 
 if [ "$ULINUX" = "1" ]; then
     ssl_100_dirpath=/usr/local_ssl_1.0.0
