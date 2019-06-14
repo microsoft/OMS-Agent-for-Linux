@@ -163,7 +163,7 @@ module OMS
       if @@qos_events.has_key?(source)
         if @@qos_events[source].size >= QOS_EVENTS_LIMIT
           return # cap memory use
-        elsif @@qos_events[source].has_key?(event[:m])
+        elsif @@qos_events[source].has_key?(event[:m]) # assume all duplicate messages will have the same severity
           @@qos_events[source][event[:m]][:c] += 1
         else
           @@qos_events[source][event[:m]] = event
