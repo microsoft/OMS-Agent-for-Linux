@@ -281,12 +281,49 @@ module NPMDConfig
             _rules
         end
 
-        def self.createEpmElements(epmArray)
-            _epm = {}
+        def self.createEpmElements(epmHash)
+            _epm = {"Rules" => {}}
+            _epmRules = {"Rule" => []}
+            _rule = []
+            epmHash.each do |(key, rules)|
+                for i in 0..rules.length-1
+                    _ruleHash = Hash.new
+                    _iRule = rules[i] # get individual rule
+                    _ruleHash["Id"] = _iRule["ID"]
+                    _ruleHash["Name"] = _iRule["Name"]
+                    _ruleHash["CMResourceId"] = _iRule["CMResourceId"]
+                    _ruleHash["Redirect"] = "false"
+                    _ruleHash["NetTests"] = (!_iRule["NetworkThresholdLoss"].empty? and !_iRule["NetworkThresholdLatency"].empty?) ? "true" : "false"
+                    _ruleHash["AppTests"] = (!_iRule["AppThresholdLatency"].empty?) ? "true" : "false"
+                    if (_ruleHash["NetTests"] == "true")
+                        _ruleHash["NetworkThreshold"] = {"Loss" => _iRule["NetworkThresholdLoss"], "Latency" => _iRule["NetworkThresholdLatency"]}
+                    end
+
+                    if (_ruleHash["AppTests"] == "true")
+                        _ruleHash["AppThresholdLatency"] = {"Latency" => _iRule["AppThresholdLatency"]}
+                    end
+
+                    # Fill endpoints
+                    _epList = _iRule["Endpoints"]
+                    _endpointList = {"Endpoint": []}
+                    for j in 0.._epList.length-1
+                        _epHash = Hash.new
+                        _epHash["Id"] = _epList[j]["Id"]
+                        _epHash["Target"] = _epList[j]["URL"]
+                        _epHash["Port"] = _epList[j]["Port"]
+                        _epHash["Protocol"] = _epList[j]["Protocol"]
+                        _epHash["PollInterval"] = _iRule["Poll"]
+                        _endpointList["Endpoint"].push(_epHash)
+                    end
+                    _ruleHash["Endpoints"] = _endpointList
+                    _rule.push(_ruleHash)
+                end
+            _epmRules["Rule"] = _rule
+            _epm["Rules"] = _epmRules
             _epm
         end
 
-        def self.createERElements(erArray)
+        def self.createERElements(erHash)
             _er = {}
             _er
         end
@@ -481,7 +518,7 @@ module NPMDConfig
                 if _agentId.empty?
                     return nil
                 else
-                    _epmRules = {"Rules" => {}}
+                    _epmRules = {"Rules" => []}
                     # Check all tests related to current agent id and push their configurations to current agent
                     _testIds = _h[EpmAgentInfoTag][_agentId]
                     _testIds.each do |testId|
@@ -496,7 +533,7 @@ module NPMDConfig
                         _rule["CMResourceId"] = _test["CMResourceId"]
 
                         # Collect endpoints details
-                        _rule["Endpoints"] = {}
+                        _rule["Endpoints"] = []
 
                         # Get the list of endpoint ids
                         _endpoints = _test["Endpoints"]
