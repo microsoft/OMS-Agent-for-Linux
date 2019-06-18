@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tempfile'
 require 'time'
+require 'json'
 require 'flexmock/test_unit'
 require_relative '../../../source/code/plugins/agent_telemetry_script'
 require_relative '../../../source/code/plugins/oms_common'
@@ -185,7 +186,7 @@ class TelemetryUnitTest < Test::Unit::TestCase
     assert_equal(41, OMS::Telemetry.array_avg(array), "incorrect average with Float input")
   end
 
-  def test_qos
+  def test_std_qos
     agent_telemetry = get_new_telemetry_obj
     OMS::Telemetry.clear
     time = 40
@@ -216,7 +217,6 @@ class TelemetryUnitTest < Test::Unit::TestCase
 
     qos = agent_telemetry.calculate_qos
 
-    puts("qos to string: #{qos.to_s}")
     assert_equal(3, qos.size, "not all three sources detected")
 
     syslog = qos.find { |event| event.Source == "LINUX_SYSLOGS_BLOB.LOGMANAGEMENT" }
@@ -236,6 +236,38 @@ class TelemetryUnitTest < Test::Unit::TestCase
     assert_equal(7, custom.AvgEventSize, "wrong avg event size parsed")
     assert((syslog.AvgLocalLatencyInMs - 45000).between?(0, 2000), "wrong avg local latency parsed")
     assert_equal(time * 1000, perf.NetworkLatencyInMs, "wrong network latency parsed")
+  end
+
+  def test_log_qos
+    agent_telemetry = get_new_telemetry_obj
+    OMS::Telemetry.clear
+
+    (0..9).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..7).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(c) (include) the third most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..2).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(d) (include) the fourth most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..0).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(e) (exclude) the least numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(f) (maybe) the tied fifth most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(g) (maybe) the tied fifth most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    
+    (0..4).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL, [], 0, 0) }
+
+    qos = agent_telemetry.calculate_qos
+
+    puts qos.map { |q| obj_to_hash(q).to_json }
+
+    assert_equal(5, qos.size, "fewer than five (the limit) log events found")
+    
+    assert(qos[0].Message.include?("(a)"), "unexpected most frequent error")
+    assert(qos[4].Message.include?("(f)") || qos[4].Message.include?("(g)"), "unexpected least frequent error")
+    qos.map { |q| assert(!q.Message.include?("(exclude)"), "unexpected infrequent error included") }
+    
+    assert_equal(qos[0].BatchCount, 15, "incorrect count for most numerous log message")
+    assert_equal(qos[0].BatchCount, 12, "incorrect count for second most numerous log message")
+    assert_equal(qos[0].BatchCount, 2, "incorrect count for fifth most numerous log message")
+
+    assert_equal(qos[0].Operation, OMS::LOG_FATAL, "incorrect operation for most numerous log message")
   end
 
   def test_calculate_resource_usage_stopped
