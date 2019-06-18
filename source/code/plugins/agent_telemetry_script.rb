@@ -109,7 +109,7 @@ module OMS
       @suppress_logging = false
     end # initialize
 
-    # Logging methods
+    # logging methods
     def log_info(message)
       print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.info(message) if !@suppress_logging
@@ -123,6 +123,10 @@ module OMS
     def log_debug(message)
       print("debug\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.debug(message) if !@suppress_logging
+    end
+
+    def self.clear
+      @@qos_events.clear
     end
 
     # handle SendBatch operations
@@ -141,7 +145,7 @@ module OMS
       elsif batch.is_a? Array # These other logs, such as custom logs, don't have a parsed timestamp
         sizes = batch.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize)
       else
-        return
+        log_debug("Unexpected record format encountered in QoS: #{records.to_s}")
       end
 
       event[:min_s] = sizes.min
