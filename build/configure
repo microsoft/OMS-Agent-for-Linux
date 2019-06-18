@@ -232,7 +232,8 @@ apply_patch ${base_dir}/source/ext/patches/ruby/clear_options.patch ${base_dir}/
 # This patch is borrowed from the latest Ruby code as of 1/18/2017 and resolves the error "undefined symbol: SSLv3_method"
 # Upgrading to a version higher than Ruby 2.3 may already include this patch
 # Updating patch for extconf.rb in version Ruby 2.4.4.
-apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_dir}/source/ext/ruby/ext/openssl/extconf.rb
+# Edit: Upgrading to Ruby 2.6 included this patch, we don't need it.
+# apply_patch ${base_dir}/source/ext/patches/ruby/SSLv2_SSLv3_method.patch ${base_dir}/source/ext/ruby/ext/openssl/extconf.rb
 
 # This patch is borrowed from FluentD 0.12.32 to resolve in_exec plugin failing repeatedly with command or parsing failing
 # Updating FluentD to version 0.12.32 or later may already include this patch
@@ -240,6 +241,16 @@ apply_patch ${base_dir}/source/ext/patches/fluentd/in_exec.patch ${base_dir}/sou
 
 # Patching in_syslog.rb to support configurable syslog delimiter
 apply_patch ${base_dir}/source/ext/patches/fluentd/in_syslog.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_syslog.rb
+
+# This patch is borrowed from FluentD 1.x to support ruby +2.6
+apply_patch ${base_dir}/source/ext/patches/fluentd/fluentd_gemspec.patch ${base_dir}/source/ext/fluentd/fluentd.gemspec
+
+# This fix SSL issue (double free corruption) when distros (Redhat/Centos) has OpenSSL FIPS
+apply_patch ${base_dir}/source/ext/patches/ruby/ssl_ftp_fix.patch ${base_dir}/source/ext/ruby/lib/net/ftp.rb
+apply_patch ${base_dir}/source/ext/patches/ruby/ssl_http_fix.patch ${base_dir}/source/ext/ruby/lib/net/http.rb
+
+# This patch increase the minimum limit for jit to be triggered and increase the cache size to be able to jit more functions
+apply_patch ${base_dir}/source/ext/patches/ruby/mjit_options.patch ${base_dir}/source/ext/ruby/mjit.c
 
 # No errors allowed from this point forward
 set -e
@@ -286,9 +297,6 @@ if [ $ULINUX -eq 0 -a -d /usr/local_ssl_1.0.0 -a -d /usr/local_ssl_1.1.0 ]; then
     exit 1
 fi
 
-# We need a pre-built configure script (just from a new autoconf) for Ruby
-
-cp ${base_dir}/source/ext/patches/ruby/configure ${base_dir}/source/ext/ruby/configure
 
 # We modify fluentd for branding purposes (omsagent), copy those changes
 
@@ -415,6 +423,7 @@ fi
 #
 # Determine Ruby configuration based on our configuration
 
+RUBY_VERSION_MAJOR_MINOR=`cat ${base_dir}/source/ext/ruby/version.h | grep '#define RUBY_VERSION' | cut -d. -f1-2 | cut -d\" -f2`.0
 RUBY_EXTENSIONS="continuation,coverage,dbm,fiber,fiddle,gdbm,mathn,nkf,objspace,pty,racc,rbconfig,readline,sdbm,tk,win32,win32ole"
 
 if [ $NOOPTIMIZE -eq 1 ]; then
@@ -451,6 +460,10 @@ sudo rm -rf ${ruby_test_directory}
 if [ "$ULINUX" = "1" ]; then
     ssl_100_dirpath=/usr/local_ssl_1.0.0
     ruby_configure_quals_100=( --with-openssl-dir=$ssl_100_dirpath
+            \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
+
+    ssl_101_dirpath=/usr/local_ssl_1.0.1
+    ruby_configure_quals_101=( --with-openssl-dir=$ssl_101_dirpath
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 
     ssl_110_dirpath=/usr/local_ssl_1.1.0
@@ -487,6 +500,7 @@ PF_ARCH=$PF_ARCH
 ARCH=$ARCH
 RUBY_ARCH=$RUBY_ARCH
 RUBY_ARCM=$RUBY_ARCM
+RUBY_VERSION_MAJOR_MINOR=$RUBY_VERSION_MAJOR_MINOR
 PF_WIDTH=$PF_WIDTH
 PF_DISTRO=$PF_DISTRO
 ULINUX=$ULINUX
@@ -504,11 +518,15 @@ EOF
 if [ "$ULINUX" = "1" ]; then
     # SSL "lib" directory name can vary based on platform AND OpenSSL version ...OpenSSL 1.1 is supported only for x64 bit
     ssl_100_libpath=`eval echo ${ssl_100_dirpath}/lib*`
+    ssl_101_libpath=`eval echo ${ssl_101_dirpath}/lib*`
     if [ `uname -m` = "x86_64" ]; then
         ssl_110_libpath=`eval echo ${ssl_110_dirpath}/lib*`
     fi
     echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
+    echo "SSL_101_LIBPATH=${ssl_101_libpath}" >> config.mak
+
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
+    echo "RUBY_CONFIGURE_QUALS_101=( ${ruby_configure_quals_101[@]} )" >> config.mak
     if [ `uname -m` = "x86_64" ]; then
         echo "SSL_110_LIBPATH=${ssl_110_libpath}" >> config.mak
         echo "RUBY_CONFIGURE_QUALS_110=( ${ruby_configure_quals_110[@]} )" >> config.mak

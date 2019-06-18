@@ -43,7 +43,6 @@ module Tailscript
             is_file = !File.directory?(p)
             if File.readable?(p) && is_file
               @log.info "Following tail of #{p}"
-              @log.debug "The current size of the file #{p} is #{File.size(p)}"
               expanded_paths << p
             elsif !File.readable?(p)
               @log.warn "#{p} is excluded since it's unreadable or doesn't have proper permissions."
@@ -58,7 +57,6 @@ module Tailscript
           file = file_exists(path)
           if !file.nil?
             if File.readable?(path) && !File.directory?(path)
-              @log.debug "The current size of the file #{path} is #{File.size(path)}"
               expanded_paths << file 
             elsif !File.readable?(path)
               @log.warn "#{path} is excluded since it's unreadable or doesn't have proper permissions."
@@ -190,6 +188,7 @@ module Tailscript
 
         def on_notify
           begin
+            @log.debug "Seeking to read file - #{@io.path} from #{@io.pos} position and file size is #{@io.stat.size}"
             read_more = false
             if @lines.empty?
               begin
@@ -199,6 +198,7 @@ module Tailscript
                   else
                     @buffer << @io.readpartial(2048, @iobuf)
                   end
+                  @log.debug "The buffer length is #{@buffer.length}"
                   while idx = @buffer.index(@SEPARATOR)
                     @lines << @buffer.slice!(0, idx + 1)
                   end
