@@ -15,9 +15,9 @@
 +
 +        case Log.str_to_level(level.to_s)
 +        when LEVEL_ERROR
-+          OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL, [], 1, 0)
++          OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL, [], 0, 0)
 +        when LEVEL_FATAL
-+          OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", message, OMS::INTERNAL, [], 1, 0)
++          OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", message, OMS::INTERNAL, [], 0, 0)
 +        end
        end
  
