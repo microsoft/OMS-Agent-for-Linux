@@ -272,8 +272,8 @@ module NPMDConfig
                 else
                     # Alert Configuration
                     _alertConfig = {};
-                    _alertConfig["Loss"]  = {"Threshold" => x["LossThreshold"] })
-                    _alertConfig["Latency"]  = {"Threshold" => x["LatencyThreshold"]})
+                    _alertConfig["Loss"]  = {"Threshold" => x["LossThreshold"]}
+                    _alertConfig["Latency"]  = {"Threshold" => x["LatencyThreshold"]}
                     _rule["AlertConfiguration"].push(_alertConfig);
                     
                 end
@@ -285,7 +285,7 @@ module NPMDConfig
             _epm = {"Rules" => {}}
             _epmRules = {"Rule" => []}
             _rule = []
-            epmHash.each do |(key, rules)|
+            epmHash.each do |key, rules|
                 for i in 0..rules.length-1
                     _ruleHash = Hash.new
                     _iRule = rules[i] # get individual rule
@@ -325,6 +325,95 @@ module NPMDConfig
 
         def self.createERElements(erHash)
             _er = {}
+            erHash.each do |key, rules|
+                # Fill Private Peering Rules
+                if key == "PrivatePeeringRules"
+                    _privatePeeringRules = {"PrivateRules" => {}}
+                    _ruleList = {"Rule" => []}
+                    for i in 0..rules.length-1
+                        _pvtRule = Hash.new
+                        _iRule = rules[i]
+                        _pvtRule["Name"] = _iRule["Name"]
+                        _pvtRule["ConnectionResourceId"] = _iRule["ConnectionResourceId"]
+                        _pvtRule["CircuitResourceId"] = _iRule["CircuitResourceId"]
+                        _pvtRule["CircuitName"] = _iRule["CircuitName"]
+                        _pvtRule["VirtualNetworkName"] = _iRule["vNetName"]
+                        _pvtRule["Protocol"] = _iRule["Protocol"]
+
+                        _thresholdMap = Hash.new
+                        _thresholdMap["Loss"] = Hash.new
+                        _thresholdMap["Latency"] = Hash.new
+                        _thresholdMap["Loss"]["Threshold"] = iRule[LossThreshold]
+                        _thresholdMap["Latency"]["Threshold"] = iRule[LatencyThreshold]
+                        _pvtRule["Threshold"] = _thresholdMap
+
+                        _onPremAgents = Hash.new
+                        _onPremAgents["Agent"] = []
+                        _onPremAgentList = _iRule["OnPremAgents"]
+                        for j in 0.._onPremAgentList.length-1
+                            _idHash = Hash.new
+                            _idHash["ID"] = _onPremAgentList[j]
+                            _onPremAgents["Agent"].push(_idHash)
+                        end
+                        _pvtRule["OnPremAgents"] = _onPremAgents
+
+                        _azureAgents = Hash.new
+                        _azureAgents["Agent"] = Hash.new
+                        _azureAgentsList = _iRule["AzureAgents"]
+                        for k in 0.._azureAgentsList.length-1
+                            _azureAgents["Agent"]["ID"] = _azureAgentsList[k]
+                        end
+                        _pvtRule["AzureAgents"] = _azureAgents
+
+                        _ruleList.push(_pvtRule)
+                    end
+                    _er.push(_privatePeeringRules)
+                end
+
+                # Fill MS Peering Rules
+                if key == "MSPeeringRules"
+                    _msPeeringRules = Hash.new
+                    _ruleList = {"Rule" => []}
+                    for i in 0..rules.length-1
+                        _msRule = Hash.new
+                        _iRule = rules[i]
+                        _msRule["Name"] = _iRule["Name"]
+                        _msRule["CircuitName"] = _iRule["CircuitName"]
+                        _msRule["Protocol"] = _iRule["Protocol"]
+                        _msRule["CircuitResourceId"] = _iRule["CircuitResourceId"]
+
+                        _thresholdMap = Hash.new
+                        _thresholdMap["Loss"] = Hash.new
+                        _thresholdMap["Latency"] = Hash.new
+                        _thresholdMap["Loss"]["Threshold"] = iRule[LossThreshold]
+                        _thresholdMap["Latency"]["Threshold"] = iRule[LatencyThreshold]
+                        _msRule["Threshold"] = _thresholdMap
+
+                        _onPremAgents = Hash.new
+                        _onPremAgents["Agent"] = []
+                        _onPremAgentList = _iRule["OnPremAgents"]
+                        for j in 0.._onPremAgentList.length-1
+                            _idHash = Hash.new
+                            _idHash["ID"] = _onPremAgentList[j]
+                            _onPremAgents["Agent"].push(_idHash)
+                        end
+                        _msRule["OnPremAgents"] = _onPremAgents
+
+                        _urls = Hash.new
+                        _urls["URL"] = []
+                        _urlList = _iRule["UrlList"]
+                        for k in 0.._urlList.length-1
+                            _urlHash = Hash.new
+                            _urlHash["Target"] = _urlList[k]["url"]
+                            _urlHash["Port"] = _urlList[k]["port"]
+                            _urls["URL"].push(_urlHash)
+                        end
+                        _msRule["URLs"] = _urls
+                    end
+                    _ruleList.push(_msRule)
+                    _er.push(_msPeeringRules)
+                end
+            end
             _er
         end
 
@@ -561,10 +650,65 @@ module NPMDConfig
             begin
                 _h = JSON.parse(text)
                 _agentId = getCurrentAgentId()
+
                 if _agentId.empty?
                     return nil
                 else
-                    _erRules = {"Rules" => {}}
+                    _erRules = {"PrivatePeeringRules" => [], "MSPeeringRules" => []}
+                    # Iterate over OnPrem and Azure Agent Lists to check if this agent is part of this test
+                    _privateTestMap = _h[ERPrivatePeeringInfoTag]
+                    _microsoftTestMap = _h[ERMSPeeringInfoTag]
+                    _circuitIdMap = _h[ERCircuitInfoTag]
+
+                    if _privateTestMap.empty? && _microsoftTestMap.empty?
+                        Logger::logError "ER configuration rules deserialization failed.", Logger::resc
+                    end
+
+                    # Private Peering Rules
+                    if !_privateTestMap.empty?
+                        _privateTestMap.each do |key, value|
+                            # Get list of onPremAgents in this test
+                            _isAgentPresent = false
+                            _privateRule = Hash.new
+                            _onPremAgents = value["onPremAgents"]
+                            _onPremAgents.each do |x|
+                                if x == _agentId
+                                    # Append this test to ER Config
+                                    _isAgentPresent = true
+                                    _privateRule = getERPrivateRuleFromUIConfig(key, value)
+                                    break;
+                                end
+                            if !_isAgentPresent
+                                _azureAgents = value["azureAgents"]
+                                _azureAgents.each do |x|
+                                    if x == _agentId
+                                        _isAgentPresent = true
+                                        _privateRule = getERPrivateRuleFromUIConfig(key, value)
+                                        break;
+                                    end
+                                end
+                            end
+                            _erRules["PrivatePeeringRules"].push(_privateRule)
+                        end
+                    end
+
+                    # MS Peering Rules
+                    if !microsoftTestMap.empty?
+                        _microsoftTestMap.each do |key, value|
+                            _microsoftRule = Hash.new
+                            _onPremAgents = value["onPremAgents"]
+                            _onPremAgents.each do |x|
+                                if x == _agentId
+                                    # Append this test to ER Config
+                                    _isAgentPresent = true
+                                    _microsoftRule = getERMicrosoftRuleFromUIConfig(key, value)
+                                    break;
+                                end
+                            _erRules["MSPeeringRules"].push(_microsoftRule)
+                            end
+                        end
+                    end
+                    _erRules
                 end
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in ER data: #{e}", Logger::resc
@@ -572,6 +716,34 @@ module NPMDConfig
             end 
         end
 
+        def getERPrivateRuleFromUIConfig(key, value)
+            _ruleHash = Hash.new
+            _ruleHash["Name"] = key
+            _ruleHash["Protocol"] = value["protocol"]
+            _ruleHash["CircuitId"] = value["circuitId"]
+            _ruleHash["LossThreshold"] = value["threshold"]["loss"]
+            _ruleHash["LatencyThreshold"] = value["threshold"]["latency"]
+            _ruleHash["CircuitName"] = value["circuitName"]
+            _ruleHash["vNetName"]= value["vNet"]
+            _ruleHash["ConnectionResourceId"]= value["connectionResourceId"]
+            _ruleHash["CircuitResourceId"] = _circuitIdMap[value["circuitId"]]
+            _ruleHash["OnPremAgents"] = value["onPremAgents"]
+            _ruleHash["AzureAgents"] = value["azureAgents"]
+            return _ruleHash
+        end
+
+        def getERMicrosoftRuleFromUIConfig(key, value)
+            _ruleHash = Hash.new
+            _ruleHash["Name"] = key
+            _ruleHash["CircuitName"] = value["circuitName"]
+            _ruleHash["CircuitId"] = value["circuitId"]
+            _ruleHash["Protocol"] = value["protocol"]
+            _ruleHash["CircuitResourceId"] = _circuitIdMap[value["circuitId"]]
+            _ruleHash["LossThreshold"] = value["threshold"]["loss"]
+            _ruleHash["LatencyThreshold"] = value["threshold"]["latency"]
+            _ruleHash["UrlList"] = value["urlList"]
+            return _ruleHash
+        end
     end
 
     # Only function needed to be called from this module
