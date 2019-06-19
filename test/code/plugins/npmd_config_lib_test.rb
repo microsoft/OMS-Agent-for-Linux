@@ -28,6 +28,7 @@ class NPMDConfigUT < Test::Unit::TestCase
         @test_desc10 = "Test Case 10: Valid UI XML configuration with custom rule"
         @test_desc11 = "Test Case 11: Valid UI XML Configuration with exceptions"
         @test_desc12 = "Test Case 12: Verifying config error summary"
+        @test_desc13 = "Test Case 13: Parse new UI config"
 
         @test_input_ui_config01 = '<?xml version="1.0" encoding="utf-16"?><Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="3"><NetworkMonitoringAgentConfigurationV3><Metadata>{"Version":3,"Protocol":1,"SubnetUid":1,"AgentUid":1}</Metadata><NetworkNameToNetworkMap>{"Default":{"Subnets":["1","2"]}, "NewOne":{"Subnets":["3"]}}</NetworkNameToNetworkMap><SubnetIdToSubnetMap>{"1":"65.171.0.0/16", "2":"198.165.0.0/21", "3":"162.128.0.0/21"}</SubnetIdToSubnetMap><AgentFqdnToAgentMap>{"1":{"IPs":[{"Value":"65.171.126.72","Subnet":1}, {"Value":"65.171.126.73","Subnet":1}],"Protocol":"1"}, "2":{"IPs":[{"Value":"65.271.126.72","Subnet":2}],"Protocol":"1"}}</AgentFqdnToAgentMap><RuleNameToRuleMap>{"Default":{"ActOn":[{"SN":"*","SS":"*","DN":"*","DS":"*"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[],"Protocol":1}}</RuleNameToRuleMap></NetworkMonitoringAgentConfigurationV3></Configuration>'
         @test_input_ui_config02 = '<?xml version="1.0" encoding="utf-16"?><Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="2"><NetworkMonitoringAgentConfigurationV3><Metadata>{"Version":3,"Protocol":1,"SubnetUid":1,"AgentUid":1}</Metadata><NetworkNameToNetworkMap>{"Default":{"Subnets":["1","2"]}, "NewOne":{"Subnets":["3"]}}</NetworkNameToNetworkMap><SubnetIdToSubnetMap>{"1":"65.171.0.0/16", "2":"198.165.0.0/21", "3":"162.128.0.0/21"}</SubnetIdToSubnetMap><AgentFqdnToAgentMap>{"1":{"IPs":[{"Value":"65.171.126.72","Subnet":1}, {"Value":"65.171.126.73","Subnet":1}],"Protocol":"1"}, "2":{"IPs":[{"Value":"65.271.126.72","Subnet":2}],"Protocol":"1"}}</AgentFqdnToAgentMap><RuleNameToRuleMap>{"Default":{"ActOn":[{"SN":"*","SS":"*","DN":"*","DS":"*"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[],"Protocol":1}}</RuleNameToRuleMap></NetworkMonitoringAgentConfigurationV3></Configuration>'
@@ -41,6 +42,7 @@ class NPMDConfigUT < Test::Unit::TestCase
         @test_input_ui_config10 = '<?xml version="1.0" encoding="utf-16"?><Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="3"><NetworkMonitoringAgentConfigurationV3><Metadata>{"Version":3,"Protocol":1,"SubnetUid":1,"AgentUid":1}</Metadata><NetworkNameToNetworkMap>{"Default":{"Subnets":["1","2"]}, "NewOne":{"Subnets":["3"]}}</NetworkNameToNetworkMap><SubnetIdToSubnetMap>{"1":"65.171.0.0/16", "2":"198.165.0.0/21", "3":"162.128.0.0/21"}</SubnetIdToSubnetMap><AgentFqdnToAgentMap>{"1":{"IPs":[{"Value":"65.171.126.72","Subnet":1}, {"Value":"65.171.126.73","Subnet":1}],"Protocol":"1"}, "2":{"IPs":[{"Value":"65.271.126.72","Subnet":2}],"Protocol":"1"}}</AgentFqdnToAgentMap><RuleNameToRuleMap>{"Default":{"ActOn":[{"SN":"Default","SS":"1","DN":"NewOne","DS":"3"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[],"Protocol":1}}</RuleNameToRuleMap></NetworkMonitoringAgentConfigurationV3></Configuration>'
         @test_input_ui_config11 = '<?xml version="1.0" encoding="utf-16"?><Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="3"><NetworkMonitoringAgentConfigurationV3><Metadata>{"Version":3,"Protocol":1,"SubnetUid":1,"AgentUid":1}</Metadata><NetworkNameToNetworkMap>{"Default":{"Subnets":["1","2"]}, "NewOne":{"Subnets":["3"]}}</NetworkNameToNetworkMap><SubnetIdToSubnetMap>{"1":"65.171.0.0/16", "2":"198.165.0.0/21", "3":"162.128.0.0/21"}</SubnetIdToSubnetMap><AgentFqdnToAgentMap>{"1":{"IPs":[{"Value":"65.171.126.72","Subnet":1}, {"Value":"65.171.126.73","Subnet":1}],"Protocol":"1"}, "2":{"IPs":[{"Value":"65.271.126.72","Subnet":2}],"Protocol":"1"}}</AgentFqdnToAgentMap><RuleNameToRuleMap>{"Default":{"ActOn":[{"SN":"*","SS":"*","DN":"*","DS":"*"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[],"Protocol":1},"RuleWithExcept":{"ActOn":[{"SN":"NewOne","SS":"*","DN":"Default","DS":"*"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[{"SN":"NewOne","SS":"*","DN":"Default","DS":2}],"Protocol":2}}</RuleNameToRuleMap></NetworkMonitoringAgentConfigurationV3></Configuration>'
         @test_input_ui_config12 = '<?xml version="1.0" encoding="utf-16"?><Configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="3"><NetworkMonitoringAgentConfigurationV3><Metadata>{"Version":3,"Protocol":1,"SubnetUid":1,"AgentUid":1}</Metadata><NetworkNameToNetworkMap>{"Default":{"Subnets":["1","2"]}, "NewOne":{"Subnets":["4"]}}</NetworkNameToNetworkMap><SubnetIdToSubnetMap>{"1":"65.171.0.0/16", "2":"198.165.0.0/21", "3":"162.128.0.0/21"}</SubnetIdToSubnetMap><AgentFqdnToAgentMap>{"1":{"IPs":[{"Value":"65.171.126.72","Subnet":1}, {"Value":"65.171.126.73","Subnet":5}],"Protocol":"1"}, "2":{"IPs":[{"Value":"65.271.126.72","Subnet":4}],"Protocol":"1"}}</AgentFqdnToAgentMap><RuleNameToRuleMap>{"Default":{"ActOn":[{"SN":"*","SS":"*","DN":"*","DS":"*"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[],"Protocol":1},"RuleToDrop":{"ActOn":[{"SN":"Default","SS":"1","DN":"NewOne","DS":"4"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[],"Protocol":1},"RuleToPartialDrop":{"ActOn":[{"SN":"Default","SS":"1","DN":"NewOne","DS":"4"},{"SN":"Default","SS":"1","DN":"NewOne","DS":"2"}],"Threshold":{"Loss":-1.0,"Latency":-1.0},"Exceptions":[],"Protocol":1}}</RuleNameToRuleMap></NetworkMonitoringAgentConfigurationV3></Configuration>'
+        @test_input_ui_config13 = '<?xml version="1.0" encoding="utf-8"?> <Configuration Version="3"> <NetworkMonitoringAgentConfigurationV3> <Metadata>{ "Version": 4, "Protocol": 2, "SubnetUid": 45, "AgentUid": 50 }</Metadata> <NetworkNameToNetworkMap>{ "Default": { "Subnets": [ "1", "2" ] }, "OnPrem": { "Subnets": [ "42" ] }, "Azure": { "Subnets": [ "43" ] } }</NetworkNameToNetworkMap> <SubnetIdToSubnetMap>{ "1": "2001:0:9d38:90d7::/64", "2": "fe80:0000:0000:0000::/64", "42": "10.10.40.0/25", "43": " 192.168.27.224/28" }</SubnetIdToSubnetMap> <AgentFqdnToAgentMap>{ "24": { "IPs": [ { "Value": "192.168.27.231", "Subnet": "43" }, { "Value": "fe80::5942:ab60:8235:e500", "Subnet": "2" } ], "Protocol": 3 }, "25": { "IPs": [ { "Value": "10.10.40.4", "Subnet": "42" }, { "Value": "2001:0:9d38:90d7:80c:dba:d786:2395", "Subnet": "1" } ], "Protocol": 3 } }</AgentFqdnToAgentMap> <RuleNameToRuleMap>{ "OnPrem to Azure": { "Protocol": 2, "ActOn": [ { "SN": "OnPrem", "DN": "Azure", "SS": "*", "DS": "*" } ], "Exceptions": [], "Threshold": { "Loss": -1, "Latency": -1 } }, "Azure to OnPrem": { "Protocol": 2, "ActOn": [ { "SN": "Azure", "DN": "OnPrem", "SS": "*", "DS": "*" } ], "Exceptions": [], "Threshold": { "Loss": -1, "Latency": -1 } } }</RuleNameToRuleMap> <EPMConfiguration>{ "TestIdToTestMap": { "3": { "Endpoints": [ "3" ], "Name": "Google", "Poll": 5, "AppThreshold": { "Latency": 2000 }, "NetworkThreshold": { "Loss": 5, "Latency": 500 } }, "5": { "Endpoints": [ "5" ], "Name": "google HTTP", "Poll": 5, "AppThreshold": { "Latency": 1000 }, "NetworkThreshold": { "Loss": 2, "Latency": 100 } }, "8": { "Endpoints": [ "8" ], "Name": "TCP Test", "Poll": 5, "AppThreshold": { "Latency": 100 }, "NetworkThreshold": { "Loss": 2, "Latency": 100 } }, "1002": { "Endpoints": [ "100264" ], "Name": "Office 365 authentication and identity", "Poll": 5, "AppThreshold": { "Latency": 1000 }, "NetworkThreshold": { "Loss": -2, "Latency": -2 } }, "1005": { "Endpoints": [ "100581", "100582" ], "Name": "Skype for Business Online", "Poll": 5, "AppThreshold": { "Latency": -2 }, "NetworkThreshold": { "Loss": -2, "Latency": -2 } } }, "EndpointIdToEndpointMap": { "3": { "url": "www.google.com", "port": 443, "protocol": "https" }, "5": { "url": "www.google.com", "port": 80, "protocol": "http" }, "8": { "url": "www.bing.com", "port": 443, "protocol": "tcp" }, "100264": { "url": "login.microsoft.com", "port": 443, "protocol": "https" }, "100581": { "url": "config.edge.skype.com", "port": 443, "protocol": "https" }, "100582": { "url": "pipe.skype.com", "port": 443, "protocol": "https" } }, "AgentIdToTestIdsMap": { "24": [ "3", "5", "1005" ], "25": [ "3", "5", "8", "1002" ] } }</EPMConfiguration> <erConfiguration>{ "erPrivateTestIdToERTestMap": { "3": { "azureAgents": [ "25" ], "vNet": "ER-Lab-VNet01", "connectionResourceId": "/subscriptions/9cece3e3-0f7d-47ca-af0e-9772773f90b7/resourceGroups/ER-Lab/providers/Microsoft.Network/connections/ER-Lab-gw-conn", "circuitName": "ER-Lab-ER", "threshold": { "loss": 11, "latency": 20 }, "onPremAgents": [ "24" ], "protocol": 2, "circuitId": "4" }, "6": { "azureAgents": [], "vNet": "AScentTstVNet", "connectionResourceId": "/subscriptions/a013b98a-6c2a-4f92-a6a7-82266ac6f437/resourceGroups/AScenTstRG/providers/Microsoft.Network/connections/AScenTstConnForER", "circuitName": "AScenTstER", "threshold": { "loss": -2, "latency": -2 }, "onPremAgents": [], "protocol": 2, "circuitId": "9" } }, "erMSTestIdToERTestMap": { "2": { "urlList": [ { "url": "delve.office.com", "port": 443 } ], "circuitName": "ER-Lab-ER", "threshold": { "loss": -2, "latency": -2 }, "onPremAgents": [ "24" ], "protocol": 2, "circuitId": "4" } }, "erCircuitIdToCircuitResourceIdMap": { "4": "/subscriptions/9cece3e3-0f7d-47ca-af0e-9772773f90b7/resourceGroups/ER-Lab/providers/Microsoft.Network/expressRouteCircuits/ER-Lab-ER", "9": "/subscriptions/a013b98a-6c2a-4f92-a6a7-82266ac6f437/resourceGroups/AScenTstRG/providers/Microsoft.Network/expressRouteCircuits/AScenTstER" } }</erConfiguration> </NetworkMonitoringAgentConfigurationV3> </Configuration>'
 
         @hash_output_ui_config01={"Networks"=>[{"Name"=>"Default", "Subnets"=>["1", "2"]},{"Name"=>"NewOne", "Subnets"=>["3"]}],"Subnets"=>{"1"=>"65.171.0.0/16", "2"=>"198.165.0.0/21", "3"=>"162.128.0.0/21"},"Agents"=>[{"Guid"=>"1","Capability"=>"1","IPs"=>[{"IP"=>"65.171.126.72", "SubnetName"=>"1"},{"IP"=>"65.171.126.73", "SubnetName"=>"1"}]},{"Guid"=>"2","Capability"=>"1","IPs"=>[{"IP"=>"65.271.126.72", "SubnetName"=>"2"}]}],"Rules"=>[{"Name"=>"Default","LossThreshold"=>-1.0,"LatencyThreshold"=>-1.0,"Protocol"=>1,"Rules"=>[{"SN"=>"*", "SS"=>"*", "DN"=>"*", "DS"=>"*"}],"Exceptions"=>[]}]}
         @hash_output_ui_config02=nil
@@ -86,7 +88,7 @@ class NPMDConfigUT < Test::Unit::TestCase
             _xmlConfig = nil
             begin
                 NPMDConfig::AgentConfigCreator.resetErrorCheck()
-                _xmlConfig = NPMDConfig::AgentConfigCreator.createXmlFromUIConfigHash(_intHash)
+                _xmlConfig = NPMDConfig::AgentConfigCreator.createJsonFromUIConfigHash(_intHash)
             rescue Exception => e
                 # Ignore exception as some are meant for failing
             end
@@ -99,6 +101,27 @@ class NPMDConfigUT < Test::Unit::TestCase
                 _xmlConfig.gsub!("\n","")
                 _xmlConfig.gsub!(/\'/,"\"")
                 assert_equal(agent_config_str, _xmlConfig, "#{test_desc}: Failed agent config xml mismatch")
+            end
+        end
+    end
+
+    def parse_ui_config(test_desc, ui_config)
+        _intHash = nil
+        begin
+            _intHash = NPMDConfig::UIConfigParser.parse(ui_config)
+
+        rescue Exception => e
+            # Ignore exception as some are meant for failing
+        end
+
+        unless _intHash.nil?
+            _jsonConfig = nil
+            begin
+                NPMDConfig::AgentConfigCreator.resetErrorCheck()
+                _jsonConfig = NPMDConfig::AgentConfigCreator.createJsonFromUIConfigHash(_intHash)
+                puts _jsonConfig.to_json
+            rescue Exception => e
+                # Ignore exception as some are meant for failing
             end
         end
     end
@@ -158,6 +181,10 @@ class NPMDConfigUT < Test::Unit::TestCase
                                 "#{NPMDConfig::AgentConfigCreator::DROP_RULES}=1"
         _actualErrorSummary = NPMDConfig::AgentConfigCreator.getErrorSummary()
         assert_equal(_expectedErrorSummary, _actualErrorSummary, "#{@test_desc12}: Mismatch in parse error drop summary")
+    end
+
+    def test_case_13
+        parse_ui_config(@test_desc13, @test_input_ui_config13)
     end
 
     # Contract test cases
