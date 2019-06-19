@@ -3,7 +3,7 @@ require_relative '../../../source/code/plugins/npmd_config_lib'
 
 class Logger
     def self.logToStdOut(msg, depth=0)
-        #puts msg
+        puts msg
     end
     class << self
         alias_method :logError, :logToStdOut
@@ -109,20 +109,18 @@ class NPMDConfigUT < Test::Unit::TestCase
         _intHash = nil
         begin
             _intHash = NPMDConfig::UIConfigParser.parse(ui_config)
-
+            Logger::logInfo _intHash
         rescue Exception => e
             # Ignore exception as some are meant for failing
         end
 
-        unless _intHash.nil?
-            _jsonConfig = nil
-            begin
-                NPMDConfig::AgentConfigCreator.resetErrorCheck()
-                _jsonConfig = NPMDConfig::AgentConfigCreator.createJsonFromUIConfigHash(_intHash)
-                puts _jsonConfig.to_json
-            rescue Exception => e
+        _jsonConfig = nil
+        begin
+       	    NPMDConfig::AgentConfigCreator.resetErrorCheck()
+            _jsonConfig = NPMDConfig::AgentConfigCreator.createJsonFromUIConfigHash(_intHash)
+            Logger::logInfo "Json Config: " + _jsonConfig.to_json
+        rescue Exception => e
                 # Ignore exception as some are meant for failing
-            end
         end
     end
 

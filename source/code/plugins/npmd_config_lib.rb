@@ -126,6 +126,10 @@ module NPMDConfig
         # Only accessible method
         def self.createJsonFromUIConfigHash(configHash)
             begin
+		if configHash == nil
+		    Logger::logError "ConfigHash received is NIL"
+		end
+		Logger::logInfo "UI Config received : " + configHash
                 _subnetInfo = getProcessedSubnetHash(configHash["Subnets"])
                 _doc = {"Configuration" => {}}            
                 _doc["Configuration"] ["Agents"] = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
@@ -135,10 +139,12 @@ module NPMDConfig
                 _doc["Configuration"] ["ER"] = createERElements(configHash["ER"])
 
                 _configJson = _doc.to_json
+		Logger::logInfo "Json Config : "
+		Logger::logInfo _configJson
                 _configJson
             rescue StandardError => e
-                Logger::logError "Got error creating XML from UI Hash: #{e}", Logger::resc
-                raise "Got error creating AgentXml: #{e}"
+                Logger::logError "Got error creating JSON from UI Hash: #{e}", Logger::resc
+                raise "Got error creating AgentJson: #{e}"
             end
         end
 
@@ -192,6 +198,7 @@ module NPMDConfig
 
                 end
             end
+	    Logger::logInfo "Json Agent : " + _agents
             _agents
         end
 
@@ -220,6 +227,7 @@ module NPMDConfig
                     
                 end
             end
+	    Logger::logInfo "Json Network : " + _networks
             _networks
         end
 
@@ -250,6 +258,7 @@ module NPMDConfig
                     _networkTestMatrix["SubnetPair"].push(_snPair);
                 end
             end
+	    Logger::logInfo "Json Network Test Matrix : " + _networkTestMatrix
             _networkTestMatrix
         end
 
@@ -278,6 +287,7 @@ module NPMDConfig
                     
                 end
             end
+	    Logger::logInfo "Json Rules : " + _rules
             _rules
         end
 
@@ -320,6 +330,7 @@ module NPMDConfig
                 end
             _epmRules["Rule"] = _rule
             _epm["Rules"] = _epmRules
+	    Logger::logInfo "Json EPM : " + _epm
             _epm
         end
 
@@ -414,6 +425,7 @@ module NPMDConfig
                     _er.push(_msPeeringRules)
                 end
             end
+	    Logger::logInfo "Json ER : " + _er
             _er
         end
 
@@ -442,6 +454,7 @@ module NPMDConfig
                 end
 
                 _config = _doc.elements[RootConfigTag + "/" + SolnConfigV3Tag]
+		Logger::logError "UI Config : " + _config
                 if _config.nil? or _config.elements.empty?
                     Logger::logWarn "found nothing for path #{RootConfigTag}/#{SolnConfigV3Tag} in config string"
                     return nil
@@ -458,6 +471,10 @@ module NPMDConfig
                 _h[KeyER]       = getERHashFromJson(_config.elements[ERInfoTag].text())
                 
                 _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil? or _h[KeyRules].nil?)
+		if _h == nil
+		    Logger::logError "UI Config parsed as nil"
+		end
+		Logger::logInfo "Parsed UI Config : " + _h
                 return _h
 
             rescue REXML::ParseException => e
@@ -531,6 +548,7 @@ module NPMDConfig
                     _network["Subnets"] = value["Subnets"]
                     _a << _network
                 end
+		Logger::logInfo "Network Hash : " + _a
                 _a
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in network data: #{e}", Logger::resc
@@ -566,6 +584,7 @@ module NPMDConfig
                     end
                     _a << _agent
                 end
+		Logger::logInfo "Agent Hash : " + _a
                 _a
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in agent data: #{e}", Logger::resc
@@ -593,6 +612,7 @@ module NPMDConfig
                     _rule["Enabled"] = value["Enabled"]
                     _a << _rule
                 end
+		Logger::logInfo "Rule Hash : " + _a
                 _a
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in rule data: #{e}", Logger::resc
@@ -638,6 +658,7 @@ module NPMDConfig
                         _epmRules["Rules"].push(_rule) if !_rule.empty?
                         end
                     end
+		    Logger::logInfo "EPM Hash : " + _epmRules
                     _epmRules if !_epmRules["Rules"].empty?
                 end
             rescue JSON::ParserError => e
@@ -678,6 +699,7 @@ module NPMDConfig
                                     _privateRule = getERPrivateRuleFromUIConfig(key, value)
                                     break;
                                 end
+			    end
                             if !_isAgentPresent
                                 _azureAgents = value["azureAgents"]
                                 _azureAgents.each do |x|
@@ -708,6 +730,7 @@ module NPMDConfig
                             end
                         end
                     end
+		    Logger::logInfo "ER Hash : " + _erRules
                     _erRules
                 end
             rescue JSON::ParserError => e
