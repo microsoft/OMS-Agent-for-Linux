@@ -126,10 +126,9 @@ module NPMDConfig
         # Only accessible method
         def self.createJsonFromUIConfigHash(configHash)
             begin
-		if configHash == nil
-		    Logger::logError "ConfigHash received is NIL"
-		end
-		Logger::logInfo "UI Config received : " + configHash
+		        if configHash == nil
+		            Logger::logError "Config received is NIL"
+		        end
                 _subnetInfo = getProcessedSubnetHash(configHash["Subnets"])
                 _doc = {"Configuration" => {}}            
                 _doc["Configuration"] ["Agents"] = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
@@ -139,8 +138,6 @@ module NPMDConfig
                 _doc["Configuration"] ["ER"] = createERElements(configHash["ER"])
 
                 _configJson = _doc.to_json
-		Logger::logInfo "Json Config : "
-		Logger::logInfo _configJson
                 _configJson
             rescue StandardError => e
                 Logger::logError "Got error creating JSON from UI Hash: #{e}", Logger::resc
@@ -195,10 +192,8 @@ module NPMDConfig
                 _agents["Agent"].push(_agent);
                 if _agents.empty?
                     @@agent_drops += 1
-
                 end
             end
-	    Logger::logInfo "Json Agent : " + _agents
             _agents
         end
 
@@ -223,11 +218,9 @@ module NPMDConfig
                 end
                 _networks["Network"].push(_network);
                 if _network.elements.empty?
-                    @@network_drops += 1
-                    
+                    @@network_drops += 1                    
                 end
             end
-	    Logger::logInfo "Json Network : " + _networks
             _networks
         end
 
@@ -258,14 +251,12 @@ module NPMDConfig
                     _networkTestMatrix["SubnetPair"].push(_snPair);
                 end
             end
-	    Logger::logInfo "Json Network Test Matrix : " + _networkTestMatrix
             _networkTestMatrix
         end
 
         def self.createRuleElements(ruleArray, subnetIdHash)
             _rules = {"Rule" => []}
             ruleArray.each do |x|
-                #_rule = REXML::Element.new("Rule")
                 _rule = {}
                 _rule["Name"] = x["Name"];
                 _rule["Description"] = x["Description"]
@@ -284,10 +275,11 @@ module NPMDConfig
                     _alertConfig["Loss"]  = {"Threshold" => x["LossThreshold"]}
                     _alertConfig["Latency"]  = {"Threshold" => x["LatencyThreshold"]}
                     _rule["AlertConfiguration"].push(_alertConfig);
-                    
+                end
+                if !_rule.empty?
+                    _rules["Rule"].push(_rule)
                 end
             end
-	    Logger::logInfo "Json Rules : " + _rules
             _rules
         end
 
@@ -303,8 +295,8 @@ module NPMDConfig
                     _ruleHash["Name"] = _iRule["Name"]
                     _ruleHash["CMResourceId"] = _iRule["CMResourceId"]
                     _ruleHash["Redirect"] = "false"
-                    _ruleHash["NetTests"] = (!_iRule["NetworkThresholdLoss"].empty? and !_iRule["NetworkThresholdLatency"].empty?) ? "true" : "false"
-                    _ruleHash["AppTests"] = (!_iRule["AppThresholdLatency"].empty?) ? "true" : "false"
+                    _ruleHash["NetTests"] = (_iRule["NetworkThresholdLoss"] > 0 and _iRule["NetworkThresholdLatency"] > 0) ? "true" : "false"
+                    _ruleHash["AppTests"] = (_iRule["AppThresholdLatency"] > 0) ? "true" : "false"
                     if (_ruleHash["NetTests"] == "true")
                         _ruleHash["NetworkThreshold"] = {"Loss" => _iRule["NetworkThresholdLoss"], "Latency" => _iRule["NetworkThresholdLatency"]}
                     end
@@ -315,7 +307,7 @@ module NPMDConfig
 
                     # Fill endpoints
                     _epList = _iRule["Endpoints"]
-                    _endpointList = {"Endpoint": []}
+                    _endpointHash = {"Endpoint": []}
                     for j in 0.._epList.length-1
                         _epHash = Hash.new
                         _epHash["Id"] = _epList[j]["Id"]
@@ -323,23 +315,22 @@ module NPMDConfig
                         _epHash["Port"] = _epList[j]["Port"]
                         _epHash["Protocol"] = _epList[j]["Protocol"]
                         _epHash["PollInterval"] = _iRule["Poll"]
-                        _endpointList["Endpoint"].push(_epHash)
+                        _endpointHash["Endpoint"].push(_epHash)
                     end
-                    _ruleHash["Endpoints"] = _endpointList
+                    _ruleHash["Endpoints"] = _endpointHash
                     _rule.push(_ruleHash)
                 end
+            end
             _epmRules["Rule"] = _rule
             _epm["Rules"] = _epmRules
-	    Logger::logInfo "Json EPM : " + _epm
             _epm
         end
 
         def self.createERElements(erHash)
-            _er = {}
+            _er = {"PrivateRules" => {}, "MSPeeringRules" => {}}
             erHash.each do |key, rules|
                 # Fill Private Peering Rules
                 if key == "PrivatePeeringRules"
-                    _privatePeeringRules = {"PrivateRules" => {}}
                     _ruleList = {"Rule" => []}
                     for i in 0..rules.length-1
                         _pvtRule = Hash.new
@@ -352,10 +343,8 @@ module NPMDConfig
                         _pvtRule["Protocol"] = _iRule["Protocol"]
 
                         _thresholdMap = Hash.new
-                        _thresholdMap["Loss"] = Hash.new
-                        _thresholdMap["Latency"] = Hash.new
-                        _thresholdMap["Loss"]["Threshold"] = iRule[LossThreshold]
-                        _thresholdMap["Latency"]["Threshold"] = iRule[LatencyThreshold]
+                        _thresholdMap["Loss"] = {"Threshold" => _iRule["LossThreshold"]}
+                        _thresholdMap["Latency"] = {"Threshold" => _iRule["LatencyThreshold"]}
                         _pvtRule["Threshold"] = _thresholdMap
 
                         _onPremAgents = Hash.new
@@ -375,15 +364,13 @@ module NPMDConfig
                             _azureAgents["Agent"]["ID"] = _azureAgentsList[k]
                         end
                         _pvtRule["AzureAgents"] = _azureAgents
-
-                        _ruleList.push(_pvtRule)
+                        _ruleList["Rule"].push(_pvtRule)
                     end
-                    _er.push(_privatePeeringRules)
+                    _er["PrivateRules"] = _ruleList
                 end
 
                 # Fill MS Peering Rules
                 if key == "MSPeeringRules"
-                    _msPeeringRules = Hash.new
                     _ruleList = {"Rule" => []}
                     for i in 0..rules.length-1
                         _msRule = Hash.new
@@ -394,10 +381,8 @@ module NPMDConfig
                         _msRule["CircuitResourceId"] = _iRule["CircuitResourceId"]
 
                         _thresholdMap = Hash.new
-                        _thresholdMap["Loss"] = Hash.new
-                        _thresholdMap["Latency"] = Hash.new
-                        _thresholdMap["Loss"]["Threshold"] = iRule[LossThreshold]
-                        _thresholdMap["Latency"]["Threshold"] = iRule[LatencyThreshold]
+                        _thresholdMap["Loss"] = {"Threshold" => _iRule["LossThreshold"]}
+                        _thresholdMap["Latency"] = {"Threshold" => _iRule["LatencyThreshold"]}
                         _msRule["Threshold"] = _thresholdMap
 
                         _onPremAgents = Hash.new
@@ -421,11 +406,10 @@ module NPMDConfig
                         end
                         _msRule["URLs"] = _urls
                     end
-                    _ruleList.push(_msRule)
-                    _er.push(_msPeeringRules)
+                    _ruleList["Rule"].push(_msRule)
+                    _er["MSPeeringRules"] = _ruleList
                 end
             end
-	    Logger::logInfo "Json ER : " + _er
             _er
         end
 
@@ -454,7 +438,7 @@ module NPMDConfig
                 end
 
                 _config = _doc.elements[RootConfigTag + "/" + SolnConfigV3Tag]
-		Logger::logError "UI Config : " + _config
+		        Logger::logError "UI Config : " + _config
                 if _config.nil? or _config.elements.empty?
                     Logger::logWarn "found nothing for path #{RootConfigTag}/#{SolnConfigV3Tag} in config string"
                     return nil
@@ -471,10 +455,9 @@ module NPMDConfig
                 _h[KeyER]       = getERHashFromJson(_config.elements[ERInfoTag].text())
                 
                 _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil? or _h[KeyRules].nil?)
-		if _h == nil
-		    Logger::logError "UI Config parsed as nil"
-		end
-		Logger::logInfo "Parsed UI Config : " + _h
+		        if _h == nil
+		            Logger::logError "UI Config parsed as nil"
+		        end
                 return _h
 
             rescue REXML::ParseException => e
@@ -548,7 +531,6 @@ module NPMDConfig
                     _network["Subnets"] = value["Subnets"]
                     _a << _network
                 end
-		Logger::logInfo "Network Hash : " + _a
                 _a
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in network data: #{e}", Logger::resc
@@ -584,7 +566,6 @@ module NPMDConfig
                     end
                     _a << _agent
                 end
-		Logger::logInfo "Agent Hash : " + _a
                 _a
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in agent data: #{e}", Logger::resc
@@ -612,7 +593,6 @@ module NPMDConfig
                     _rule["Enabled"] = value["Enabled"]
                     _a << _rule
                 end
-		Logger::logInfo "Rule Hash : " + _a
                 _a
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in rule data: #{e}", Logger::resc
@@ -648,19 +628,17 @@ module NPMDConfig
                         _endpoints = _test["Endpoints"]
                         _endpoints.each do |ep|
                             _endpointHash = Hash.new
-                            _endpoint = _test[EpmEndpointInfoTag][ep]
+                            _endpoint = _h[EpmEndpointInfoTag][ep]
                             _endpointHash["Id"] = ep
                             _endpointHash["URL"] = _endpoint["url"]
                             _endpointHash["Port"] = _endpoint["port"]
                             _endpointHash["Protocol"] = _endpoint["protocol"]
                             _rule["Endpoints"].push(_endpointHash)
                         end
-                        _epmRules["Rules"].push(_rule) if !_rule.empty?
-                        end
+                        _epmRules["Rules"].push(_rule)
                     end
-		    Logger::logInfo "EPM Hash : " + _epmRules
-                    _epmRules if !_epmRules["Rules"].empty?
                 end
+                    _epmRules
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in EPM data: #{e}", Logger::resc
                 nil
@@ -696,21 +674,23 @@ module NPMDConfig
                                 if x == _agentId
                                     # Append this test to ER Config
                                     _isAgentPresent = true
-                                    _privateRule = getERPrivateRuleFromUIConfig(key, value)
+                                    _privateRule = getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
                                     break;
                                 end
-			    end
+			                end
                             if !_isAgentPresent
                                 _azureAgents = value["azureAgents"]
                                 _azureAgents.each do |x|
                                     if x == _agentId
                                         _isAgentPresent = true
-                                        _privateRule = getERPrivateRuleFromUIConfig(key, value)
+                                        _privateRule = getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
                                         break;
                                     end
                                 end
                             end
-                            _erRules["PrivatePeeringRules"].push(_privateRule)
+                            if !_privateRule.empty?
+                                _erRules["PrivatePeeringRules"].push(_privateRule)
+                            end
                         end
                     end
 
@@ -723,14 +703,15 @@ module NPMDConfig
                                 if x == _agentId
                                     # Append this test to ER Config
                                     _isAgentPresent = true
-                                    _microsoftRule = getERMicrosoftRuleFromUIConfig(key, value)
+                                    _microsoftRule = getERMicrosoftRuleFromUIConfig(key, value, _circuitIdMap)
                                     break;
                                 end
-                            _erRules["MSPeeringRules"].push(_microsoftRule)
+                            end
+                            if !_microsoftRule.empty?
+                                _erRules["MSPeeringRules"].push(_microsoftRule)
                             end
                         end
                     end
-		    Logger::logInfo "ER Hash : " + _erRules
                     _erRules
                 end
             rescue JSON::ParserError => e
@@ -739,7 +720,7 @@ module NPMDConfig
             end 
         end
 
-        def getERPrivateRuleFromUIConfig(key, value)
+        def getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
             _ruleHash = Hash.new
             _ruleHash["Name"] = key
             _ruleHash["Protocol"] = value["protocol"]
@@ -755,7 +736,7 @@ module NPMDConfig
             return _ruleHash
         end
 
-        def getERMicrosoftRuleFromUIConfig(key, value)
+        def getERMicrosoftRuleFromUIConfig(key, value, _circuitIdMap)
             _ruleHash = Hash.new
             _ruleHash["Name"] = key
             _ruleHash["CircuitName"] = value["circuitName"]
@@ -765,6 +746,7 @@ module NPMDConfig
             _ruleHash["LossThreshold"] = value["threshold"]["loss"]
             _ruleHash["LatencyThreshold"] = value["threshold"]["latency"]
             _ruleHash["UrlList"] = value["urlList"]
+            _ruleHash["OnPremAgents"] = value["onPremAgents"]
             return _ruleHash
         end
     end
@@ -777,6 +759,7 @@ module NPMDConfig
         _errorStr = AgentConfigCreator.getErrorSummary()
         return _agentJson, _errorStr
     end
+
 end
 
 # NPM Contracts verification for data being uploaded
@@ -853,3 +836,4 @@ module NPMContract
     end
 
 end
+
