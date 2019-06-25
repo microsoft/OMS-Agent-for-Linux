@@ -764,9 +764,16 @@ end
 
 # NPM Contracts verification for data being uploaded
 module NPMContract
-    DATAITEM_AGENT = "agent"
-    DATAITEM_PATH  = "path"
-    DATAITEM_DIAG  = "diagnostics"
+    DATAITEM_AGENT                    = "agent"
+    DATAITEM_PATH                     = "path"
+    DATAITEM_DIAG                     = "diagnostics"
+    DATAITEM_ENDPOINT_HEALTH          = "endpointHealth"
+    DATAITEM_ENDPOINT_MONITORING      = "endpointMonitoringData"
+    DATAITEM_ENDPOINT_DIAGNOSTICS     = "endpointDiagnostics"
+    DATAITEM_EXROUTE_MONITORING       = "expressrouteMonitoringData"
+    DATAITEM_CONNECTIONMONITOR_HEALTH = "connectionMonitorHealth"
+    DATAITEM_CONNECTIONMONITORING     = "connectionMonitoringData"
+
 
     DATAITEM_VALID = 1
     DATAITEM_ERR_MISSING_FIELDS = 2
@@ -805,10 +812,56 @@ module NPMContract
                                 "LossHealthState",
                                 "Path",
                                 "Computer",
-                                "TimeGenerated"]
+                                "TimeGenerated",
+                                "Protocol",
+                                "MinHopLatencyList",
+                                "MaxHopLatencyList",
+                                "AvgHopLatencyList",
+                                "TraceRouteCompletionTime"]
 
-    CONTRACT_DIAG_DATA_KEYS  = ["Message",
-                                "SubType"]
+    CONTRACT_DIAG_DATA_KEYS  = ["TimeGenerated",
+                                "SubType",
+                                "NotificationCode",
+                                "NotificationType",
+                                "Computer"]
+
+    CONTRACT_ENDPOINT_HEALTH_DATA_KEYS  =  ["SubType",
+                                            "TestName",
+                                            "ServiceTestId",
+                                            "ConnectionMonitorResourceId",
+                                            "Target",
+                                            "Port",
+                                            "EndpointId",
+                                            "Protocol",
+                                            "TimeSinceActive",
+                                            "ServiceResponseTime",
+                                            "ServiceLossPercent",
+                                            "ServiceLossHealthState",
+                                            "ServiceResponseHealthState",
+                                            "ResponseCodeHealthState",
+                                            "ServiceResponseThresholdMode",
+                                            "ServiceResponseThreshold",
+                                            "ServiceResponseCode",
+                                            "Loss",
+                                            "LossHealthState",
+                                            "LossThresholdMode",
+                                            "LossThreshold",
+                                            "MedianLatency",
+                                            "LatencyThresholdMode",
+                                            "LatencyThreshold",
+                                            "LatencyHealthState",
+                                            "TimeGenerated",
+                                            "Computer"]
+
+    CONTRACT_ENDPOINT_PATH_DATA_KEYS = []
+
+    CONTRACT_ENDPOINT_DIAG_DATA_KEYS = []
+
+    CONTRACT_EXROUTE_MONITOR_DATA_KEYS = []
+
+    CONTRACT_CONNECTIONMONITOR_HEALTH_DATA_KEYS = []
+
+    CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS = []
 
     def self.IsValidDataitem(item, itemType)
         _contract=[]
@@ -819,6 +872,18 @@ module NPMContract
             _contract = CONTRACT_PATH_DATA_KEYS
         elsif itemType == DATAITEM_DIAG
             _contract = CONTRACT_DIAG_DATA_KEYS
+        elsif itemType == DATAITEM_ENDPOINT_HEALTH
+            _contract = CONTRACT_ENDPOINT_HEALTH_DATA_KEYS
+        elsif itemType == DATAITEM_ENDPOINT_MONITORING
+            _contract = CONTRACT_ENDPOINT_PATH_DATA_KEYS
+        elsif itemType == DATAITEM_ENDPOINT_DIAGNOSTICS
+            _contract = CONTRACT_ENDPOINT_DIAG_DATA_KEYS
+        elsif itemType == DATAITEM_EXROUTE_MONITORING
+            _contract = CONTRACT_EXROUTE_MONITOR_DATA_KEYS
+        elsif itemType == DATAITEM_CONNECTIONMONITOR_HEALTH
+            _contract = CONTRACT_CONNECTIONMONITOR_HEALTH_DATA_KEYS
+        elsif itemType == DATAITEM_CONNECTIONMONITORING
+            _contract = CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS
         end
 
         return DATAITEM_ERR_INVALID_TYPE, nil if _contract.empty?
