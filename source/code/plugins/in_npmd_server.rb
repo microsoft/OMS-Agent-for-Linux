@@ -343,6 +343,18 @@ module Fluent
                 _itemType = NPMContract::DATAITEM_PATH
             elsif item["SubType"] == NPM_DIAG
                 _itemType = NPMContract::DATAITEM_DIAG
+            elsif item["SubType"] == "EndpointHealth"
+                _itemType = NPMContract::DATAITEM_ENDPOINT_HEALTH
+            elsif item["SubType"] == "EndpointPath"
+                _itemType = NPMContract::DATAITEM_ENDPOINT_MONITORING
+            elsif item["SubType"] == "EndpointDiagnostics"
+                _itemType = NPMContract::DATAITEM_ENDPOINT_DIAGNOSTICS
+            elsif item["SubType"] == "ExpressRoutePath"
+                _itemType = NPMContract::DATAITEM_EXROUTE_MONITORING
+            elsif item["SubType"] == "ConnectionMonitorTestResult"
+                _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_HEALTH
+            elsif item["SubType"] == "ConnectionMonitorPath"
+                _itemType = NPMContract::DATAITEM_CONNECTIONMONITORING
             end
 
             return false if _itemType.empty?
