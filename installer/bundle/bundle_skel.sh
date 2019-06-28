@@ -70,6 +70,7 @@ INSTALL_SED=63
 INSTALL_CURL=55 #64, temporary as 55 excludes from SLA
 INSTALL_GPG=65
 UNSUPPORTED_PKG_INSTALLER=66
+OPENSSL_PATH="openssl"
 
 usage()
 {
@@ -226,11 +227,29 @@ verifyPrivileges()
     fi
 }
 
+is_suse11_platform_with_openssl1(){
+  if [ -e /etc/SuSE-release ];then
+     VERSION=`cat /etc/SuSE-release|grep "VERSION = 11"|awk 'FS=":"{print $3}'`
+     if [ ! -z "$VERSION" ];then
+        which openssl1>/dev/null 2>&1
+        if [ $? -eq 0 -a $VERSION -eq 11 ];then
+           return 0
+        fi
+     fi
+  fi
+  return 1
+}
+
 ulinux_detect_openssl_version()
 {
+    is_suse11_platform_with_openssl1
+    if [ $? -eq 0 ];then
+       OPENSSL_PATH="openssl1"
+    fi
+
     TMPBINDIR=
     # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_11X
-    OPENSSL_SYSTEM_VERSION_FULL=`openssl version | awk '{print $2}'`
+    OPENSSL_SYSTEM_VERSION_FULL=`$OPENSSL_PATH version | awk '{print $2}'`
     OPENSSL_SYSTEM_VERSION_10X=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
     OPENSSL_SYSTEM_VERSION_100_ONLY=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.0'; echo $?`
     OPENSSL_SYSTEM_VERSION_11X=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.1.'; echo $?`

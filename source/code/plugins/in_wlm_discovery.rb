@@ -130,6 +130,7 @@ module Fluent
         metadata_json = open(url_metadata,"Metadata"=>"true").read
         metadata_instance = { 
           "EncodedVMMetadata" => Base64.strict_encode64(metadata_json),
+          "Hostname" => OMS::Common.get_fully_qualified_domain_name,
           "ApiVersion" => @metadata_api_version
         }
         wrapper = {
