@@ -153,6 +153,7 @@ do
           exit 1
       fi
       enable_ulinux="--enable-ulinux"
+      enable_ruby_jemalloc="--with-jemalloc"
       ULINUX=1
     ;;
 
@@ -172,9 +173,9 @@ do
       opensource_distro=1
     ;;
 
-    --enable-ruby-jemalloc)
+    --disable-ruby-jemalloc)
       echo "Configured Jemalloc for Ruby"
-      enable_ruby_jemalloc="--with-jemalloc"
+      enable_ruby_jemalloc=""
     ;;
 
     *)
@@ -206,7 +207,7 @@ OPTIONS:
     --[no]enable-ulinux         Specifies platform as ULINUX (Linux only);
                                 ULINUX is assumed on universal build systems
     --enable-open-source        Build for open source distribution
-    --enable-ruby-jemalloc      Enable building ruby with jemalloc
+    --disable-ruby-jemalloc     Disable building ruby with jemalloc
 
 EOF
     exit 0

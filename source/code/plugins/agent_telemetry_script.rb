@@ -177,6 +177,17 @@ module OMS
       @@qos_events.clear
     end
 
+    def self.push_back_qos_event(source, event)
+      if @@qos_events.has_key?(source)
+        if @@qos_events[source].size >= QOS_EVENTS_LIMIT
+          @@qos_events[source].shift # remove oldest qos event to cap memory use
+        end
+        @@qos_events[source] << event
+      else
+        @@qos_events[source] = [event]
+      end
+    end
+
     # handle batch send operations
     def self.handle_std_event(event, source, batch, time)
       event[:t] = time
@@ -200,14 +211,8 @@ module OMS
       event[:max_s] = sizes.max
       event[:sum_s] = sizes.sum
 
-      if @@qos_events.has_key?(source)
-        if @@qos_events[source].size >= QOS_EVENTS_LIMIT
-          @@qos_events[source].shift # remove oldest qos event to cap memory use
-        end
-        @@qos_events[source] << event
-      else
-        @@qos_events[source] = [event]
-      end
+      push_back_qos_event(event, source)
+      return event
     end
 
     # handle warn/error/fatal log messages
@@ -231,10 +236,11 @@ module OMS
       begin
         event = { op: operation, op_success: operation_success, m: message, c: count }
         if [LOG_ERROR, LOG_FATAL].include?(operation)
-          handle_log_event(event, source)
+          event = handle_log_event(event, source)
         else
-          handle_std_event(event, source, batch, time)
+          event = handle_std_event(event, source, batch, time)
         end
+        return event
       rescue => e
         OMS::Log.error_once("Error pushing QoS event. #{e}")
       end
@@ -414,7 +420,7 @@ module OMS
     def heartbeat()
       # Check necessary inputs
       if @workspace_id.nil? or @agent_guid.nil? or @url_tld.nil? or
-        @workspace_id.empty? or @agent_guid.empty? or @url_tld.empty?
+          @workspace_id.empty? or @agent_guid.empty? or @url_tld.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
         return OMS::MISSING_CONFIG
       elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
@@ -437,8 +443,8 @@ module OMS
       # Form POST request and HTTP
       uri = "https://#{@workspace_id}.oms.#{@url_tld}/AgentService.svc/AgentTelemetry"
       req,http = OMS::Common.form_post_request_and_http(headers, uri, body,
-                      OpenSSL::X509::Certificate.new(File.open(@cert_path)),
-                      OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
+                                                        OpenSSL::X509::Certificate.new(File.open(@cert_path)),
+                                                        OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
 
       log_info("Generated telemetry request:\n#{req.body}") if @verbose
 
@@ -452,7 +458,7 @@ module OMS
 
       if !res.nil?
         log_info("OMS agent management service telemetry request response code: #{res.code}") if @verbose
-      
+
         if res.code == "200"
           log_info("OMS agent management service telemetry request success")
           return 0
@@ -501,11 +507,11 @@ if __FILE__ == $0
 
   require 'fluent/log'
   require 'fluent/engine'
-  
+
   $log = Fluent::Log.new(STDERR, Fluent::Log::LEVEL_TRACE)
 
   telemetry = OMS::Telemetry.new(omsadmin_conf_path, cert_path, key_path,
-                    pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
+                                 pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
 
   telemetry.poll_resource_usage
   telemetry.heartbeat

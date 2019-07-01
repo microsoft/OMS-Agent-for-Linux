@@ -25,12 +25,32 @@ module Fluent
     def shutdown
       super
     end
+
+    # For perf debugging
+    def check_eps()
+      if @eps_counter == nil
+        @eps_counter = 0
+      end
+
+      @eps_counter += 1
+      if @eps_counter == 1
+        @time_start = Time.now
+      end
+      current_time = Time.now
+      if current_time - @time_start >= 1
+        diff_time_ms = (current_time - @time_start)
+        $log.info("EPS #{@eps_counter}, for #{diff_time_ms} second")
+        @eps_counter = 0
+      end
+    end
+
     # TODO: fix after dsc removal: use fast_utc_to_iso8601_format from OMS_COMMON.rb
     def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
       utctime.strftime("%FT%T.%#{fraction_digits}NZ")
     end
 
     def filter(tag, time, record)
+      # check_eps()
       pid = record["pid"]
       hostname = record["host"]
       tags = tag.split('.') # The tag should looks like this : oms.syslog.authpriv.notice
