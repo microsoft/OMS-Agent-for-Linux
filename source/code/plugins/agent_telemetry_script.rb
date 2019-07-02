@@ -53,6 +53,7 @@ module OMS
     strongtyped_accessor :OSType, String
     strongtyped_accessor :OSDistro, String
     strongtyped_accessor :OSVersion, String
+    strongtyped_accessor :Architecture, String
     strongtyped_accessor :Region, String
     strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :AgentResourceUsage, AgentResourceUsage
@@ -166,7 +167,8 @@ module OMS
     def self.handle_log_event(event, source)
       if @@qos_events.has_key?(source)
         if @@qos_events[source].size >= QOS_EVENTS_LIMIT
-          return # cap memory use
+          log_debug("Incoming QoS log event dropped to obey memory cap.")
+          return
         elsif @@qos_events[source].has_key?(event[:m]) # assume all duplicate messages will have the same severity
           @@qos_events[source][event[:m]][:c] += 1
         else
@@ -178,7 +180,7 @@ module OMS
     end
 
     # Must be a class method in order to be exposed to all *.rb pushing qos events
-    def self.push_qos_event(operation, operation_success, message, source, batch, count, time)
+    def self.push_qos_event(operation, operation_success, message, source, batch = [], count = 1, time = 0)
       begin
         event = { op: operation, op_success: operation_success, m: message, c: count }
         if [LOG_ERROR, LOG_FATAL].include?(operation)
@@ -345,6 +347,7 @@ module OMS
           agent_telemetry.OSDistro = line.sub("OSName=","").strip if line =~ /OSName/
           agent_telemetry.OSVersion = line.sub("OSVersion=","").strip if line =~ /OSVersion/
         end
+        agent_telemetry.ProcessorArchitecture = `uname -m`
         agent_telemetry.Region = OMS::Configuration.azure_region
         agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable").to_s
         agent_telemetry.AgentResourceUsage = calculate_resource_usage

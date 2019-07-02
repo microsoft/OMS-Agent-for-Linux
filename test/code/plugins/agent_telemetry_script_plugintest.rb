@@ -1,7 +1,6 @@
 require 'test/unit'
 require 'tempfile'
 require 'time'
-require 'json'
 require 'flexmock/test_unit'
 require_relative '../../../source/code/plugins/agent_telemetry_script'
 require_relative '../../../source/code/plugins/oms_common'
@@ -32,24 +31,24 @@ class TelemetryUnitTest < Test::Unit::TestCase
                         "OMSCLOUD_ID=7783-7084-3265-9085-8269-3286-77\n"\
                         "UUID=274E8EF9-2B6F-8A45-801B-AAEE62710796\n"\
 
-  EMPTY_CERTIFICATE_UPDATE_ENDPOINT = "CERTIFICATE_UPDATE_ENDPOINT=\n"
-  EMPTY_DSC_ENDPOINT = "DSC_ENDPOINT=\n"
+  VALID_OS_RELEASE = "OSName=Ubuntu\n"\
+                     "OSVersion=18.04\n"\
+                     "OSFullName=Ubuntu 18.04 (x86_64)\n"\
+                     "OSAlias=UniversalD\n"\
+                     "OSManufacturer=Canonical Group Limited\n"\
+                     "OSShortName=Ubuntu_18.04\n"\
 
-  TMP_DIR = File.dirname(__FILE__) + "/../tmp/test_agent_topology"
-  OS_INFO = "#{TMP_DIR}/os_info"
-  VALID_OS_INFO = "OSName=Ubuntu\n OSManufacturer=Canonical Group Limited\n OSVersion=14.04"
-  CONF_OMSADMIN = "#{TMP_DIR}/conf_omsadmin"
-  PID_FILE = "#{TMP_DIR}/omsagent_pid"
-  CONSTANT_PID = "1"
-  OMI_PID = "pgrep -U omsagent omiagent"
-  OMS_STATS = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, \
-  PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '#{CONSTANT_PID}'\" | grep ="
+  DSC_PID = "1"
+  OMS_PID = "2"
+  PGREP_CMD = "pgrep -U omsagent dsc_host"
+  SCX_CMD = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, \
+  PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '%s'\" | grep ="
 
   def setup
     @omsadmin_conf_file = Tempfile.new("omsadmin_conf")
     @cert_file = Tempfile.new("oms_crt")
     @key_file = Tempfile.new("oms_key")
-    @pid_file = Tempfile.new("omsagent_pid")  # doesn't need to have meaningful data for testing
+    @pid_file = Tempfile.new("omsagent_pid")
     @proxy_file = Tempfile.new("proxy_conf")
     @os_info_file = Tempfile.new("os_info")
     @install_info_file = Tempfile.new("install_info")
@@ -114,67 +113,66 @@ class TelemetryUnitTest < Test::Unit::TestCase
     end
   end
 
-  # def test_serialize
-  #   t   = get_new_telemetry_obj
-  #   at  = OMS::AgentTelemetry.new
-  #   aru = OMS::AgentResourceUsage.new
-  #   qos = OMS::AgentQoS.new
+  def test_serialize
+    # File.write(@os_info_file.path, VALID_OS_RELEASE)
+    # File.write(@omsadmin_conf_file.path, VALID_OMSADMIN_CONF)
 
-  #   at.OSType = "Linux"
-  #   at.OSDistro = "Ubuntu"
-  #   at.OSVersion = "18.04"
-  #   at.Region = "OnPremise"
-  #   at.ConfigMgrEnabled = "false"
-  #   at.AgentResourceUsage = aru
-  #   at.AgentQoS = []
+    at  = OMS::AgentTelemetry.new
+    aru = OMS::AgentResourceUsage.new
+    qos = OMS::AgentQoS.new
 
-  #   aru.OMSMaxMemory = 268021
-  #   aru.OMSMaxPercentMemory = 25
-  #   aru.OMSMaxUserTime = 15
-  #   aru.OMSMaxSystemTime = 4
-  #   aru.OMSAvgMemory = 182136
-  #   aru.OMSAvgPercentMemory = 17
-  #   aru.OMSAvgUserTime = 4
-  #   aru.OMSAvgSystemTime = 2
-  #   aru.OMIMaxMemory = 0
-  #   aru.OMIMaxPercentMemory = 0
-  #   aru.OMIMaxUserTime = 0
-  #   aru.OMIMaxSystemTime = 0
-  #   aru.OMIAvgMemory = 0
-  #   aru.OMIAvgPercentMemory = 0
-  #   aru.OMIAvgUserTime = 0
-  #   aru.OMIAvgSystemTime = 0
+    aru.OMSMaxMemory = 268021
+    aru.OMSMaxPercentMemory = 25
+    aru.OMSMaxUserTime = 15
+    aru.OMSMaxSystemTime = 4
+    aru.OMSAvgMemory = 182136
+    aru.OMSAvgPercentMemory = 17
+    aru.OMSAvgUserTime = 4
+    aru.OMSAvgSystemTime = 2
+    aru.OMIMaxMemory = 0
+    aru.OMIMaxPercentMemory = 0
+    aru.OMIMaxUserTime = 0
+    aru.OMIMaxSystemTime = 0
+    aru.OMIAvgMemory = 0
+    aru.OMIAvgPercentMemory = 0
+    aru.OMIAvgUserTime = 0
+    aru.OMIAvgSystemTime = 0
 
-  #   qos.Operation = "SendBatch"
-  #   qos.OperationSuccess = "true"
-  #   qos.Message = ""
-  #   qos.Source = "LINUX_SYSLOGS_BLOB.LOGMANAGEMENT"
-  #   qos.BatchCount = 13
-  #   qos.MinBatchEventCount = 4
-  #   qos.MaxBatchEventCount = 25
-  #   qos.AvgBatchEventCount = 10
-  #   qos.MinEventSize = 101
-  #   qos.MaxEventSize = 393
-  #   qos.AvgEventSize = 165
-  #   qos.MinLocalLatencyInMs = 1920
-  #   qos.MaxLocalLatencyInMs = 59478
-  #   qos.AvgLocalLatencyInMs = 4888
-  #   qos.NetworkLatencyInMs = 29
+    qos.Source = "LINUX_SYSLOGS_BLOB.LOGMANAGEMENT"
+    qos.Operation = "SendBatch"
+    qos.OperationSuccess = "true"
+    qos.Message = ""
+    qos.BatchCount = 13
+    qos.MinBatchEventCount = 4
+    qos.MaxBatchEventCount = 25
+    qos.AvgBatchEventCount = 10
+    qos.MinEventSize = 101
+    qos.MaxEventSize = 393
+    qos.AvgEventSize = 165
+    qos.MinLocalLatencyInMs = 1920
+    qos.MaxLocalLatencyInMs = 59478
+    qos.AvgLocalLatencyInMs = 4888
+    qos.NetworkLatencyInMs = 29
 
-  #   at.AgentQoS << qos
+    at.OSType = "Linux"
+    at.OSDistro = "Ubuntu"
+    at.OSVersion = "18.04"
+    at.ProcessorArchitecture = "x86_64"
+    at.Region = "OnPremise"
+    at.ConfigMgrEnabled = "false"
+    at.AgentResourceUsage = aru
+    at.AgentQoS = [qos]
 
-  #   expected_result = '{"OSType":"Linux","OSDistro":"Ubuntu","OSVersion":"18.04","Region":"OnPremise","ConfigMgrEnabled":"false",' \
-  #                     '"AgentResourceUsage":{"OMSMaxMemory":268021,"OMSMaxPercentMemory":25,"OMSMaxUserTime":15,"OMSMaxSystemTime":4,' \
-  #                     '"OMSAvgMemory":182136,"OMSAvgPercentMemory":17,"OMSAvgUserTime":4,"OMSAvgSystemTime":2,"OMIMaxMemory":0,"OMIMaxPercentMemory":0,' \
-  #                     '"OMIMaxUserTime":0,"OMIMaxSystemTime":0,"OMIAvgMemory":0,"OMIAvgPercentMemory":0,"OMIAvgUserTime":0,"OMIAvgSystemTime":0},' \
-  #                     '"AgentQoS":[{"Operation":"SendBatch","OperationSuccess":"true","Message":"","Source":"LINUX_SYSLOGS_BLOB.LOGMANAGEMENT",' \
-  #                     '"BatchCount":13,"MinBatchEventCount":4,"MaxBatchEventCount":25,"AvgBatchEventCount":10,"MinEventSize":101,"MaxEventSize":393,' \
-  #                     '"AvgEventSize":165,"MinLocalLatencyInMs",1920,"MaxLocalLatencyInMs":59478,"AvgLocalLatencyInMs","NetworkLatencyInMs":29}]}'
+    expected_result = '{"OSType":"Linux","OSDistro":"Ubuntu","OSVersion":"18.04","ProcessorArchitecture","x86_64","Region":"OnPremise","ConfigMgrEnabled":"false",' \
+                      '"AgentResourceUsage":{"OMSMaxMemory":268021,"OMSMaxPercentMemory":25,"OMSMaxUserTime":15,"OMSMaxSystemTime":4,' \
+                      '"OMSAvgMemory":182136,"OMSAvgPercentMemory":17,"OMSAvgUserTime":4,"OMSAvgSystemTime":2,"OMIMaxMemory":0,"OMIMaxPercentMemory":0,' \
+                      '"OMIMaxUserTime":0,"OMIMaxSystemTime":0,"OMIAvgMemory":0,"OMIAvgPercentMemory":0,"OMIAvgUserTime":0,"OMIAvgSystemTime":0},' \
+                      '"AgentQoS":[{"Source":"LINUX_SYSLOGS_BLOB.LOGMANAGEMENT","Operation":"SendBatch","OperationSuccess":"true","Message":"",' \
+                      '"BatchCount":13,"MinBatchEventCount":4,"MaxBatchEventCount":25,"AvgBatchEventCount":10,"MinEventSize":101,"MaxEventSize":393,' \
+                      '"AvgEventSize":165,"MinLocalLatencyInMs":1920,"MaxLocalLatencyInMs":59478,"AvgLocalLatencyInMs":4888,"NetworkLatencyInMs":29}]}'
 
-  #   puts "at class: #{t.create_body.class}"
-  #   puts "#{t.create_body.serialize}"
-  #   assert_equal(expected_result, t.create_body.serialize)
-  # end
+    assert_equal(expected_result, at.serialize, "failed serialization of telemetry request payload")
+  end
 
   def test_array_avg
     array = []
@@ -242,20 +240,18 @@ class TelemetryUnitTest < Test::Unit::TestCase
     agent_telemetry = get_new_telemetry_obj
     OMS::Telemetry.clear
 
-    (0..9).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL, [], 0, 0) }
-    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL, [], 0, 0) }
-    (0..7).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(c) (include) the third most numerous log message", OMS::INTERNAL, [], 0, 0) }
-    (0..2).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(d) (include) the fourth most numerous log message", OMS::INTERNAL, [], 0, 0) }
-    (0..0).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(e) (exclude) the least numerous log message", OMS::INTERNAL, [], 0, 0) }
-    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(f) (maybe) the tied fifth most numerous log message", OMS::INTERNAL, [], 0, 0) }
-    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(g) (maybe) the tied fifth most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..9).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL) }
+    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL) }
+    (0..7).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(c) (include) the third most numerous log message", OMS::INTERNAL) }
+    (0..2).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(d) (include) the fourth most numerous log message", OMS::INTERNAL) }
+    (0..0).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(e) (exclude) the least numerous log message", OMS::INTERNAL) }
+    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(f) (maybe) the tied fifth most numerous log message", OMS::INTERNAL) }
+    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(g) (maybe) the tied fifth most numerous log message", OMS::INTERNAL) }
     
-    (0..4).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL, [], 0, 0) }
-    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL, [], 0, 0) }
+    (0..4).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL) }
+    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL) }
 
     qos = agent_telemetry.calculate_qos
-
-    puts qos.map { |q| obj_to_hash(q).to_json }
 
     assert_equal(5, qos.size, "fewer than five (the limit) log events found")
     
@@ -263,18 +259,19 @@ class TelemetryUnitTest < Test::Unit::TestCase
     assert(qos[4].Message.include?("(f)") || qos[4].Message.include?("(g)"), "unexpected least frequent error")
     qos.map { |q| assert(!q.Message.include?("(exclude)"), "unexpected infrequent error included") }
     
-    assert_equal(qos[0].BatchCount, 15, "incorrect count for most numerous log message")
-    assert_equal(qos[0].BatchCount, 12, "incorrect count for second most numerous log message")
-    assert_equal(qos[0].BatchCount, 2, "incorrect count for fifth most numerous log message")
+    assert_equal(15, qos[0].BatchCount, "incorrect count for most numerous log message")
+    assert_equal(12, qos[1].BatchCount, "incorrect count for second most numerous log message")
+    assert_equal(2, qos[4].BatchCount, "incorrect count for fifth most numerous log message")
 
-    assert_equal(qos[0].Operation, OMS::LOG_FATAL, "incorrect operation for most numerous log message")
+    assert_equal(OMS::LOG_FATAL, qos[0].Operation, "incorrect operation for most numerous log message")
   end
 
   def test_calculate_resource_usage_stopped
     flexmock(OMS::AgentTelemetry).new_instances do |instance|
       # simulate oms and omi not running
-      instance.should_receive(:`).with(OMI_PID).and_return(CONSTANT_PID)
-      instance.should_receive(:`).with(OMS_STATS).and_return("")
+      instance.should_receive(:`).with(PGREP_CMD).and_return(DSC_PID)
+      instance.should_receive(:`).with(SCX_CMD % DSC_PID).and_return("")
+      instance.should_receive(:`).with(SCX_CMD % OMS_PID).and_return("")
     end
 
     agent_telemetry = get_new_telemetry_obj
@@ -290,21 +287,27 @@ class TelemetryUnitTest < Test::Unit::TestCase
   end
 
   def test_calculate_resource_usage_running
+    File.write(@pid_file.path, OMS_PID)
     flexmock(OMS::AgentTelemetry).new_instances do |instance|
-      instance.should_receive(:`).with(OMI_PID).and_return("PercentUserTime=2\n \
+      instance.should_receive(:`).with(PGREP_CMD).and_return(DSC_PID)
+      instance.should_receive(:`).with(SCX_CMD % DSC_PID).and_return("PercentUserTime=2\n \
         PercentPrivilegedTime=0\n UsedMemory=197742\n PercentUsedMemory=19")
-      instance.should_receive(:`).with(OMS_STATS).and_return("PercentUserTime=6\n \
+      instance.should_receive(:`).with(SCX_CMD % OMS_PID).and_return("PercentUserTime=6\n \
         PercentPrivilegedTime=1\n UsedMemory=209576\n PercentUsedMemory=21")
     end
 
     agent_telemetry = get_new_telemetry_obj
+
+    mock = flexmock(agent_telemetry)
+
+    agent_telemetry.clear_ru_points
     agent_telemetry.poll_resource_usage
     ru = agent_telemetry.calculate_resource_usage
 
-    assert_equal(0, ru.OMSMaxMemory, "oms max memory should be zero")
-    assert_equal(0, ru.OMSMaxUserTime, "oms max user time should be zero")
-    assert_equal(0, ru.OMIAvgPercentMemory, "omi avg percent memory should be zero")
-    assert_equal(0, ru.OMIAvgSystemTime, "omi avg system time should be zero")
+    assert_equal(209576, ru.OMSMaxMemory, "oms max memory is incorrect")
+    assert_equal(2, ru.OMSMaxUserTime, "oms max user time is incorrect")
+    assert_equal(21, ru.OMIAvgPercentMemory, "omi avg percent memory is incorrect")
+    assert_equal(1, ru.OMIAvgSystemTime, "omi avg system time is incorrect")
 
     flexmock(OMS::AgentTelemetry).flexmock_teardown
   end
