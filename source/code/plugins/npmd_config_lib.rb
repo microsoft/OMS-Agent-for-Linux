@@ -314,7 +314,7 @@ module NPMDConfig
                         _epHash["DestPort"] = _epList[j]["Port"]
                         _epHash["TestProtocol"] = _epList[j]["Protocol"]
                         _epHash["MonitoringInterval"] = _iRule["Poll"]
-                        _epHash["TimeDrift"] = 100 #TODO
+                        _epHash["TimeDrift"] = _iRule["TimeDrift"]
                         _endpointList.push(_epHash)
                     end
                     _ruleHash["Endpoints"] = _endpointList
@@ -476,6 +476,7 @@ module NPMDConfig
         RuleInfoTag             = "RuleNameToRuleMap"
         EpmInfoTag              = "EPMConfiguration"
         EpmTestInfoTag          = "TestIdToTestMap"
+        EpmCMInfoTag            = "ConnectionMonitorIdToInfoMap"
         EpmEndpointInfoTag      = "EndpointIdToEndpointMap"
         EpmAgentInfoTag         = "AgentIdToTestIdsMap"
         ERInfoTag               = "erConfiguration"
@@ -620,9 +621,15 @@ module NPMDConfig
                         _rule["AppThresholdLatency"] = _test["AppThreshold"]["Latency"]
                         _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"]["Loss"]
                         _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"]["Latency"]
-                        _rule["CMResourceId"] = _test["CMResourceId"]
-                        _rule["IngestionWorkspaceId"] = _test["IngestionWorkspaceId"]
-                        _rule["WorkspaceAlias"] = _test["WorkspaceAlias"]
+                        _connectionMonitorId = _test["ConnectionMonitorId"]
+
+                        # Iterate over ConnectionMonitorInfoMap to get following info
+                        if !_connectionMonitorId.empty?
+                            _cmId = _h[EpmCMInfoTag][_connectionMonitorId]
+                            _rule["CMResourceId"] = _cmId["resourceId"]
+                            _rule["IngestionWorkspaceId"] = _cmId["ingestionWorkspaceId"]
+                            _rule["WorkspaceAlias"] = _cmId["workspaceAlias"]
+                        end
 
                         # Collect endpoints details
                         _rule["Endpoints"] = []
@@ -633,6 +640,7 @@ module NPMDConfig
                             _endpointHash = Hash.new
                             _endpoint = _h[EpmEndpointInfoTag][ep]
                             _endpointHash["Id"] = ep
+                            _endpointHash["Name"] = _endpoint["name"]
                             _endpointHash["URL"] = _endpoint["url"]
                             _endpointHash["Port"] = _endpoint["port"]
                             _endpointHash["Protocol"] = _endpoint["protocol"]
