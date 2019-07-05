@@ -170,15 +170,15 @@ module NPMDConfig
         end
 
         def self.createAgentElements(agentArray, maskHash)
-            _agents = []
+            _agents = Array.new
             agentArray.each do |x|
-                _agent = {}
+                _agent = Hash.new
                 _agent["Name"] = x["Guid"];
                 _agent["Capabilities"] = x["Capability"];
                 _agent["IPConfiguration"] = [];
                 
                 x["IPs"].each do |ip|
-                    _ipConfig = {}
+                    _ipConfig = Hash.new
                     _ipConfig["IP"] = ip["IP"];
                     _subnetMask = maskHash[ip["SubnetName"]];
                     if _subnetMask.nil?
@@ -198,13 +198,13 @@ module NPMDConfig
         end
 
         def self.createNetworkElements(networkArray, subnetIdHash)
-            _networks = []
+            _networks = Array.new
             networkArray.each do |x|
-                _network = {}
+                _network = Hash.new
                 _network["Name"] = x["Name"];
-                _network["Subnet"] = []
+                _network["Subnet"] = Array.new
                 x["Subnets"].each do |sn|
-                    _subnet = {}
+                    _subnet = Hash.new
                     _subnetId = subnetIdHash[sn]
                     if _subnetId.nil?
                         Logger::logWarn "Did not find subnet id for subnet name #{sn} in hash", 2*Logger::loop
@@ -217,7 +217,7 @@ module NPMDConfig
                     _network["Subnet"].push(_subnet);
                 end
                 _networks.push(_network);
-                if _network.elements.empty?
+                if _networks.empty?
                     @@network_drops += 1                    
                 end
             end
@@ -225,7 +225,7 @@ module NPMDConfig
         end
 
         def self.createActOnElements(elemArray, subnetIdHash)
-            _networkTestMatrix = []
+            _networkTestMatrix = Array.new
             elemArray.each do |a|
                 _sSubnetId = "*"
                 _dSubnetId = "*"
@@ -243,7 +243,7 @@ module NPMDConfig
                     @@rule_subnetpair_drops += 1
                 else
                     # Process each subnetpair
-                    _snPair = {}
+                    _snPair = Hash.new
                     _snPair["SourceSubnet"] = _sSubnetId
                     _snPair["SourceNetwork"] = a["SN"]
                     _snPair["DestSubnet"] = _dSubnetId
@@ -255,14 +255,14 @@ module NPMDConfig
         end
 
         def self.createRuleElements(ruleArray, subnetIdHash)
-            _rules = []
+            _rules = Array.new
             ruleArray.each do |x|
-                _rule = {}
+                _rule = Hash.new
                 _rule["Name"] = x["Name"];
                 _rule["Description"] = x["Description"]
                 _rule["Protocol"] = x["Protocol"];
                 _rule["NetworkTestMatrix"] = createActOnElements(x["Rules"], subnetIdHash);
-                _rule["AlertConfiguration"] = {};
+                _rule["AlertConfiguration"] = Hash.new;
                 _rule["Exceptions"] = createActOnElements(x["Exceptions"], subnetIdHash);
                 _rule["DiscoverPaths"] = x["DiscoverPaths"]
                 
@@ -275,15 +275,15 @@ module NPMDConfig
                     _rule["AlertConfiguration"]["RoundTripTimeMs"]  = x["LatencyThreshold"]
                 end
                 if !_rule.empty?
-                    _rules["Rule"].push(_rule)
+                    _rules.push(_rule)
                 end
             end
             _rules
         end
 
         def self.createEpmElements(epmHash)
-            _epmRules = {"Rules" => []}
-            _rule = []
+            _epmRules = Hash.new
+            _rule = Array.new
             epmHash.each do |key, rules|
                 for i in 0..rules.length-1
                     _ruleHash = Hash.new
@@ -306,7 +306,7 @@ module NPMDConfig
 
                     # Fill endpoints
                     _epList = _iRule["Endpoints"]
-                    _endpointList = []
+                    _endpointList = Array.new
                     for j in 0.._epList.length-1
                         _epHash = Hash.new
                         _epHash["ID"] = _epList[j]["Id"]
@@ -314,23 +314,23 @@ module NPMDConfig
                         _epHash["DestPort"] = _epList[j]["Port"]
                         _epHash["TestProtocol"] = _epList[j]["Protocol"]
                         _epHash["MonitoringInterval"] = _iRule["Poll"]
-                        _epHash["TimeDrift"] = _iRule["TimeDrift"]
+                        _epHash["TimeDrift"] = _epList[j]["TimeDrift"]
                         _endpointList.push(_epHash)
                     end
                     _ruleHash["Endpoints"] = _endpointList
                     _rule.push(_ruleHash)
                 end
             end
-            _epmRules["Rule"] = _rule
+            _epmRules["Rules"] = _rule
             _epmRules
         end
 
         def self.createERElements(erHash)
-            _er = {"PrivateRules" => [], "MSPeeringRules" => []}
+            _er = Hash.new
             erHash.each do |key, rules|
                 # Fill Private Peering Rules
                 if key == "PrivatePeeringRules"
-                    _ruleList = []
+                    _ruleList = Array.new
                     for i in 0..rules.length-1
                         _pvtRule = Hash.new
                         _iRule = rules[i]
@@ -348,7 +348,7 @@ module NPMDConfig
                         _pvtRule["Threshold"] = _thresholdMap
 
                         #OnPremAgents
-                        _onPremAgents = []
+                        _onPremAgents = Array.new
                         _onPremAgentList = _iRule["OnPremAgents"]
                         for j in 0.._onPremAgentList.length-1
                             _onPremAgents.push(_onPremAgentList[j])
@@ -356,7 +356,7 @@ module NPMDConfig
                         _pvtRule["OnPremAgents"] = _onPremAgents
 
                         #AzureAgents
-                        _azureAgents = []
+                        _azureAgents = Array.new
                         _azureAgentsList = _iRule["AzureAgents"]
                         for k in 0.._azureAgentsList.length-1
                             _azureAgents.push(_azureAgentsList[k])
@@ -369,7 +369,7 @@ module NPMDConfig
 
                 # Fill MS Peering Rules
                 if key == "MSPeeringRules"
-                    _ruleList = []
+                    _ruleList = Array.new
                     for i in 0..rules.length-1
                         _msRule = Hash.new
                         _iRule = rules[i]
@@ -385,7 +385,7 @@ module NPMDConfig
                         _msRule["Threshold"] = _thresholdMap
 
                         #OnPremAgents
-                        _onPremAgents = []
+                        _onPremAgents = Array.new
                         _onPremAgentList = _iRule["OnPremAgents"]
                         for j in 0.._onPremAgentList.length-1
                             _onPremAgents.push(_onPremAgentList[j])
@@ -393,7 +393,7 @@ module NPMDConfig
                         _msRule["OnPremAgents"] = _onPremAgents
 
                         #Urls
-                        _urls = []
+                        _urls = Array.new
                         _urlList = _iRule["UrlList"]
                         for k in 0.._urlList.length-1
                             _urlHash = Hash.new
@@ -624,8 +624,9 @@ module NPMDConfig
                         _connectionMonitorId = _test["ConnectionMonitorId"]
 
                         # Iterate over ConnectionMonitorInfoMap to get following info
-                        if !_connectionMonitorId.empty?
-                            _cmId = _h[EpmCMInfoTag][_connectionMonitorId]
+                        if _connectionMonitorId
+                            _cmMap = _h[EpmCMInfoTag]
+                            _cmId = _cmMap[_connectionMonitorId.to_s]
                             _rule["CMResourceId"] = _cmId["resourceId"]
                             _rule["IngestionWorkspaceId"] = _cmId["ingestionWorkspaceId"]
                             _rule["WorkspaceAlias"] = _cmId["workspaceAlias"]
@@ -653,18 +654,15 @@ module NPMDConfig
                     _epmRules
             rescue JSON::ParserError => e
                 Logger::logError "Error in Json Parse in EPM data: #{e}", Logger::resc
+                raise "Got exception in EPM parsing: #{e}"
                 nil
             end
         end
 
         def self.getWorkspaceId()
             begin
-                workspaceId = @metadata["WorkspaceId"]
-                if !workspaceId.empty?
-                    return workspaceId
-                else
-                    return ""
-                end
+                workspaceId = @metadata["WorkspaceID"]
+                return workspaceId ? !workspaceId.empty? : ""
             end
         end
 
@@ -741,7 +739,7 @@ module NPMDConfig
                     end
 
                     # MS Peering Rules
-                    if !microsoftTestMap.empty?
+                    if !_microsoftTestMap.empty?
                         _microsoftTestMap.each do |key, value|
                             _microsoftRule = Hash.new
                             _onPremAgents = value["onPremAgents"]
@@ -766,7 +764,7 @@ module NPMDConfig
             end 
         end
 
-        def getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
+        def self.getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
             _ruleHash = Hash.new
             _ruleHash["Name"] = key
             _ruleHash["Protocol"] = value["protocol"]
@@ -782,7 +780,7 @@ module NPMDConfig
             return _ruleHash
         end
 
-        def getERMicrosoftRuleFromUIConfig(key, value, _circuitIdMap)
+        def self.getERMicrosoftRuleFromUIConfig(key, value, _circuitIdMap)
             _ruleHash = Hash.new
             _ruleHash["Name"] = key
             _ruleHash["CircuitName"] = value["circuitName"]
