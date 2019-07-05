@@ -345,7 +345,7 @@ module NPMDConfig
                         _thresholdMap = Hash.new
                         _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"]
                         _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"]
-                        _pvtRule["Threshold"] = _thresholdMap
+                        _pvtRule["AlertConfiguration"] = _thresholdMap
 
                         #OnPremAgents
                         _onPremAgents = Array.new
@@ -382,7 +382,7 @@ module NPMDConfig
                         _thresholdMap = Hash.new
                         _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"]
                         _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"]
-                        _msRule["Threshold"] = _thresholdMap
+                        _msRule["AlertConfiguration"] = _thresholdMap
 
                         #OnPremAgents
                         _onPremAgents = Array.new
@@ -815,8 +815,8 @@ module NPMContract
     DATAITEM_ENDPOINT_MONITORING      = "endpointMonitoringData"
     DATAITEM_ENDPOINT_DIAGNOSTICS     = "endpointDiagnostics"
     DATAITEM_EXROUTE_MONITORING       = "expressrouteMonitoringData"
-    DATAITEM_CONNECTIONMONITOR_HEALTH = "connectionMonitorHealth"
-    DATAITEM_CONNECTIONMONITORING     = "connectionMonitoringData"
+    DATAITEM_CONNECTIONMONITOR_TEST   = "connectionMonitorTestResult"
+    DATAITEM_CONNECTIONMONITOR_PATH   = "connectionMonitorPathData"
 
 
     DATAITEM_VALID = 1
@@ -897,15 +897,133 @@ module NPMContract
                                             "TimeGenerated",
                                             "Computer"]
 
-    CONTRACT_ENDPOINT_PATH_DATA_KEYS = []
+    CONTRACT_ENDPOINT_PATH_DATA_KEYS = ["SubType",
+                                        "TestName",
+                                        "ServiceTestId",
+                                        "ConnectionMonitorResourceId",
+                                        "Target",
+                                        "Port",
+                                        "EndpointId",
+                                        "SourceNetworkNodeInterface",
+                                        "DestinationNetworkNodeInterface",
+                                        "Path",
+                                        "Loss",
+                                        "HighLatency",
+                                        "MedianLatency",
+                                        "LowLatency",
+                                        "LossHealthState",
+                                        "LatencyHealthState",
+                                        "LossThresholdMode",
+                                        "LossThreshold",
+                                        "LatencyThresholdMode",
+                                        "LatencyThreshold",
+                                        "Computer",
+                                        "Protocol",
+                                        "MinHopLatencyList",
+                                        "MaxHopLatencyList",
+                                        "AvgHopLatencyList",
+                                        "TraceRouteCompletionTime",
+                                        "TimeGenerated"]
 
-    CONTRACT_ENDPOINT_DIAG_DATA_KEYS = []
+    CONTRACT_ENDPOINT_DIAG_DATA_KEYS = ["SubType",
+                                        "TestName",
+                                        "ServiceTestId",
+                                        "ConnectionMonitorResourceId",
+                                        "Target",
+                                        "NotificationCode",
+                                        "EndpointId",
+                                        "TimeGenerated",
+                                        "Computer"]
 
-    CONTRACT_EXROUTE_MONITOR_DATA_KEYS = []
+    CONTRACT_EXROUTE_MONITOR_DATA_KEYS =   ["SubType",
+                                            "TimeGenerated",
+                                            "Circuit",
+                                            "ComputerEnvironment",
+                                            "vNet",
+                                            "Target",
+                                            "PeeringType",
+                                            "CircuitResourceId",
+                                            "ConnectionResourceId",
+                                            "Path",
+                                            "SourceNetworkNodeInterface",
+                                            "DestinationNetworkNodeInterface",
+                                            "Loss",
+                                            "HighLatency",
+                                            "MedianLatency",
+                                            "LowLatency",
+                                            "LossHealthState",
+                                            "LatencyHealthState",
+                                            "RuleName",
+                                            "TimeSinceActive",
+                                            "LossThreshold",
+                                            "LatencyThreshold",
+                                            "LossThresholdMode",
+                                            "LatencyThresholdMode",
+                                            "Computer",
+                                            "Protocol",
+                                            "MinHopLatencyList",
+                                            "MaxHopLatencyList",
+                                            "AvgHopLatencyList",
+                                            "TraceRouteCompletionTime",
+                                            "DiagnosticHop",
+                                            "DiagnosticHopLatency"]
 
-    CONTRACT_CONNECTIONMONITOR_HEALTH_DATA_KEYS = []
+    CONTRACT_CONNECTIONMONITOR_TEST_RESULT_KEYS =  ["SubType",
+                                                    "RecordId",
+                                                    "ConnectionMonitorResourceId",
+                                                    "TimeCreated",
+                                                    "TestGroupName",
+                                                    "TestConfigurationName",
+                                                    "SourceType",
+                                                    "SourceResourceId",
+                                                    "SourceAddress",
+                                                    "SourceName",
+                                                    "DestinationType",
+                                                    "DestinationResourceId",
+                                                    "DestinationAddress",
+                                                    "DestinationName",
+                                                    "Protocol",
+                                                    "DestinationPort",
+                                                    "DestinationIP",
+                                                    "ChecksTotal",
+                                                    "ChecksFailed",
+                                                    "ChecksFailedPercentThreshold",
+                                                    "RoundTripTimeMsThreshold",
+                                                    "MinRoundTripTimeMs",
+                                                    "MaxRoundTripTimeMs",
+                                                    "AvgRoundTripTimeMs",
+                                                    "TestResult",
+                                                    "AdditionalData",
+                                                    "IngestionWorkspaceResourceId"]
 
-    CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS = []
+    CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS =    ["SubType",
+                                                    "RecordId",
+                                                    "ConnectionMonitorResourceId",
+                                                    "TimeCreated",
+                                                    "TestGroupName",
+                                                    "TestConfigurationName",
+                                                    "SourceType",
+                                                    "SourceResourceId",
+                                                    "SourceAddress",
+                                                    "SourceName",
+                                                    "DestinationType",
+                                                    "DestinationResourceId",
+                                                    "DestinationAddress",
+                                                    "DestinationName",
+                                                    "ChecksTotal",
+                                                    "ChecksFailed",
+                                                    "ChecksFailedPercentThreshold",
+                                                    "RoundTripTimeMsThreshold",
+                                                    "MinRoundTripTimeMs",
+                                                    "MaxRoundTripTimeMs",
+                                                    "AvgRoundTripTimeMs",
+                                                    "HopAddresses",
+                                                    "HopLinkLatencies",
+                                                    "DestinationPort",
+                                                    "Protocol",
+                                                    "PathTestResult",
+                                                    "AdditionalData",
+                                                    "IngestionWorkspaceResourceId"]
 
     def self.IsValidDataitem(item, itemType)
         _contract=[]
@@ -924,9 +1042,9 @@ module NPMContract
             _contract = CONTRACT_ENDPOINT_DIAG_DATA_KEYS
         elsif itemType == DATAITEM_EXROUTE_MONITORING
             _contract = CONTRACT_EXROUTE_MONITOR_DATA_KEYS
-        elsif itemType == DATAITEM_CONNECTIONMONITOR_HEALTH
-            _contract = CONTRACT_CONNECTIONMONITOR_HEALTH_DATA_KEYS
-        elsif itemType == DATAITEM_CONNECTIONMONITORING
+        elsif itemType == DATAITEM_CONNECTIONMONITOR_TEST
+            _contract = CONTRACT_CONNECTIONMONITOR_TEST_RESULT_KEYS
+        elsif itemType == DATAITEM_CONNECTIONMONITOR_PATH
             _contract = CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS
         end
 
