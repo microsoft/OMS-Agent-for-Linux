@@ -316,6 +316,8 @@ module Fluent
                                         else
                                             Logger::logInfo "Network Agent data upload is skipped because it hasnt changed from the last time"
                                         end
+                                    # Append Endpointdata
+                                    #elsif 
                                     end
                                 end
                             end
@@ -352,9 +354,9 @@ module Fluent
             elsif item["SubType"] == "ExpressRoutePath"
                 _itemType = NPMContract::DATAITEM_EXROUTE_MONITORING
             elsif item["SubType"] == "ConnectionMonitorTestResult"
-                _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_HEALTH
+                _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_TEST
             elsif item["SubType"] == "ConnectionMonitorPath"
-                _itemType = NPMContract::DATAITEM_CONNECTIONMONITORING
+                _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_PATH
             end
 
             return false if _itemType.empty?
