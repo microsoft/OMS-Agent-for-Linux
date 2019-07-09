@@ -316,8 +316,24 @@ module Fluent
                                         else
                                             Logger::logInfo "Network Agent data upload is skipped because it hasnt changed from the last time"
                                         end
-                                    # Append Endpointdata
-                                    #elsif 
+                                    # Append EndpointHealth data
+                                    elsif item["SubType"] == "EndpointHealth"
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    # Append EndpointPath data
+                                    elsif item["SubType"] == "EndpointPath"
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    # Append ExpressRoutePath data
+                                    elsif item["SubType"] == "ExpressRoutePath"
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    # Append EndpointDiagnostics data
+                                    elsif item["SubType"] == "EndpointDiagnostics"
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    # Append ConnectionMonitorTestResult data
+                                    elsif item["SubType"] == "ConnectionMonitorTestResult"
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    # Append ConnectionMonitorPath data
+                                    elsif item["SubType"] == "ConnectionMonitorPath"
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
                                     end
                                 end
                             end
