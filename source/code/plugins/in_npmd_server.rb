@@ -318,21 +318,27 @@ module Fluent
                                         end
                                     # Append EndpointHealth data
                                     elsif item["SubType"] == "EndpointHealth"
+                                        Logger::logInfo "EndpointHealth data is uploaded"
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     # Append EndpointPath data
                                     elsif item["SubType"] == "EndpointPath"
+                                        Logger::logInfo "EndpointPath data is uploaded"
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     # Append ExpressRoutePath data
                                     elsif item["SubType"] == "ExpressRoutePath"
+                                        Logger::logInfo "ExpressRoutePath data is uploaded"
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     # Append EndpointDiagnostics data
                                     elsif item["SubType"] == "EndpointDiagnostics"
+                                        Logger::logInfo "EndpointDiagnostics data is uploaded"
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     # Append ConnectionMonitorTestResult data
                                     elsif item["SubType"] == "ConnectionMonitorTestResult"
+                                        Logger::logInfo "ConnectionMonitorTestResult data is uploaded"
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     # Append ConnectionMonitorPath data
                                     elsif item["SubType"] == "ConnectionMonitorPath"
+                                        Logger::logInfo "ConnectionMonitorTestPath data is uploaded"
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     end
                                 end
