@@ -13,11 +13,17 @@ module OMS
       @@LOG_TYPE_MAPPING
     end
 
+    def self.get_ident(ident)
+      return 'CEF' if ident.include?('CEF')
+      return '%ASA' if ident.include?('%ASA')
+      return nil
+    end
+
     def self.get_data_type(ident)
       return nil if ident.nil?
 
-      return 'SECURITY_CEF_BLOB' if ident.include?('CEF')
-      return 'SECURITY_CISCO_ASA_BLOB' if ident.include?('%ASA')
+      return 'SECURITY_CEF_BLOB' if ident.start_with?('CEF')
+      return 'SECURITY_CISCO_ASA_BLOB' if ident.start_with?('%ASA')
 
       OMS::Log.warn_once("Failed to find data type for record with ident: '#{ident}'")
       nil

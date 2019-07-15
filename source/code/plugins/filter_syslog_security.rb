@@ -35,7 +35,7 @@ module Fluent
     def filter(tag, time, record)
       # Get the data type name (blob in ODS) from record tag
       # Only records that can be associated to a blob are processed
-      ident = record['ident']
+      ident =  OMS::Security.get_ident(record['ident'])
       data_type = OMS::Security.get_data_type(ident)
       return nil if data_type.nil?
 
