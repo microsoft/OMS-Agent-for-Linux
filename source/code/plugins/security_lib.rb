@@ -5,8 +5,8 @@ module OMS
     require_relative 'omslog'
 
     @@LOG_TYPE_MAPPING = {
-        '%ASA' => 'SECURITY_CISCO_ASA_BLOB',
-        'CEF' => 'SECURITY_CEF_BLOB'
+      '%ASA' => 'SECURITY_CISCO_ASA_BLOB',
+      'CEF' => 'SECURITY_CEF_BLOB'
     }
 
     def self.log_type_mapping
