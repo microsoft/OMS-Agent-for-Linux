@@ -1,0 +1,22 @@
+--- ../source/ext/fluentd/lib/fluent/root_agent.rb	2019-07-16 19:29:38.330949523 -0700
++++ ../source/ext/fluentd/lib/fluent/root_agent.rb.new	2019-07-16 19:25:47.854355956 -0700
+@@ -122,14 +122,17 @@
+       @started_inputs.map { |i|
+         Thread.new do
+           begin
+-            log.info "shutting down input", type: Plugin.lookup_name_from_class(i.class), plugin_id: i.plugin_id
++            log.info "trying to shutdown input", type: Plugin.lookup_name_from_class(i.class), plugin_id: i.plugin_id
++            t0 = Time.now
+             i.shutdown
++            diff = Time.now - t0
++            log.info "shutting down complete for input", time: diff, type: Plugin.lookup_name_from_class(i.class), plugin_id: i.plugin_id
+           rescue => e
+             log.warn "unexpected error while shutting down input plugin", plugin: i.class, plugin_id: i.plugin_id, error_class: e.class, error: e
+             log.warn_backtrace
+           end
+         end
+-      }.each { |t| t.join }
++      }.each { |t| t.join(3) } # wait a maximum of 3 seconds, if plugin can't shutdown move on 
+ 
+       @labels.each { |n, l|
+         l.shutdown

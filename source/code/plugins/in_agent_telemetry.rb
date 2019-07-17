@@ -57,6 +57,8 @@ module Fluent
     def shutdown
       if defined?(OMS::Configuration.telemetry_interval)
         @finished = true
+        log.debug("in_agent_telemetry: thread state before shutdown '#{@thread.status}'")
+        @thread.exit
         @thread.join
       end
       super

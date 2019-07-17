@@ -21,7 +21,8 @@
 
 OMSAGENT_START_WAIT_MAX=18
 OMSAGENT_STOP_WAIT_MAX=15
-STOP_PROCESS_WAIT_MAX=5
+STOP_SIGTERM_PROCESS_WAIT_MAX=10
+STOP_SIGKILL_PROCESS_WAIT_MAX=5
 WAIT_UNTIL_RUNNING_ITERATION_SLEEP=0.5
 WAIT_UNTIL_STOPPED_ITERATION_SLEEP=0.5
 
@@ -337,9 +338,17 @@ stop_omsagent_process()
     WS_STATUS=0 # Try yet again.
 
     echo -n "(Forced) "
-    kill -sigkill `cat $PIDFILE`
+    echo -n " Sending SIGTERM ..."
+    kill -sigterm `cat $PIDFILE`
     if [ $? -eq 0 ]; then
-        wait_until_omsagent_stopped $STOP_PROCESS_WAIT_MAX
+        wait_until_omsagent_stopped $STOP_SIGTERM_PROCESS_WAIT_MAX
+    fi
+    if [ $? -eq 1 ]; then
+        echo -n " Timeout reached, process could not be stopped, Sending SIGKILL ... "
+        kill -sigkill `cat $PIDFILE`
+        if [ $? -eq 0 ]; then
+            wait_until_omsagent_stopped $STOP_SIGKILL_PROCESS_WAIT_MAX
+        fi
     fi
     WS_STATUS=$?
     return $WS_STATUS

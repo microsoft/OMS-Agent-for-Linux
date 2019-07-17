@@ -32,6 +32,8 @@ module Fluent
     def shutdown
       if @interval
         @finished = true
+        log.debug("in_oms_hearthbeat: thread state before shutdown '#{@thread.status}'")
+        @thread.exit
         @thread.join
       end
     end

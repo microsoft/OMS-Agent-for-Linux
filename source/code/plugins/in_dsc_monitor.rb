@@ -102,7 +102,11 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
       super
       @finished_check_install = true
       @finished_check_status = true
+      log.debug("in_dsc_monitor: thread 'check_install' state before shutdown was '#{@thread_check_install.status}'")
+      @thread_check_install.exit
       @thread_check_install.join
+      log.debug("in_dsc_monitor: thread 'check_status' state before shutdown was '#{@thread_check_status.status}'")
+      @thread_check_status.exit
       @thread_check_status.join
     end
 

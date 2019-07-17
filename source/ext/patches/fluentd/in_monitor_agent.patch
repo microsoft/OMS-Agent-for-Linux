@@ -1,0 +1,11 @@
+--- ../source/ext/fluentd/lib/fluent/plugin/in_monitor_agent.rb	2019-07-16 19:29:38.330949523 -0700
++++ ../source/ext/fluentd/lib/fluent/plugin/in_monitor_agent.rb.new	2019-07-16 19:22:22.801824834 -0700
+@@ -302,6 +302,8 @@
+         @loop.watchers.each { |w| w.detach }
+         @loop.stop
+         @loop = nil
++        log.debug "in_monitor_agent: thread_for_emit state before shutdown '#{@thread_for_emit.status}'"
++        @thread_for_emit.exit
+         @thread_for_emit.join
+         @thread_for_emit = nil
+       end
