@@ -67,7 +67,8 @@ module Fluent
     end
 
     def shutdown
-      @finished = true 
+      @finished = true
+      @thread.exit
       @thread.join
     end
 

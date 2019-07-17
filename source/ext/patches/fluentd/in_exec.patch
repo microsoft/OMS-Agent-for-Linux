@@ -1,6 +1,43 @@
---- ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb	2018-10-19 03:51:40.507620900 -0700
-+++ ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb.new	2018-10-23 16:32:45.263000000 -0700
-@@ -131,6 +131,7 @@
+--- ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb	2019-07-25 17:44:35.237194903 -0700
++++ ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb.new	2019-07-25 17:37:30.812313080 -0700
+@@ -109,15 +109,16 @@
+     def shutdown
+       if @run_interval
+         @finished = true
+-        # call Thread#run which interupts sleep in order to stop run_periodic thread immediately.
+-        @thread.run
+-        @thread.join
+-      else
++        @pid = @run_periodic_pid
++      end
++
++      if @pid
+         begin
+           Process.kill(:TERM, @pid)
+         rescue #Errno::ECHILD, Errno::ESRCH, Errno::EPERM
+         end
+-        if @thread.join(60)  # TODO wait time
++
++        if @thread.join(0.1)
+           return
+         end
+ 
+@@ -125,12 +126,21 @@
+           Process.kill(:KILL, @pid)
+         rescue #Errno::ECHILD, Errno::ESRCH, Errno::EPERM
+         end
+-        @thread.join
++
++        begin
++          # Need to reap the process because it will become a zombie process
++          Process.detach(@pid)
++        rescue #Errno::ECHILD, Errno::ESRCH, Errno::EPERM
++        end
++        # cleanup the thread
++        Thread.kill(@thread)
++        @thread.join(0.1)
+       end
+     end
  
      def run
        @parser.call(@io)
@@ -8,3 +45,15 @@
      end
  
      def run_periodic
+@@ -138,8 +148,10 @@
+       until @finished
+         begin
+           io = IO.popen(@command, "r")
++          @run_periodic_pid = io.pid
+           @parser.call(io)
+-          Process.waitpid(io.pid)
++          Process.waitpid(@run_periodic_pid)
++          @run_periodic_pid = nil
+         rescue
+           log.error "exec failed to run or shutdown child process", error: $!.to_s, error_class: $!.class.to_s
+           log.warn_backtrace $!.backtrace
