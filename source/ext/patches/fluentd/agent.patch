@@ -1,0 +1,32 @@
+--- ../source/ext/fluentd/lib/fluent/agent.rb	2019-07-25 17:44:00.793117309 -0700
++++ ../source/ext/fluentd/lib/fluent/agent.rb.new	2019-07-25 17:38:46.352455542 -0700
+@@ -78,12 +78,19 @@
+       }
+     end
+ 
++    def measure_shutdown(name, &block)
++      t0 = Time.now
++      yield
++      shutdown_time = (Time.now - t0).round(1)
++      log.info "!!! '#{name}' has #{shutdown_time} sec shutdown latency" if shutdown_time >= 1
++    end
++
+     def shutdown
+       @started_filters.map { |f|
+         Thread.new do
+           begin
+             log.info "shutting down filter#{@context.nil? ? '' : " in #{@context}"}", type: Plugin.lookup_name_from_class(f.class), plugin_id: f.plugin_id
+-            f.shutdown
++            measure_shutdown(Plugin.lookup_name_from_class(f.class)) { f.shutdown }
+           rescue => e
+             log.warn "unexpected error while shutting down filter plugins", plugin: f.class, plugin_id: f.plugin_id, error_class: e.class, error: e
+             log.warn_backtrace
+@@ -97,7 +104,7 @@
+         Thread.new do
+           begin
+             log.info "shutting down output#{@context.nil? ? '' : " in #{@context}"}", type: Plugin.lookup_name_from_class(o.class), plugin_id: o.plugin_id
+-            o.shutdown
++            measure_shutdown(Plugin.lookup_name_from_class(o.class)) { o.shutdown }
+           rescue => e
+             log.warn "unexpected error while shutting down output plugins", plugin: o.class, plugin_id: o.plugin_id, error_class: e.class, error: e
+             log.warn_backtrace

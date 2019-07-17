@@ -192,12 +192,6 @@ if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ]; then
         sudo make install_bin install_include install_lib
         sudo ldconfig
     fi
-
-#    export PATH=${JEMALLOC_SRCDIR}/bin:$PATH
-#    LDFLAGS=\"-L${JEMALLOC_LIB_SO}\"
-#    RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "CPPFLAGS=-I${JEMALLOC_SRCDIR}/include"  )
-#    export LD_LIBRARY_PATH=${JEMALLOC_LIBPATH}:$LD_LIBRARY_PATH
-#    export PKG_CONFIG_PATH=${JEMALLOC_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
 fi
 
 # Clean the version of Ruby from any existing files that aren't part of source

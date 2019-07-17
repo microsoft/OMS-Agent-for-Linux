@@ -237,6 +237,7 @@ apply_patch ${base_dir}/source/ext/patches/ruby/clear_options.patch ${base_dir}/
 
 # This patch is borrowed from FluentD 0.12.32 to resolve in_exec plugin failing repeatedly with command or parsing failing
 # Updating FluentD to version 0.12.32 or later may already include this patch
+# +Improving shutdown time.
 apply_patch ${base_dir}/source/ext/patches/fluentd/in_exec.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_exec.rb
 
 # Patching in_syslog.rb to support configurable syslog delimiter
@@ -245,6 +246,11 @@ apply_patch ${base_dir}/source/ext/patches/fluentd/in_syslog.patch ${base_dir}/s
 # This patch make sure to only load external plugin files starting with in_, out_, filter_, buf_, parser_, formatter_ or storage_
 # It has not effect on fluentd internal plugins
 apply_patch ${base_dir}/source/ext/patches/fluentd/plugin.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin.rb
+
+# Patching root_agent.rb and in_monitor_agent.rb to reduce shutdown process
+apply_patch ${base_dir}/source/ext/patches/fluentd/in_monitor_agent.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_monitor_agent.rb
+apply_patch ${base_dir}/source/ext/patches/fluentd/root_agent.patch ${base_dir}/source/ext/fluentd/lib/fluent/root_agent.rb
+apply_patch ${base_dir}/source/ext/patches/fluentd/agent.patch ${base_dir}/source/ext/fluentd/lib/fluent/agent.rb
 
 # This patch is borrowed from FluentD 1.x to support ruby +2.6
 apply_patch ${base_dir}/source/ext/patches/fluentd/fluentd_gemspec.patch ${base_dir}/source/ext/fluentd/fluentd.gemspec

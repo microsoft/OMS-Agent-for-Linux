@@ -32,6 +32,7 @@ module Fluent
     def shutdown
       if @interval
         @finished = true
+        @thread.exit
         @thread.join
       end
     end
