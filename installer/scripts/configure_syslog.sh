@@ -142,12 +142,14 @@ ConfigureSyslog_ng() {
 
         cat ${SYSLOG_NG_TEMP} | sed "s/%SOURCE%/${source}/g" | sed "s/%WORKSPACE_ID%/${WORKSPACE_ID}/g" | sed "s/%SYSLOG_PORT%/${SYSLOG_PORT}/g" >> ${SYSLOG_NG_DEST}
         RestartService syslog-ng
+        [ $? != 0 ] && RestartService syslog # sles11 has syslog instead of syslog-ng
     else
         # there was a previous setup, is the port right?
         egrep -q "port\(${SYSLOG_PORT}" ${SYSLOG_NG_DEST}
         if [ $? -ne 0 ]; then            
             sed -i -r "s/port\([0-9]+/port\(${SYSLOG_PORT}/g" ${SYSLOG_NG_DEST}
             RestartService syslog-ng
+            [ $? != 0 ] && RestartService syslog
         fi
     fi
 }
@@ -161,6 +163,7 @@ UnconfigureSyslog_ng() {
         egrep -v "${WORKSPACE_ID}_oms" ${SYSLOG_NG_DEST}.bak > ${SYSLOG_NG_DEST}
         rm -f ${SYSLOG_NG_DEST}.bak 1> /dev/null 2> /dev/null
         RestartService syslog-ng
+        [ $? != 0 ] && RestartService syslog
     fi
 }
 
@@ -173,6 +176,7 @@ PurgeSyslog_ng() {
         egrep -v "_oms" ${SYSLOG_NG_DEST}.bak > ${SYSLOG_NG_DEST}
         rm -f ${SYSLOG_NG_DEST}.bak 1> /dev/null 2> /dev/null
         RestartService syslog-ng
+        [ $? != 0 ] && RestartService syslog
     fi
 }
 
@@ -222,6 +226,7 @@ RestartSyslog() {
         RestartService rsyslog
     elif [ -f ${SYSLOG_NG_DEST} ]; then
         RestartService syslog-ng
+        [ $? != 0 ] && RestartService syslog
     else
         echo "No supported syslog daemon found; unable to restart syslog monitoring."
         return 1
