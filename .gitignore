@@ -9,3 +9,4 @@
 /build/x86
 /test/docker-test/*[.html, .log, .pyc]
 .vscode
+.idea

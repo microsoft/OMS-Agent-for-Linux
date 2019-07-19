@@ -54,9 +54,12 @@ RUN mkdir -p /home/scratch/ostc-openssl
 RUN mkdir -p ~/.ssh/ && ssh-keyscan github.com >> ~/.ssh/known_hosts
 RUN git clone --branch OpenSSL_1_0_0  https://github.com/openssl/openssl.git /home/scratch/ostc-openssl/openssl-1.0.0
 RUN git clone --branch OpenSSL_1_0_1  https://github.com/openssl/openssl.git /home/scratch/ostc-openssl/openssl-1.0.1
-RUN git clone --branch OpenSSL_1_0_1  https://github.com/openssl/openssl.git /home/scratch/ostc-openssl/openssl-1.0.1
+
 # Build OpenSSL
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.0 && ./Configure linux-generic32 --prefix=/usr/local_ssl_1.0.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make CC="gcc -m32" depend && make CC="gcc -m32" && make install_sw
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.1 && ./Configure linux-generic32 --prefix=/usr/local_ssl_1.0.1 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make CC="gcc -m32" depend && make CC="gcc -m32" && make install_sw
-RUN cd /home/scratch/ostc-openssl/openssl-1.0.1 && ./Configure linux-generic32 --prefix=/usr/local_ssl_1.0.1 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make CC="gcc -m32" depend && make CC="gcc -m32" && make install_sw
+
+# Fix OpenSSL cert
+RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.0/ssl/cert.pem
+RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.1/ssl/cert.pem
 
