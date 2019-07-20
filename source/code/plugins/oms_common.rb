@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module OMS
 
   MSDockerCImprovHostnameFilePath = '/var/opt/microsoft/docker-cimprov/state/containerhostname'
@@ -747,6 +749,10 @@ module OMS
         return @@AgentVersion
       end
 
+      def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
+        utctime.strftime("%FT%T.%#{fraction_digits}NZ")
+      end
+
       def format_time(time)
         Time.at(time).utc.iso8601(3) # UTC with milliseconds
       end
@@ -798,6 +804,11 @@ module OMS
           headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
         end
 
+        azure_region = OMS::Configuration.azure_region if defined?(OMS::Configuration.azure_region)
+        if !azure_region.to_s.empty?
+          headers[OMS::CaseSensitiveString.new("x-ms-AzureRegion")] = azure_region
+        end
+        
         omscloud_id = OMS::Configuration.omscloud_id
         if !omscloud_id.to_s.empty?
           headers[OMS::CaseSensitiveString.new("x-ms-OMSCloudId")] = omscloud_id
@@ -869,8 +880,8 @@ module OMS
         msg = nil
 
         begin
-          msg = JSON.dump(records)
-        rescue JSON::GeneratorError => error
+          msg = Yajl.dump(records)
+        rescue => error
           OMS::Log.warn_once("Unable to dump to JSON string. #{error}")
           begin
             # failed to dump, encode to utf-8, iso-8859-1 and try again
@@ -886,16 +897,12 @@ module OMS
               end
             end
 
-            msg = JSON.dump(records)
+            msg = Yajl.dump(records)
           rescue => error
             # at this point we've given up, we don't recognize the encode,
             # so return nil and log_warning for the record
             OMS::Log.warn_once("Skipping due to failed encoding for #{records}: #{error}")
           end
-        rescue => error
-          # unexpected error when dumpping the records into JSON string
-          # skip here and return nil
-          OMS::Log.warn_once("Skipping due to unexpected error for #{records}: #{error}")
         end
 
         return msg
@@ -960,15 +967,15 @@ module OMS
     end
 
     def get_ip(hostname)
-      @cache_lock.synchronize {
-        if @cache.has_key?(hostname)
-          return @cache[hostname]
-        else
-          ip = get_ip_from_socket(hostname)
+      if @cache.has_key?(hostname)
+        return @cache[hostname]
+      else
+        ip = get_ip_from_socket(hostname)
+        @cache_lock.synchronize {
           @cache[hostname] = ip
-          return ip
-        end
-      }
+        }
+        return ip
+      end
     end
 
     private

@@ -5,9 +5,10 @@ require 'net/https'
 require 'json'
 require 'fileutils'
 require 'flexmock/test_unit'
+require 'syslog/logger'
 require_relative 'omstestlib'
 require_relative ENV['BASE_DIR'] + '/source/code/plugins/oms_common'
-
+require_relative ENV['BASE_DIR'] + '/source/code/plugins/agent_common'
 
 module OMS
 
@@ -472,6 +473,18 @@ module OMS
       assert_equal("2015-11-20T01:56:03.078Z", formatted_time, "The time is not in the correct iso8601 format with millisecond precision.")
     end
 
+    def test_file_exists_nonempty
+      assert_equal(false, Common.file_exists_nonempty(nil), "should detect nil file path")
+      assert_equal(false, Common.file_exists_nonempty("/dev/null/impossible"), "should detect nonexistent file path")
+      assert_equal(true, Common.file_exists_nonempty("/"), "file does exist")
+    end
+
+    def test_get_logger
+      assert_equal(Syslog::LOG_LOCAL0, Common.get_logger(nil).facility, "default log facility should be local0")
+      Syslog.close
+      assert_equal(Syslog::LOG_USER, Common.get_logger("user").facility, "correct log facility not parsed")
+    end
+
     def test_create_error_tag
       assert_equal("ERROR::xyzzy::", Common.create_error_tag("xyzzy"))
       assert_equal("ERROR::123::", Common.create_error_tag(123))
@@ -494,7 +507,25 @@ module OMS
 
       http = Common.create_ods_http(uri)
       assert_not_equal(nil, http, "http is nil")
-      assert_equal(true, http.use_ssl?, "Http should use ssl")
+      assert_equal(true, http.use_ssl?, "http should use ssl")
+    end
+
+    def test_form_post_request_and_http
+      headers = {}
+      headers["User-Agent"] = "LinuxMonitoringAgent/0.0.0-0"
+      uri = "https://www.microsoft.com"
+      body = { mock: "data", foo: "bar" }.to_json
+      cert = "this is a mock cert"
+      key = "this is a mock key"
+      proxy = ""
+
+      req, http = Common.form_post_request_and_http(headers, uri, body, cert, key, proxy)
+      assert_not_equal(nil, http, "http is nil")
+      assert_not_equal(nil, req, "request is nil")
+      assert_equal('{"mock":"data","foo":"bar"}', req.body, "request body is incorrect")
+      assert_equal("LinuxMonitoringAgent/0.0.0-0", req["User-Agent"], "request headers are incorrect")
+      assert_equal(cert, http.cert, "http cert is incorrect")
+      assert_equal(key, http.key, "http key is incorrect")
     end
 
     def test_parse_json_record_encoding
@@ -538,28 +569,42 @@ module OMS
       assert($log.logs.empty?, "No exception should be logged")
     end
     
-    def test_safe_dump_simple_hash_array_firsterror_encoding_success
+    def test_safe_dump_non_ascii_hash_array_noerror
       $log = MockLog.new
+      
+      records = [ { "ID" => 1, "Japan" => "にほん" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Japan\":\"にほん\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+      
+      records = [ { "ID" => 1, "China" => "中国" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"China\":\"中国\"}]", json, "parse json record utf-8 encoding failed: #{json}");
 
-      records = [ { "ID" => 1, "Message" => "iPhone\xAE" } ];
+      records = [ { "ID" => 1, "Morocco" => "ﺎﻠﻤﻏﺮﺑ" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Morocco\":\"ﺎﻠﻤﻏﺮﺑ\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "India" => "भारत" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"India\":\"भारत\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "South Korea" => "대한 민국" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"South Korea\":\"대한 민국\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "Russia" => "Россия" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Russia\":\"Россия\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "Greece" => "Καλημέρα" } ];
+      json = Common.safe_dump_simple_hash_array(records);
+      assert_equal("[{\"ID\":1,\"Greece\":\"Καλημέρα\"}]", json, "parse json record utf-8 encoding failed: #{json}");
+
+      records = [ { "ID" => 1, "Message" => "iPhone\u00AE" } ];
       json = Common.safe_dump_simple_hash_array(records);
       assert_equal("[{\"ID\":1,\"Message\":\"iPhone®\"}]", json, "parse json record utf-8 encoding failed: #{json}");
-      assert_not_equal(0, $log.logs.length, "Exception should be logged")
-      assert($log.logs[-1].include?("source sequence is illegal/malformed utf-8"), "Except error in log: '#{$log.logs}'")
-    end
-
-    def test_safe_dump_simple_hash_array_firsterror_encoding_error
-      $log = MockLog.new
-
-      json = nil
-      records = [ { "ID" => 1, "Message\xAE" => "iPhone\xAE" } ];
-      assert_nothing_raised(RuntimeError, "No RuntimeError to dump unexpected type") do
-        json = Common.safe_dump_simple_hash_array(records);
-      end
-
-      assert_not_equal(0, $log.logs.length, "Exception should be logged")
-      assert($log.logs[-1].include?("source sequence is illegal/malformed utf-8"), "Except error in log: '#{$log.logs}'")
-      assert_equal(nil, json, "Expect nil: #{json}")
+      
+      assert($log.logs.empty?, "No exception should be logged")
     end
 
     def test_get_current_timezone

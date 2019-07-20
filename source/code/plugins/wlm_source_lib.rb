@@ -29,6 +29,9 @@ module WLM
         when "AutoDiscover::ProcessEnumeration"
           require_relative 'wlm_ad_pe_lib'
           source_lib = WLM::WlmProcessEnumeration.new(@config)
+        when "WlmHeartbeat"
+          require_relative 'wlm_heartbeat_lib'
+          source_lib = WLM::WlmHeartbeat.new()
         else 
           raise "Not a valid method #{@method}" 
         end 

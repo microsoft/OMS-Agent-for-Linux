@@ -13,6 +13,7 @@ module Fluent
       require_relative 'oms_configuration'
       require_relative 'oms_common'
       require_relative 'oms_diag_lib'
+      require_relative 'agent_telemetry_script'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -48,6 +49,7 @@ module Fluent
         time = ends - start
         count = record[OMS::Diag::RECORD_DATAITEMS].size
         @log.debug "Success sending diagnotic logs #{ipname} x #{count} in #{time.round(2)}s"
+        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", ipname, record, count, time)
         return true
       end
     rescue OMS::RetryRequestException => e
@@ -66,9 +68,7 @@ module Fluent
     # Convert the event to a raw string.
     def format(tag, time, record)
       if record != {}
-        @log.trace "Buffering diagnostic log with tag #{tag}"
-        retval = record.to_msgpack
-        return retval
+        return record.to_msgpack
       else
         return ""
       end

@@ -79,23 +79,25 @@ module Fluent
           if time && record
             es.add(time, record)
           else
-            $log.warn "pattern doesn't match: #{line.inspect}"
+            @log.warn "pattern doesn't match: #{line.inspect}"
           end
           unless es.empty?
             tag=@tag
             router.emit_stream(tag, es)
+            @count += 1
           end
         }
       rescue => e
-        $log.warn line.dump, error: e.to_s
-        $log.debug_backtrace(e.backtrace)
+        @log.warn line.dump, error: e.to_s
+        @log.debug_backtrace(e.backtrace)
       end
     end
 
     def receive_log(line)
-      $log.warn "#{line}" if line.start_with?('WARN')
-      $log.error "#{line}" if line.start_with?('ERROR')
-      $log.info "#{line}" if line.start_with?('INFO')
+      @log.warn "#{line}" if line.start_with?('WARN')
+      @log.error "#{line}" if line.start_with?('ERROR')
+      @log.info "#{line}" if line.start_with?('INFO')
+      @log.debug "#{line}" if line.start_with?('DEBUG')
     end
  
     def set_system_command
@@ -116,6 +118,7 @@ module Fluent
       end
       until @finished
         begin
+          @count = 0
           Open3.popen3(@command) {|writeio, readio, errio, wait_thread|
             writeio.close
             while line = readio.gets
@@ -128,10 +131,11 @@ module Fluent
             
             wait_thread.value #wait until child process terminates
           }
+          @log.debug "DEBUG Sent a total of #{@count} lines forward from #{@path} from in_sudo_tail."
           sleep @run_interval
         rescue
-          $log.error "sudo_tail failed to run or shutdown child proces", error => $!.to_s, :error_class => $!.class.to_s
-          $log.warn_backtrace $!.backtrace
+          @log.error "sudo_tail failed to run or shutdown child proces", error => $!.to_s, :error_class => $!.class.to_s
+          @log.warn_backtrace $!.backtrace
         end
       end
     end

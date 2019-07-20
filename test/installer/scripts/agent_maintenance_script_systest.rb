@@ -1,5 +1,6 @@
 require 'tempfile' 
 require_relative ENV["BASE_DIR"] + '/source/code/plugins/agent_maintenance_script'
+require_relative ENV["BASE_DIR"] + '/source/code/plugins/oms_common'
 require_relative 'maintenance_systestbase'
 require_relative '../../code/plugins/omstestlib'
 
@@ -99,25 +100,25 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
 
   def test_heartbeat_nonexistent_config
     m = get_new_maintenance_obj("/etc/nonexistentomsadmin.conf")
-    assert_equal(MaintenanceModule::MISSING_CONFIG_FILE, m.heartbeat, "Incorrect return code for nonexistent config")
+    assert_equal(OMS::MISSING_CONFIG_FILE, m.heartbeat, "Incorrect return code for nonexistent config")
   end
 
   def test_heartbeat_empty_config
     File.write(@test_omsadmin_conf.path, "")
     m = get_new_maintenance_obj(@test_omsadmin_conf.path)
-    assert_equal(MaintenanceModule::MISSING_CONFIG, m.heartbeat, "Incorrect return code for empty config")
+    assert_equal(OMS::MISSING_CONFIG, m.heartbeat, "Incorrect return code for empty config")
   end
 
   def test_heartbeat_nonexistent_certs
     m = get_new_maintenance_obj(@omsadmin_conf_path, "/etc/nonexistentoms.crt", "/etc/nonexistentoms.key")
-    assert_equal(MaintenanceModule::MISSING_CERTS, m.heartbeat, "Incorrect return code for nonexistent certs")
+    assert_equal(OMS::MISSING_CERTS, m.heartbeat, "Incorrect return code for nonexistent certs")
   end
 
   def test_heartbeat_empty_certs
     File.write(@test_cert.path, "")
     File.write(@test_key.path, "")
     m = get_new_maintenance_obj(@omsadmin_conf_path, @test_cert.path, @test_key.path)
-    assert_equal(MaintenanceModule::MISSING_CERTS, m.heartbeat, "Incorrect return code for empty cert files")
+    assert_equal(OMS::MISSING_CERTS, m.heartbeat, "Incorrect return code for empty cert files")
   end
 
   def test_heartbeat_malformed_os_info
@@ -160,25 +161,25 @@ class AgentMaintenanceSystemTest < MaintenanceSystemTestBase
 
   def test_renew_certs_nonexistent_config
     m = get_new_maintenance_obj("/etc/nonexistentomsadmin.conf")
-    assert_equal(MaintenanceModule::MISSING_CONFIG_FILE, m.renew_certs, "Incorrect return code for nonexistent config")
+    assert_equal(OMS::MISSING_CONFIG_FILE, m.renew_certs, "Incorrect return code for nonexistent config")
   end
 
   def test_renew_certs_empty_config
     File.write(@test_omsadmin_conf.path, "")
     m = get_new_maintenance_obj(@test_omsadmin_conf.path)
-    assert_equal(MaintenanceModule::MISSING_CONFIG, m.renew_certs, "Incorrect return code for empty config")
+    assert_equal(OMS::MISSING_CONFIG, m.renew_certs, "Incorrect return code for empty config")
   end
 
   def test_renew_certs_nonexistent_certs
     m = get_new_maintenance_obj(@omsadmin_conf_path, "/etc/nonexistentoms.crt", "/etc/nonexistentoms.key")
-    assert_equal(MaintenanceModule::MISSING_CERTS, m.renew_certs, "Incorrect return code for nonexistent certs")
+    assert_equal(OMS::MISSING_CERTS, m.renew_certs, "Incorrect return code for nonexistent certs")
   end
 
   def test_renew_certs_empty_certs
     File.write(@test_cert.path, "")
     File.write(@test_key.path, "")
     m = get_new_maintenance_obj(@omsadmin_conf_path, @test_cert.path, @test_key.path)
-    assert_equal(MaintenanceModule::MISSING_CERTS, m.renew_certs, "Incorrect return code for empty cert files")
+    assert_equal(OMS::MISSING_CERTS, m.renew_certs, "Incorrect return code for empty cert files")
   end
 
   def test_renew_certs_fake_certs

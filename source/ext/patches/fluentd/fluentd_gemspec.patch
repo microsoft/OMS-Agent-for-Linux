@@ -1,0 +1,9 @@
+--- ../source/ext/fluentd/fluentd.gemspec	2019-03-14 07:43:46.418456264 +0000
++++ ../source/ext/fluentd/fluentd.gemspec.new	2019-03-14 07:42:50.000000000 +0000
+@@ -37,5 +37,5 @@
+   gem.add_development_dependency("timecop", ["~> 0.3"])
+   gem.add_development_dependency("test-unit", ["~> 3.2"])
+   gem.add_development_dependency("test-unit-rr", ["~> 1.0"])
+-  gem.add_development_dependency("oj", ["~> 2.14"])
++  gem.add_development_dependency("oj", [">= 2.14", "< 4"])
+ end
