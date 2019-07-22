@@ -37,25 +37,9 @@ RUN git clone --branch OpenSSL_1_1_0-stable  https://github.com/openssl/openssl.
 # Build OpenSSL
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.0 && ./config --prefix=/usr/local_ssl_1.0.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make depend && make && make install_sw
 RUN cd /home/scratch/ostc-openssl/openssl-1.1.0 && ./config --prefix=/usr/local_ssl_1.1.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make depend && make && make install_sw
-# Fix OpenSSL cert
-RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.0/ssl/cert.pem
-RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.1/ssl/cert.pem
-RUN mkdir /usr/local_ssl_1.1.0/ssl/ && ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.1.0/ssl/cert.pem
 
 
 # Autoconf >= 2.67 required by ruby
 ADD http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz /home/scratch/autoconf-2.69.tar.gz
-RUN tar -vzxf autoconf-2.69.tar.gz
-RUN cd autoconf-2.69 && ./configure && make && make install
-
-# Ruby 2.6
-#ADD https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.0.tar.gz /home/scratch/ruby-2.6.0.tar.gz
-#RUN cd /home/scratch && tar -zxf ruby-2.6.0.tar.gz
-#RUN cd /home/scratch/ruby-2.6.0 && ./configure --prefix=/usr && make && make install
-
-# Ruby 2.4
-ADD https://cache.ruby-lang.org/pub/ruby/2.4/ruby-2.4.4.tar.gz /home/scratch/ruby-2.4.4.tar.gz
-RUN cd /home/scratch && tar -zxf ruby-2.4.4.tar.gz
-RUN cd /home/scratch/ruby-2.4.4 && ./configure && make && make install
-
-
+RUN cd /home/scratch && tar -vzxf autoconf-2.69.tar.gz
+RUN cd /home/scratch/autoconf-2.69 && ./configure && make && make install

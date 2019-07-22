@@ -12,7 +12,6 @@ PAL_DIR := $(shell cd ../../pal; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
 AUOMS_DIR := $(shell cd ../../auoms; pwd -P)
 AUOMS_KITS_DIR := $(shell cd ../../auoms-kits; pwd -P)
-RUBY_TESTING_TARGET_NAME=test
 
 PF_POSIX := 1
 include $(BASE_DIR)/build/config.mak
@@ -244,13 +243,14 @@ endif
 
 #--------------------------------------------------------------------------------
 # Build the version of Ruby that we test with
+
 $(RUBY_TESTING_DIR) :
 	#
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
-	@$(ECHO) "========================= Performing Building Ruby for testing: '${RUBY_TESTING_TARGET_NAME}'"
+	@$(ECHO) "========================= Performing Building Ruby for testing"
 	# $(MKPATH) $(INTERMEDIATE_DIR)
-	$(BASE_DIR)/build/buildRuby.sh ${RUBY_TESTING_TARGET_NAME}
+	$(BASE_DIR)/build/buildRuby.sh test
 
 # Build the version of Ruby that we distribute
 
@@ -635,14 +635,6 @@ endif
 #       environment variable) change to execute using the correct Ruby (the
 #       OMSAgent test Ruby)
 
-set_ruby_test_ssl_100:
-	$(eval RUBY_TESTING_TARGET_NAME = test_100)
-	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
-
-set_ruby_test_ssl_110:
-	$(eval RUBY_TESTING_TARGET_NAME = test_110)
-	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
-
 tests : test
 
 unittest : $(RUBY_TESTING_DIR)
@@ -672,18 +664,3 @@ endif
 omstest : unittest systemtest
 
 test : omstest
-
-tests_100: set_ruby_test_ssl_100 tests
-tests_110: set_ruby_test_ssl_110 tests
-
-unittest_100: set_ruby_test_ssl_100 unittest
-unittest_110: set_ruby_test_ssl_110 unittest
-
-systemtest_100: set_ruby_test_ssl_100 systemtest
-systemtest_110: set_ruby_test_ssl_110 systemtest
-
-omstest_100: set_ruby_test_ssl_100 omstest
-omstest_110: set_ruby_test_ssl_110 omstest
-
-test_100: set_ruby_test_ssl_100 test
-test_110: set_ruby_test_ssl_110 test

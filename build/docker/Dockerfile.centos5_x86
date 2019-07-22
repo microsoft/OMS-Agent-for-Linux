@@ -47,24 +47,14 @@ RUN cd /home/scratch && tar -zxvf perl.tar.gz
 RUN cd /home/scratch/perl5-5.24.1 && ./Configure -des -Dprefix=/usr/local_perl_5_24_1 && make install
 ENV PATH /usr/local_perl_5_24_1/bin:$PATH
 
-#
+# OpenSSL
+RUN mkdir -p /home/scratch/ostc-openssl
 RUN mkdir -p ~/.ssh/ && ssh-keyscan github.com >> ~/.ssh/known_hosts
 ADD https://github.com/msgpack/msgpack-c/archive/cpp-2.0.0.zip /home/scratch/msgpack-c-cpp-2.0.0.zip
 ADD https://github.com/miloyip/rapidjson/archive/v1.0.2.tar.gz /home/scratch/rapidjson-1.0.2.tar.gz
-
-# OpenSSL
-RUN mkdir -p /home/scratch/ostc-openssl
 ADD https://github.com/openssl/openssl/archive/OpenSSL_1_0_0.tar.gz /home/scratch
 RUN tar -zxf OpenSSL_1_0_0.tar.gz
 RUN mv openssl-OpenSSL_1_0_0 /home/scratch/ostc-openssl/openssl-1.0.0
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.0 && ./Configure linux-generic32 --prefix=/usr/local_ssl_1.0.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make CC="gcc -m32" depend && make CC="gcc -m32" && make install_sw
 
-ADD https://github.com/openssl/openssl/archive/OpenSSL_1_0_1.tar.gz /home/scratch
-RUN tar -zxf OpenSSL_1_0_1
-RUN mv openssl-OpenSSL_1_0_1 /home/scratch/ostc-openssl/openssl-1.0.1
-RUN cd /home/scratch/ostc-openssl/openssl-1.0.1 && ./Configure linux-generic32 --prefix=/usr/local_ssl_1.0.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make CC="gcc -m32" depend && make CC="gcc -m32" && make install_sw
 
-
-# Fix OpenSSL cert
-RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.0/ssl/cert.pem
-RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.1/ssl/cert.pem
