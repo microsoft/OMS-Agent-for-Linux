@@ -1,12 +1,12 @@
 [submodule "source/ext/ruby"]
 	path = source/ext/ruby
-	url = git@github.com:ruby/ruby.git
+	url = https://github.com/ruby/ruby.git
 	ignore = dirty
 [submodule "source/ext/fluentd"]
 	path = source/ext/fluentd
-	url = git@github.com:fluent/fluentd.git
+	url = https://github.com/fluent/fluentd.git
 	ignore = dirty
 [submodule "source/ext/jemalloc"]
 	path = source/ext/jemalloc
-	url = git@github.com:jemalloc/jemalloc.git
+	url = https://github.com/jemalloc/jemalloc.git
 	branch = stable-4
