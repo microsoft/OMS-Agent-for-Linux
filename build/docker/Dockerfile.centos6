@@ -22,7 +22,12 @@ RUN yum install -y which wget sudo make tree vim cmake zip redhat-lsb \
 # Devtoolset-2 (gcc 4.8)
 RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo 
 RUN yum update -y && yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
-ENV PATH /opt/rh/devtoolset-2/root/usr/bin:$PATH
+# Devtoolset-7 (gcc 7.3)
+RUN yum install -y devtoolset-7-toolchain
+# Devtoolset-8 (gcc 8.3)
+RUN yum install -y devtoolset-8-toolchain
+# Enable Devtoolset-7 by default
+ENV PATH /opt/rh/devtoolset-7/root/usr/bin:$PATH
 
 # git
 ADD https://github.com/git/git/archive/v2.17.1.tar.gz /home/scratch/v2.17.1.tar.gz
