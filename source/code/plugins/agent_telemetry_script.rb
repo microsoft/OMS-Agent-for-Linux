@@ -135,7 +135,7 @@ module OMS
       event[:t] = time
       if batch.is_a? Hash and batch.has_key?('DataItems')
         records = batch['DataItems']
-        if batch['DataItems'][0].has_key?('Timestamp')
+        if records[0].has_key?('Timestamp')
           now = Time.now
           times = records.map { |record| now - Time.parse(record['Timestamp']) }
           event[:min_l] = times[-1] # Records appear in order, so last record will have lowest latency

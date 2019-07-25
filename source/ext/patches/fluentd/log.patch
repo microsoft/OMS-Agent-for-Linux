@@ -1,24 +1,10 @@
 --- ../source/ext/fluentd/lib/fluent/log.rb	2018-11-01 14:01:03.000703433 -0700
-+++ ../source/ext/fluentd/lib/fluent/log.rb.new	2019-05-30 15:06:52.974607146 -0700
++++ ../source/ext/fluentd/lib/fluent/log.rb.new	2019-07-24 17:44:52.974607146 -0700
 @@ -15,6 +15,7 @@
  #
  
  require 'forwardable'
-+require_relative '../../../../../../../../../plugin/agent_telemetry_script'
++require_relative 'plugin/fluent_log_patch'
  
  module Fluent
    class Log
-@@ -273,6 +274,21 @@
-         }
-         record['message'] = message.dup
-         @engine.push_log_event("#{@tag}.#{level}", time.to_i, record)
-+
-+        case Log.str_to_level(level.to_s)
-+        when LEVEL_ERROR
-+          OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL)
-+        when LEVEL_FATAL
-+          OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", message, OMS::INTERNAL)
-+        end
-       end
- 
-       return time, message
