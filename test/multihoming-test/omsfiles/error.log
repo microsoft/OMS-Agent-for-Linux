@@ -1,0 +1,100 @@
+Version: '5.7.23-0ubuntu0.16.04.1-log'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  (Ubuntu)
+2018-10-15T19:54:50.675213Z 2 [Note] Access denied for user 'root'@'localhost' (using password: NO)
+2018-10-15T19:55:16.350986Z 0 [Note] Giving 7 client threads a chance to die gracefully
+2018-10-15T19:55:16.351028Z 0 [Note] Shutting down slave threads
+2018-10-15T19:55:18.351113Z 0 [Note] Forcefully disconnecting 4 remaining clients
+2018-10-15T19:55:18.351141Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 3  user: 'zabbix'
+
+2018-10-15T19:55:18.351160Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 4  user: 'zabbix'
+
+2018-10-15T19:55:18.351186Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 5  user: 'zabbix'
+
+2018-10-15T19:55:18.351193Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 9  user: 'zabbix'
+
+2018-10-15T19:55:18.351205Z 0 [Note] Event Scheduler: Purging the queue. 0 events
+2018-10-15T19:55:18.351518Z 0 [Note] Binlog end
+2018-10-15T19:55:18.352972Z 0 [Note] Shutting down plugin 'ngram'
+2018-10-15T19:55:18.352983Z 0 [Note] Shutting down plugin 'partition'
+2018-10-15T19:55:18.352986Z 0 [Note] Shutting down plugin 'BLACKHOLE'
+2018-10-15T19:55:18.352989Z 0 [Note] Shutting down plugin 'ARCHIVE'
+2018-10-15T19:55:18.353039Z 0 [Note] Shutting down plugin 'MEMORY'
+2018-10-15T19:55:18.353044Z 0 [Note] Shutting down plugin 'INNODB_SYS_VIRTUAL'
+2018-10-15T19:55:18.353048Z 0 [Note] Shutting down plugin 'INNODB_SYS_DATAFILES'
+2018-10-15T19:55:18.353051Z 0 [Note] Shutting down plugin 'INNODB_SYS_TABLESPACES'
+2018-10-15T19:55:18.353053Z 0 [Note] Shutting down plugin 'INNODB_SYS_FOREIGN_COLS'
+2018-10-15T19:55:18.353056Z 0 [Note] Shutting down plugin 'INNODB_SYS_FOREIGN'
+2018-10-15T19:55:18.353059Z 0 [Note] Shutting down plugin 'INNODB_SYS_FIELDS'
+2018-10-15T19:55:18.353062Z 0 [Note] Shutting down plugin 'INNODB_SYS_COLUMNS'
+2018-10-15T19:55:18.353065Z 0 [Note] Shutting down plugin 'INNODB_SYS_INDEXES'
+2018-10-15T19:55:18.353068Z 0 [Note] Shutting down plugin 'INNODB_SYS_TABLESTATS'
+2018-10-15T19:55:18.353071Z 0 [Note] Shutting down plugin 'INNODB_SYS_TABLES'
+2018-10-15T19:55:18.353073Z 0 [Note] Shutting down plugin 'INNODB_FT_INDEX_TABLE'
+2018-10-15T19:55:18.353076Z 0 [Note] Shutting down plugin 'INNODB_FT_INDEX_CACHE'
+2018-10-15T19:55:18.353079Z 0 [Note] Shutting down plugin 'INNODB_FT_CONFIG'
+2018-10-15T19:55:18.353082Z 0 [Note] Shutting down plugin 'INNODB_FT_BEING_DELETED'
+2018-10-15T19:55:18.353085Z 0 [Note] Shutting down plugin 'INNODB_FT_DELETED'
+2018-10-15T19:55:18.353087Z 0 [Note] Shutting down plugin 'INNODB_FT_DEFAULT_STOPWORD'
+2018-10-15T19:55:18.353091Z 0 [Note] Shutting down plugin 'INNODB_METRICS'
+2018-10-15T19:55:18.353094Z 0 [Note] Shutting down plugin 'INNODB_TEMP_TABLE_INFO'
+2018-10-15T19:55:18.353097Z 0 [Note] Shutting down plugin 'INNODB_BUFFER_POOL_STATS'
+2018-10-15T19:55:18.353099Z 0 [Note] Shutting down plugin 'INNODB_BUFFER_PAGE_LRU'
+2018-10-15T19:55:18.353102Z 0 [Note] Shutting down plugin 'INNODB_BUFFER_PAGE'
+2018-10-15T19:55:18.353105Z 0 [Note] Shutting down plugin 'INNODB_CMP_PER_INDEX_RESET'
+2018-10-15T19:55:18.353108Z 0 [Note] Shutting down plugin 'INNODB_CMP_PER_INDEX'
+2018-10-15T19:55:18.353111Z 0 [Note] Shutting down plugin 'INNODB_CMPMEM_RESET'
+2018-10-15T19:55:18.353113Z 0 [Note] Shutting down plugin 'INNODB_CMPMEM'
+2018-10-15T19:55:18.353116Z 0 [Note] Shutting down plugin 'INNODB_CMP_RESET'
+2018-10-15T19:55:18.353119Z 0 [Note] Shutting down plugin 'INNODB_CMP'
+2018-10-15T19:55:18.353122Z 0 [Note] Shutting down plugin 'INNODB_LOCK_WAITS'
+2018-10-15T19:55:18.353125Z 0 [Note] Shutting down plugin 'INNODB_LOCKS'
+2018-10-15T19:55:18.353128Z 0 [Note] Shutting down plugin 'INNODB_TRX'
+2018-10-15T19:55:18.353131Z 0 [Note] Shutting down plugin 'InnoDB'
+2018-10-15T19:55:18.354768Z 0 [Note] InnoDB: FTS optimize thread exiting.
+2018-10-15T19:55:18.354950Z 0 [Note] InnoDB: Starting shutdown...
+2018-10-15T19:55:18.455235Z 0 [Note] InnoDB: Dumping buffer pool(s) to /var/lib/mysql/ib_buffer_pool
+2018-10-15T19:55:18.455408Z 0 [Note] InnoDB: Buffer pool(s) dump completed at 181015 19:55:18
+2018-10-15T19:55:19.782226Z 0 [Note] InnoDB: Shutdown completed; log sequence number 15199598
+2018-10-15T19:55:19.784179Z 0 [Note] InnoDB: Removed temporary tablespace data file: "ibtmp1"
+2018-10-15T19:55:19.784526Z 0 [Note] Shutting down plugin 'MRG_MYISAM'
+2018-10-15T19:55:19.784782Z 0 [Note] Shutting down plugin 'MyISAM'
+2018-10-15T19:55:19.785078Z 0 [Note] Shutting down plugin 'CSV'
+2018-10-15T19:55:19.785417Z 0 [Note] Shutting down plugin 'PERFORMANCE_SCHEMA'
+2018-10-15T19:55:19.785694Z 0 [Note] Shutting down plugin 'sha256_password'
+2018-10-15T19:55:19.785937Z 0 [Note] Shutting down plugin 'mysql_native_password'
+2018-10-15T19:55:19.786432Z 0 [Note] Shutting down plugin 'binlog'
+2018-10-15T19:55:19.796160Z 0 [Note] /usr/sbin/mysqld: Shutdown complete
+
+2018-10-15T19:55:19.858798Z 0 [Warning] Changed limits: max_open_files: 1024 (requested 5000)
+2018-10-15T19:55:19.858828Z 0 [Warning] Changed limits: table_open_cache: 431 (requested 2000)
+2018-10-15T19:55:20.017175Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
+2018-10-15T19:55:20.019931Z 0 [Note] /usr/sbin/mysqld (mysqld 5.7.23-0ubuntu0.16.04.1-log) starting as process 12803 ...
+2018-10-15T19:55:20.025911Z 0 [Note] InnoDB: PUNCH HOLE support available
+2018-10-15T19:55:20.026301Z 0 [Note] InnoDB: Mutexes and rw_locks use GCC atomic builtins
+2018-10-15T19:55:20.026621Z 0 [Note] InnoDB: Uses event mutexes
+2018-10-15T19:55:20.026886Z 0 [Note] InnoDB: GCC builtin __atomic_thread_fence() is used for memory barrier
+2018-10-15T19:55:20.027229Z 0 [Note] InnoDB: Compressed tables use zlib 1.2.8
+2018-10-15T19:55:20.027559Z 0 [Note] InnoDB: Using Linux native AIO
+2018-10-15T19:55:20.028218Z 0 [Note] InnoDB: Number of pools: 1
+2018-10-15T19:55:20.028662Z 0 [Note] InnoDB: Using CPU crc32 instructions
+2018-10-15T19:55:20.031387Z 0 [Note] InnoDB: Initializing buffer pool, total size = 128M, instances = 1, chunk size = 128M
+2018-10-15T19:55:20.039710Z 0 [Note] InnoDB: Completed initialization of buffer pool
+2018-10-15T19:55:20.042206Z 0 [Note] InnoDB: If the mysqld execution user is authorized, page cleaner thread priority can be changed. See the man page of setpriority().
+2018-10-15T19:55:20.054579Z 0 [Note] InnoDB: Highest supported file format is Barracuda.
+2018-10-15T19:55:20.111399Z 0 [Note] InnoDB: Creating shared tablespace for temporary tables
+2018-10-15T19:55:20.111920Z 0 [Note] InnoDB: Setting file './ibtmp1' size to 12 MB. Physically writing the file full; Please wait ...
+2018-10-15T19:55:21.176656Z 0 [Note] InnoDB: File './ibtmp1' size is now 12 MB.
+2018-10-15T19:55:21.177860Z 0 [Note] InnoDB: 96 redo rollback segment(s) found. 96 redo rollback segment(s) are active.
+2018-10-15T19:55:21.178348Z 0 [Note] InnoDB: 32 non-redo rollback segment(s) are active.
+2018-10-15T19:55:21.180824Z 0 [Note] InnoDB: Waiting for purge to start
+2018-10-15T19:55:21.231391Z 0 [Note] InnoDB: 5.7.23 started; log sequence number 15199598
+2018-10-15T19:55:21.232458Z 0 [Note] Plugin 'FEDERATED' is disabled.
+2018-10-15T19:55:21.236600Z 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool
+2018-10-15T19:55:21.242685Z 0 [Warning] Failed to set up SSL because of the following SSL library error: SSL context is not usable without certificate and private key
+2018-10-15T19:55:21.243032Z 0 [Note] Server hostname (bind-address): '127.0.0.1'; port: 3306
+2018-10-15T19:55:21.243445Z 0 [Note]   - '127.0.0.1' resolves to '127.0.0.1';
+2018-10-15T19:55:21.243731Z 0 [Note] Server socket created on IP: '127.0.0.1'.
+2018-10-15T19:55:21.249632Z 0 [Note] InnoDB: Buffer pool(s) load completed at 181015 19:55:21
+2018-10-15T19:55:21.254564Z 0 [Note] Event Scheduler: Loaded 0 events
+2018-10-15T19:55:21.255500Z 0 [Note] /usr/sbin/mysqld: ready for connections.
+Version: '5.7.23-0ubuntu0.16.04.1-log'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  (Ubuntu)
+2018-10-15T19:55:21.856724Z 2 [Note] Access denied for user 'root'@'localhost' (using password: NO)

@@ -1,0 +1,14 @@
+{
+  "resource": "https://management.azure.com",
+  "authority host url": "https://login.microsoftonline.com",
+  "resource group": "<resource-group-name>",
+  "location": "<location>",
+  "username": "<username>",
+  "ssh private": "<ssh-private-keyfile-path>",
+  "nsg resource group": "<nsg-resource-group>",
+  "nsg": "<nsg>",
+  "size": "<size>",
+  "workspace": "<workspace-name>",
+  "key vault": "<key-vault-name>",
+  "old version": "<old-extesion-version>"
+}
