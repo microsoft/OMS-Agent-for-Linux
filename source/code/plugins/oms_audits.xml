@@ -1012,7 +1012,7 @@
         packagename="dovecot-core" />
     </audit>
     <audit
-      description="Remove unnecesary packages"
+      description="Remove unnecessary packages"
       msid="158"
       cceid="CCE-XXXXX-6"
       severity="Informational"
@@ -1025,7 +1025,7 @@
         packagename="landscape-common" />
     </audit>
     <audit
-      description="Remove unnecesary accounts"
+      description="Remove unnecessary accounts"
       msid="159"
       cceid="CCE-XXXXX-7"
       severity="Informational"
