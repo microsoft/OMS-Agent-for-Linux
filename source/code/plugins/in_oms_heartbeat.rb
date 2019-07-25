@@ -23,8 +23,6 @@ module Fluent
 
       if @interval
         @finished = false
-        @condition = ConditionVariable.new
-        @mutex = Mutex.new
         @thread = Thread.new(&method(:run_periodic))
       else
         enumerate
@@ -33,10 +31,7 @@ module Fluent
 
     def shutdown
       if @interval
-        @mutex.synchronize {
-          @finished = true
-          @condition.signal
-        }
+        @finished = true
         @thread.join
       end
     end
@@ -50,18 +45,14 @@ module Fluent
     end
 
     def run_periodic
-      @mutex.lock
       done = @finished
       until done
-        @condition.wait(@mutex, @interval)
+        sleep(@interval)
         done = @finished
-        @mutex.unlock
         if !done
           enumerate
         end
-        @mutex.lock
       end
-      @mutex.unlock
     end
 
   end # OMS_Heartbeat_Input

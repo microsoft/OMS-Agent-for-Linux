@@ -2,36 +2,19 @@ require 'optparse'
 
 module MaintenanceModule
 
-  # Error codes and categories:
-
-  # User configuration/parameters:
-  INVALID_OPTION_PROVIDED = 2
-  NON_PRIVELEGED_USER_ERROR_CODE = 3
-  # System configuration:
-  MISSING_CONFIG_FILE = 4
-  MISSING_CONFIG = 5
-  MISSING_CERTS = 6
-  # Service/network-related:
-  HTTP_NON_200 = 7
-  ERROR_SENDING_HTTP = 8
-  ERROR_EXTRACTING_ATTRIBUTES = 9
-  MISSING_CERT_UPDATE_ENDPOINT = 10
-  # Internal errors:
-  ERROR_GENERATING_CERTS = 11
-  ERROR_WRITING_TO_FILE = 12
-
   class Maintenance
     require 'openssl'
     require 'fileutils'
     require 'net/http'
     require 'uri'
     require 'gyoku'
-    require 'syslog/logger'
     require 'etc'
+    require 'iso8601'
 
     require_relative 'oms_common'
-    require_relative 'agent_topology_request_script'
     require_relative 'oms_configuration'
+    require_relative 'agent_topology_request_script'
+    require_relative 'agent_common'
 
     attr_reader :AGENT_USER, :load_config_return_code
     attr_accessor :suppress_stdout
@@ -59,49 +42,9 @@ module MaintenanceModule
       @CERTIFICATE_UPDATE_ENDPOINT = nil
 
       @load_config_return_code = load_config
-      @logger = log
-      init_logger
+      @logger = log.nil? ? OMS::Common.get_logger(@LOG_FACILITY) : log
 
       @suppress_logging = false
-    end
-
-    # Assign logger from log facility in omsadmin.conf
-    def init_logger
-      return if !@logger.nil?  # a logger has already been provided by initialize
-
-      facility = case @LOG_FACILITY
-          # Custom log facilities supported by both Ruby and bash logger
-          when "auth"     then Syslog::LOG_AUTHPRIV  # LOG_AUTH is deprecated
-          when "authpriv" then Syslog::LOG_AUTHPRIV
-          when "cron"     then Syslog::LOG_CRON
-          when "daemon"   then Syslog::LOG_DAEMON
-          when "ftp"      then Syslog::LOG_FTP
-          when "kern"     then Syslog::LOG_KERN
-          when "lpr"      then Syslog::LOG_LRP
-          when "mail"     then Syslog::LOG_MAIL
-          when "news"     then Syslog::LOG_NEWS
-          when "security" then Syslog::LOG_SECURITY
-          when "syslog"   then Syslog::LOG_SYSLOG
-          when "user"     then Syslog::LOG_USER
-          when "uucp"     then Syslog::LOG_UUCP
-
-          when "local0"   then Syslog::LOG_LOCAL0
-          when "local1"   then Syslog::LOG_LOCAL1
-          when "local2"   then Syslog::LOG_LOCAL2
-          when "local3"   then Syslog::LOG_LOCAL3
-          when "local4"   then Syslog::LOG_LOCAL4
-          when "local5"   then Syslog::LOG_LOCAL5
-          when "local6"   then Syslog::LOG_LOCAL6
-          when "local7"   then Syslog::LOG_LOCAL7
-
-          # default logger will be local0
-          else Syslog::LOG_LOCAL0
-      end
-
-      if !Syslog.opened?
-        Syslog::Logger.syslog = Syslog.open("omsagent", Syslog::LOG_PID, facility)
-      end
-      @logger = Syslog::Logger.new
     end
 
     # Return true if the current executing user is root
@@ -123,7 +66,7 @@ module MaintenanceModule
     # Return variable derived from install_info.txt (like "LinuxMonitoringAgent/1.2.0-148")
     def get_user_agent
       user_agent = "LinuxMonitoringAgent/"
-      if file_exists_nonempty(@install_info)
+      if OMS::Common.file_exists_nonempty(@install_info)
         user_agent.concat(File.readlines(@install_info)[0].split.first)
       end
       return user_agent
@@ -152,16 +95,11 @@ module MaintenanceModule
       @logger.debug(message) if !@suppress_logging
     end
 
-    # Helper method that returns true if a file exists and is non-empty
-    def file_exists_nonempty(file_path)
-      return true if !file_path.nil? and File.exist?(file_path) and !File.zero?(file_path)
-    end
-
     # Load necessary configuration values from omsadmin.conf
     def load_config
       if !File.exist?(@omsadmin_conf_path)
         log_error("Missing configuration file: #{@omsadmin_conf_path}")
-        return MISSING_CONFIG_FILE
+        return OMS::MISSING_CONFIG_FILE
       end
 
       File.open(@omsadmin_conf_path, "r").each_line do |line|
@@ -184,7 +122,7 @@ module MaintenanceModule
     # Update omsadmin.conf with the specified variable's value
     def update_config(var, val)
       if !File.exist?(@omsadmin_conf_path)
-        return MISSING_CONFIG_FILE
+        return OMS::MISSING_CONFIG_FILE
       end
 
       old_text = File.read(@omsadmin_conf_path)
@@ -193,13 +131,6 @@ module MaintenanceModule
       File.open(@omsadmin_conf_path, "w") { |file|
         file.puts(new_text)
       }
-    end
-
-    # Extract proxy setting information from proxy configuration file
-    def get_proxy_info
-      proxy = {}
-      proxy = OMS::Configuration.get_proxy_config(@proxy_path)
-      return proxy
     end
 
     # Updates the CERTIFICATE_UPDATE_ENDPOINT variable and renews certificate if requested
@@ -216,10 +147,10 @@ module MaintenanceModule
  
       if cert_update_endpoint.empty?
         log_error("Could not extract the update certificate endpoint.")
-        return MISSING_CERT_UPDATE_ENDPOINT
+        return OMS::MISSING_CERT_UPDATE_ENDPOINT
       elsif update_attr.empty?
         log_error("Could not find the updateCertificate tag in OMS Agent management service telemetry response")
-        return ERROR_EXTRACTING_ATTRIBUTES
+        return OMS::ERROR_EXTRACTING_ATTRIBUTES
       end
 
       # Update omsadmin.conf with cert_update_endpoint variable
@@ -252,7 +183,7 @@ module MaintenanceModule
 
       if dsc_endpoint.empty?
         log_error("Could not extract the DSC endpoint.")
-        return ERROR_EXTRACTING_ATTRIBUTES
+        return OMS::ERROR_EXTRACTING_ATTRIBUTES
       end
 
       # Update omsadmin.conf with dsc_endpoint variable
@@ -265,8 +196,8 @@ module MaintenanceModule
     # Pass the server response from an XML file to apply_dsc_endpoint and apply_certificate_update_endpoint
     # Save DSC_ENDPOINT and CERTIFICATE_UPDATE_ENDPOINT variables in file to be read outside of this script
     def apply_endpoints_file(xml_file, output_file)
-      if !file_exists_nonempty(xml_file)
-        return MISSING_CONFIG_FILE
+      if !OMS::Common.file_exists_nonempty(xml_file)
+        return OMS::MISSING_CONFIG_FILE
       end
 
       server_resp = File.read(xml_file)
@@ -287,7 +218,7 @@ module MaintenanceModule
                               "#{dsc_applied}\n")
         rescue => e
           log_error("Error saving endpoints to file: #{e.message}")
-          return ERROR_WRITING_TO_FILE
+          return OMS::ERROR_WRITING_TO_FILE
         ensure
           if !output_handle.nil?
             output_handle.close
@@ -303,7 +234,7 @@ module MaintenanceModule
       cert_server = ""
 
       cert_file_contents = File.readlines(cert_path)
-      for i in 1..(cert_file_contents.length-2) #skip first and last line in file
+      for i in 1..(cert_file_contents.length-2) # skip first and last line in file
         line = cert_file_contents[i]
         cert_server.concat(line[0..-2])
         if i < (cert_file_contents.length-2)
@@ -314,19 +245,44 @@ module MaintenanceModule
       return cert_server
     end
 
-    # Return a POST request with the specified headers, URI, and body, and an
-    #     HTTP to execute that request
-    def form_post_request_and_http(headers, uri_string, body, cert, key)
-      uri = URI.parse(uri_string)
-      req = Net::HTTP::Post.new(uri.request_uri, headers)
-      req.body = body
+    # Update the topology and telemetry request frequencies
+    def apply_request_intervals(server_resp)
+      return "" if !defined?(OMS::Configuration.set_request_intervals)
+      
+      topology_interval = ""
+      telemetry_interval = ""
 
-      http = OMS::Common.create_secure_http(uri, get_proxy_info)
-      http.cert = cert
-      http.key = key
+      topology_interval_regex = /queryInterval=\"(?<topologyInterval>.*?)\"/
+      topology_interval_regex.match(server_resp) { |match|
+        topology_interval = match["topologyInterval"]
+      }
 
-      return req, http
-    end
+      telemetry_interval_regex = /telemetryReportInterval=\"(?<telemetryInterval>.*?)\"/
+      telemetry_interval_regex.match(server_resp) { |match|
+        telemetry_interval = match["telemetryInterval"]
+      }
+
+      if topology_interval.empty?
+        log_error("Topology request interval not found in homing service response.")
+        return OMS::ERROR_EXTRACTING_ATTRIBUTES
+      end
+
+      if telemetry_interval.empty?
+        log_error("Telemetry request interval not found in homing service response.")
+        return OMS::ERROR_EXTRACTING_ATTRIBUTES
+      end
+
+      begin
+        topology_interval = ISO8601::Duration.new(topology_interval).to_seconds
+        telemetry_interval = ISO8601::Duration.new(telemetry_interval).to_seconds
+      rescue => e
+        OMS::Log.error_once("Error parsing request intervals. #{e}")
+      end
+
+      OMS::Configuration.set_request_intervals(topology_interval, telemetry_interval)
+
+      return ""
+    end # apply_request_intervals
 
     # Perform a topology request against the OMS endpoint
     def heartbeat
@@ -341,10 +297,10 @@ module MaintenanceModule
       if @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @URL_TLD.nil? or
           @WORKSPACE_ID.empty? or @AGENT_GUID.empty? or @URL_TLD.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
-        return MISSING_CONFIG
-      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+        return OMS::MISSING_CONFIG
+      elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
         log_error("Certificates for topology request do not exist")
-        return MISSING_CERTS
+        return OMS::MISSING_CERTS
       end
 
       # Generate the request body
@@ -366,10 +322,10 @@ module MaintenanceModule
       headers[OMS::CaseSensitiveString.new("Accept-Language")] = "en-US"
 
       # Form POST request and HTTP
-      req,http = form_post_request_and_http(headers, "https://#{@WORKSPACE_ID}.oms.#{@URL_TLD}/"\
+      req,http = OMS::Common.form_post_request_and_http(headers, "https://#{@WORKSPACE_ID}.oms.#{@URL_TLD}/"\
                 "AgentService.svc/LinuxAgentTopologyRequest", body_hb_xml,
                 OpenSSL::X509::Certificate.new(File.open(@cert_path)),
-                OpenSSL::PKey::RSA.new(File.open(@key_path)))
+                OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
 
       log_info("Generated topology request:\n#{req.body}") if @verbose
 
@@ -387,21 +343,24 @@ module MaintenanceModule
         if res.code == "200"
           cert_apply_res = apply_certificate_update_endpoint(res.body)
           dsc_apply_res = apply_dsc_endpoint(res.body)
+          frequency_apply_res = apply_request_intervals(res.body)
           if cert_apply_res.class != String
             return cert_apply_res
           elsif dsc_apply_res.class != String
             return dsc_apply_res
+          elsif frequency_apply_res.class != String
+            return frequency_apply_res
           else
             log_info("OMS agent management service topology request success")
             return 0
           end
         else
           log_error("Error sending OMS agent management service topology request . HTTP code #{res.code}")
-          return HTTP_NON_200
+          return OMS::HTTP_NON_200
         end
       else
         log_error("Error sending OMS agent management service topology request . No HTTP code")
-        return ERROR_SENDING_HTTP
+        return OMS::ERROR_SENDING_HTTP
       end
     end
 
@@ -409,7 +368,7 @@ module MaintenanceModule
     def generate_certs(workspace_id, agent_guid)
       if workspace_id.nil? or agent_guid.nil? or workspace_id.empty? or agent_guid.empty?
         log_error("Both WORKSPACE_ID and AGENT_GUID must be defined to generate certificates")
-        return MISSING_CONFIG
+        return OMS::MISSING_CONFIG
       end
 
       log_info("Generating certificate ...")
@@ -471,10 +430,10 @@ module MaintenanceModule
       # Check for any error or non-existent or empty files
       if !error.nil?
         log_error("Error generating certs: #{error.message}")
-        return ERROR_GENERATING_CERTS
-      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+        return OMS::ERROR_GENERATING_CERTS
+      elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
         log_error("Error generating certs")
-        return ERROR_GENERATING_CERTS
+        return OMS::ERROR_GENERATING_CERTS
       end
 
       return 0
@@ -504,13 +463,13 @@ module MaintenanceModule
         return @load_config_return_code
       elsif @WORKSPACE_ID.nil? or @AGENT_GUID.nil? or @WORKSPACE_ID.empty? or @AGENT_GUID.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
-        return MISSING_CONFIG
+        return OMS::MISSING_CONFIG
       elsif @CERTIFICATE_UPDATE_ENDPOINT.nil? or @CERTIFICATE_UPDATE_ENDPOINT.empty?
         log_error("Missing CERTIFICATE_UPDATE_ENDPOINT from configuration")
-        return MISSING_CONFIG
-      elsif !file_exists_nonempty(@cert_path) or !file_exists_nonempty(@key_path)
+        return OMS::MISSING_CONFIG
+      elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
         log_error("No certificates exist; cannot renew certificates")
-        return MISSING_CERTS
+        return OMS::MISSING_CERTS
       end
 
       log_info("Renewing the certificates")
@@ -533,8 +492,8 @@ module MaintenanceModule
 :'@xmlns:xsi' => "http://www.w3.org/2001/XMLSchema-instance", :'@xmlns:xsd' => "http://www.w3.org/2001/XMLSchema", \
 :@xmlns => "http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/"}}))
 
-      req,http = form_post_request_and_http(headers = {}, @CERTIFICATE_UPDATE_ENDPOINT,
-                     renew_certs_xml, cert_old, key_old)
+      req,http = OMS::Common.form_post_request_and_http(headers = {}, @CERTIFICATE_UPDATE_ENDPOINT,
+                     renew_certs_xml, cert_old, key_old, @proxy_path)
 
       log_info("Generated renew certificates request:\n#{req.body}") if @verbose
 
@@ -545,7 +504,7 @@ module MaintenanceModule
       rescue => e
         log_error("Error renewing certificate: #{e.message}")
         restore_old_certs(cert_old, key_old)
-        return ERROR_SENDING_HTTP
+        return OMS::ERROR_SENDING_HTTP
       end
 
       if !res.nil?
@@ -565,11 +524,11 @@ module MaintenanceModule
         else
           log_error("Error renewing certificate. HTTP code #{res.code}")
           restore_old_certs(cert_old, key_old)
-          return HTTP_NON_200
+          return OMS::HTTP_NON_200
         end
       else
         log_error("Error renewing certificate. No HTTP code")
-        return ERROR_SENDING_HTTP
+        return OMS::ERROR_SENDING_HTTP
       end
 
       return 0
@@ -641,7 +600,7 @@ if __FILE__ == $0
   ret_code = 0
 
   if !maintenance.check_user
-    ret_code = NON_PRIVELEGED_USER_ERROR_CODE
+    ret_code = OMS::NON_PRIVELEGED_USER_ERROR_CODE
 
   elsif options[:heartbeat]
     ret_code = maintenance.heartbeat
@@ -649,10 +608,10 @@ if __FILE__ == $0
   elsif options[:generate_certs]
     if ENV["TEST_WORKSPACE_ID"].nil? and ENV["TEST_SHARED_KEY"].nil? and !maintenance.is_current_user_root
       usage  # generate_certs only intended for onboarding script and testing
-      ret_code = INVALID_OPTION_PROVIDED
+      ret_code = OMS::INVALID_OPTION_PROVIDED
     elsif options[:workspace_id].nil? or options[:agent_guid].nil?
       print("To generate certificates, you must include both -w WORKSPACE_ID and -a AGENT_GUID")
-      ret_code = INVALID_OPTION_PROVIDED
+      ret_code = OMS::INVALID_OPTION_PROVIDED
     else
       ret_code = maintenance.generate_certs(options[:workspace_id], options[:agent_guid])
     end
@@ -663,11 +622,11 @@ if __FILE__ == $0
   elsif options[:apply_endpoints]
     if ENV["TEST_WORKSPACE_ID"].nil? and ENV["TEST_SHARED_KEY"].nil? and !maintenance.is_current_user_root
       usage  # apply_endpoints only intended for onboarding script and testing
-      ret_code = INVALID_OPTION_PROVIDED
+      ret_code = OMS::INVALID_OPTION_PROVIDED
     elsif options[:apply_endpoints].length != 2
       print("To apply the endpoints, you must include both input XML and output file: "\
             "--endpoints XML,ENDPOINT_FILE\n")
-      ret_code = INVALID_OPTION_PROVIDED
+      ret_code = OMS::INVALID_OPTION_PROVIDED
     else
       ret_code = maintenance.apply_endpoints_file(options[:apply_endpoints][0], options[:apply_endpoints][1])
     end

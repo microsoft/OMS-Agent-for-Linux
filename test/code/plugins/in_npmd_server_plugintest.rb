@@ -269,6 +269,7 @@ class NPMDServerTest < Test::Unit::TestCase
         end
     end
 
+=begin
     # Test03: Check if configuration was sent from startup
     # Sequence:
     # 1. Assert num_config_sent as 0
@@ -298,6 +299,7 @@ class NPMDServerTest < Test::Unit::TestCase
         # Step 4
         assert(d.instance.num_config_sent > 0, "There should have been atleast one config sent to agent")
     end
+=end
 
     # Test04: Check if configuration is sent via cmd
     # Sequence:
@@ -726,7 +728,12 @@ class NPMDServerTest < Test::Unit::TestCase
         }
 
         # Step 9
-        d2.run
+        begin
+            d2.run
+        rescue IOError
+            raise unless ["stream closed","closed stream"].include? $!.message
+            died
+        end
 
         # Step 10
         error_logs = parse_diag_logs_from_emits(d2.emits)

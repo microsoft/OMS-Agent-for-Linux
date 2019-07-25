@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'tempfile'
 require_relative '../../../source/code/plugins/agent_maintenance_script.rb'
+require_relative '../../../source/code/plugins/agent_common'
 require_relative 'omstestlib'
 
 class MaintenanceUnitTest < Test::Unit::TestCase
@@ -27,7 +28,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
                         "UUID=274E8EF9-2B6F-8A45-801B-AAEE62710796\n"\
 
   VALID_HEARTBEAT_RESP = "<?xml version=\"1.0\" encoding=\"utf-8\"?><LinuxAgentTopologyResponse "\
-                         "queryInterval=\"PT1H\" id=\"628a6594-a618-4da4-a989-bcd9a322d403\" "\
+                         "queryInterval=\"PT1H\" telemetryReportInterval=\"PT10M\" id=\"628a6594-a618-4da4-a989-bcd9a322d403\" "\
                          "xmlns=\"http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/\" "\
                          "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/"\
                          "XMLSchema-instance\"><CertificateUpdateEndpoint updateCertificate=\"false\">"\
@@ -79,7 +80,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
 
   def test_load_config_nonexistent_file
     m = get_new_maintenance_obj("/etc/nonexistentomsadmin.conf")
-    assert_equal(m.load_config_return_code, MaintenanceModule::MISSING_CONFIG_FILE,
+    assert_equal(m.load_config_return_code, OMS::MISSING_CONFIG_FILE,
                  "load_config succeeded with nonexistent config")
   end
 
@@ -93,7 +94,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     File.write(@cert_file.path, "")
     File.write(@key_file.path, "")
     m = get_new_maintenance_obj
-    assert_equal(m.generate_certs("", ""), MaintenanceModule::MISSING_CONFIG,
+    assert_equal(m.generate_certs("", ""), OMS::MISSING_CONFIG,
                  "Incorrect return code for empty WORKSPACE_ID and AGENT_GUID")
     assert(File.zero?(@cert_file.path), "Cert file is non-empty after invalid generate_certs")
     assert(File.zero?(@key_file.path), "Key file is non-empty after invalid generate_certs")
@@ -111,7 +112,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
   def test_apply_dsc_endpoint_empty_xml
     File.write(@omsadmin_conf_file.path, EMPTY_DSC_ENDPOINT)
     m = get_new_maintenance_obj
-    assert_equal(m.apply_dsc_endpoint(""), MaintenanceModule::ERROR_EXTRACTING_ATTRIBUTES,
+    assert_equal(m.apply_dsc_endpoint(""), OMS::ERROR_EXTRACTING_ATTRIBUTES,
                  "Incorrect return code for empty input")
     @omsadmin_conf_file.rewind
     assert_equal(@omsadmin_conf_file.read, EMPTY_DSC_ENDPOINT,
@@ -133,7 +134,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     File.write(@omsadmin_conf_file.path, EMPTY_CERTIFICATE_UPDATE_ENDPOINT)
     m = get_new_maintenance_obj
     assert_equal(m.apply_certificate_update_endpoint("", false),
-                 MaintenanceModule::MISSING_CERT_UPDATE_ENDPOINT,
+                 OMS::MISSING_CERT_UPDATE_ENDPOINT,
                  "Incorrect return code for empty input")
     @omsadmin_conf_file.rewind
     assert_equal(@omsadmin_conf_file.read, EMPTY_CERTIFICATE_UPDATE_ENDPOINT,
@@ -158,7 +159,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
                "#{EMPTY_CERTIFICATE_UPDATE_ENDPOINT}#{EMPTY_DSC_ENDPOINT}")
     m = get_new_maintenance_obj
     assert_equal(m.apply_endpoints_file("/etc/nonexistentxml.txt", output_file.path),
-                 MaintenanceModule::MISSING_CONFIG_FILE,
+                 OMS::MISSING_CONFIG_FILE,
                  "Incorrect return code for nonexistent xml")
     @omsadmin_conf_file.rewind
     omsadmin_conf_result = @omsadmin_conf_file.read
@@ -178,7 +179,7 @@ class MaintenanceUnitTest < Test::Unit::TestCase
     m = get_new_maintenance_obj
     assert_equal(m.apply_endpoints_file(hb_resp_file.path,
                                         "/etc/nonexistentdir/nonexistentfile.txt"),
-                 MaintenanceModule::ERROR_WRITING_TO_FILE, "Incorrect return code for invalid output file")
+                 OMS::ERROR_WRITING_TO_FILE, "Incorrect return code for invalid output file")
 
     hb_resp_file.unlink
   end

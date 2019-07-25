@@ -68,7 +68,6 @@ do
 		sudo cp /proc/$target_process_pid/stat ./$output_path/$folder_name/
 		sudo cp /proc/$target_process_pid/status ./$output_path/$folder_name/
 		echo '-------------------------------------------------' | tee -a ${log_file}
-
 	done
 
 	echo '=================================================' | tee -a ${log_file}
@@ -122,6 +121,23 @@ echo "ls -al /tmp " | tee -a ${log_file}
 echo '-------------------------------------------------' | tee -a ${log_file}
 ls -al /tmp | tee -a ${log_file}
 echo '-------------------------------------------------' | tee -a ${log_file}
+echo '=================================================' | tee -a ${log_file}
+
+echo '=================================================' | tee -a ${log_file}
+echo "************* OMS Config Host Info **************" | tee -a ${log_file}
+echo '=================================================' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "find /opt/dsc/ " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+find /opt/dsc/ | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Executing the following command:" | tee -a ${log_file}
+echo "ls -alR /opt/dsc/ " | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+ls -alR /opt/dsc/ | tee -a ${log_file}
+echo '-------------------------------------------------' | tee -a ${log_file}
+echo "~ Copying /opt/dsc/output folder:" | tee -a ${log_file}
+cp /opt/dsc/output/* ./$output_path/
 echo '=================================================' | tee -a ${log_file}
 
 tar -cvf $output_path.tar.gz ./$output_path

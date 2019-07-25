@@ -21,6 +21,7 @@ module Fluent
       require_relative 'omslog'
       require_relative 'oms_configuration'
       require_relative 'oms_common'
+      require_relative 'agent_telemetry_script'
     end
 
     config_param :omsadmin_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/conf/omsadmin.conf'
@@ -64,7 +65,7 @@ module Fluent
         headers[OMS::CaseSensitiveString.new("x-ms-AzureResourceId")] = azure_resource_id
       end
       
-      azure_region = OMS::Configuration.azure_region if define?(OMS::Configuration.azure_region)
+      azure_region = OMS::Configuration.azure_region if defined?(OMS::Configuration.azure_region)
       if !azure_region.to_s.empty?
         headers[OMS::CaseSensitiveString.new("x-ms-AzureRegion")] = azure_region
       end
@@ -142,6 +143,7 @@ module Fluent
           time = Time.now - start
           @log.trace "Success sending #{dataSize} bytes of data through API #{time.round(3)}s"
           write_status_file("true", "Sending success")
+          OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", tag, records, records.count, time)
         else
           raise "The log type '#{log_type}' is not valid. it should match #{@logtype_regex}"
         end
@@ -166,7 +168,6 @@ module Fluent
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
-      @log.trace "Buffering #{tag}"
       [tag, record].to_msgpack
     end
 

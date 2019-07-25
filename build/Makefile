@@ -11,6 +11,8 @@ SCX_CORE_KITS := $(shell cd ../../scxcore-kits; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
 AUOMS_DIR := $(shell cd ../../auoms; pwd -P)
+AUOMS_KITS_DIR := $(shell cd ../../auoms-kits; pwd -P)
+RUBY_TESTING_TARGET_NAME=test
 
 PF_POSIX := 1
 include $(BASE_DIR)/build/config.mak
@@ -23,12 +25,14 @@ endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
 AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
 #      of the Ruby installed with the OMSAgent
-RUBY_VER := 2.4.0
+RUBY_VER := $(RUBY_VERSION_MAJOR_MINOR)
 FLUENTD_DIR := $(BASE_DIR)/source/ext/fluentd
+JEMALLOC_DIR := $(BASE_DIR)/source/ext/jemalloc
 PLUGINS_DIR := $(BASE_DIR)/source/code/plugins
 
 INTERMEDIATE_DIR=$(BASE_DIR)/intermediate/$(BUILD_CONFIGURATION)
@@ -121,10 +125,12 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 .PHONY: all clean clean-ruby distclean clean-status kit
 .PHONY: tests test omstest unittest systemtest systemtestrb
 
-all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_TESTING_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh kit
+all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
-	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
+	cd $(BASE_DIR)/source/ext/ruby; git clean -dfx; git reset --hard
+
+compile_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy
 
 sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp
 
@@ -147,29 +153,27 @@ clean-ruby : clean
 	# Warning: This step will clean out checked out files from Ruby directory
 	#
 	@echo "Cleaning RUBY source directory ..."
-	cd $(RUBY_DIR); git clean -dfx
+	cd $(RUBY_DIR); git clean -dfx; git reset --hard
 	#
 	# Warning: This step will clean out checked out files from fluentd directory
 	#
 	@echo "Cleaning fluentd source directory ..."
-	cd $(FLUENTD_DIR); git clean -dfx
+	cd $(FLUENTD_DIR); git clean -dfx; git reset --hard
+	@echo "Cleaning jemalloc source directory ..."
+	cd $(JEMALLOC_DIR); git clean -dfx; git reset --hard
 
 clean-dsc : clean
 	-make -C $(DSC_DIR) clean
 	-$(RMDIR) $(DSC_DIR)/config.mak $(DSC_DIR)/intermediate $(DSC_DIR)/output $(DSC_DIR)/release
 	-$(RM) $(DSC_DIR)/omi-1.0.8
 
-clean-auoms : clean
-	-make -C $(AUOMS_DIR)/build distclean
-	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@$(ECHO) "!!!!! PLEASE RE-RUN THE ./configure SCRIPT !!!!!"
-	@$(ECHO) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-
-distclean : clean clean-ruby clean-dsc clean-auoms
+distclean : clean clean-ruby clean-dsc
 	-$(RMDIR) $(OMI_ROOT)/output*
 
-	cd $(BASE_DIR)/source/ext/fluentd; git checkout -- lib/fluent/env.rb lib/fluent/plugin/in_exec.rb
-	cd $(BASE_DIR)/source/ext/ruby; git checkout -- ext/openssl/ossl_ssl.c ext/openssl/extconf.rb
+	# reset all submodules
+	cd $(BASE_DIR); git submodule foreach --recursive git reset --hard
+	cd $(BASE_DIR); git submodule foreach --recursive git clean -fdx
+
 	-$(RM) $(BASE_DIR)/build/Makefile.version
 	-$(RM) $(BASE_DIR)/build/config.mak
 	-$(RM) $(PAL_DIR)/build/config.mak
@@ -240,21 +244,14 @@ $(SEPOLICY_DIR)/omsagent-logrotate.pp : $(SEPOLICY_SRC_DIR)/omsagent-logrotate.t
 endif
 
 #--------------------------------------------------------------------------------
-# Build AUOMS project
-
-$(AUOMS_TARGET_DIR)/auoms-bundle-test.sh :
-	$(MAKE) -C $(AUOMS_DIR)/build all
-
-#--------------------------------------------------------------------------------
 # Build the version of Ruby that we test with
-
 $(RUBY_TESTING_DIR) :
 	#
 	# Warning: This step will clean out checked out files from both Ruby and fluentd directories
 	#
-	@$(ECHO) "========================= Performing Building Ruby for testing"
+	@$(ECHO) "========================= Performing Building Ruby for testing: '${RUBY_TESTING_TARGET_NAME}'"
 	# $(MKPATH) $(INTERMEDIATE_DIR)
-	$(BASE_DIR)/build/buildRuby.sh test
+	$(BASE_DIR)/build/buildRuby.sh ${RUBY_TESTING_TARGET_NAME}
 
 # Build the version of Ruby that we distribute
 
@@ -342,7 +339,7 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PAC
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX_DEB).tar "DPKG"
 
 ifeq ($(PF_ARCH),x64)
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb \
 	$(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
 
@@ -368,8 +365,8 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Pick up other bundled packages
 	$(RMDIR) $(INTERMEDIATE_DIR)/bundles
 	$(MKPATH) $(INTERMEDIATE_DIR)/bundles
-	cd $(AUOMS_TARGET_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
-	$(COPY) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
+	cd $(AUOMS_KITS_RELEASE_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+	$(COPY) $(AUOMS_KITS_RELEASE_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
@@ -418,7 +415,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLU
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb 110/*.deb oss-kits/*
 
 else
-$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh \
+$(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building .tar file"
@@ -439,8 +436,8 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Pick up other bundled packages
 	$(RMDIR) $(INTERMEDIATE_DIR)/bundles
 	$(MKPATH) $(INTERMEDIATE_DIR)/bundles
-	cd $(AUOMS_TARGET_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
-	$(COPY) $(AUOMS_TARGET_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
+	cd $(AUOMS_KITS_RELEASE_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
+	$(COPY) $(AUOMS_KITS_RELEASE_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
@@ -639,6 +636,14 @@ endif
 #       environment variable) change to execute using the correct Ruby (the
 #       OMSAgent test Ruby)
 
+set_ruby_test_ssl_100:
+	$(eval RUBY_TESTING_TARGET_NAME = test_100)
+	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
+
+set_ruby_test_ssl_110:
+	$(eval RUBY_TESTING_TARGET_NAME = test_110)
+	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
+
 tests : test
 
 unittest : $(RUBY_TESTING_DIR)
@@ -668,3 +673,18 @@ endif
 omstest : unittest systemtest
 
 test : omstest
+
+tests_100: set_ruby_test_ssl_100 tests
+tests_110: set_ruby_test_ssl_110 tests
+
+unittest_100: set_ruby_test_ssl_100 unittest
+unittest_110: set_ruby_test_ssl_110 unittest
+
+systemtest_100: set_ruby_test_ssl_100 systemtest
+systemtest_110: set_ruby_test_ssl_110 systemtest
+
+omstest_100: set_ruby_test_ssl_100 omstest
+omstest_110: set_ruby_test_ssl_110 omstest
+
+test_100: set_ruby_test_ssl_100 test
+test_110: set_ruby_test_ssl_110 test
