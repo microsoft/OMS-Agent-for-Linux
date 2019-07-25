@@ -18,9 +18,9 @@ RUN yum install -y which wget sudo make tree vim cmake zip redhat-lsb \
     pam-devel openssl-devel rpm-build mysql-devel curl-devel selinux-policy-devel \
     audit-libs-devel boost148-devel lsof net-tools patch curl tar bzip2 unzip \
     && yum clean all
-
+ 
 # Devtoolset-2 (gcc 4.8)
-RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo
+RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo 
 RUN yum update -y && yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
 ENV PATH /opt/rh/devtoolset-2/root/usr/bin:$PATH
 
@@ -39,16 +39,19 @@ RUN git clone --branch OpenSSL_1_1_0 https://github.com/openssl/openssl.git /hom
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.0 && ./config --prefix=/usr/local_ssl_1.0.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make depend && make && make install_sw
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.1 && ./config --prefix=/usr/local_ssl_1.0.1 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make depend && make && make install_sw
 RUN cd /home/scratch/ostc-openssl/openssl-1.1.0 && ./config --prefix=/usr/local_ssl_1.1.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make depend && make && make install_sw
+# Fix OpenSSL cert
+RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.0/ssl/cert.pem
+RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.1/ssl/cert.pem
+RUN mkdir /usr/local_ssl_1.1.0/ssl/ && ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.1.0/ssl/cert.pem
 
 # Autoconf >= 2.67 required by ruby
 ADD http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz /home/scratch/autoconf-2.69.tar.gz
 RUN tar -vzxf autoconf-2.69.tar.gz
 RUN cd autoconf-2.69 && ./configure && make && make install
 
-
 # Ruby 2.6
-ADD https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.0.tar.gz /home/scratch/ruby-2.6.0.tar.gz
-RUN cd /home/scratch && tar -zxf ruby-2.6.0.tar.gz
+#ADD https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.0.tar.gz /home/scratch/ruby-2.6.0.tar.gz
+#RUN cd /home/scratch && tar -zxf ruby-2.6.0.tar.gz
 #RUN cd /home/scratch/ruby-2.6.0 && ./configure --prefix=/usr && make && make install
 
 # Ruby 2.4

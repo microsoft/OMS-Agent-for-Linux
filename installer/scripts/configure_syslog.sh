@@ -14,7 +14,7 @@ OMS_SERVICE=/opt/microsoft/omsagent/bin/service_control
 
 WORKSPACE_ID=
 SYSLOG_PORT=
-
+SYSLOG_HOST=@@127.0.0.1
 RestartService() {
     if [ -z "$1" ]; then
         echo "RestartService requires parameter (service name to restart)" 1>&2
@@ -52,7 +52,7 @@ ConfigureRsyslog() {
         RestartService rsyslog
     else
         # Don't configure Rsyslog (new version) if the port is already configured
-        egrep -q "@127.0.0.1:${SYSLOG_PORT}" ${RSYSLOG_DEST}
+        egrep -q "${SYSLOG_HOST}:${SYSLOG_PORT}" ${RSYSLOG_DEST}
         if [ $? -ne 0 ]; then
             echo "Configuring rsyslog for OMS logging"
 
@@ -75,10 +75,10 @@ UnconfigureRsyslog() {
     if [ -f ${RSYSLOG_DEST} ]; then
         echo "Unconfiguring rsyslog for OMS logging"
 
-        egrep -q "OMS Syslog collection for workspace ${WORKSPACE_ID}|@127.0.0.1:${SYSLOG_PORT}" ${RSYSLOG_DEST}
+        egrep -q "OMS Syslog collection for workspace ${WORKSPACE_ID}|${SYSLOG_HOST}:${SYSLOG_PORT}" ${RSYSLOG_DEST}
         if [ $? -eq 0 ]; then
             cp ${RSYSLOG_DEST} ${RSYSLOG_DEST}.bak
-            egrep -v "OMS Syslog collection for workspace ${WORKSPACE_ID}|@127.0.0.1:${SYSLOG_PORT}" ${RSYSLOG_DEST}.bak > ${RSYSLOG_DEST}
+            egrep -v "OMS Syslog collection for workspace ${WORKSPACE_ID}|${SYSLOG_HOST}:${SYSLOG_PORT}" ${RSYSLOG_DEST}.bak > ${RSYSLOG_DEST}
             rm -f ${RSYSLOG_DEST}.bak 1> /dev/null 2> /dev/null
             RestartService rsyslog
         fi
@@ -96,7 +96,7 @@ PurgeRsyslog() {
 
 ConfigureOldRsyslog() {
     # Don't configure Rsyslog (old version) if already configured (avoid duplicate entries)
-    egrep -q "@127.0.0.1:${SYSLOG_PORT}" ${OLD_RSYSLOG_DEST}
+    egrep -q "${SYSLOG_HOST}:${SYSLOG_PORT}" ${OLD_RSYSLOG_DEST}
     if [ $? -ne 0 ]; then
         echo "Configuring (old) rsyslog for OMS logging"
 
@@ -106,24 +106,24 @@ ConfigureOldRsyslog() {
 }
 
 UnconfigureOldRsyslog() {
-    egrep -q "OMS Syslog collection for workspace ${WORKSPACE_ID}|@127.0.0.1:${SYSLOG_PORT}" ${OLD_RSYSLOG_DEST}
+    egrep -q "OMS Syslog collection for workspace ${WORKSPACE_ID}|${SYSLOG_HOST}:${SYSLOG_PORT}" ${OLD_RSYSLOG_DEST}
     if [ $? -eq 0 ]; then
         echo "Unconfiguring (old) rsyslog for OMS logging"
 
         cp ${OLD_RSYSLOG_DEST} ${OLD_RSYSLOG_DEST}.bak
-        egrep -v "OMS Syslog collection for workspace ${WORKSPACE_ID}|@127.0.0.1:${SYSLOG_PORT}" ${OLD_RSYSLOG_DEST}.bak > ${OLD_RSYSLOG_DEST}
+        egrep -v "OMS Syslog collection for workspace ${WORKSPACE_ID}|${SYSLOG_HOST}:${SYSLOG_PORT}" ${OLD_RSYSLOG_DEST}.bak > ${OLD_RSYSLOG_DEST}
         rm -f ${OLD_RSYSLOG_DEST}.bak 1> /dev/null 2> /dev/null
         RestartService rsyslog
     fi
 }
 
 PurgeOldRsyslog() {
-    egrep -q "OMS Syslog collection|@127.0.0.1:25..." ${OLD_RSYSLOG_DEST}
+    egrep -q "OMS Syslog collection|${SYSLOG_HOST}:25..." ${OLD_RSYSLOG_DEST}
     if [ $? -eq 0 ]; then
         echo "Purging (old) rsyslog for OMS logging"
 
         cp ${OLD_RSYSLOG_DEST} ${OLD_RSYSLOG_DEST}.bak
-        egrep -v "OMS Syslog collection|@127.0.0.1:25..." ${OLD_RSYSLOG_DEST}.bak > ${OLD_RSYSLOG_DEST}
+        egrep -v "OMS Syslog collection|${SYSLOG_HOST}:25..." ${OLD_RSYSLOG_DEST}.bak > ${OLD_RSYSLOG_DEST}
         rm -f ${OLD_RSYSLOG_DEST}.bak 1> /dev/null 2> /dev/null
         RestartService rsyslog
     fi
