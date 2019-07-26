@@ -4,7 +4,7 @@
  #
  
  require 'forwardable'
-+require_relative 'plugin/fluent_log_patch'
++require_relative '../../../../../../../../../plugin/agent_telemetry_script'
  
  module Fluent
    class Log

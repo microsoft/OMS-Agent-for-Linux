@@ -108,9 +108,17 @@ module OMS
 
       @suppress_stdout = false
       @suppress_logging = false
+
+      @total_memory = 0
+      begin
+        `/opt/omi/bin/omicli ei root/scx SCX_OperatingSystem | grep =`.each_line do |line|
+          @total_memory = line.sub("TotalVirtualMemorySize=","").strip.to_i if line =~ /TotalVirtualMemorySize/
+        end
+      rescue => e
+        log_error("Error finding max system memory. #{e}")
+      end
     end # initialize
 
-    # logging methods
     def log_info(message)
       print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.info(message) if !@suppress_logging
@@ -225,13 +233,17 @@ module OMS
       begin
         if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(@omsadmin_conf_path)
           @pids.each do |key, value|
+            amt_mem = 0
+            pct_mem = 0
             if !value.zero?
               `#{command % value}`.each_line do |line|
                 @ru_points[key][:usr_cpu] << line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
                 @ru_points[key][:sys_cpu] << line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
-                @ru_points[key][:amt_mem] << line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
-                @ru_points[key][:pct_mem] << line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
+                amt_mem = line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
+                pct_mem = line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
               end
+              @ru_points[key][:amt_mem] << amt_mem
+              @ru_points[key][:pct_mem] << (@total_memory.zero? ? pct_mem : ((amt_mem.to_f / @total_memory) * 100).to_i)
             else # pad with zeros when OMI might not be running
               @ru_points[key][:usr_cpu] << 0
               @ru_points[key][:sys_cpu] << 0

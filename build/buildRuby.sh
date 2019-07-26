@@ -55,6 +55,7 @@ elevate()
 # Helper script to build Ruby properly for OMS agent
 # Also builds fluentd since it lives under the Ruby directory
 
+HOME_DIR=`(cd ~/; pwd -P)`
 BASE_DIR=`(cd ..; pwd -P)`
 OMS_AGENTDIR=/opt/microsoft/omsagent
 
@@ -259,13 +260,13 @@ if [ $RUNNING_FOR_TEST -eq 1 ]; then
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/metaclass-0.0.4.gem
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mocha-1.8.0.gem
 
-    plugin_test_directory="${home_dir}/bin/plugin"
+    plugin_test_directory="${HOME_DIR}/bin/plugin"
 
     # Due to the require_relative in fluentd's patched log.rb,
     # we need to move plugins to their expected paths based on ruby_test_directory
     sudo rm -rf ${plugin_test_directory}
     mkdir ${plugin_test_directory}
-    cp ../source/code/plugins/* ${plugin_test_directory}
+    cp ../../code/plugins/* ${plugin_test_directory}
 fi
 
 echo "Installing Bundler into Ruby ..."
