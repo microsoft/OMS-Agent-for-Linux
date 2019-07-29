@@ -4,7 +4,6 @@ import json
 import os
 import re
 import sys
-import subprocess
 
 import adal
 import requests
@@ -13,7 +12,7 @@ ENDPOINT = ('https://management.azure.com/subscriptions/{}/resourcegroups/'
             '{}/providers/Microsoft.OperationalInsights/workspaces/{}/api/'
             'query?api-version=2017-01-01-preview')
 
-def check_e2e(hostname, timespan = 'PT30M'):
+def check_e2e(hostname, timespan = 'PT15M'):
     '''
     Verify data from computer with provided hostname is
     present in the Log Analytics workspace specified in
@@ -33,19 +32,15 @@ def check_e2e(hostname, timespan = 'PT30M'):
             exit()
         parameters = json.loads(parameters)
 
-    key_vault = parameters['key vault']
-    tenant_id = str(json.loads(subprocess.check_output('az keyvault secret show --name tenant-id --vault-name {0}'.format(key_vault), shell=True))["value"])
-    app_id = str(json.loads(subprocess.check_output('az keyvault secret show --name app-id --vault-name {0}'.format(key_vault), shell=True))["value"])
-    app_secret = str(json.loads(subprocess.check_output('az keyvault secret show --name app-secret --vault-name {0}'.format(key_vault), shell=True))["value"])
-    authority_url = parameters['authority host url'] + '/' + tenant_id
+    authority_url = parameters['authority host url'] + '/' + parameters['tenant']
     context = adal.AuthenticationContext(authority_url)
     token = context.acquire_token_with_client_credentials(
         parameters['resource'],
-        app_id,
-        app_secret)
+        parameters['app id'],
+        parameters['app secret'])
 
     head = {'Authorization': 'Bearer ' + token['accessToken']}
-    subscription = str(json.loads(subprocess.check_output('az keyvault secret show --name subscription-id --vault-name {0}'.format(key_vault), shell=True))["value"])
+    subscription = parameters['subscription']
     resource_group = parameters['resource group']
     workspace = parameters['workspace']
     url = ENDPOINT.format(subscription, resource_group, workspace)

@@ -1,16 +1,11 @@
-Version: '5.7.23-0ubuntu0.16.04.1-log'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  (Ubuntu)
 2018-10-15T19:54:50.675213Z 2 [Note] Access denied for user 'root'@'localhost' (using password: NO)
 2018-10-15T19:55:16.350986Z 0 [Note] Giving 7 client threads a chance to die gracefully
 2018-10-15T19:55:16.351028Z 0 [Note] Shutting down slave threads
 2018-10-15T19:55:18.351113Z 0 [Note] Forcefully disconnecting 4 remaining clients
 2018-10-15T19:55:18.351141Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 3  user: 'zabbix'
-
 2018-10-15T19:55:18.351160Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 4  user: 'zabbix'
-
 2018-10-15T19:55:18.351186Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 5  user: 'zabbix'
-
 2018-10-15T19:55:18.351193Z 0 [Warning] /usr/sbin/mysqld: Forcing close of thread 9  user: 'zabbix'
-
 2018-10-15T19:55:18.351205Z 0 [Note] Event Scheduler: Purging the queue. 0 events
 2018-10-15T19:55:18.351518Z 0 [Note] Binlog end
 2018-10-15T19:55:18.352972Z 0 [Note] Shutting down plugin 'ngram'
@@ -63,7 +58,6 @@ Version: '5.7.23-0ubuntu0.16.04.1-log'  socket: '/var/run/mysqld/mysqld.sock'  p
 2018-10-15T19:55:19.785937Z 0 [Note] Shutting down plugin 'mysql_native_password'
 2018-10-15T19:55:19.786432Z 0 [Note] Shutting down plugin 'binlog'
 2018-10-15T19:55:19.796160Z 0 [Note] /usr/sbin/mysqld: Shutdown complete
-
 2018-10-15T19:55:19.858798Z 0 [Warning] Changed limits: max_open_files: 1024 (requested 5000)
 2018-10-15T19:55:19.858828Z 0 [Warning] Changed limits: table_open_cache: 431 (requested 2000)
 2018-10-15T19:55:20.017175Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
@@ -96,5 +90,3 @@ Version: '5.7.23-0ubuntu0.16.04.1-log'  socket: '/var/run/mysqld/mysqld.sock'  p
 2018-10-15T19:55:21.249632Z 0 [Note] InnoDB: Buffer pool(s) load completed at 181015 19:55:21
 2018-10-15T19:55:21.254564Z 0 [Note] Event Scheduler: Loaded 0 events
 2018-10-15T19:55:21.255500Z 0 [Note] /usr/sbin/mysqld: ready for connections.
-Version: '5.7.23-0ubuntu0.16.04.1-log'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  (Ubuntu)
-2018-10-15T19:55:21.856724Z 2 [Note] Access denied for user 'root'@'localhost' (using password: NO)
