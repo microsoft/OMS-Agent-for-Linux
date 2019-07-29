@@ -177,9 +177,72 @@ Below the output plugin, uncomment the following section by removing the `#` in 
 Agent Resource | Ports
 ---- | ----
 *.ods.opinsights.azure.com | Port 443
+*oms\*.azure.com | Port 443
 *.oms.opinsights.azure.com | Port 443
 ods.systemcenteradvisor.com | Port 443
 *.blob.core.windows.net/ | Port 443
+
+#### Advanced Steps for OMS Gateway debugging:
+* Make sure to choose an appropriate port number which is not already used, otherwise you will not be able to reach 
+your proxy. But instead you will get a 400 Bad request HTTP response from a different web service.
+ 
+
+* You can quickly test the connectivity through OMS Gateway, by running the following cURL command `curl -x <PROXY_IP>:<PORT> -L https://<WORKSPACE_ID>.oms.opinsights.azure.com -v`
+
+#### Debugging with Logs
+By running the previous curl command we get results shown below. By analysing the results, you should see this first message "Proxy replied OK to CONNECT request" which means that the connection was successfully
+ established with the proxy, then our machine and the server exchanged some handshake messages which were followed by a "403 Forbidden" HTTP.
+ Since we didn't provide the correct certificate, the target server responded with 403 code, which is fine for our case and enough to test that we have reached the server endpoint. 
+```
+$> curl -x <PROXY_IP>:<PORT> -L https://<WORKSPACE_ID>.oms.opinsights.azure.com -v
+
+* Trying <PROXY_IP>...
+* Connected to <PROXY_IP> (<PROXY_IP>) port <PORT> (#0)
+...
+< HTTP/1.1 200 Connection established
+* Proxy replied OK to CONNECT request <--- 
+* successfully set certificate verify locations:
+* SSLv3, TLS handshake, Client hello (1):
+* SSLv3, TLS handshake, Server hello (2):
+* SSLv3, TLS handshake, Certificate (11):
+...
+< HTTP/1.1 403 Forbidden
+< Content-Type: text/html
+* Server Microsoft-IIS/10.0 is not blacklisted
+< Server: Microsoft-IIS/10.0
+< X-Powered-By: ASP.NET
+```
+We can debug the previous curl command by enabling verbose logging on the proxy (OMS Gateway), by simply setting the 
+registry key "LogLevel" to DEBUG under the following path "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ForwarderService\Configurations\".
+After you restart OMS Gateway, inspect the logs from "Event Viewer > Applications and Services Logs > OMS Gateway Log" and you will see a similar output as below:
+```
+Event ID, Task, Category
+103, [4],  DEBUG GatewayLogic - Got request from <PROXY_IP>:50368: CONNECT <WORKSPACE_ID>.oms.opinsights.azure.com:443 with headers [Host, <WORKSPACE_ID>.oms.opinsights.azure.com:443];[User-Agent, curl/7.37.0];[Proxy-Connection, Keep-Alive]
+200, [4],  DEBUG GatewayServer - Worker thread created to handle the request
+200, [16], DEBUG TlsParser - Client SNI: <WORKSPACE_ID>.oms.opinsights.azure.com
+200, [16], DEBUG TcpConnection - Client SNI is verified
+200, [16], DEBUG TlsParser - [TLS][Handshake] >ClientHello
+200, [15], DEBUG GatewayLogic - Connected to server <WORKSPACE_ID>.oms.opinsights.azure.com:443
+200, [16], DEBUG GatewayLogic - Start tunneling data ...
+200, [15], DEBUG TlsParser - [TLS][Handshake] <CertificateRequest
+200, [15], DEBUG TlsParser - [TLS][Handshake] <ServerKeyExchange
+200, [15], DEBUG TcpConnection - Server-side passed verification
+107, [23], DEBUG TcpConnection - TLS session is successfully verified
+200, [23], DEBUG GatewayServer - Worker thread ended
+200, [23], DEBUG GatewayLogic - End tunneling data
+200, [23], DEBUG TcpConnection - Client socket disconnected
+```
+#### Debugging with Traces
+On your servers, you can capture network traffic using the tcpdump tool and forward the output to a file. Then you can
+use Wireshark to analyse your traces.
+
+```
+$> sudo tcpdump -i any -w linux_capture.pcap
+```
+By tracing the previous curl command we get the following results on Wireshark.
+
+Please refer to official Wireshark [documentation](https://www.wireshark.org/docs/) for more details about using the tool.
+![](pictures/wiresharkTraces.png?raw=true)
 
 ### I'm getting a 403 when I'm trying to onboard!
 #### Probable Causes
