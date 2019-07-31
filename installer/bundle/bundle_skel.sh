@@ -6,7 +6,7 @@
 
 # This script is a skeleton bundle file for ULINUX only for project OMS.
 
-PATH=/usr/bin:/usr/sbin:/bin:/sbin
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
 umask 022
 
 # Can't use something like 'readlink -e $0' because that doesn't work everywhere
@@ -30,6 +30,7 @@ OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
 OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
+OMI_SERVICE="/opt/omi/bin/service_control"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -61,6 +62,7 @@ USE_UPGRADE=23
 # Internal errors:
 INTERNAL_ERROR=30
 # Package pre-requisites fail
+DEPENDENCY_MISSING=52 #https://github.com/Azure/azure-marketplace/wiki/Extension-Build-Notes-Best-Practices#error-codes-and-messages-output-to-stderr
 UNSUPPORTED_OPENSSL=55 #60, temporary as 55 excludes from SLA
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
@@ -68,6 +70,7 @@ INSTALL_SED=63
 INSTALL_CURL=55 #64, temporary as 55 excludes from SLA
 INSTALL_GPG=65
 UNSUPPORTED_PKG_INSTALLER=66
+OPENSSL_PATH="openssl"
 
 usage()
 {
@@ -224,21 +227,41 @@ verifyPrivileges()
     fi
 }
 
+is_suse11_platform_with_openssl1(){
+  if [ -e /etc/SuSE-release ];then
+     VERSION=`cat /etc/SuSE-release|grep "VERSION = 11"|awk 'FS=":"{print $3}'`
+     if [ ! -z "$VERSION" ];then
+        which openssl1>/dev/null 2>&1
+        if [ $? -eq 0 -a $VERSION -eq 11 ];then
+           return 0
+        fi
+     fi
+  fi
+  return 1
+}
+
 ulinux_detect_openssl_version()
 {
+    is_suse11_platform_with_openssl1
+    if [ $? -eq 0 ];then
+       OPENSSL_PATH="openssl1"
+    fi
+
     TMPBINDIR=
-    # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_110
-    OPENSSL_SYSTEM_VERSION_FULL=`openssl version | awk '{print $2}'`
-    OPENSSL_SYSTEM_VERSION_100=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
-    OPENSSL_SYSTEM_VERSION_110=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.1.'; echo $?`
-    if [ $OPENSSL_SYSTEM_VERSION_100 = 0 ]; then
+    # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_11X
+    OPENSSL_SYSTEM_VERSION_FULL=`$OPENSSL_PATH version | awk '{print $2}'`
+    OPENSSL_SYSTEM_VERSION_10X=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
+    OPENSSL_SYSTEM_VERSION_100_ONLY=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.0'; echo $?`
+    OPENSSL_SYSTEM_VERSION_11X=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.1.'; echo $?`
+
+    if [ $OPENSSL_SYSTEM_VERSION_100_ONLY = 1 ] && [ $OPENSSL_SYSTEM_VERSION_10X = 0 ]; then
         TMPBINDIR=100
-    elif [ $OPENSSL_SYSTEM_VERSION_110 = 0 ]; then
+    elif [ $OPENSSL_SYSTEM_VERSION_11X = 0 ]; then
         TMPBINDIR=110
     else
         echo "Error: This system does not have a supported version of OpenSSL installed."
         echo "This system's OpenSSL version: $OPENSSL_SYSTEM_VERSION_FULL"
-        echo "Supported versions: 1.0.*, 1.1.*"
+        echo "Supported versions: 1.0.1 onward (1.0.0 was deprecated), 1.1.*"
         cleanup_and_exit $UNSUPPORTED_OPENSSL
     fi
 }
@@ -329,6 +352,39 @@ install_if_program_does_not_exist_on_system()
     fi
 }
 
+isDiskSpaceSufficient()
+{
+    local pkg_filename=$1
+
+    if [ ! -d "/opt" ]; then
+        spaceAvailableOpt=`expr $(stat -f --printf="%a" /) \* $(stat -f --printf="%s" /)`
+    else
+        spaceAvailableOpt=`expr $(stat -f --printf="%a" /opt) \* $(stat -f --printf="%s" /opt)`
+    fi
+
+    if [ $? -ne 0 -o "$spaceAvailableOpt"a = ""a ]; then
+        return 1
+    fi
+
+    if [ "$INSTALLER" = "DPKG" ]; then
+         spaceRequired=`dpkg -f $pkg_filename Installed-Size 2>/dev/null`
+         if [ $? -ne 0 -o "$spaceRequired"a = ""a ]; then
+             return 1
+         fi
+         spaceRequired=`expr $spaceRequired \* 1024`
+    else
+         spaceRequired=`rpm --queryformat='%12{SIZE}  %{NAME}\n' -qp $pkg_filename|awk '{print $1}' 2>/dev/null`
+         if [ $? -ne 0 -o "$spaceRequired"a = ""a ]; then
+             return 1
+         fi
+    fi
+
+    if [ $spaceAvailableOpt -gt $spaceRequired ]; then
+        return 0
+    fi
+    return 1
+}
+
 # $1 - The filename of the package to be installed
 # $2 - The package name of the package to be installed (for future compatibility)
 pkg_add()
@@ -343,10 +399,20 @@ pkg_add()
 
     if [ "$INSTALLER" = "DPKG" ]; then
         [ -z "${forceFlag}" ] && FORCE="--refuse-downgrade" || FORCE=""
+        isDiskSpaceSufficient ${pkg_filename}.deb
+        if [ $? -ne 0 ]; then
+           return $DEPENDENCY_MISSING
+        fi
+
         dpkg ${DPKG_CONF_QUALS} --install $FORCE ${pkg_filename}.deb
         return $?
     else
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
+        isDiskSpaceSufficient ${pkg_filename}.rpm
+        if [ $? -ne 0 ]; then
+           return $DEPENDENCY_MISSING
+        fi
+
         rpm -ivh $FORCE ${pkg_filename}.rpm
         return $?
     fi
@@ -360,7 +426,12 @@ pkg_rm()
         if [ "$installMode" = "P" ]; then
             dpkg --purge ${1}
         else
-            dpkg --remove ${1}
+			# for OMI alone, always purge so that config is removed
+			if [ "$1" = "omi" ]; then
+				dpkg --purge ${1}
+			else
+				dpkg --remove ${1}
+			fi
         fi
     else
         rpm --erase ${1}
@@ -461,7 +532,15 @@ getInstalledVersion()
             local version="`dpkg -s $1 2> /dev/null | grep 'Version: '`"
             getVersionNumber "$version" "Version: "
         else
-            local version=`rpm -q $1 2> /dev/null`
+            # rpm based system can end up having multiple versions of a package.
+            # return the latest version of the package installed
+            local version=`rpm -q $1 | sort -V | tail -n 1 2> /dev/null`
+            local num_installed=`rpm -q $1 | wc -l 2> /dev/null`
+            if [ $num_installed -gt 1 ]; then
+               echo "WARNING: Multiple versions of $1 seem to be installed." >&2
+               echo "Please uninstall them. If the installer is run with --upgrade," >&2
+               echo "the package with latest version will remain installed." >&2
+            fi
             getVersionNumber $version ${1}-
         fi
     else
@@ -514,7 +593,6 @@ shouldInstall_scx()
     check_version_installable $versionInstalled $versionAvailable
 }
 
-
 remove_and_install()
 {
 
@@ -544,7 +622,34 @@ remove_and_install()
 
     if [ $temp_status -ne 0 ]; then
         echo "$OMI_PKG package failed to install and exited with status $temp_status"
-        return $OMI_INSTALL_FAILED
+        
+        if [ $temp_status -eq 2 ]; then # dpkg is messed up
+            return $DEPENDENCY_MISSING
+        else
+            return $OMI_INSTALL_FAILED
+        fi        
+    fi
+
+    ${OMI_SERVICE} reload
+    temp_status=$?
+
+    if [ $temp_status -ne 0 ]; then
+        if [ $temp_status -eq 2 ]; then
+            ErrStr="System Issue with daemon control tool "
+            ErrCode=$DEPENDENCY_MISSING
+        elif [ $temp_status -eq 3 ]; then # dpkg is messed up
+            ErrStr="omi server conf file missing"
+            ErrCode=$DEPENDENCY_MISSING
+        else
+            ErrStr="OMI installation failed"
+            ErrCode=$OMI_INSTALL_FAILED
+        fi
+        echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+        return $ErrCode
+    fi
+
+    if [ -f /usr/sbin/scxadmin ]; then
+        rm -f /usr/sbin/scxadmin
     fi
 
     pkg_add $SCX_PKG scx
@@ -1047,9 +1152,34 @@ case "$installMode" in
                 OMI_EXIT_STATUS=$?
             fi
 
+            ${OMI_SERVICE} reload
+            temp_status=$?
+
+            if [ $temp_status -ne 0 ]; then
+                if [ $temp_status -eq 2 ]; then
+                    ErrStr="System Issue with daemon control tool "
+                    ErrCode=$DEPENDENCY_MISSING
+                elif [ $temp_status -eq 3 ]; then # dpkg is messed up
+                    ErrStr="omi server conf file missing"
+                    ErrCode=$DEPENDENCY_MISSING
+                else
+                    ErrStr="OMI installation failed"
+                    ErrCode=$OMI_INSTALL_FAILED
+                fi
+
+                echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+                OMI_EXIT_STATUS=$ErrCode
+             fi
+
+
             # Install SCX
             shouldInstall_scx
             if [ $? -eq 0 ]; then
+
+                if [ -f /usr/sbin/scxadmin ]; then
+                    rm -f /usr/sbin/scxadmin
+                fi
+
                 pkg_add ${SCX_PKG} scx
                 SCX_EXIT_STATUS=$?
             fi
@@ -1133,11 +1263,36 @@ case "$installMode" in
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
         OMI_EXIT_STATUS=$?
+	${OMI_SERVICE} reload
+	temp_status=$?
 
+	if [ $temp_status -ne 0 ]; then
+            if [ $temp_status -eq 2 ]; then
+                ErrStr="System Issue with daemon control tool "
+                ErrCode=$DEPENDENCY_MISSING
+            elif [ $temp_status -eq 3 ]; then # dpkg is messed up
+                  ErrStr="omi server conf file missing"
+                  ErrCode=$DEPENDENCY_MISSING
+            else
+                  ErrStr="OMI installation failed"
+                  ErrCode=$OMI_INSTALL_FAILED
+            fi
+
+            echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+            OMI_EXIT_STATUS=$ErrCode
+        fi
+	
         # Install SCX
         shouldInstall_scx
-        pkg_upd $SCX_PKG scx $?
-        SCX_EXIT_STATUS=$?
+        if [ $? -eq 0 ]; then
+
+            if [ -f /usr/sbin/scxadmin ]; then
+                rm -f /usr/sbin/scxadmin
+            fi
+
+            pkg_upd $SCX_PKG scx $?
+            SCX_EXIT_STATUS=$?
+        fi
 
         # Try to re-update if any of OMI or SCX update failed
         if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then

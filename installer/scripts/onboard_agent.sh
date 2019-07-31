@@ -6,9 +6,9 @@
 
 
 # Values to be updated upon each new release
-GITHUB_RELEASE="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.6.0-163/"
-BUNDLE_X64="omsagent-1.6.0-163.universal.x64.sh"
-BUNDLE_X86="omsagent-1.6.0-163.universal.x86.sh"
+GITHUB_RELEASE="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.11.0-9/"
+BUNDLE_X64="omsagent-1.11.0-9.universal.x64.sh"
+BUNDLE_X86="omsagent-1.11.0-9.universal.x86.sh"
 
 usage()
 {
@@ -89,7 +89,7 @@ fi
 
 # We need to use sudo for commands in the following block, if not running as root
 SUDO=''
-if (( $EUID != 0 )); then
+if [ "$EUID" != 0 ]; then
     SUDO='sudo'
 fi
 

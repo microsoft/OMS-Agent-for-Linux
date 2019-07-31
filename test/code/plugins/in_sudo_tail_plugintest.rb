@@ -48,6 +48,8 @@ class SudoTailTest < Test::Unit::TestCase
     File.open("#{TMP_DIR}/tail.rb", "w") {|f|
       f.puts "puts \"test1\""
       f.puts "puts \"test2\""
+      f.puts "puts \"test2\ttest0\""
+
     }
 
     d = create_driver
@@ -59,7 +61,60 @@ class SudoTailTest < Test::Unit::TestCase
     assert_equal(true, emits.length > 0)
     assert_equal({"message"=>"test1"}, emits[0][2])
     assert_equal({"message"=>"test2"}, emits[1][2])
-    assert_equal(2, d.emit_streams.size)
+    assert_equal({"message"=>"test2\ttest0"}, emits[2][2])
+
+    assert_equal(3, d.emit_streams.size)
+  end
+
+  ### Have to convert the strings to ASCII-8BIT because string comparison of chars > 128 bits only works if both have the same encoding
+  ### The message data is converted to UTF-8 in out_oms_blob.rb, before emitting further, using the parse_json_record_encoding method in oms_common library
+  ### this plugin only outputs ASCII-8BIT encoded message to the router hence comparing the output with a string of similar encoding. 
+  def test_emit_UTF_chars
+    File.open("#{TMP_DIR}/tail2.rb", "w") {|f|
+      f.puts "puts \"Russia:Россия\""
+      f.puts "puts \"Japan:にほん\""
+      f.puts "puts \"Registered Sign:\u00ae\""
+
+    }
+
+    d = create_driver
+    d.instance.command = "ruby #{TMP_DIR}/tail2.rb "
+    d.instance.stubs(:set_system_command).returns(nil)
+    d.run
+    emits = d.emits
+
+    assert_equal(true, emits.length > 0)
+    assert_equal({"message".force_encoding("ASCII-8BIT")=>"Russia:Россия".force_encoding("ASCII-8BIT")}, emits[0][2], "Emitted String Encoding is #{emits[0][2]["message"].encoding}")
+    assert_equal({"message".force_encoding("ASCII-8BIT")=>"Japan:にほん".force_encoding("ASCII-8BIT")}, emits[1][2])
+    assert_equal({"message".force_encoding("ASCII-8BIT")=>"Registered Sign:®".force_encoding("ASCII-8BIT")}, emits[2][2])
+
+    assert_equal(3, d.emit_streams.size)
+  end
+
+  def test_emit_multiple_lines
+    File.open("#{TMP_DIR}/tail3.rb", "w") {|f|
+      f.puts "puts \"test3\""
+      f.puts "puts \"test4\ntest5\""
+      f.puts "puts \"\ntest6\n\n\ntest7\""
+    }
+
+    d = create_driver
+    d.instance.command = "ruby #{TMP_DIR}/tail3.rb "
+    d.instance.stubs(:set_system_command).returns(nil)
+    d.run
+    emits = d.emits
+
+    assert_equal(true, emits.length > 0)
+    assert_equal({"message"=>"test3"}, emits[0][2])
+    assert_equal({"message"=>"test4"}, emits[1][2])
+    assert_equal({"message"=>"test5"}, emits[2][2])
+    assert_equal({"message"=>""}, emits[3][2])
+    assert_equal({"message"=>"test6"}, emits[4][2])
+    assert_equal({"message"=>""}, emits[5][2])
+    assert_equal({"message"=>""}, emits[6][2])
+    assert_equal({"message"=>"test7"}, emits[7][2])
+  
+    assert_equal(8, d.emit_streams.size)
   end
 
 end

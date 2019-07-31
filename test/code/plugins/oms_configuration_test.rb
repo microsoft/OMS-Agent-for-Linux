@@ -15,6 +15,19 @@ module OMS
     TEST_ODS_ENDPOINT = 'https://www.fakeods.com/OperationalData.svc/PostJsonDataItems'
     TEST_GET_BLOB_ODS_ENDPOINT = 'https://www.fakeods.com/ContainerService.svc/GetBlobUploadUri'
     TEST_NOTIFY_BLOB_ODS_ENDPOINT = 'https://www.fakeods.com/ContainerService.svc/PostBlobUploadNotification'
+    TEST_TOPOLOGY_INTERVAL = 7200.0
+    TEST_TELEMETRY_INTERVAL = 600.0
+    TEST_TOPOLOGY_RESPONSE = '<?xml version="1.0" encoding="utf-8"?>' \
+                             '<LinuxAgentTopologyResponse queryInterval="PT2H" telemetryReportInterval="PT10M" ' \
+                             'id="ccb89298-086e-4a77-ba5e-5b525156d692" ' \
+                             'xmlns="http://schemas.microsoft.com/WorkloadMonitoring/HealthServiceProtocol/2014/09/" ' \
+                             'xmlns:xsd="http://www.w3.org/2001/XMLSchema" ' \
+                             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' \
+                             '</LinuxAgentTopologyResponse>'
+                             # truncated to relevant portion, e.g. containing queryInterval, telemetryReportInterval
+    TEST_UUID = '2cb5b6af-422c-0e4f-b43b-c388b2a55d48'
+    TEST_UUID_INVALID = '2cb5b6af-422c-0e4f-b43b-c388b2a55d482cb5b6af-422c-0e4f-b43b-c388b2a55d48'
+    TEST_UUID_ZERO = '00000000-0000-0000-0000-000000000000'
 
     # Extend class to reset class variables
     class OMS::Configuration
@@ -30,12 +43,13 @@ module OMS
       Configuration.configurationLoaded = false
       Common.OSFullName = nil
       @tmp_conf_file = Tempfile.new('oms_conf_file')
+      @tmp_invalid_conf_file = Tempfile.new('oms_invalid_conf_file')
       @tmp_cert_file = Tempfile.new('temp_cert_file')
       @tmp_key_file = Tempfile.new('temp_key_file')
     end
 
     def teardown
-      [@tmp_conf_file, @tmp_cert_file, @tmp_key_file].each { |tmpfile|
+      [@tmp_conf_file, @tmp_cert_file, @tmp_key_file, @tmp_invalid_conf_file].each { |tmpfile|
         tmpfile.unlink
       }
     end
@@ -46,9 +60,21 @@ module OMS
       "LOG_FACILITY=local0\n" \
       "CERTIFICATE_UPDATE_ENDPOINT=#{TEST_CERT_UPDATE_ENDPOINT}\n" \
       "DSC_ENDPOINT=#{TEST_DSC_ENDPOINT}\n" \
-      "OMS_ENDPOINT=#{TEST_ODS_ENDPOINT}\n"
+      "OMS_ENDPOINT=#{TEST_ODS_ENDPOINT}\n" \
+      "UUID=#{TEST_UUID}\n"
 
       File.write(@tmp_conf_file.path, conf)
+
+      #conf file with an invalid UUID
+      invalid_conf = "WORKSPACE_ID=#{TEST_WORKSPACE_ID}\n" \
+      "AGENT_GUID=#{TEST_AGENT_GUID}\n" \
+      "LOG_FACILITY=local0\n" \
+      "CERTIFICATE_UPDATE_ENDPOINT=#{TEST_CERT_UPDATE_ENDPOINT}\n" \
+      "DSC_ENDPOINT=#{TEST_DSC_ENDPOINT}\n" \
+      "OMS_ENDPOINT=#{TEST_ODS_ENDPOINT}\n" \
+      "UUID=#{TEST_UUID_INVALID}\n"
+
+      File.write(@tmp_invalid_conf_file.path, invalid_conf)
 
       # this is a fake certificate
       cert = "-----BEGIN CERTIFICATE-----\n" \
@@ -116,14 +142,28 @@ module OMS
       $log = MockLog.new
       success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
       puts $log.logs
-      assert_equal(true, success, 'Configuration should be loaded')
+      assert_equal(true, success, "Configuration should be loaded")
+      assert_equal(TEST_WORKSPACE_ID, Configuration.workspace_id, "Workspace ID should be loaded")
       assert_equal(TEST_AGENT_GUID, Configuration.agent_id, "Agent ID should be loaded")
       assert_equal(TEST_ODS_ENDPOINT, Configuration.ods_endpoint.to_s, "ODS Endpoint should be loaded")
       assert_equal(TEST_GET_BLOB_ODS_ENDPOINT, Configuration.get_blob_ods_endpoint.to_s, "GetBlob ODS Endpoint should be loaded")
       assert_equal(TEST_NOTIFY_BLOB_ODS_ENDPOINT, Configuration.notify_blob_ods_endpoint.to_s, "NotifyBlobUpload ODS Endpoint should be loaded")
+      assert_equal(TEST_UUID, Configuration.uuid, "VM UUID should be loaded")
       assert_not_equal(nil, Configuration.cert, "Certificate should be loaded")
       assert_not_equal(nil, Configuration.key, "Key should be loaded")
-      assert_equal([], $log.logs, "There was an error loading the configuration")
+      assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
+      Configuration.set_request_intervals(TEST_TOPOLOGY_INTERVAL, TEST_TELEMETRY_INTERVAL)
+      assert_equal(TEST_TOPOLOGY_INTERVAL, Configuration.topology_interval, "Incorrect topology interval parsed")
+      assert_equal(TEST_TELEMETRY_INTERVAL, Configuration.telemetry_interval, "Incorrect telemetry interval parsed")
+    end
+
+    def test_invalid_uuid()
+      prepare_files
+      $log = MockLog.new
+      success = Configuration.load_configuration(@tmp_invalid_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
+      puts $log.logs
+      assert_equal(true, success, 'Configuration should be loaded')
+      assert_equal(TEST_UUID_ZERO, Configuration.uuid, "Default VM UUID should be loaded instead of invalid one")
     end
 
     def test_load_configuration_wrong_path()
@@ -147,7 +187,7 @@ module OMS
       # Should retry the second time since it did not find anything before
       success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
       assert_equal(true, success, 'Configuration should be loaded')
-      assert_equal([], $log.logs, "There was an error loading the configuration")
+      assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
     end
 
     def test_parse_proxy_config()
