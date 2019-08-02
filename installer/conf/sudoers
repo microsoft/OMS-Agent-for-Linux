@@ -29,7 +29,8 @@ omsagent ALL=(ALL) NOPASSWD: /usr/bin/docker inspect *
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/plugin/tailfilereader.rb *
 
 #Enable check for if file exists and is readable
-omsagent ALL=(ALL) NOPASSWD: /usr/bin/test -r
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/test -r *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/test -r*
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/touch
 
 #run hdinsightmanifestreader.rb
