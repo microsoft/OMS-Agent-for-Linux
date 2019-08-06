@@ -1,6 +1,6 @@
 
 # OMS Agent Multihoming Automated Testing with Docker
-
+Note: These tests are built on top of the OMS Bundle Automated testing with Docker - https://github.com/microsoft/OMS-Agent-for-Linux/tree/master/test/docker-test
 ## Requirements
 
 * Docker - Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
