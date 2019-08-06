@@ -44,9 +44,15 @@ def linux_detect_installer():
         INSTALLER = "RPM"
 
 def main():
-    """Determine the operation to executed, and execute it."""
+    """Determine the operation to be executed, and execute it."""
     linux_detect_installer()
-
+    global workspace_id
+    workspace_id = sys.argv[2]
+    global workspace_dir
+    if len(sys.argv) == 4:
+        workspace_dir = sys.argv[3]
+    else:
+        workspace_dir = ""
     global operation
     try:
         option = sys.argv[1]
@@ -55,18 +61,20 @@ def main():
             start_system_services()
             install_additional_packages()
         elif re.match('^([-/]*)(postinstall)', option):
-            detect_workspace_id()
-            config_start_oms_services()
+            config_start_oms_services(workspace_dir)
+            restart_services()
+        elif re.match('^([-/]*)(multihome)', option):
+            config_start_oms_services(workspace_dir)
             restart_services()
         elif re.match('^([-/]*)(status)', option):
             result_commands()
             service_control_commands()
             write_html()
         elif re.match('^([-/]*)(copyomslogs)', option):
-            detect_workspace_id()
             copy_oms_logs()
         elif re.match('^([-/]*)(injectlogs)', option):
-            inject_logs()
+            inject_logs(workspace_dir)
+        
     except:
         if operation is None:
             print("No operation specified. run with 'preinstall', 'postinstall', 'status', or 'injectlogs'")
@@ -88,14 +96,14 @@ def append_file(src, dest):
     dest.write(f.read())
     f.close()
 
-def detect_workspace_id():
-    """Detect the workspace id where the agent is onboarded."""
-    global workspace_id
-    x = subprocess.check_output('/opt/microsoft/omsagent/bin/omsadmin.sh -l', shell=True)
-    try:
-        workspace_id = re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x).group(0)
-    except AttributeError:
-        workspace_id = None
+# def detect_workspace_id():
+#     """Detect the workspace id where the agent is onboarded."""
+#     global workspace_id
+#     x = subprocess.check_output('/opt/microsoft/omsagent/bin/omsadmin.sh -l', shell=True)
+#     try:
+#         workspace_id = re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x).group(0)
+#     except AttributeError:
+#         workspace_id = None
 
 def set_hostname():
     """Set /etc/hostname and modify /etc/hosts to prevent getaddrinfo failure."""
@@ -131,21 +139,30 @@ def disable_dsc():
         os.remove(pending_mof)
         os.remove(current_mof)
 
-def copy_config_files():
+def copy_config_files(workspace_dir):
     """Convert, copy, and set permissions for agent configuration files."""
-    os.system('dos2unix /home/temp/omsfiles/perf.conf \
-            && dos2unix /home/temp/omsfiles/rsyslog-oms.conf \
-            && cat /home/temp/omsfiles/perf.conf >> /etc/opt/microsoft/omsagent/{0}/conf/omsagent.conf \
-            && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/opt/omi/conf/omsconfig/rsyslog-oms.conf \
-            && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/rsyslog.d/95-omsagent.conf \
-            && chown omsagent:omiusers /etc/rsyslog.d/95-omsagent.conf \
-            && chmod 644 /etc/rsyslog.d/95-omsagent.conf \
-            && cp /home/temp/omsfiles/customlog.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
+    os.system('dos2unix /home/temp/omsfiles/{1}/perf.conf \
+            && dos2unix /home/temp/omsfiles/{1}/rsyslog-oms.conf \
+            && cat /home/temp/omsfiles/{1}/perf.conf >> /etc/opt/microsoft/omsagent/{0}/conf/omsagent.conf \
+            && cp /home/temp/omsfiles/{1}/rsyslog-oms.conf /etc/opt/omi/conf/omsconfig/rsyslog-oms.conf \
+            && cp /home/temp/omsfiles/{1}/customlog.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
             && chown omsagent:omiusers /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
             && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/apache_logs.conf \
-            && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/mysql_logs.conf'.format(workspace_id))
+            && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/mysql_logs.conf'.format(workspace_id, workspace_dir))
     replace_items('/etc/opt/microsoft/omsagent/{0}/conf/omsagent.conf'.format(workspace_id), '<workspace-id>', workspace_id)
     replace_items('/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf'.format(workspace_id), '<workspace-id>', workspace_id)
+    
+def setup_syslog_conf(workspace_dir):
+    """Copy the syslog config and replace the port for the second workspace"""
+    if workspace_dir == "workspace_1":
+        os.system('cp /home/temp/omsfiles/{1}/rsyslog-oms.conf /etc/rsyslog.d/95-omsagent.conf \
+            && chown omsagent:omiusers /etc/rsyslog.d/95-omsagent.conf \
+            && chmod 644 /etc/rsyslog.d/95-omsagent.conf'.format(workspace_id, workspace_dir))    
+    else:
+        os.system('echo "\n" >> /etc/rsyslog.d/95-omsagent.conf \
+            && cat /home/temp/omsfiles/{1}/rsyslog-oms.conf >> /etc/rsyslog.d/95-omsagent.conf \
+            && chown omsagent:omiusers /etc/rsyslog.d/95-omsagent.conf \
+            && chmod 644 /etc/rsyslog.d/95-omsagent.conf'.format(workspace_id, workspace_dir))
 
 def apache_mysql_conf():
     """Configure Apache and MySQL, set up empty log files, and add permissions."""
@@ -158,55 +175,55 @@ def apache_mysql_conf():
 
     os.system('mkdir -p /var/log/mysql \
             && touch /var/log/mysql/mysql.log /var/log/mysql/error.log /var/log/mysql/mysql-slow.log \
-            && touch /var/log/custom.log \
+            && touch /var/log/{0}-custom.log \
             && chmod +r /var/log/mysql/* \
             && chmod +rx /var/log/mysql \
-            && chmod +r /var/log/custom.log')
+            && chmod +r /var/log/{0}-custom.log'.format(workspace_id))
 
     if INSTALLER == 'DPKG':
-        replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/apache2/access.log')
-        replace_items(apache_conf_file, apache_error_conf_path_string, '/var/log/apache2/error.log')
+        replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/apache2/{0}-access.log'.format(workspace_id))
+        replace_items(apache_conf_file, apache_error_conf_path_string, '/var/log/apache2/{0}-error.log'.format(workspace_id))
         os.system('mkdir -p /var/log/apache2 \
-                && touch /var/log/apache2/access.log /var/log/apache2/error.log \
+                && touch /var/log/apache2/{0}-access.log /var/log/apache2/{0}-error.log \
                 && chmod +r /var/log/apache2/* \
-                && chmod +rx /var/log/apache2')
+                && chmod +rx /var/log/apache2'.format(workspace_id))
     elif INSTALLER == 'RPM':
-        replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/httpd/access_log')
-        replace_items(apache_conf_file, apache_error_conf_path_string, '/var/log/httpd/error_log')
+        replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/httpd/{0}-access_log'.format(workspace_id))
+        replace_items(apache_conf_file, apache_error_conf_path_string, '/var/log/httpd/{0}-error_log'.format(workspace_id))
         os.system('mkdir -p /var/log/httpd \
-                && touch /var/log/httpd/access_log /var/log/httpd/error_log \
+                && touch /var/log/httpd/{0}-access_log /var/log/httpd/{0}-error_log \
                 && chmod +r /var/log/httpd/* \
-                && chmod +rx /var/log/httpd')
+                && chmod +rx /var/log/httpd'.format(workspace_id))
 
-def inject_logs():
+def inject_logs(workspace_dir):
     """Inject logs (after) agent is running in order to simulate real Apache/MySQL/Custom logs output."""
-
     # set apache timestamps to current time to ensure they are searchable with 1 hour period in log analytics
     now = datetime.datetime.utcnow().strftime('[%d/%b/%Y:%H:%M:%S +0000]')
-    os.system(r"sed -i 's|\(\[.*\]\)|{0}|' /home/temp/omsfiles/apache_access.log".format(now))
-
+    os.system(r"sed -i 's|\(\[.*\]\)|{0}|' /home/temp/omsfiles/{1}/apache_access.log".format(now, workspace_dir))
+    print ("Injecting logs for workspace {0}".format(workspace_id))
     if INSTALLER == 'DPKG':
-        os.system('cat /home/temp/omsfiles/apache_access.log >> /var/log/apache2/access.log \
-                && chown root:root /var/log/apache2/access.log \
-                && chmod 644 /var/log/apache2/access.log \
-                && dos2unix /var/log/apache2/access.log')
+        os.system('cat /home/temp/omsfiles/{1}/apache_access.log >> /var/log/apache2/{0}-access.log \
+                && chown root:root /var/log/apache2/{0}-access.log \
+                && chmod 644 /var/log/apache2/{0}-access.log \
+                && dos2unix /var/log/apache2/{0}-access.log'.format(workspace_id, workspace_dir))
     elif INSTALLER == 'RPM':
-        os.system('cat /home/temp/omsfiles/apache_access.log >> /var/log/httpd/access_log \
-                && chown root:root /var/log/httpd/access_log \
-                && chmod 644 /var/log/httpd/access_log \
-                && dos2unix /var/log/httpd/access_log')
+        os.system('cat /home/temp/omsfiles/{1}/apache_access.log >> /var/log/httpd/{0}-access_log \
+                && chown root:root /var/log/httpd/{0}-access_log \
+                && chmod 644 /var/log/httpd/{0}-access_log \
+                && dos2unix /var/log/httpd/{0}-access_log'.format(workspace_id, workspace_dir))
 
-    os.system('cat /home/temp/omsfiles/mysql.log >> /var/log/mysql/mysql.log \
-            && cat /home/temp/omsfiles/error.log >> /var/log/mysql/error.log \
-            && cat /home/temp/omsfiles/mysql-slow.log >> /var/log/mysql/mysql-slow.log \
-            && cat /home/temp/omsfiles/custom.log >> /var/log/custom.log')
+    os.system('cat /home/temp/omsfiles/{1}/mysql.log >> /var/log/mysql/mysql.log \
+            && cat /home/temp/omsfiles/{1}/error.log >> /var/log/mysql/error.log \
+            && cat /home/temp/omsfiles/{1}/mysql-slow.log >> /var/log/mysql/mysql-slow.log \
+            && cat /home/temp/omsfiles/{1}/custom.log >> /var/log/{0}-custom.log'.format(workspace_id,workspace_dir))
 
 
-def config_start_oms_services():
+def config_start_oms_services(workspace_dir):
     """Orchestrate overall configuration prior to agent start."""
     os.system('/opt/omi/bin/omiserver -d')
     disable_dsc()
-    copy_config_files()
+    copy_config_files(workspace_dir)
+    setup_syslog_conf(workspace_dir)
     apache_mysql_conf()
 
 def restart_services():
