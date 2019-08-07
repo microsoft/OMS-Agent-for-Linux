@@ -1,6 +1,6 @@
 
-# OMS Bundle Automated Testing with Docker
-
+# OMS Agent Multihoming Automated Testing with Docker
+Note: These tests are built on top of the OMS Bundle Automated testing with Docker - https://github.com/microsoft/OMS-Agent-for-Linux/tree/master/test/docker-test
 ## Requirements
 
 * Docker - Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
@@ -68,10 +68,10 @@ $ python -u build_images.py -build distro1 distro2 ...
   - `<tenant>` – your AAD tenant, visible in Azure Portal > Azure Active Directory > Properties > Directory ID
   - `<app-id>`, `<app-secret>` – verify_e2e service principal ID, secret (available in OneNote document, or optionally register your own Azure Active Directory app in step 2)
   - `<bundle-file-name>` – file name OMS bundle to be tested
-  - `<old-bundle-file-name>` - file name of old OMS bundle. Only if you are testing upgrade from older version. remove if not using (optional)
   - `<resource-group-name>` – resource group that hosts specified workspace
   - `<subscription-id>` – ID of subscription that hosts specified workspace
-  - `<workspace-name>`, `<workspace-id>`, `<workspace-key>` – Log Analytics workspace name, ID, key
+  - `<workspace 1>`, `<workspace id 1>`, `<workspace key 2>` – Log Analytics workspace 1 name, ID, key
+  - `<workspace 2>`, `<workspace id 2>`, `<workspace key 2>` – Log Analytics workspace 2 name, ID, key
 2. [Optional] Register your own AAD app to allow end-to-end verification script to access Microsoft REST APIs
   - Azure Portal > Azure Active Directory > App Registrations (Preview) > New Registration
     - `Name` – A name of your choice, can be changed later
@@ -105,10 +105,9 @@ $ python -u build_images.py -build distro1 distro2 ...
 
 ### Run test scripts
 
-- Available modes (approximate runtime for all distros). Long and instantupgrade can be enabled together:
+- Available modes (approximate runtime for all distros):
   - default (30m): No options needed. Runs the install & reinstall tests on the latest agent with a single verification.
   - `long` (+`LONG_DELAY`): Adds a long wait time (`LONG_DELAY` in oms_docker_tests.py) followed by a second verification.
-  - `instantupgrade` (+15m): Install the older version first, verify status, upgrade to newer version and continue tests.
 - With all modes, a subset of images can be tested by providing the corresponding image names
 
 #### All images
@@ -127,12 +126,4 @@ $ python -u oms_docker_tests.py image1 image2 ...
 
 ```bash
 $ python -u oms_docker_tests.py long
-```
-
-#### Subset of images, Test upgrade from old bundle to new bundle
-
-Note: Define a proper value for the `old oms bundle` in parameters.json file and bundle must be present in omsfiles folder
-
-```bash
-$ python -u oms_docker_tests.py instantupgrade image1 image2 ...
 ```
