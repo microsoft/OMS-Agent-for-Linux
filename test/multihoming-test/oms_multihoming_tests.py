@@ -129,15 +129,11 @@ def main():
     verify_msg_2 = verify_data(2, workspace_id_2)
     print("####"*15 + "Verifying Agent again for the First Workspace" + "####"*15)
     print("-----"*15 + "Injecting logs again for workspace 1" + "----"*15)
+    install_times.clear()
     for image in images:
         container = image + "-container"
+        install_times.update({image: datetime.now()})
         inject_logs(container, workspace_id_1, "workspace_1")
-    current_time = datetime.now()
-    while datetime.now() < (current_time + timedelta(minutes=DEFAULT_DELAY)):
-            mins, secs = get_time_diff(datetime.now(), current_time + timedelta(minutes=DEFAULT_DELAY))
-            sys.stdout.write('\rE2E propagation delay for {0}: {1} minutes {2} seconds...'.format(image, mins, secs))
-            sys.stdout.flush()
-            sleep(1)
     verify_msg_3 = verify_data(1, workspace_id_1)
     ## update_configs
     ## verify_data()
