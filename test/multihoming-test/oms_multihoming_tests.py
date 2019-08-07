@@ -135,9 +135,6 @@ def main():
         install_times.update({image: datetime.now()})
         inject_logs(container, workspace_id_1, "workspace_1")
     verify_msg_3 = verify_data(1, workspace_id_1)
-    ## update_configs
-    ## verify_data()
-    # remove_msg = remove_agent()
     
     if is_long:
         for i in reversed(range(1, LONG_DELAY + 1)):

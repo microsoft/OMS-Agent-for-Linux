@@ -5,10 +5,12 @@
   "app id": "<app-id>",
   "app secret": "<app-secret>",
   "oms bundle": "<bundle-file-name>",
-  "old oms bundle": "<old-bundle-file-name>",
   "resource group": "<resource-group-name>",
   "subscription": "<subscription-id>",
-  "workspace": "<workspace-name>",
-  "workspace id": "<workspace-id>",
-  "workspace key": "<workspace-key>"
+  "workspace 1": "<workspace-1-name>",
+  "workspace 2": "<workspace-2-name>",
+  "workspace id 1": "<workspace-1-id>",
+  "workspace key 1": "<workspace-1-key>",
+  "workspace id 2": "<workspace-2-id>",
+  "workspace key 2": "<workspace-2-key>"
 }
