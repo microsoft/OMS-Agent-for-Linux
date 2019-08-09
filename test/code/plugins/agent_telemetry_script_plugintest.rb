@@ -266,50 +266,50 @@ class TelemetryUnitTest < Test::Unit::TestCase
     assert_equal(OMS::LOG_FATAL, qos[0].Operation, "incorrect operation for most numerous log message")
   end
 
-  def test_calculate_resource_usage_stopped
-    flexmock(OMS::AgentTelemetry).new_instances do |instance|
-      # simulate oms and omi not running
-      instance.should_receive(:`).with(PGREP_CMD).and_return(DSC_PID)
-      instance.should_receive(:`).with(SCX_CMD % DSC_PID).and_return("")
-      instance.should_receive(:`).with(SCX_CMD % OMS_PID).and_return("")
-    end
+  # def test_calculate_resource_usage_stopped
+  #   flexmock(OMS::AgentTelemetry).new_instances do |instance|
+  #     # simulate oms and omi not running
+  #     instance.should_receive(:`).with(PGREP_CMD).and_return(DSC_PID)
+  #     instance.should_receive(:`).with(SCX_CMD % DSC_PID).and_return("")
+  #     instance.should_receive(:`).with(SCX_CMD % OMS_PID).and_return("")
+  #   end
 
-    agent_telemetry = get_new_telemetry_obj
-    agent_telemetry.poll_resource_usage
-    ru = agent_telemetry.calculate_resource_usage
+  #   agent_telemetry = get_new_telemetry_obj
+  #   agent_telemetry.poll_resource_usage
+  #   ru = agent_telemetry.calculate_resource_usage
 
-    assert_equal(0, ru.OMSMaxMemory, "oms max memory should be zero")
-    assert_equal(0, ru.OMSMaxUserTime, "oms max user time should be zero")
-    assert_equal(0, ru.OMIAvgPercentMemory, "omi avg percent memory should be zero")
-    assert_equal(0, ru.OMIAvgSystemTime, "omi avg system time should be zero")
+  #   assert_equal(0, ru.OMSMaxMemory, "oms max memory should be zero")
+  #   assert_equal(0, ru.OMSMaxUserTime, "oms max user time should be zero")
+  #   assert_equal(0, ru.OMIAvgPercentMemory, "omi avg percent memory should be zero")
+  #   assert_equal(0, ru.OMIAvgSystemTime, "omi avg system time should be zero")
 
-    flexmock(OMS::AgentTelemetry).flexmock_teardown
-  end
+  #   flexmock(OMS::AgentTelemetry).flexmock_teardown
+  # end
 
-  def test_calculate_resource_usage_running
-    File.write(@pid_file.path, OMS_PID)
-    flexmock(OMS::AgentTelemetry).new_instances do |instance|
-      instance.should_receive(:`).with(PGREP_CMD).and_return(DSC_PID)
-      instance.should_receive(:`).with(SCX_CMD % DSC_PID).and_return("PercentUserTime=2\n \
-        PercentPrivilegedTime=0\n UsedMemory=197742\n PercentUsedMemory=19")
-      instance.should_receive(:`).with(SCX_CMD % OMS_PID).and_return("PercentUserTime=6\n \
-        PercentPrivilegedTime=1\n UsedMemory=209576\n PercentUsedMemory=21")
-    end
+  # def test_calculate_resource_usage_running
+  #   File.write(@pid_file.path, OMS_PID)
+  #   flexmock(OMS::AgentTelemetry).new_instances do |instance|
+  #     instance.should_receive(:`).with(PGREP_CMD).and_return(DSC_PID)
+  #     instance.should_receive(:`).with(SCX_CMD % DSC_PID).and_return("PercentUserTime=2\n \
+  #       PercentPrivilegedTime=0\n UsedMemory=197742\n PercentUsedMemory=19")
+  #     instance.should_receive(:`).with(SCX_CMD % OMS_PID).and_return("PercentUserTime=6\n \
+  #       PercentPrivilegedTime=1\n UsedMemory=209576\n PercentUsedMemory=21")
+  #   end
 
-    agent_telemetry = get_new_telemetry_obj
+  #   agent_telemetry = get_new_telemetry_obj
 
-    mock = flexmock(agent_telemetry)
+  #   mock = flexmock(agent_telemetry)
 
-    agent_telemetry.clear_ru_points
-    agent_telemetry.poll_resource_usage
-    ru = agent_telemetry.calculate_resource_usage
+  #   agent_telemetry.clear_ru_points
+  #   agent_telemetry.poll_resource_usage
+  #   ru = agent_telemetry.calculate_resource_usage
 
-    assert_equal(209576, ru.OMSMaxMemory, "oms max memory is incorrect")
-    assert_equal(2, ru.OMSMaxUserTime, "oms max user time is incorrect")
-    assert_equal(21, ru.OMIAvgPercentMemory, "omi avg percent memory is incorrect")
-    assert_equal(1, ru.OMIAvgSystemTime, "omi avg system time is incorrect")
+  #   assert_equal(209576, ru.OMSMaxMemory, "oms max memory is incorrect")
+  #   assert_equal(2, ru.OMSMaxUserTime, "oms max user time is incorrect")
+  #   assert_equal(21, ru.OMIAvgPercentMemory, "omi avg percent memory is incorrect")
+  #   assert_equal(1, ru.OMIAvgSystemTime, "omi avg system time is incorrect")
 
-    flexmock(OMS::AgentTelemetry).flexmock_teardown
-  end
+  #   flexmock(OMS::AgentTelemetry).flexmock_teardown
+  # end
 
 end
