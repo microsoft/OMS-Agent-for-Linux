@@ -1,10 +1,9 @@
---- ../source/ext/fluentd/lib/fluent/log.rb	2018-11-01 14:01:03.000703433 -0700
-+++ ../source/ext/fluentd/lib/fluent/log.rb.new	2019-07-24 17:44:52.974607146 -0700
-@@ -15,6 +15,7 @@
- #
- 
- require 'forwardable'
-+require_relative '../../../../../../../../../plugin/agent_telemetry_script'
- 
- module Fluent
-   class Log
+--- log.rb	2019-08-09 14:16:46.030698575 -0700
++++ log.rb.new	2019-08-09 14:19:03.427066138 -0700
+@@ -374,3 +374,6 @@
+     end
+   end
+ end
++
++# since we are patching over the extant event function, make the patch after its original definition
++require_relative '../../../../../../../../../plugin/fluent_log_patch'
