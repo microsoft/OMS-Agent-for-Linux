@@ -53,7 +53,7 @@ module OMS
     strongtyped_accessor :OSType, String
     strongtyped_accessor :OSDistro, String
     strongtyped_accessor :OSVersion, String
-    strongtyped_accessor :Architecture, String
+    strongtyped_accessor :ProcessorArchitecture, String
     strongtyped_accessor :Region, String
     strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :AgentResourceUsage, AgentResourceUsage
@@ -154,7 +154,7 @@ module OMS
       elsif batch.is_a? Array # These other logs, such as custom logs, don't have a parsed timestamp
         sizes = batch.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize)
       else
-        log_debug("Unexpected record format encountered in QoS: #{records.to_s}")
+        OMS::Log.warn_once("Unexpected record format encountered in QoS: #{records.to_s}")
       end
 
       event[:min_s] = sizes.min
@@ -175,7 +175,7 @@ module OMS
     def self.handle_log_event(event, source)
       if @@qos_events.has_key?(source)
         if @@qos_events[source].size >= QOS_EVENTS_LIMIT
-          log_debug("Incoming QoS log event dropped to obey memory cap.")
+          OMS::Log.warn_once("Incoming QoS log event dropped to obey memory cap.")
           return
         elsif @@qos_events[source].has_key?(event[:m]) # assume all duplicate messages will have the same severity
           @@qos_events[source][event[:m]][:c] += 1

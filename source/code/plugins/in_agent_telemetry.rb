@@ -74,9 +74,9 @@ module Fluent
         end
         t = Thread.new { @telemetry_script.poll_resource_usage }
         sleep @poll_interval
-        if !t.status
-          t.exit
+        if t.status
           @log.error "Failed to poll agent resource usage"
+          t.exit
         end
         t.join
       end
