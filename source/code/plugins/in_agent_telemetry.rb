@@ -72,13 +72,7 @@ module Fluent
           @query_interval = query_interval if !query_interval.nil? and query_interval.between?(MIN_QUERY_INTERVAL, MAX_QUERY_INTERVAL)
           next_heartbeat = now + @query_interval
         end
-        t = Thread.new { @telemetry_script.poll_resource_usage }
-        sleep @poll_interval
-        if t.status
-          @log.error "Failed to poll agent resource usage"
-          t.exit
-        end
-        t.join
+        @telemetry_script.poll_resource_usage
       end
     end
 

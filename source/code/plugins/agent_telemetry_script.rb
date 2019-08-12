@@ -1,4 +1,5 @@
 require 'optparse'
+require 'open3'
 
 module OMS
 
@@ -55,6 +56,7 @@ module OMS
     strongtyped_accessor :OSVersion, String
     strongtyped_accessor :ProcessorArchitecture, String
     strongtyped_accessor :Region, String
+    strongtyped_accessor :ResourceId, String
     strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :AgentResourceUsage, AgentResourceUsage
     strongtyped_accessor :AgentQoS, Array # of AgentQoS
@@ -82,6 +84,30 @@ module OMS
     QOS_EVENTS_LIMIT = 1000
 
     @@qos_events = {}
+
+    def run_command(command, timeout)
+      Open3.popen3(command, :pgroup=>true) do |_, stdout, _, wait_thr|
+        pid = wait_thr.pid
+        deadline = Time.now + timeout
+        sleep 1 until Time.now > deadline or !wait_thr.status
+        if wait_thr.status
+          pgid = Process.getpgid(pid)
+          begin
+            `pkill -TERM -g #{pgid}`
+            sleep 1
+            if wait_thr.status
+              `pkill -KILL -g #{pgid}`
+            end
+          rescue => e
+            log_error("Failed to kill process(es) for command '#{command}'. #{e}")
+          end
+          OMS::Log.error_once("Timeout of called process '#{command}'")
+          return ''
+        else
+          return stdout.read
+        end
+      end
+    end # run_command
 
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log = nil, verbose = false)
       @pids = {oms: 0, omi: 0}
@@ -111,7 +137,7 @@ module OMS
 
       @total_memory = 0
       begin
-        `/opt/omi/bin/omicli ei root/scx SCX_OperatingSystem | grep =`.each_line do |line|
+        run_command("/opt/omi/bin/omicli ei root/scx SCX_OperatingSystem | grep =", 5).each_line do |line|
           @total_memory = line.sub("TotalVirtualMemorySize=","").strip.to_i if line =~ /TotalVirtualMemorySize/
         end
       rescue => e
@@ -236,7 +262,7 @@ module OMS
             amt_mem = 0
             pct_mem = 0
             if !value.zero?
-              `#{command % value}`.each_line do |line|
+              run_command("#{command % value}", 5).each_line do |line|
                 @ru_points[key][:usr_cpu] << line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
                 @ru_points[key][:sys_cpu] << line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
                 amt_mem = line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
@@ -361,7 +387,8 @@ module OMS
         end
         agent_telemetry.ProcessorArchitecture = `uname -m`
         agent_telemetry.Region = OMS::Configuration.azure_region
-        agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable").to_s
+        agent_telemetry.ResourceId = OMS::Configuration.azure_resource_id ? OMS::Configuration.azure_resource_id : ""
+        agent_telemetry.ConfigMgrEnabled = (!File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable")).to_s
         agent_telemetry.AgentResourceUsage = calculate_resource_usage
         agent_telemetry.AgentQoS = calculate_qos
         return (!agent_telemetry.AgentResourceUsage.nil? and !agent_telemetry.AgentQoS.nil?) ? agent_telemetry : nil
