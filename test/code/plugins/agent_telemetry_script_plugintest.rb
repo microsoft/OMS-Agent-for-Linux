@@ -159,11 +159,12 @@ class TelemetryUnitTest < Test::Unit::TestCase
     at.OSVersion = "18.04"
     at.ProcessorArchitecture = "x86_64"
     at.Region = "OnPremise"
+    at.ResourceId = ""
     at.ConfigMgrEnabled = "false"
     at.AgentResourceUsage = aru
     at.AgentQoS = [qos]
 
-    expected_result = '{"OSType":"Linux","OSDistro":"Ubuntu","OSVersion":"18.04","ProcessorArchitecture":"x86_64","Region":"OnPremise","ConfigMgrEnabled":"false",' \
+    expected_result = '{"OSType":"Linux","OSDistro":"Ubuntu","OSVersion":"18.04","ProcessorArchitecture":"x86_64","Region":"OnPremise","ResourceId":"","ConfigMgrEnabled":"false",' \
                       '"AgentResourceUsage":{"OMSMaxMemory":268021,"OMSMaxPercentMemory":25,"OMSMaxUserTime":15,"OMSMaxSystemTime":4,' \
                       '"OMSAvgMemory":182136,"OMSAvgPercentMemory":17,"OMSAvgUserTime":4,"OMSAvgSystemTime":2,"OMIMaxMemory":0,"OMIMaxPercentMemory":0,' \
                       '"OMIMaxUserTime":0,"OMIMaxSystemTime":0,"OMIAvgMemory":0,"OMIAvgPercentMemory":0,"OMIAvgUserTime":0,"OMIAvgSystemTime":0},' \
