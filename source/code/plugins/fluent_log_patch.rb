@@ -32,11 +32,13 @@ module Fluent
         record['message'] = message.dup
         @engine.push_log_event("#{@tag}.#{level}", time.to_i, record)
 
-        case Log.str_to_level(level.to_s)
-        when LEVEL_ERROR
-          OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL)
-        when LEVEL_FATAL
-          OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", message, OMS::INTERNAL)
+        if defined?(OMS::Telemetry.handle_log_event)
+          case Log.str_to_level(level.to_s)
+          when LEVEL_ERROR
+            OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL)
+          when LEVEL_FATAL
+            OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", message, OMS::INTERNAL)
+          end
         end
       end
 
