@@ -58,6 +58,7 @@ module Fluent
       if defined?(OMS::Configuration.telemetry_interval)
         @finished = true
         @thread.join
+        @telemetry_script.cleanup
       end
       super
     end
@@ -73,6 +74,7 @@ module Fluent
           next_heartbeat = now + @query_interval
         end
         @telemetry_script.poll_resource_usage
+        sleep @poll_interval
       end
     end
 

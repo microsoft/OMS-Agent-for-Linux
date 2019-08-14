@@ -88,10 +88,12 @@ module OMS
     def run_command(command, timeout)
       Open3.popen3(command, :pgroup=>true) do |_, stdout, _, wait_thr|
         pid = wait_thr.pid
+        pgid = Process.getpgid(pid)
+        @omicli_pgids << pgid
+        log_error(@omicli_pgids.to_s)
         deadline = Time.now + timeout
         sleep 1 until Time.now > deadline or !wait_thr.status
         if wait_thr.status
-          pgid = Process.getpgid(pid)
           begin
             `pkill -TERM -g #{pgid}`
             sleep 1
@@ -101,9 +103,11 @@ module OMS
           rescue => e
             log_error("Failed to kill process(es) for command '#{command}'. #{e}")
           end
-          OMS::Log.error_once("Timeout of called process '#{command}'")
+          OMS::Log.error_once("Telemetry failed with process timeout '#{command}'")
+          @omicli_pgids.pop
           return ''
         else
+          @omicli_pgids.pop
           return stdout.read
         end
       end
@@ -111,6 +115,7 @@ module OMS
 
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log = nil, verbose = false)
       @pids = {oms: 0, omi: 0}
+      @omicli_pgids = []
       @ru_points = {oms: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []},
                     omi: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []}}
 
@@ -144,6 +149,13 @@ module OMS
         log_error("Error finding max system memory. #{e}")
       end
     end # initialize
+
+    def cleanup
+      @omicli_pgids.each do |pgid|
+        `pkill -KILL -g #{pgid}`
+      end
+      @omicli_pgids.clear
+    end # cleanup
 
     def log_info(message)
       print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
