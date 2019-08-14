@@ -90,7 +90,6 @@ module OMS
         pid = wait_thr.pid
         pgid = Process.getpgid(pid)
         @omicli_pgids << pgid
-        log_error(@omicli_pgids.to_s)
         deadline = Time.now + timeout
         sleep 1 until Time.now > deadline or !wait_thr.status
         if wait_thr.status
