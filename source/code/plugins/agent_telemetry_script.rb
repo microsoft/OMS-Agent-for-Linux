@@ -86,7 +86,7 @@ module OMS
     @@qos_events = {}
 
     def run_command(command, timeout)
-      Open3.popen3(command, :pgroup=>true) do |_, stdout, _, wait_thr|
+      Open3.popen2(command, :pgroup=>true) do |_, stdout, wait_thr|
         pid = wait_thr.pid
         pgid = Process.getpgid(pid)
         @omicli_pgids << pgid
