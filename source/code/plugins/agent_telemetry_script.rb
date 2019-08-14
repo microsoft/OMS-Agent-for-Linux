@@ -356,16 +356,16 @@ module OMS
             qos_event.OperationSuccess = batches[0][:op_success]
             qos_event.BatchCount = batches.size
             qos_event.Operation = batches[0][:op]
-  
+
             counts = batches.map { |batch| batch[:c] }
             qos_event.MinBatchEventCount = counts.min
             qos_event.MaxBatchEventCount = counts.max
             qos_event.AvgBatchEventCount = Telemetry.array_avg(counts)
-  
+
             qos_event.MinEventSize = batches.map { |batch| batch[:min_s] }.min
             qos_event.MaxEventSize = batches.map { |batch| batch[:max_s] }.max
             qos_event.AvgEventSize = batches.map { |batch| batch[:sum_s] }.sum / counts.sum
-  
+
             if batches[0].has_key? :min_l
               qos_event.MinLocalLatencyInMs = (batches[-1][:min_l] * 1000).to_i # Latest batch will have smallest minimum latency
               qos_event.MaxLocalLatencyInMs = (batches[0][:max_l] * 1000).to_i
@@ -375,9 +375,9 @@ module OMS
               qos_event.MaxLocalLatencyInMs = 0
               qos_event.AvgLocalLatencyInMs = 0
             end
-  
+
             qos_event.NetworkLatencyInMs = (((batches.map { |batch| batch[:t] }).sum / batches.size.to_f) * 1000).to_i # average
-            
+
             qos << qos_event
           end
         end
