@@ -85,13 +85,14 @@ module OMS
 
     @@qos_events = {}
 
+    # runs command out of proc, giving it timeout seconds before killing it
     def run_command(command, timeout)
       Open3.popen2(command, :pgroup=>true) do |_, stdout, wait_thr|
         pid = wait_thr.pid
         pgid = Process.getpgid(pid)
         @omicli_pgids << pgid
         deadline = Time.now + timeout
-        sleep 1 until Time.now > deadline or !wait_thr.status
+        sleep 0.5 until Time.now > deadline or !wait_thr.status
         if wait_thr.status
           begin
             `pkill -TERM -g #{pgid}`
@@ -149,6 +150,7 @@ module OMS
       end
     end # initialize
 
+    # ensure any remaining external processes spawned have been killed
     def cleanup
       @omicli_pgids.each do |pgid|
         `pkill -KILL -g #{pgid}`
@@ -175,7 +177,7 @@ module OMS
       @@qos_events.clear
     end
 
-    # handle SendBatch operations
+    # handle batch send operations
     def self.handle_std_event(event, source, batch, time)
       event[:t] = time
       if batch.is_a? Hash and batch.has_key?('DataItems')
