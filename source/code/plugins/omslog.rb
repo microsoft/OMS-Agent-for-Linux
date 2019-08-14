@@ -14,7 +14,7 @@ module OMS
     class << self
       def error_once(message, tag=nil)
         log_once(@@error_proc, @@debug_proc, message, tag)
-        OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL)
+        OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", message, OMS::INTERNAL) if defined?(OMS::Telemetry.handle_log_event)
       end
 
       def warn_once(message, tag=nil)
