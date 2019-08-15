@@ -1,0 +1,27 @@
+--- ../source/ext/fluentd/lib/fluent/plugin.rb	2019-07-22 17:21:57.208065539 -0700
++++ ../source/ext/fluentd/lib/fluent/plugin.rb.new	2019-08-06 13:47:42.708962037 -0700
+@@ -79,13 +79,22 @@
+ 
+     def load_plugins
+       dir = File.join(File.dirname(__FILE__), "plugin")
+-      load_plugin_dir(dir)
++      dir = File.expand_path(dir)
++      # keep default behavior by loading all files under fluent/plugin
++      Dir.entries(dir).sort.each {|fname|
++        if fname =~ /\.rb$/
++          require File.join(dir, fname)
++        end
++      }
+     end
+ 
++    # This function will be called while external plugins are loaded (like OMSAgent)
++    # Load only plugin files starting with in_, out_, filter_, buf_, parser_, formatter_ or storage_
+     def load_plugin_dir(dir)
+       dir = File.expand_path(dir)
++
+       Dir.entries(dir).sort.each {|fname|
+-        if fname =~ /\.rb$/
++        if fname =~ /\.rb$/ and fname =~ /(^in_|^out_|^filter_|^buf_|^parser_|^formatter_|^storage_)/
+           require File.join(dir, fname)
+         end
+       }

@@ -242,6 +242,10 @@ apply_patch ${base_dir}/source/ext/patches/fluentd/in_exec.patch ${base_dir}/sou
 # Patching in_syslog.rb to support configurable syslog delimiter
 apply_patch ${base_dir}/source/ext/patches/fluentd/in_syslog.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin/in_syslog.rb
 
+# This patch make sure to only load external plugin files starting with in_, out_, filter_, buf_, parser_, formatter_ or storage_
+# It has not effect on fluentd internal plugins
+apply_patch ${base_dir}/source/ext/patches/fluentd/plugin.patch ${base_dir}/source/ext/fluentd/lib/fluent/plugin.rb
+
 # This patch is borrowed from FluentD 1.x to support ruby +2.6
 apply_patch ${base_dir}/source/ext/patches/fluentd/fluentd_gemspec.patch ${base_dir}/source/ext/fluentd/fluentd.gemspec
 
