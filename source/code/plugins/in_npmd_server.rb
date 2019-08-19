@@ -299,6 +299,7 @@ module Fluent
                             _diagLogs   = _json["DataItems"].select {|x| x["SubType"] == NPM_DIAG}
                             _validUploadDataItems = Array.new
                             _batchTime = Time.now.utc.strftime("%Y-%m-%d %H:%M:%SZ")
+                            _subtypeList = ["EndpointHealth", "EndpointPath", "ExpressRoutePath", "EndpointDiagnostics", "ConnectionMonitorTestResult", "ConnectionMonitorPath"]
                             _uploadData.each do |item|
                                 item["TimeGenerated"] = _batchTime
                                 if item.key?("SubType")
@@ -316,30 +317,12 @@ module Fluent
                                         else
                                             Logger::logInfo "Network Agent data upload is skipped because it hasnt changed from the last time"
                                         end
-                                    # Append EndpointHealth data
-                                    elsif item["SubType"] == "EndpointHealth"
-                                        Logger::logInfo "EndpointHealth data is uploaded"
+                                    # Append EPM, CM and ER data
+                                    elsif _subtypeList.include?item["SubType"]
+                                        Logger::logInfo "#{item["SubType"]} is uploaded"
                                         _validUploadDataItems << item if is_valid_dataitem(item)
-                                    # Append EndpointPath data
-                                    elsif item["SubType"] == "EndpointPath"
-                                        Logger::logInfo "EndpointPath data is uploaded"
-                                        _validUploadDataItems << item if is_valid_dataitem(item)
-                                    # Append ExpressRoutePath data
-                                    elsif item["SubType"] == "ExpressRoutePath"
-                                        Logger::logInfo "ExpressRoutePath data is uploaded"
-                                        _validUploadDataItems << item if is_valid_dataitem(item)
-                                    # Append EndpointDiagnostics data
-                                    elsif item["SubType"] == "EndpointDiagnostics"
-                                        Logger::logInfo "EndpointDiagnostics data is uploaded"
-                                        _validUploadDataItems << item if is_valid_dataitem(item)
-                                    # Append ConnectionMonitorTestResult data
-                                    elsif item["SubType"] == "ConnectionMonitorTestResult"
-                                        Logger::logInfo "ConnectionMonitorTestResult data is uploaded"
-                                        _validUploadDataItems << item if is_valid_dataitem(item)
-                                    # Append ConnectionMonitorPath data
-                                    elsif item["SubType"] == "ConnectionMonitorPath"
-                                        Logger::logInfo "ConnectionMonitorTestPath data is uploaded"
-                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    else
+                                        log_error "Invalid Subtype data received"
                                     end
                                 end
                             end
