@@ -130,7 +130,8 @@ module NPMDConfig
 		            Logger::logError "Config received is NIL"
 		        end
                 _subnetInfo = getProcessedSubnetHash(configHash["Subnets"])
-                _doc = {"Configuration" => {}}            
+                _doc = {"Configuration" => {}}
+                _doc["Configuration"] ["Metadata"] = createMetadataElements(configHash["Metadata"])
                 _doc["Configuration"] ["Agents"] = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
                 _doc["Configuration"] ["Networks"] = createNetworkElements(configHash["Networks"], _subnetInfo["IDs"])
                 _doc["Configuration"] ["Rules"] = createRuleElements(configHash["Rules"], _subnetInfo["IDs"])
@@ -167,6 +168,13 @@ module NPMDConfig
                 Logger::logError "Got error while creating subnet hash: #{e}", Logger::resc
                 nil
             end
+        end
+
+        def self.createMetadataElements(metadataHash)
+            _metadata = Hash.new
+            _metadata["WorkspaceResourceId"] = metadataHash["WorkspaceResourceID"]
+            _metadata["WorkspaceId"] = metadataHash["WorkspaceID"]
+            return _metadata
         end
 
         def self.createAgentElements(agentArray, maskHash)
@@ -294,14 +302,14 @@ module NPMDConfig
                     _ruleHash["IngestionWorkspaceId"] = _iRule["IngestionWorkspaceId"]
                     _ruleHash["WorkspaceAlias"] = _iRule["WorkspaceAlias"]
                     _ruleHash["Redirect"] = "false"
-                    _ruleHash["NetTests"] = (_iRule["NetworkThresholdLoss"] > 0 and _iRule["NetworkThresholdLatency"] > 0) ? "true" : "false"
-                    _ruleHash["AppTests"] = (_iRule["AppThresholdLatency"] > 0) ? "true" : "false"
+                    _ruleHash["NetTests"] = (_iRule.has_key?("NetworkThresholdLoss") and _iRule.has_key?("NetworkThresholdLatency")) ? "true" : "false"
+                    _ruleHash["AppTests"] = (_iRule.has_key?("AppThresholdLatency")) ? "true" : "false"
                     if (_ruleHash["NetTests"] == "true")
                         _ruleHash["NetworkThreshold"] = {"ChecksFailedPercent" => _iRule["NetworkThresholdLoss"], "RoundTripTimeMs" => _iRule["NetworkThresholdLatency"]}
                     end
 
                     if (_ruleHash["AppTests"] == "true")
-                        _ruleHash["AppThreshold"] = {"RoundTripTimeMs" => _iRule["AppThresholdLatency"]}
+                        _ruleHash["AppThreshold"] = {"ChecksFailedPercent" => _iRule["AppThresholdLoss"], "RoundTripTimeMs" => _iRule["AppThresholdLatency"]}
                     end
 
                     # Fill endpoints
@@ -309,6 +317,7 @@ module NPMDConfig
                     _endpointList = Array.new
                     for j in 0.._epList.length-1
                         _epHash = Hash.new
+                        _epHash["Name"] = _epList[j]["Name"]
                         _epHash["ID"] = _epList[j]["Id"]
                         _epHash["DestAddress"] = _epList[j]["URL"]
                         _epHash["DestPort"] = _epList[j]["Port"]
@@ -435,7 +444,7 @@ module NPMDConfig
                 end
 
                 _config = _doc.elements[RootConfigTag + "/" + SolnConfigV3Tag]
-		        Logger::logError "UI Config : " + _config
+
                 if _config.nil? or _config.elements.empty?
                     Logger::logWarn "found nothing for path #{RootConfigTag}/#{SolnConfigV3Tag} in config string"
                     return nil
@@ -445,6 +454,7 @@ module NPMDConfig
                 @metadata = JSON.parse(_config.elements[MetadataTag].text())
 
                 _h = Hash.new
+                _h[KeyMetadata] = @metadata
                 _h[KeyNetworks] = getNetworkHashFromJson(_config.elements[NetworkInfoTag].text())
                 _h[KeySubnets]  = getSubnetHashFromJson(_config.elements[SubnetInfoTag].text())
                 _h[KeyAgents]   = getAgentHashFromJson(_config.elements[AgentInfoTag].text())
@@ -484,6 +494,7 @@ module NPMDConfig
         ERMSPeeringInfoTag      = "erMSTestIdToERTestMap";
         ERCircuitInfoTag        = "erCircuitIdToCircuitResourceIdMap";
         Version                 = "Version"
+        KeyMetadata             = "Metadata"
         KeyNetworks             = "Networks"
         KeySubnets              = "Subnets"
         KeyAgents               = "Agents"
@@ -514,6 +525,7 @@ module NPMDConfig
                         for ipAddr in _ips
                             if ip["Value"] == ipAddr
                                 _agentId = key
+                                break
                             end
                         end
                     end
@@ -618,6 +630,7 @@ module NPMDConfig
                         _rule["ID"] = testId
                         _rule["Name"] = _test["Name"]
                         _rule["Poll"] = _test["Poll"]
+                        _rule["AppThresholdLoss"] = _test["AppThreshold"].has_key?("Loss") ? _test["AppThreshold"]["Loss"] : "-2"
                         _rule["AppThresholdLatency"] = _test["AppThreshold"]["Latency"]
                         _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"]["Loss"]
                         _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"]["Latency"]
