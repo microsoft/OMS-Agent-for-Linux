@@ -25,7 +25,8 @@ endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
 AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
-AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.0.1-19
+AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
 # This Ruby version number refers only to the major/minor version (not teeny)
@@ -368,6 +369,11 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(AUOMS_KITS_RELEASE_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
 	$(COPY) $(AUOMS_KITS_RELEASE_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
 
+	# adding auoms 1.3 for older distros (SLES11)
+	$(MKPATH) $(INTERMEDIATE_DIR)/bundles/v1
+	cd $(AUOMS_KITS_RELEASE_1_3_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles/v1
+	$(COPY) $(AUOMS_KITS_RELEASE_1_3_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles/v1
+
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
 	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
@@ -393,7 +399,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR)/110; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_110\./\./g"`
 	cd $(INTERMEDIATE_DIR)/110; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_110\./\./g"`
 
-	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
+	chmod +x $(INTERMEDIATE_DIR)/bundles/**/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 100/*.{deb,rpm} 110/*.{deb,rpm} oss-kits/* bundles/*
@@ -439,6 +445,11 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(AUOMS_KITS_RELEASE_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles
 	$(COPY) $(AUOMS_KITS_RELEASE_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles
 
+	# adding auoms 1.3 for older distros (SLES11)
+	$(MKPATH) $(INTERMEDIATE_DIR)/bundles/v1
+	cd $(AUOMS_KITS_RELEASE_1_3_DIR); $(COPY) `ls auoms-*.universal.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)/bundles/v1
+	$(COPY) $(AUOMS_KITS_RELEASE_1_3_DIR)/auoms-bundle-test.sh $(INTERMEDIATE_DIR)/bundles/v1
+
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
 	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
@@ -460,7 +471,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
 
-	chmod +x $(INTERMEDIATE_DIR)/bundles/*.sh
+	chmod +x $(INTERMEDIATE_DIR)/bundles/**/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
 	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 100/*.{deb,rpm} oss-kits/* bundles/*
