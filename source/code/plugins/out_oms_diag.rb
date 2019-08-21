@@ -100,7 +100,7 @@ module Fluent
       ret = []
       ipnameRecords.each do |ipname, dataitemArray|
         OMS::Diag.ProcessDataItemsPostAggregation(dataitemArray, OMS::Configuration.agent_id)
-        record = OMS::Diag.CreateDiagRecord(dataitemArray, ipname)
+        records = OMS::Diag.CreateDiagRecord(dataitemArray, ipname)
         ret << handle_record(ipname, records)
         ret << {'source': ipname, 'event':  handle_record(ipname, records)}
       end
