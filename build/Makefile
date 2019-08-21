@@ -57,7 +57,7 @@ OMI_LIBRARY_LIB_BASE := $(OMI_LIBRARY_DIR)/libbase.a
 # Version of Ruby for test purposes only
 RUBY_TESTING_DIR := $(shell echo "$(RUBY_CONFIGURE_QUALS_TESTINS)" | cut -d= -f2)
 RUBY_TESTING_EXE := $(RUBY_TESTING_DIR)/bin/ruby
-
+RUBY_TESTING_PLUGIN_DIR := $(RUBY_TESTING_DIR)/../plugin/
 # Compiler flags
 
 ifeq ($(ENABLE_DEBUG),1)
@@ -659,6 +659,7 @@ tests : test
 
 unittest : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
+	cp $(PLUGINS_DIR)/* $(RUBY_TESTING_PLUGIN_DIR)
 	cd $(BASE_DIR); PATH=$(RUBY_TESTING_DIR)/bin:$(PATH) $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb test \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
@@ -670,6 +671,7 @@ ifneq (,$(wildcard $(SYSTEST_CONFIG)))
 systemtestrb : $(RUBY_TESTING_DIR)
 	# Any tests that are slow or communicate with a remote server
 	@echo "========================= Performing System Test"
+	cp $(PLUGINS_DIR)/* $(RUBY_TESTING_PLUGIN_DIR)
 	. $(SYSTEST_CONFIG); \
 	cd $(BASE_DIR); PATH=$(RUBY_TESTING_DIR)/bin:$(PATH) $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb systemtest \
 		BASE_DIR=$(BASE_DIR) \
