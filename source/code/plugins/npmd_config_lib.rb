@@ -126,9 +126,9 @@ module NPMDConfig
         # Only accessible method
         def self.createJsonFromUIConfigHash(configHash)
             begin
-		        if configHash == nil
-		            Logger::logError "Config received is NIL"
-		        end
+                if configHash == nil
+                    Logger::logError "Config received is NIL"
+                end
                 _subnetInfo = getProcessedSubnetHash(configHash["Subnets"])
                 _doc = {"Configuration" => {}}
                 _doc["Configuration"] ["Metadata"] = createMetadataElements(configHash["Metadata"])
@@ -309,7 +309,7 @@ module NPMDConfig
                     end
 
                     if (_ruleHash["AppTests"] == "true")
-                        _ruleHash["AppThreshold"] = {"ChecksFailedPercent" => _iRule["AppThresholdLoss"], "RoundTripTimeMs" => _iRule["AppThresholdLatency"]}
+                        _ruleHash["AppThreshold"] = {"ChecksFailedPercent" => (_iRule.has_key?("AppThresholdLoss") ? _iRule["AppThresholdLoss"] : nil), "RoundTripTimeMs" => _iRule["AppThresholdLatency"]}
                     end
 
                     # Fill endpoints
@@ -462,10 +462,10 @@ module NPMDConfig
                 _h[KeyEpm]      = getEpmHashFromJson(_config.elements[EpmInfoTag].text())
                 _h[KeyER]       = getERHashFromJson(_config.elements[ERInfoTag].text())
                 
-                _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil? or _h[KeyRules].nil?)
-		        if _h == nil
-		            Logger::logError "UI Config parsed as nil"
-		        end
+                _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil?)
+                if _h == nil
+                    Logger::logError "UI Config parsed as nil"
+                end
                 return _h
 
             rescue REXML::ParseException => e
@@ -654,7 +654,7 @@ module NPMDConfig
                             _endpointHash = Hash.new
                             _endpoint = _h[EpmEndpointInfoTag][ep]
                             _endpointHash["Id"] = ep
-                            _endpointHash["Name"] = _endpoint["name"]
+                            _endpointHash["Name"] = _endpoint.has_key?("name") ? _endpoint["name"] : nil
                             _endpointHash["URL"] = _endpoint["url"]
                             _endpointHash["Port"] = _endpoint["port"]
                             _endpointHash["Protocol"] = _endpoint["protocol"]
@@ -734,7 +734,7 @@ module NPMDConfig
                                     _privateRule = getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
                                     break;
                                 end
-			                end
+                            end
                             if !_isAgentPresent
                                 _azureAgents = value["azureAgents"]
                                 _azureAgents.each do |x|
