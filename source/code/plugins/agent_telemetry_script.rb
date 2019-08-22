@@ -211,7 +211,7 @@ module OMS
       event[:max_s] = sizes.max
       event[:sum_s] = sizes.sum
 
-      push_back_qos_event(event, source)
+      push_back_qos_event(source, event)
       return event
     end
 
