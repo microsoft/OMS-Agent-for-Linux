@@ -172,8 +172,9 @@ module NPMDConfig
 
         def self.createMetadataElements(metadataHash)
             _metadata = Hash.new
-            _metadata["WorkspaceResourceId"] = metadataHash["WorkspaceResourceID"]
-            _metadata["WorkspaceId"] = metadataHash["WorkspaceID"]
+            _metadata["WorkspaceResourceId"] = metadataHash.has_key?("WorkspaceResourceID") ? metadataHash["WorkspaceResourceID"] : string("")
+            _metadata["WorkspaceId"] = metadataHash.has_key?("WorkspaceID") ? metadataHash["WorkspaceID"] : string("")
+            _metadata["LastUpdated"] = metadataHash.has_key?("LastUpdated") ? metadataHash["LastUpdated"] : string("")
             return _metadata
         end
 
@@ -298,9 +299,9 @@ module NPMDConfig
                     _iRule = rules[i] # get individual rule
                     _ruleHash["ID"] = _iRule["ID"]
                     _ruleHash["Name"] = _iRule["Name"]
-                    _ruleHash["CMResourceId"] = _iRule["CMResourceId"]
-                    _ruleHash["IngestionWorkspaceId"] = _iRule["IngestionWorkspaceId"]
-                    _ruleHash["WorkspaceAlias"] = _iRule["WorkspaceAlias"]
+                    _ruleHash["CMResourceId"] = _iRule.has_key?("CMResourceId") ? _iRule["CMResourceId"] : string("")
+                    _ruleHash["IngestionWorkspaceId"] = _iRule.has_key?("IngestionWorkspaceId") ? _iRule["IngestionWorkspaceId"] : string("")
+                    _ruleHash["WorkspaceAlias"] = _iRule.has_key?("WorkspaceAlias") ? _iRule["WorkspaceAlias"] : string("")
                     _ruleHash["Redirect"] = "false"
                     _ruleHash["NetTests"] = (_iRule.has_key?("NetworkThresholdLoss") and _iRule.has_key?("NetworkThresholdLatency")) ? "true" : "false"
                     _ruleHash["AppTests"] = (_iRule.has_key?("AppThresholdLatency")) ? "true" : "false"
@@ -634,15 +635,17 @@ module NPMDConfig
                         _rule["AppThresholdLatency"] = _test["AppThreshold"]["Latency"]
                         _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"]["Loss"]
                         _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"]["Latency"]
-                        _connectionMonitorId = _test["ConnectionMonitorId"]
+                        _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"] : string("")
 
                         # Iterate over ConnectionMonitorInfoMap to get following info
-                        if _connectionMonitorId
-                            _cmMap = _h[EpmCMInfoTag]
-                            _cmId = _cmMap[_connectionMonitorId.to_s]
-                            _rule["CMResourceId"] = _cmId["resourceId"]
-                            _rule["IngestionWorkspaceId"] = _cmId["ingestionWorkspaceId"]
-                            _rule["WorkspaceAlias"] = _cmId["workspaceAlias"]
+                        if !_connectionMonitorId.empty?
+                            _cmMap = _h.has_key?(EpmCMInfoTag) ? _h[EpmCMInfoTag] : Hash.new
+                            if !_cmMap.empty?
+                                _cmId = _cmMap[_connectionMonitorId.to_s]
+                                _rule["CMResourceId"] = _cmId["resourceId"]
+                                _rule["IngestionWorkspaceId"] = _cmId["ingestionWorkspaceId"]
+                                _rule["WorkspaceAlias"] = _cmId["workspaceAlias"]
+                            end
                         end
 
                         # Collect endpoints details
@@ -654,7 +657,7 @@ module NPMDConfig
                             _endpointHash = Hash.new
                             _endpoint = _h[EpmEndpointInfoTag][ep]
                             _endpointHash["Id"] = ep
-                            _endpointHash["Name"] = _endpoint.has_key?("name") ? _endpoint["name"] : nil
+                            _endpointHash["Name"] = _endpoint.has_key?("name") ? _endpoint["name"] : string("")
                             _endpointHash["URL"] = _endpoint["url"]
                             _endpointHash["Port"] = _endpoint["port"]
                             _endpointHash["Protocol"] = _endpoint["protocol"]
