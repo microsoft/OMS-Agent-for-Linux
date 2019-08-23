@@ -133,14 +133,14 @@ def disable_dsc():
 
 def copy_config_files():
     """Convert, copy, and set permissions for agent configuration files."""
-    os.system('dos2unix /home/temp/omsfiles/perf.conf \
-            && dos2unix /home/temp/omsfiles/rsyslog-oms.conf \
-            && cat /home/temp/omsfiles/perf.conf >> /etc/opt/microsoft/omsagent/{0}/conf/omsagent.conf \
-            && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/opt/omi/conf/omsconfig/rsyslog-oms.conf \
-            && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/rsyslog.d/95-omsagent.conf \
+    os.system('dos2unix /home/temp/omsfiles/workspace_1/perf.conf \
+            && dos2unix /home/temp/omsfiles/workspace_1/rsyslog-oms.conf \
+            && cat /home/temp/omsfiles/workspace_1/perf.conf >> /etc/opt/microsoft/omsagent/{0}/conf/omsagent.conf \
+            && cp /home/temp/omsfiles/workspace_1/rsyslog-oms.conf /etc/opt/omi/conf/omsconfig/rsyslog-oms.conf \
+            && cp /home/temp/omsfiles/workspace_1/rsyslog-oms.conf /etc/rsyslog.d/95-omsagent.conf \
             && chown omsagent:omiusers /etc/rsyslog.d/95-omsagent.conf \
             && chmod 644 /etc/rsyslog.d/95-omsagent.conf \
-            && cp /home/temp/omsfiles/customlog.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
+            && cp /home/temp/omsfiles/workspace_1/customlog.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
             && chown omsagent:omiusers /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
             && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/apache_logs.conf \
             && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/mysql_logs.conf'.format(workspace_id))
@@ -183,23 +183,23 @@ def inject_logs():
 
     # set apache timestamps to current time to ensure they are searchable with 1 hour period in log analytics
     now = datetime.datetime.utcnow().strftime('[%d/%b/%Y:%H:%M:%S +0000]')
-    os.system(r"sed -i 's|\(\[.*\]\)|{0}|' /home/temp/omsfiles/apache_access.log".format(now))
+    os.system(r"sed -i 's|\(\[.*\]\)|{0}|' /home/temp/omsfiles/workspace_1/apache_access.log".format(now))
 
     if INSTALLER == 'DPKG':
-        os.system('cat /home/temp/omsfiles/apache_access.log >> /var/log/apache2/access.log \
+        os.system('cat /home/temp/omsfiles/workspace_1/apache_access.log >> /var/log/apache2/access.log \
                 && chown root:root /var/log/apache2/access.log \
                 && chmod 644 /var/log/apache2/access.log \
                 && dos2unix /var/log/apache2/access.log')
     elif INSTALLER == 'RPM':
-        os.system('cat /home/temp/omsfiles/apache_access.log >> /var/log/httpd/access_log \
+        os.system('cat /home/temp/omsfiles/workspace_1/apache_access.log >> /var/log/httpd/access_log \
                 && chown root:root /var/log/httpd/access_log \
                 && chmod 644 /var/log/httpd/access_log \
                 && dos2unix /var/log/httpd/access_log')
 
-    os.system('cat /home/temp/omsfiles/mysql.log >> /var/log/mysql/mysql.log \
-            && cat /home/temp/omsfiles/error.log >> /var/log/mysql/error.log \
-            && cat /home/temp/omsfiles/mysql-slow.log >> /var/log/mysql/mysql-slow.log \
-            && cat /home/temp/omsfiles/custom.log >> /var/log/custom.log')
+    os.system('cat /home/temp/omsfiles/workspace_1/mysql.log >> /var/log/mysql/mysql.log \
+            && cat /home/temp/omsfiles/workspace_1/error.log >> /var/log/mysql/error.log \
+            && cat /home/temp/omsfiles/workspace_1/mysql-slow.log >> /var/log/mysql/mysql-slow.log \
+            && cat /home/temp/omsfiles/workspace_1/custom.log >> /var/log/custom.log')
 
 
 def config_start_oms_services():

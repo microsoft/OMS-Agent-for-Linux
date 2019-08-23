@@ -250,7 +250,7 @@ def verify_data():
         print('')
         minutes, _ = get_time_diff(install_times[image], datetime.now())
         timespan = 'PT{0}M'.format(minutes)
-        data = check_e2e(hostname, timespan)
+        data = check_e2e(hostname,1, timespan)
 
         # write detailed table for image
         html_file.write("<h2> Verify Data from OMS workspace </h2>")

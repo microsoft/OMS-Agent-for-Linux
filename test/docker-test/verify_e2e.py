@@ -12,11 +12,13 @@ ENDPOINT = ('https://management.azure.com/subscriptions/{}/resourcegroups/'
             '{}/providers/Microsoft.OperationalInsights/workspaces/{}/api/'
             'query?api-version=2017-01-01-preview')
 
-def check_e2e(hostname, timespan = 'PT15M'):
+def check_e2e(hostname, ws_num, timespan = 'PT15M'):
     '''
     Verify data from computer with provided hostname is
     present in the Log Analytics workspace specified in
     parameters.json, append results to e2eresults.json
+    
+    ws_num is the workspace number that we want to verfiy data from. 
     '''
     global success_count
     global success_sources
@@ -42,7 +44,8 @@ def check_e2e(hostname, timespan = 'PT15M'):
     head = {'Authorization': 'Bearer ' + token['accessToken']}
     subscription = parameters['subscription']
     resource_group = parameters['resource group']
-    workspace = parameters['workspace']
+    workspace = parameters['workspace {0}'.format(ws_num)]
+    print (workspace)
     url = ENDPOINT.format(subscription, resource_group, workspace)
 
     sources = ['Heartbeat', 'Syslog', 'Perf', 'ApacheAccess_CL', 'MySQL_CL', 'Custom_Log_CL']
@@ -73,11 +76,11 @@ def check_e2e(hostname, timespan = 'PT15M'):
 
 def main():
     '''Check for data with given hostname.'''
-    if len(sys.argv) == 2:
-        check_e2e(sys.argv[1])
-    else:
-        print('Hostname not provided')
+    if len(sys.argv) < 2:
+        print('Hostname or workspace number not provided')
         exit()
+    else:
+        check_e2e(sys.argv[1], sys.argv[2])
 
 if __name__ == '__main__':
     main()
