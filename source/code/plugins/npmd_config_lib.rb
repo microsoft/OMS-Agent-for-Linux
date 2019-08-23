@@ -128,15 +128,16 @@ module NPMDConfig
             begin
                 if configHash == nil
                     Logger::logError "Config received is NIL"
+                    return nil
                 end
                 _subnetInfo = getProcessedSubnetHash(configHash["Subnets"])
                 _doc = {"Configuration" => {}}
                 _doc["Configuration"] ["Metadata"] = createMetadataElements(configHash["Metadata"])
                 _doc["Configuration"] ["Agents"] = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
                 _doc["Configuration"] ["Networks"] = createNetworkElements(configHash["Networks"], _subnetInfo["IDs"])
-                _doc["Configuration"] ["Rules"] = createRuleElements(configHash["Rules"], _subnetInfo["IDs"])
-                _doc["Configuration"] ["EPM"] = createEpmElements(configHash["Epm"])
-                _doc["Configuration"] ["ER"] = createERElements(configHash["ER"])
+                _doc["Configuration"] ["Rules"] = createRuleElements(configHash["Rules"], _subnetInfo["IDs"]) unless !configHash.has_key?("Rules")
+                _doc["Configuration"] ["EPM"] = createEpmElements(configHash["Epm"]) unless !configHash.has_key?("Epm")
+                _doc["Configuration"] ["ER"] = createERElements(configHash["ER"]) unless !configHash.has_key?("ER")
 
                 _configJson = _doc.to_json
                 _configJson
@@ -172,9 +173,13 @@ module NPMDConfig
 
         def self.createMetadataElements(metadataHash)
             _metadata = Hash.new
-            _metadata["WorkspaceResourceId"] = metadataHash.has_key?("WorkspaceResourceID") ? metadataHash["WorkspaceResourceID"] : string("")
-            _metadata["WorkspaceId"] = metadataHash.has_key?("WorkspaceID") ? metadataHash["WorkspaceID"] : string("")
-            _metadata["LastUpdated"] = metadataHash.has_key?("LastUpdated") ? metadataHash["LastUpdated"] : string("")
+            _metadata["Version"] = metadataHash.has_key?("Version") ? metadataHash["Version"] : String.new
+            _metadata["Protocol"] = metadataHash.has_key?("Protocol") ? metadataHash["Protocol"] : String.new
+            _metadata["SubnetUid"] = metadataHash.has_key?("SubnetUid") ? metadataHash["SubnetUid"] : String.new
+            _metadata["AgentUid"] = metadataHash.has_key?("AgentUid") ? metadataHash["AgentUid"] : String.new
+            _metadata[:"WorkspaceResourceId"] = metadataHash["WorkspaceResourceID"] if metadataHash.has_key?("WorkspaceResourceID")
+            _metadata[:"WorkspaceId"] = metadataHash["WorkspaceID"] if metadataHash.has_key?("WorkspaceID")
+            _metadata[:"LastUpdated"] = metadataHash["LastUpdated"] if metadataHash.has_key?("LastUpdated")
             return _metadata
         end
 
@@ -299,9 +304,9 @@ module NPMDConfig
                     _iRule = rules[i] # get individual rule
                     _ruleHash["ID"] = _iRule["ID"]
                     _ruleHash["Name"] = _iRule["Name"]
-                    _ruleHash["CMResourceId"] = _iRule.has_key?("CMResourceId") ? _iRule["CMResourceId"] : string("")
-                    _ruleHash["IngestionWorkspaceId"] = _iRule.has_key?("IngestionWorkspaceId") ? _iRule["IngestionWorkspaceId"] : string("")
-                    _ruleHash["WorkspaceAlias"] = _iRule.has_key?("WorkspaceAlias") ? _iRule["WorkspaceAlias"] : string("")
+                    _ruleHash["CMResourceId"] = _iRule.has_key?("CMResourceId") ? _iRule["CMResourceId"] : String.new
+                    _ruleHash["IngestionWorkspaceId"] = _iRule.has_key?("IngestionWorkspaceId") ? _iRule["IngestionWorkspaceId"] : String.new
+                    _ruleHash["WorkspaceAlias"] = _iRule.has_key?("WorkspaceAlias") ? _iRule["WorkspaceAlias"] : String.new
                     _ruleHash["Redirect"] = "false"
                     _ruleHash["NetTests"] = (_iRule.has_key?("NetworkThresholdLoss") and _iRule.has_key?("NetworkThresholdLatency")) ? "true" : "false"
                     _ruleHash["AppTests"] = (_iRule.has_key?("AppThresholdLatency")) ? "true" : "false"
@@ -459,9 +464,9 @@ module NPMDConfig
                 _h[KeyNetworks] = getNetworkHashFromJson(_config.elements[NetworkInfoTag].text())
                 _h[KeySubnets]  = getSubnetHashFromJson(_config.elements[SubnetInfoTag].text())
                 _h[KeyAgents]   = getAgentHashFromJson(_config.elements[AgentInfoTag].text())
-                _h[KeyRules]    = getRuleHashFromJson(_config.elements[RuleInfoTag].text())
-                _h[KeyEpm]      = getEpmHashFromJson(_config.elements[EpmInfoTag].text())
-                _h[KeyER]       = getERHashFromJson(_config.elements[ERInfoTag].text())
+                _h[KeyRules]    = getRuleHashFromJson(_config.elements[RuleInfoTag].text()) unless _config.elements[RuleInfoTag].nil?
+                _h[KeyEpm]      = getEpmHashFromJson(_config.elements[EpmInfoTag].text()) unless _config.elements[EpmInfoTag].nil?
+                _h[KeyER]       = getERHashFromJson(_config.elements[ERInfoTag].text()) unless _config.elements[ERInfoTag].nil?
                 
                 _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil?)
                 if _h == nil
@@ -635,7 +640,7 @@ module NPMDConfig
                         _rule["AppThresholdLatency"] = _test["AppThreshold"]["Latency"]
                         _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"]["Loss"]
                         _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"]["Latency"]
-                        _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"] : string("")
+                        _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"].to_s : String.new
 
                         # Iterate over ConnectionMonitorInfoMap to get following info
                         if !_connectionMonitorId.empty?
@@ -657,7 +662,7 @@ module NPMDConfig
                             _endpointHash = Hash.new
                             _endpoint = _h[EpmEndpointInfoTag][ep]
                             _endpointHash["Id"] = ep
-                            _endpointHash["Name"] = _endpoint.has_key?("name") ? _endpoint["name"] : string("")
+                            _endpointHash["Name"] = _endpoint.has_key?("name") ? _endpoint["name"] : String.new
                             _endpointHash["URL"] = _endpoint["url"]
                             _endpointHash["Port"] = _endpoint["port"]
                             _endpointHash["Protocol"] = _endpoint["protocol"]
@@ -677,8 +682,8 @@ module NPMDConfig
 
         def self.getWorkspaceId()
             begin
-                workspaceId = @metadata["WorkspaceID"]
-                return workspaceId ? !workspaceId.empty? : ""
+                _workspaceId = @metadata.has_key?("WorkspaceID") ? @metadata["WorkspaceID"] : String.new
+                return _workspaceId
             end
         end
 
