@@ -10,5 +10,4 @@
 /test/docker-test/*[.html, .log, .pyc]
 .vscode
 .idea
-/test/multihoming-test/*[.html, .log, .pyc]
 
