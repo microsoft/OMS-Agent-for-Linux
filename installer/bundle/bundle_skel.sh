@@ -71,6 +71,8 @@ INSTALL_CURL=55 #64, temporary as 55 excludes from SLA
 INSTALL_GPG=65
 UNSUPPORTED_PKG_INSTALLER=66
 OPENSSL_PATH="openssl"
+BUNDLES_PATH="bundles"
+BUNDLES_LEGACY_PATH="bundles/v1"
 
 usage()
 {
@@ -1233,17 +1235,23 @@ case "$installMode" in
                     fi
                 fi
             done
-            for i in bundles/*-bundle-test.sh; do
+
+            # Handling auoms 1.x vs 2.x installation
+            is_suse11_platform_with_openssl1
+            if [ $? -eq 0 ];then
+               BUNDLES_PATH=$BUNDLES_LEGACY_PATH
+            fi
+            for i in ${BUNDLES_PATH}/*-bundle-test.sh; do
                 # If filespec didn't expand, break out of loop
                 [ ! -f $i ] && break
 
                 # It's possible we have a test file without bundle; if so, ignore it
                 BUNDLE=`basename $i -bundle-test.sh`
-                [ ! -f bundles/${BUNDLE}-*universal.*.sh ] && continue
+                [ ! -f ${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh ] && continue
 
                 ./$i
                 if [ $? -eq 0 ]; then
-                    ./bundles/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
+                    ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
                         echo "$BUNDLE package failed to install and exited with status $TEMP_STATUS"
@@ -1355,17 +1363,23 @@ case "$installMode" in
                 fi
             fi
         done
-        for i in bundles/*-bundle-test.sh; do
+
+        # Handling auoms 1.x vs 2.x installation
+        is_suse11_platform_with_openssl1
+        if [ $? -eq 0 ];then
+           BUNDLES_PATH=$BUNDLES_LEGACY_PATH
+        fi
+        for i in ${BUNDLES_PATH}/*-bundle-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
 
             # It's possible we have a test file without bundle; if so, ignore it
             BUNDLE=`basename $i -bundle-test.sh`
-            [ ! -f bundles/${BUNDLE}-*universal.*.sh ] && continue
+            [ ! -f ${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh ] && continue
 
             ./$i
             if [ $? -eq 0 ]; then
-                ./bundles/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
+                ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
                     echo "$BUNDLE package failed to upgrade and exited with status $TEMP_STATUS"

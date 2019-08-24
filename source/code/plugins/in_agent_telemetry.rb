@@ -57,7 +57,9 @@ module Fluent
     def shutdown
       if defined?(OMS::Configuration.telemetry_interval)
         @finished = true
-        @thread.join
+        @thread.kill
+        @telemetry_script.cleanup
+        @thread.join(1)
       end
       super
     end

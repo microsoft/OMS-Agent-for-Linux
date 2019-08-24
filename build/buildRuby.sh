@@ -55,6 +55,7 @@ elevate()
 # Helper script to build Ruby properly for OMS agent
 # Also builds fluentd since it lives under the Ruby directory
 
+HOME_DIR=`(cd ~/; pwd -P)`
 BASE_DIR=`(cd ..; pwd -P)`
 OMS_AGENTDIR=/opt/microsoft/omsagent
 
@@ -191,12 +192,6 @@ if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ]; then
         sudo make install_bin install_include install_lib
         sudo ldconfig
     fi
-
-#    export PATH=${JEMALLOC_SRCDIR}/bin:$PATH
-#    LDFLAGS=\"-L${JEMALLOC_LIB_SO}\"
-#    RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "CPPFLAGS=-I${JEMALLOC_SRCDIR}/include"  )
-#    export LD_LIBRARY_PATH=${JEMALLOC_LIBPATH}:$LD_LIBRARY_PATH
-#    export PKG_CONFIG_PATH=${JEMALLOC_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
 fi
 
 # Clean the version of Ruby from any existing files that aren't part of source
@@ -258,6 +253,14 @@ if [ $RUNNING_FOR_TEST -eq 1 ]; then
     echo "Installing Metaclass and Mocha (for UnitTest) into Ruby ..."
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/metaclass-0.0.4.gem
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mocha-1.8.0.gem
+
+    plugin_test_directory="${HOME_DIR}/bin/plugin"
+
+    # Due to the require_relative in fluentd's patched log.rb,
+    # we need to move plugins to their expected paths based on ruby_test_directory
+    sudo rm -rf ${plugin_test_directory}
+    mkdir ${plugin_test_directory}
+    cp ../../code/plugins/* ${plugin_test_directory}
 fi
 
 echo "Installing Bundler into Ruby ..."

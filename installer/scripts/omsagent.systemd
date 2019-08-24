@@ -15,8 +15,8 @@ ExecStart=/opt/microsoft/omsagent/bin/omsagent \
   --no-supervisor
 ExecStop=/bin/rm -f %RUN_DIR_WS%/omsagent.pid
 KillMode=process
-KillSignal=SIGKILL
 TimeoutStartSec=10
+TimeoutStopSec=10
 
 [Install]
 WantedBy=multi-user.target

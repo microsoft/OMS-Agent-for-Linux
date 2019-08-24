@@ -24,6 +24,7 @@ module Fluent
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
     config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf'
     config_param :compress, :bool, :default => true
+    config_param :run_in_background, :bool, :default => false
 
     def configure(conf)
       s = conf.add_element("secondary")
@@ -38,6 +39,7 @@ module Fluent
 
     def shutdown
       super
+      OMS::BackgroundJobs.instance.cleanup
     end
 
     def write_status_file(success, message)
@@ -56,17 +58,14 @@ module Fluent
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
         start = Time.now
-          
         # This method will raise on failure alerting the engine to retry sending this data
         OMS::Common.start_request(req, http)
-          
         ends = Time.now
         time = ends - start
         count = record.has_key?('DataItems') ? record['DataItems'].size : 1
         @log.debug "Success sending #{key} x #{count} in #{time.round(2)}s"
         write_status_file("true","Sending success")
-        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", key, record, count, time)
-        return true
+        return OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", key, record, count, time)
       end
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending data later."
@@ -78,8 +77,10 @@ module Fluent
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously
       # try and fail to resend it. (Infinite failure loop)
-      OMS::Log.error_once("Unexpected exception, dropping data. Error:'#{e}'")
+      msg = "Unexpected exception, dropping data. Error:'#{e}'"
+      OMS::Log.error_once(msg)
       write_status_file("false","Unexpected exception")
+      return msg
     end
 
     # This method is called when an event reaches to Fluentd.
@@ -90,16 +91,8 @@ module Fluent
       return [tag, record].to_msgpack
     end
 
-    # This method is called every flush interval. Send the buffer chunk to OMS. 
-    # 'chunk' is a buffer chunk that includes multiple formatted
-    # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
-    def write(chunk)
-      # Quick exit if we are missing something
-      if !OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
-        raise OMS::RetryRequestException, 'Missing configuration. Make sure to onboard.'
-      end
-
-      # Group records based on their datatype because OMS does not support a single request with multiple datatypes. 
+    def self_write(chunk, write_io = nil)
+      # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       unmergable_records = []
       chunk.msgpack_each {|(tag, record)|
@@ -121,17 +114,34 @@ module Fluent
         end
       }
 
-      datatypes.each do |key, record|
-        handle_record(key, record)
+      ret = []
+      [datatypes, unmergable_records].each do |list_records|
+        list_records.each { |key, records|
+          ret << {'source': key, 'event': handle_record(key, records)}
+        }
       end
 
-      @log.trace "Handling #{unmergable_records.size} unmergeable records"
-      unmergable_records.each { |key, record|
-        handle_record(key, record)
-      }
+      ret
     end
 
-  private
+    # This method is called every flush interval. Send the buffer chunk to OMS.
+    # 'chunk' is a buffer chunk that includes multiple formatted
+    # NOTE! This method is called by (out_oms) plugin thread not Fluentd's main thread. So IO wait doesn't affect other plugins.
+    def write(chunk)
+      # Quick exit if we are missing something
+      if !OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
+        raise OMS::RetryRequestException, 'Missing configuration. Make sure to onboard.'
+      end
+
+      if run_in_background
+        OMS::BackgroundJobs.instance.run_job_and_wait { self_write(chunk) }
+      else
+        self_write(chunk)
+      end
+
+    end
+
+    private
 
     class ChunkErrorHandler
       include Configurable
@@ -167,8 +177,8 @@ module Fluent
           @error_handlers[tag].emit(record)
         }
       end
-   
-    private
+
+      private
 
       def create_error_handlers(router)
         nop_handler = NopErrorHandler.new

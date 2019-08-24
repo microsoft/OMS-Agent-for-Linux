@@ -60,11 +60,13 @@ RUN mv openssl-OpenSSL_1_0_0 /home/scratch/ostc-openssl/openssl-1.0.0
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.0 && ./Configure linux-generic32 --prefix=/usr/local_ssl_1.0.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make CC="gcc -m32" depend && make CC="gcc -m32" && make install_sw
 
 ADD https://github.com/openssl/openssl/archive/OpenSSL_1_0_1.tar.gz /home/scratch
-RUN tar -zxf OpenSSL_1_0_1
+RUN tar -zxf OpenSSL_1_0_1.tar.gz
 RUN mv openssl-OpenSSL_1_0_1 /home/scratch/ostc-openssl/openssl-1.0.1
 RUN cd /home/scratch/ostc-openssl/openssl-1.0.1 && ./Configure linux-generic32 --prefix=/usr/local_ssl_1.0.0 shared -no-ssl2 -no-ec -no-ec2m -no-ecdh && make CC="gcc -m32" depend && make CC="gcc -m32" && make install_sw
 
 
 # Fix OpenSSL cert
-RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.0/ssl/cert.pem
-RUN ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.1/ssl/cert.pem
+RUN mkdir -p /usr/local_ssl_1.0.0/ssl \
+    && ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.0/ssl/cert.pem \
+    && mkdir -p /usr/local_ssl_1.0.1/ssl \
+    && ln -sf /etc/pki/tls/cert.pem /usr/local_ssl_1.0.1/ssl/cert.pem

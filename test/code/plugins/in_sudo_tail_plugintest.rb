@@ -24,7 +24,7 @@ class SudoTailTest < Test::Unit::TestCase
     path #{TMP_DIR}/tail.txt
     tag t1
     pos_file #{TMP_DIR}/tail.pos
-    read_from_head true
+    read_from_head false
     format /(?<message>.*)/
     run_interval 1s
   ]
@@ -38,7 +38,7 @@ class SudoTailTest < Test::Unit::TestCase
     assert_equal("#{TMP_DIR}/tail.txt", d.instance.path)
     assert_equal("t1", d.instance.tag)
     assert_equal("#{TMP_DIR}/tail.pos", d.instance.pos_file)
-    assert_equal(true, d.instance.read_from_head)
+    assert_equal(false, d.instance.read_from_head)
     assert_equal('/(?<message>.*)/', d.instance.format)
     assert_equal(1, d.instance.run_interval)
   end
@@ -55,7 +55,11 @@ class SudoTailTest < Test::Unit::TestCase
     d = create_driver
     d.instance.command = "ruby #{TMP_DIR}/tail.rb "
     d.instance.stubs(:set_system_command).returns(nil)
-    d.run
+    emits = []
+    # wait 20 * 0.5, "see fluentd/lib/fluent/test/base.rb:79 num_waits.times { sleep 0.05 }
+    d.run(num_waits=20) do
+      emits = d.emits
+    end
     emits = d.emits
 
     assert_equal(true, emits.length > 0)
@@ -76,12 +80,14 @@ class SudoTailTest < Test::Unit::TestCase
       f.puts "puts \"Registered Sign:\u00ae\""
 
     }
-
     d = create_driver
     d.instance.command = "ruby #{TMP_DIR}/tail2.rb "
     d.instance.stubs(:set_system_command).returns(nil)
-    d.run
-    emits = d.emits
+    emits = []
+    # wait 20 * 0.5, "see fluentd/lib/fluent/test/base.rb:79 num_waits.times { sleep 0.05 }
+    d.run(num_waits=20) do
+      emits = d.emits
+    end
 
     assert_equal(true, emits.length > 0)
     assert_equal({"message".force_encoding("ASCII-8BIT")=>"Russia:Россия".force_encoding("ASCII-8BIT")}, emits[0][2], "Emitted String Encoding is #{emits[0][2]["message"].encoding}")
@@ -101,8 +107,11 @@ class SudoTailTest < Test::Unit::TestCase
     d = create_driver
     d.instance.command = "ruby #{TMP_DIR}/tail3.rb "
     d.instance.stubs(:set_system_command).returns(nil)
-    d.run
-    emits = d.emits
+    emits = []
+    # wait 20 * 0.5, "see fluentd/lib/fluent/test/base.rb:79 num_waits.times { sleep 0.05 }
+    d.run(num_waits=20) do
+      emits = d.emits
+    end
 
     assert_equal(true, emits.length > 0)
     assert_equal({"message"=>"test3"}, emits[0][2])
