@@ -841,9 +841,8 @@ module NPMContract
 
 
     DATAITEM_VALID = 1
-    DATAITEM_ERR_MISSING_FIELDS = 2
-    DATAITEM_ERR_INVALID_FIELDS = 3
-    DATAITEM_ERR_INVALID_TYPE = 4
+    DATAITEM_ERR_INVALID_FIELDS = 2
+    DATAITEM_ERR_INVALID_TYPE = 3
 
     CONTRACT_AGENT_DATA_KEYS = ["AgentFqdn",
                                 "AgentIP",
@@ -1075,11 +1074,6 @@ module NPMContract
             return DATAITEM_ERR_INVALID_FIELDS, k if !_contract.include?(k)
         end
 
-        return DATAITEM_VALID, nil if item.length == _contract.length
-
-        _contract.each do |e|
-            return DATAITEM_ERR_MISSING_FIELDS, e if !item.keys.include?(e)
-        end
         return DATAITEM_VALID, nil
     end
 
