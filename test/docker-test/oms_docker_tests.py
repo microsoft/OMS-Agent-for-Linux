@@ -58,8 +58,8 @@ try:
 except KeyError:
     print('parameters not defined correctly or omsbundle file not found')
 
-workspace_id = parameters['workspace id']
-workspace_key = parameters['workspace key']
+workspace_id = parameters['workspace id 1']
+workspace_key = parameters['workspace key 1']
 
 def append_file(src, dest):
     """Append contents of src to dest."""

@@ -66,6 +66,7 @@ def main():
             detect_workspace_id()
             copy_oms_logs()
         elif re.match('^([-/]*)(injectlogs)', option):
+            detect_workspace_id()
             inject_logs()
     except:
         if operation is None:
@@ -158,10 +159,10 @@ def apache_mysql_conf():
 
     os.system('mkdir -p /var/log/mysql \
             && touch /var/log/mysql/mysql.log /var/log/mysql/error.log /var/log/mysql/mysql-slow.log \
-            && touch /var/log/custom.log \
+            && touch /var/log/{0}-custom.log \
             && chmod +r /var/log/mysql/* \
             && chmod +rx /var/log/mysql \
-            && chmod +r /var/log/custom.log')
+            && chmod +r /var/log/{0}-custom.log'.format(workspace_id))
 
     if INSTALLER == 'DPKG':
         replace_items(apache_conf_file, apache_access_conf_path_string, '/var/log/apache2/access.log')
@@ -180,7 +181,6 @@ def apache_mysql_conf():
 
 def inject_logs():
     """Inject logs (after) agent is running in order to simulate real Apache/MySQL/Custom logs output."""
-
     # set apache timestamps to current time to ensure they are searchable with 1 hour period in log analytics
     now = datetime.datetime.utcnow().strftime('[%d/%b/%Y:%H:%M:%S +0000]')
     os.system(r"sed -i 's|\(\[.*\]\)|{0}|' /home/temp/omsfiles/workspace_1/apache_access.log".format(now))
@@ -199,7 +199,7 @@ def inject_logs():
     os.system('cat /home/temp/omsfiles/workspace_1/mysql.log >> /var/log/mysql/mysql.log \
             && cat /home/temp/omsfiles/workspace_1/error.log >> /var/log/mysql/error.log \
             && cat /home/temp/omsfiles/workspace_1/mysql-slow.log >> /var/log/mysql/mysql-slow.log \
-            && cat /home/temp/omsfiles/workspace_1/custom.log >> /var/log/custom.log')
+            && cat /home/temp/omsfiles/workspace_1/custom.log >> /var/log/{0}-custom.log'.format(workspace_id))
 
 
 def config_start_oms_services():

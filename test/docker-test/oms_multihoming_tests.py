@@ -63,8 +63,8 @@ try:
 except KeyError:
     print('parameters not defined correctly or omsbundle file not found')
 
-workspace_id_1 = parameters['workspace id']
-workspace_key_1 = parameters['workspace key']
+workspace_id_1 = parameters['workspace id 1']
+workspace_key_1 = parameters['workspace key 1']
 workspace_id_2 = parameters['workspace id 2']
 workspace_key_2 = parameters['workspace key 2']
 
