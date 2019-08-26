@@ -193,7 +193,7 @@ class NPMDConfigUT < Test::Unit::TestCase
         assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid agent data sent but validation returned invalid")
 
         # Checking for invalid fields case
-        _invalidFieldsStr='{"AgentFqdn":"abcd", "AgentIP":"abcd", "AgentCapability":"abcd", "SubnetId":"abcd", "PrefixLength":"abcd", "AddressZType":"abcd", "SubType":"NetworkAgent", TimeGenerated":"abcd"}'
+        _invalidFieldsStr='{"AgentFqdn":"abcd", "AgentIP":"abcd", "AgentCapability":"abcd", "SubnetId":"abcd", "PrefixLength":"abcd", "AddressZType":"abcd", "SubType":"NetworkAgent", "TimeGenerated":"abcd"}'
         _invalidFields = JSON.parse(_invalidFieldsStr)
         _res, _prob = NPMContract::IsValidDataitem(_invalidFields, NPMContract::DATAITEM_AGENT)
         assert_equal(NPMContract::DATAITEM_ERR_INVALID_FIELDS, _res, "agent data with invalid fields sent but validation did not give correct error")
