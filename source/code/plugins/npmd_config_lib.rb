@@ -296,6 +296,7 @@ module NPMDConfig
         end
 
         def self.createEpmElements(epmHash)
+            return if epmHash.nil?
             _epmRules = Hash.new
             _rule = Array.new
             epmHash.each do |key, rules|
@@ -341,6 +342,7 @@ module NPMDConfig
         end
 
         def self.createERElements(erHash)
+            return if erHash.nil?
             _er = Hash.new
             erHash.each do |key, rules|
                 # Fill Private Peering Rules
@@ -998,10 +1000,12 @@ module NPMContract
                                                     "SourceResourceId",
                                                     "SourceAddress",
                                                     "SourceName",
+                                                    "SourceAgentId",
                                                     "DestinationType",
                                                     "DestinationResourceId",
                                                     "DestinationAddress",
                                                     "DestinationName",
+                                                    "DestinationAgentId",
                                                     "Protocol",
                                                     "DestinationPort",
                                                     "DestinationIP",
@@ -1018,6 +1022,7 @@ module NPMContract
 
     CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS =    ["SubType",
                                                     "RecordId",
+                                                    "TopologyId",
                                                     "ConnectionMonitorResourceId",
                                                     "TimeCreated",
                                                     "TestGroupName",
@@ -1026,10 +1031,12 @@ module NPMContract
                                                     "SourceResourceId",
                                                     "SourceAddress",
                                                     "SourceName",
+                                                    "SourceAgentId",
                                                     "DestinationType",
                                                     "DestinationResourceId",
                                                     "DestinationAddress",
                                                     "DestinationName",
+                                                    "DestinationAgentId",
                                                     "ChecksTotal",
                                                     "ChecksFailed",
                                                     "ChecksFailedPercentThreshold",
@@ -1038,9 +1045,16 @@ module NPMContract
                                                     "MaxRoundTripTimeMs",
                                                     "AvgRoundTripTimeMs",
                                                     "HopAddresses",
+                                                    "HopTypes",
+                                                    "HopResourceIds",
+                                                    "HopIssues",
+                                                    "HopLinkTypes",
                                                     "HopLinkLatencies",
+                                                    "HopLinkResourceIds",
+                                                    "HopLinkIssues",
                                                     "DestinationPort",
                                                     "Protocol",
+                                                    "HopProperties",
                                                     "PathTestResult",
                                                     "AdditionalData",
                                                     "IngestionWorkspaceResourceId"]
