@@ -13,7 +13,6 @@ enable_purify_server=""
 enable_omi_tools=""
 enable_omi_tools_flag=0
 opensource_distro=0
-enable_ruby_jemalloc=""
 build_type=Release
 ULINUX=0
 NOULINIX=0
@@ -153,7 +152,6 @@ do
           exit 1
       fi
       enable_ulinux="--enable-ulinux"
-      enable_ruby_jemalloc="--with-jemalloc"
       ULINUX=1
     ;;
 
@@ -171,11 +169,6 @@ do
 
     --enable-open-source)
       opensource_distro=1
-    ;;
-
-    --disable-ruby-jemalloc)
-      echo "Configured Jemalloc for Ruby"
-      enable_ruby_jemalloc=""
     ;;
 
     *)
@@ -207,7 +200,6 @@ OPTIONS:
     --[no]enable-ulinux         Specifies platform as ULINUX (Linux only);
                                 ULINUX is assumed on universal build systems
     --enable-open-source        Build for open source distribution
-    --disable-ruby-jemalloc     Disable building ruby with jemalloc
 
 EOF
     exit 0
@@ -262,6 +254,9 @@ apply_patch ${base_dir}/source/ext/patches/ruby/ssl_http_fix.patch ${base_dir}/s
 
 # This patch increase the minimum limit for jit to be triggered and increase the cache size to be able to jit more functions
 apply_patch ${base_dir}/source/ext/patches/ruby/mjit_options.patch ${base_dir}/source/ext/ruby/mjit.c
+
+# This patch reduce Ruby memory allocation by tweaking malloc
+apply_patch ${base_dir}/source/ext/patches/ruby/malloc_gc.patch ${base_dir}/source/ext/ruby/gc.c
 
 # Patching log.rb in order to support qos error reporting
 apply_patch ${base_dir}/source/ext/patches/fluentd/log.patch ${base_dir}/source/ext/fluentd/lib/fluent/log.rb
@@ -456,7 +451,6 @@ ruby_configure_quals=(
     --with-out-ext=${RUBY_EXTENSIONS}
   )
 
-ruby_config_quals_jemalloc=$enable_ruby_jemalloc
 ruby_config_quals_sysins="--prefix=/opt/microsoft/omsagent/ruby"
 
 ruby_test_directory="${home_dir}/bin/omsagent_test_ruby"
@@ -524,7 +518,6 @@ PACKAGE_SUFFIX=$PKG_SUFFIX
 RUBY_CONFIGURE_QUALS=( ${ruby_configure_quals[@]} )
 RUBY_CONFIGURE_QUALS_SYSINS="$ruby_config_quals_sysins"
 RUBY_CONFIGURE_QUALS_TESTINS="$ruby_config_quals_testins"
-RUBY_CONFIGURE_QUALS_JEMALLOC="${ruby_config_quals_jemalloc}"
 RUBY_TEST_DIRECTORY="$ruby_test_directory"
 
 EOF

@@ -1043,19 +1043,19 @@ module OMS
     end
 
     def log(msg)
-      @log.info "#{self.class.name}:#{get_log_tag()} #{msg}"
+      @log.info "#{self.class.name}:#{get_log_tag} #{msg}"
     end
 
     def debug(msg)
-      @log.debug "#{self.class.name}:#{get_log_tag()} #{msg}"
+      @log.debug "#{self.class.name}:#{get_log_tag} #{msg}"
     end
 
     def trace(msg)
-      @log.trace "#{self.class.name}:#{get_log_tag()} #{msg}"
+      @log.trace "#{self.class.name}:#{get_log_tag} #{msg}"
     end
 
     def error(msg)
-      @log.error "#{self.class.name}:#{get_log_tag()} #{msg}"
+      @log.error "#{self.class.name}:#{get_log_tag} #{msg}"
     end
 
     def add_process_to_cache(pid)
@@ -1068,6 +1068,32 @@ module OMS
       @proc_cache_lock.synchronize {
         @proc_cache.delete(pid)
       }
+    end
+
+    # This prevent more page faults from happening after the fork
+    def run_garbage_collection()
+      begin
+        h = {}
+        # Run GC 4 times to force garbage collection of short lived objects before doing the fork
+        4.times { # maximum 4 times
+          GC.stat(h)
+          live_slots = h[:heap_live_slots] || h[:heap_live_slot]
+          old_objects = h[:old_objects] || h[:old_object]
+          remwb_unprotects = h[:remembered_wb_unprotected_objects] || h[:remembered_shady_object]
+          young_objects = live_slots - old_objects - remwb_unprotects
+
+          break if young_objects < live_slots / 10
+
+          disabled = GC.enable
+          GC.start(full_mark: false)
+          GC.disable if disabled
+        }
+      rescue => e
+        error(e.inspect)
+      end
+      # TODO: Run GC compaction here if possible
+      # use this feature once is available, wait until ruby 2.7
+      # GC.compact
     end
 
     public
@@ -1100,9 +1126,7 @@ module OMS
     def run_job_and_wait(&block)
       read_io, write_io = IO.pipe
 
-      # read_s, write_s, = IO.select([read_io], [write_io])
-      # read_io = read_s[0]
-      # write_io = write_s[0]
+      run_garbage_collection
 
       pid = fork do
         ["SIGHUP", "SIGTERM"].each do |sig|
@@ -1182,7 +1206,7 @@ module OMS
         if val.key?(:telemetry) and val[:telemetry] != nil
           val[:telemetry].each do |item|
             operation, event, source = item[:operation], item[:event], item[:source]
-            log "Handling operation=#{operation}, source=#{source}, event=#{event}"
+            debug "Handling operation=#{operation}, source=#{source}, event=#{event}"
             if operation === LOG_ERROR
               @log.error(event)
             else

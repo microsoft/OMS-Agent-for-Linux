@@ -1,0 +1,30 @@
+--- ../source/ext/ruby/gc.c	2019-08-28 17:11:51.342961037 -0700
++++ ../source/ext/ruby/gc.c.new	2019-08-28 17:12:45.271108954 -0700
+@@ -6655,7 +6655,11 @@
+ 
+     gc_prof_timer_start(objspace);
+     {
+-	gc_marks(objspace, do_full_mark);
++	    gc_marks(objspace, do_full_mark);
++        /* Explicitly free all eligible pages to the kernel. */
++        if (do_full_mark) {
++            malloc_trim(0);
++        }
+     }
+     gc_prof_timer_stop(objspace);
+ 
+@@ -10127,6 +10131,14 @@
+ #undef OPT
+ 	OBJ_FREEZE(opts);
+     }
++
++    /*
++     * Ruby doesn't benefit from many glibc malloc arenas due to GVL,
++     * remove or increase when we get Guilds
++     */
++    if (!getenv("MALLOC_ARENA_MAX")) {
++        mallopt(M_ARENA_MAX, 2);
++    }
+ }
+ 
+ #ifdef ruby_xmalloc

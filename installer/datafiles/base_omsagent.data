@@ -53,6 +53,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/bin/configure_syslog.sh;                        installer/scripts/configure_syslog.sh;                 755; root; root
 /opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb;                 installer/scripts/hdinsightmanifestreader.rb;          744; root; root
 /opt/microsoft/omsagent/bin/regenerate_scom_cert.sh;                    installer/scripts/regenerate_scom_cert.sh;             755; root; root
+/opt/microsoft/omsagent/bin/omsagent.env;                               installer/scripts/omsagent.env;                        755; root; root
 
 /opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root

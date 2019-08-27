@@ -8,6 +8,7 @@ Type=simple
 User=omsagent
 Group=omiusers
 PIDFile=%RUN_DIR_WS%/omsagent.pid
+EnvironmentFile=/opt/microsoft/omsagent/bin/omsagent.env
 ExecStart=/opt/microsoft/omsagent/bin/omsagent \
   -d %RUN_DIR_WS%/omsagent.pid \
   -o %LOG_DIR_WS%/omsagent.log \

@@ -787,9 +787,9 @@ class LoadBench:
         # wait more times for collecting more data
         # force flushing
         processes = self.clear_dead_process(processes)
-        for proc in processes:
-            if proc.is_running():
-                proc.send_signal(psutil.signal.SIGUSR1)
+#         for proc in processes:
+#             if proc.is_running():
+#                 proc.send_signal(psutil.signal.SIGUSR1)
 
         return profiler, response_times, nb_events
 

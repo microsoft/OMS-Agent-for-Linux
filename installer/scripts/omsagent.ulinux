@@ -52,6 +52,12 @@ else
     exit 1
 fi
 
+# Read configuration variable file if it is present
+if [ -r /opt/microsoft/omsagent/bin/omsagent.env ]; then
+    set -a
+    . /opt/microsoft/omsagent/bin/omsagent.env
+    set +a
+fi
 
 RETVAL=0
 USER_REQ=""
