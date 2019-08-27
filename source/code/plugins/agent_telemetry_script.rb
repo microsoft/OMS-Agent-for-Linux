@@ -178,6 +178,7 @@ module OMS
     end
 
     def self.push_back_qos_event(source, event)
+      return if event.nil?
       if @@qos_events.has_key?(source)
         if @@qos_events[source].size >= QOS_EVENTS_LIMIT
           @@qos_events[source].shift # remove oldest qos event to cap memory use
@@ -193,6 +194,10 @@ module OMS
       event[:t] = time
       if batch.is_a? Hash and batch.has_key?('DataItems')
         records = batch['DataItems']
+
+        # Telemetry will drop any batches which have no records
+        return nil if records.empty?
+
         if records[0].has_key?('Timestamp')
           now = Time.now
           times = records.map { |record| now - Time.parse(record['Timestamp']) }
@@ -229,21 +234,22 @@ module OMS
       else
         @@qos_events[source] = { event[:m] => event }
       end
+      return event
     end
 
     # Must be a class method in order to be exposed to all *.rb pushing qos events
     def self.push_qos_event(operation, operation_success, message, source, batch = [], count = 1, time = 0)
+      event = { op: operation, op_success: operation_success, m: message, c: count }
       begin
-        event = { op: operation, op_success: operation_success, m: message, c: count }
         if [LOG_ERROR, LOG_FATAL].include?(operation)
           event = handle_log_event(event, source)
         else
           event = handle_std_event(event, source, batch, time)
         end
-        return event
       rescue => e
         OMS::Log.error_once("Error pushing QoS event. #{e}")
       end
+      return event
     end # push_qos_event
 
     def self.array_avg(array)
@@ -266,7 +272,7 @@ module OMS
             log_error("Error reading omsagent pid file. #{e}")
           end
         when :omi
-          @pids[key] = `pgrep -U omsagent dsc_host`.to_i
+          @pids[key] = `pgrep -U omsagent omiagent`.to_i
         end
       end
     end
