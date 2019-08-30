@@ -56,7 +56,7 @@ module Fluent
       unless @run_interval
         raise ConfigError, "'run_interval' is required for periodic tailing"      
       end
- 
+
       @parser = Plugin.new_parser(conf['format'])
       @parser.configure(conf)
     end
@@ -102,7 +102,7 @@ module Fluent
     end
  
     def set_system_command
-      @command = "sudo " << RUBY_DIR << TAILSCRIPT << %Q{'#{@path}'} <<  " -p #{@pos_file}"
+      @command = "sudo " << RUBY_DIR << TAILSCRIPT << %Q{'#{@path}'} <<  " --log_level #{Log::LEVEL_TEXT[@log.level]}" << " -p #{@pos_file}"
     end
 
     def run_periodic

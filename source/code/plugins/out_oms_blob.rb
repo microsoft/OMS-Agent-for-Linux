@@ -312,7 +312,7 @@ module Fluent
     # parameters:
     #   tag: string. the tag of the item
     #   records: string[]. an arrary of data
-    def handle_records(tag, records)
+    def handle_record(tag, records)
       filePath = nil
 
       tags = tag.split('.')

@@ -1,5 +1,6 @@
 require 'optparse'
 require 'logger'
+require 'sigdump/setup'
 
 module Tailscript
 
@@ -11,12 +12,18 @@ module Tailscript
       @read_from_head = $options[:read_from_head]
       @pf = nil
       @pf_file = nil
+      level = 'info'
+
+      level = $options[:log_level] if $options.has_key?(:log_level)
+      # trace is not supported, let fallback to debug
+      level = 'debug' if level == 'trace'
 
       @log = Logger.new(STDERR)
+      @log.level = level
       @log.formatter = proc do |severity, time, progname, msg|
         "#{severity} #{msg}\n"
       end
-      @log.info "Received paths from sudo tail plugin : #{paths}"
+      @log.info "Received paths from sudo tail plugin : #{paths}, log_level=#{level}"
     end
 
     attr_reader :paths
@@ -198,7 +205,6 @@ module Tailscript
                   else
                     @buffer << @io.readpartial(2048, @iobuf)
                   end
-                  @log.debug "The buffer length is #{@buffer.length}"
                   while idx = @buffer.index(@SEPARATOR)
                     @lines << @buffer.slice!(0, idx + 1)
                   end
@@ -212,7 +218,7 @@ module Tailscript
               end
             end
 
-            @log.debug "Number of lines read from #{@io.path} : #{@lines.length}"           
+            @log.debug "Number of lines read from #{@io.path} : #{@lines.length}"
             unless @lines.empty?
               if @receive_lines.call(@lines)
                 @pe.update_pos(@io.pos - @buffer.bytesize)
@@ -431,6 +437,9 @@ if __FILE__ == $0
     end
     opts.on("-h", "--[no-]readfromhead") do |h|
       $options[:read_from_head] = h 
+    end
+    opts.on("--log_level [LOG_LEVEL]") do |level|
+      $options[:log_level] = level
     end
   end.parse!
 
