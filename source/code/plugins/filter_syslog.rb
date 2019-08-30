@@ -30,23 +30,23 @@ module Fluent
     def check_eps()
       if @eps_counter == nil
         @eps_counter = 0
-      end
 
+        @eps_thread = Thread.new {
+          current_time = Time.now
+          previous_time = current_time
+          loop {
+            current_time = Time.now
+            diff_time_ms = (current_time - previous_time)
+            if diff_time_ms >= 1
+              $log.info("EPS #{@eps_counter}, for #{diff_time_ms} second")
+              @eps_counter = 0
+            end
+            previous_time = current_time
+            sleep 1
+          }
+        }
+      end
       @eps_counter += 1
-      if @eps_counter == 1
-        @time_start = Time.now
-      end
-      current_time = Time.now
-      if current_time - @time_start >= 1
-        diff_time_ms = (current_time - @time_start)
-        $log.info("EPS #{@eps_counter}, for #{diff_time_ms} second")
-        @eps_counter = 0
-      end
-    end
-
-    # TODO: fix after dsc removal: use fast_utc_to_iso8601_format from OMS_COMMON.rb
-    def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
-      utctime.strftime("%FT%T.%#{fraction_digits}NZ")
     end
 
     def filter(tag, time, record)
@@ -58,8 +58,8 @@ module Fluent
           'indent' => record['ident'],
           # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
           # The time may be slightly in the future from the ingestion time.
-          'Timestamp' => fast_utc_to_iso8601_format(Time.now.utc),
-          'EventTime' => fast_utc_to_iso8601_format(Time.at(time).utc),
+          'Timestamp' => OMS::Common::fast_utc_to_iso8601_format(Time.now.utc),
+          'EventTime' => OMS::Common::fast_utc_to_iso8601_format(Time.at(time).utc),
           'Host' => hostname,
           'HostIP' => 'Unknown IP',
           'Message' => record['message']
