@@ -132,9 +132,9 @@ echo "Calling Python script to collect OMS Logs...<START> $3"
 if [ -n $3 ] && [ "$3" = "-c" ]; then
      echo $3
      echo $4
-     sudo python $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" -c "$4"
+     sudo python2 $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" -c "$4"
 else
-     sudo python $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" 
+     sudo python2 $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" 
 fi
 echo "Calling Python script to collect OMS Logs...<END>"
 
