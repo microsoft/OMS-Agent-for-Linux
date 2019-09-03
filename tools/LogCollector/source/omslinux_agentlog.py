@@ -983,15 +983,15 @@ try:
     '''
     Logic to capture IOError or OSError in above logic
     '''
-except (IOError), e:
+except IOError as e:
     print(e)
     logging.error('Could not save repo to repofile %s: %s' % (outFile, e))
     sys.exit(2)
-except (OSError), e:
+except OSError as e:
     print(e)
     logging.error('Error occurred in OS command execution %s' % (e))
     sys.exit(2)
-except (Exception), e:
+except Exception as e:
     print(e)
     logging.error('General Exception occurred %s' % (e))
     sys.exit(2)
