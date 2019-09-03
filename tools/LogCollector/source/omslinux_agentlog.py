@@ -562,25 +562,25 @@ def chkDiskFreeSpace(estSize, estExtSize, cmdSize):
     tmpSpace = 0
     arcSize = (estSize + estExtSize + cmdSize) * 0.1
     totSize = (estSize + estExtSize + cmdSize) + arcSize
-    print '*' * 80
-    print "1. Disk space required to copy Common files in /tmp       : ", int(estSize / 1024), 'KBytes'
-    print "2. Disk space required to copy Extension files in /tmp    : ", int(estExtSize / 1024), 'KBytes'
-    print "3. Disk space required for command outputs in /tmp        : ", int(cmdSize / 1024), 'KBytes'
-    print "4. Disk space required to archive files in /tmp           : ", int(arcSize / 1024), 'KBytes'
-    print "5. Total disk space required in /tmp                      : ", int(totSize / 1024), 'KBytes'
-    print '*' * 80
-    print "Files created in step 1, 2 & 3 are temporary and deleted at the end"
-    print '*' * 80
+    print ('*' * 80)
+    print ("1. Disk space required to copy Common files in /tmp       : ", int(estSize / 1024), 'KBytes')
+    print ("2. Disk space required to copy Extension files in /tmp    : ", int(estExtSize / 1024), 'KBytes')
+    print ("3. Disk space required for command outputs in /tmp        : ", int(cmdSize / 1024), 'KBytes')
+    print ("4. Disk space required to archive files in /tmp           : ", int(arcSize / 1024), 'KBytes')
+    print ("5. Total disk space required in /tmp                      : ", int(totSize / 1024), 'KBytes')
+    print ('*' * 80)
+    print ("Files created in step 1, 2 & 3 are temporary and deleted at the end")
+    print ('*' * 80)
     stat= os.statvfs('/tmp')
     # use f_bfree for superuser, or f_bavail if filesystem
     # has reserved space for superuser
     freeSpace=stat.f_bfree*stat.f_bsize
     if(totSize < freeSpace): 
-          print 'Enough space available in /tmp to store logs...'
-          print '*' * 80
+          print ('Enough space available in /tmp to store logs...')
+          print ('*' * 80)
     else:
-          print 'Not enough free space available in /tmp to store logs...'
-          print '*' * 80
+          print ('Not enough free space available in /tmp to store logs...')
+          print ('*' * 80)
           tmpSpace = 1
     return tmpSpace
 
@@ -728,14 +728,14 @@ def inpArgCheck(argv):
     try:
         opts, args = getopt.getopt(argv, "hs:c:", ['srnum=', 'comname='])
     except getopt.GetoptError:
-        print 'Usage: sudo python omsagentlog.py [-h] -s <SR Number> [-c <Company Name>]'
+        print ('Usage: sudo python omsagentlog.py [-h] -s <SR Number> [-c <Company Name>]')
         return 2
     if(len(argv) == 0):
-        print 'Usage: sudo python omsagentlog.py [-h] -s <SR Number> [-c <Company Name>]'
+        print ('Usage: sudo python omsagentlog.py [-h] -s <SR Number> [-c <Company Name>]')
         return 1
     for opt, arg in opts:
         if (opt == '-h'):
-           print 'Usage: sudo python omsagentlog.py [-h] -s <SR Number> [-c <Company Name>]'
+           print ('Usage: sudo python omsagentlog.py [-h] -s <SR Number> [-c <Company Name>]')
            return 1
         elif opt in ('-s', '--srnum'):
              srnum = arg
@@ -749,8 +749,8 @@ Main() logic for log collection, calling the above functions
 ret=inpArgCheck(sys.argv[1:])
 if(ret == 1 or ret == 2):
     sys.exit(1)
-print 'SR Number : ', srnum
-print 'Company Name :', comname
+print ('SR Number : ', srnum)
+print ('Company Name :', comname)
 
 global logger
 outDir='/tmp/omslogs'
@@ -908,12 +908,12 @@ try:
     if(omsInstallStatus != 0):
         msg='OMS Linux Agent install directories under /var/opt/microsoft are missing...'
         writeLogOutput(msg)
-        print '*' * 80
-        print 'OMS Linux Agent install directories are not present'
-        print 'please run OMS Linux Agent install script'
-        print 'For details on installing OMS Agent, please refer documentation'
-        print 'https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-agent-linux'
-        print '*' * 80
+        print ('*' * 80)
+        print ('OMS Linux Agent install directories are not present')
+        print ('please run OMS Linux Agent install script')
+        print ('For details on installing OMS Agent, please refer documentation')
+        print ('https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-agent-linux')
+        print ('*' * 80)
         sys.exit(1)
     else:
         msg='OMS Linux Agent install directories under /var/opt/microsoft are present...'
@@ -923,7 +923,7 @@ try:
     Call OS specific routines to run commands and save its o/p
     to /tmp/omslogs/omslinux.out
     '''
-    print 'Linux type installed is...%s' % linuxType
+    print ('Linux type installed is...%s' % linuxType)
     if(linuxType == 'CentOS'):
        runCentOSCommands(omsInstallType)
     elif(linuxType == 'RedHat'):
