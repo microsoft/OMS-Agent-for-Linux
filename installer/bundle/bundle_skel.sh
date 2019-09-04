@@ -29,6 +29,7 @@ DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
 OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
+OMS_ENV_FILE="/etc/opt/microsoft/omsagent/omsagent.env"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 OMI_SERVICE="/opt/omi/bin/service_control"
 
@@ -240,6 +241,26 @@ is_suse11_platform_with_openssl1(){
      fi
   fi
   return 1
+}
+
+detect_cylance(){
+  if service --status-all 2>&1 | grep -Fq ' cylance'; then
+    return 0
+	fi
+  [ -f /etc/init.d/cylance ] && return 0
+  [ -f /etc/init.d/cylancesvc ] && return 0
+  [ -d /opt/cylance ] && return 0
+
+  return 1
+}
+
+# Cylance is conflicting with jemalloc
+# only disable jemalloc when cylance is present
+disable_jemalloc_if_cylance_exist(){
+  if detect_cylance; then
+    echo "Cylance detected, disabling jemalloc..."
+    sed -i 's/^LD_PRELOAD=/#LD_PRELOAD=/g' $OMS_ENV_FILE
+  fi
 }
 
 ulinux_detect_openssl_version()
@@ -1204,6 +1225,8 @@ case "$installMode" in
                cleanup_and_exit $OMS_INSTALL_FAILED
             fi
 
+            disable_jemalloc_if_cylance_exist
+
             # Install DSC
             if shouldInstall_omsconfig; then
                 pkg_add ${DSC_PKG} omsconfig
@@ -1321,6 +1344,8 @@ case "$installMode" in
             echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS"
             cleanup_and_exit $OMS_INSTALL_FAILED
         fi
+
+        disable_jemalloc_if_cylance_exist
 
         # Update DSC
         shouldInstall_omsconfig

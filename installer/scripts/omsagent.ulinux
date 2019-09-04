@@ -19,6 +19,7 @@
 WORKSPACE_ID=%WORKSPACE_ID%
 OMS_HOME=/opt/microsoft/omsagent
 OMS_NAME="Operations Management Suite agent ($WORKSPACE_ID)"
+OMS_ENV_FILE="/etc/opt/microsoft/omsagent/omsagent.env"
 
 OMS_BIN=$OMS_HOME/bin/omsagent-$WORKSPACE_ID
 test -x $OMS_BIN || { echo "$OMS_BIN not installed";
@@ -53,9 +54,9 @@ else
 fi
 
 # Read configuration variable file if it is present
-if [ -r /opt/microsoft/omsagent/bin/omsagent.env ]; then
+if [ -r $OMS_ENV_FILE ]; then
     set -a
-    . /opt/microsoft/omsagent/bin/omsagent.env
+    . $OMS_ENV_FILE
     set +a
 fi
 
