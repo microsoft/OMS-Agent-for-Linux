@@ -268,7 +268,7 @@ def get_threads_cpu_percent(p, total_percent):
 def measure(process, cpu_interval=0):
     result = dict()
     result['cpu'] = process.cpu_percent(cpu_interval)
-    mem = vars(process.memory_info())
+    mem = vars(process.memory_full_info())
     result.update(mem)
     # faults = measure_page_faults(process.pid)
     # result.update(faults)
@@ -304,7 +304,7 @@ def profile(processes, profiler, cpu_interval=0):
                 profiler[key] = {'cpu': [], 'mem': [], 'minor_flt': [], 'major_flt': [], 'threads': {}}
             result = measure(process, cpu_interval)
             profiler[key]['cpu'].append(result['cpu'])
-            profiler[key]['mem'].append(result['rss'] / 10 ** 6)
+            profiler[key]['mem'].append(result['pss'] / 10 ** 6)
             # profiler[key]['minor_flt'].append(result['minor_flt'])
             # profiler[key]['major_flt'].append(result['major_flt'])
 

@@ -1,19 +1,6 @@
---- ../source/ext/ruby/gc.c	2019-08-28 17:11:51.342961037 -0700
-+++ ../source/ext/ruby/gc.c.new	2019-08-28 17:12:45.271108954 -0700
-@@ -6655,7 +6655,11 @@
- 
-     gc_prof_timer_start(objspace);
-     {
--	gc_marks(objspace, do_full_mark);
-+	    gc_marks(objspace, do_full_mark);
-+        /* Explicitly free all eligible pages to the kernel. */
-+        if (do_full_mark) {
-+            malloc_trim(0);
-+        }
-     }
-     gc_prof_timer_stop(objspace);
- 
-@@ -10127,6 +10131,14 @@
+--- ../source/ext/ruby/gc.c	2019-09-04 21:40:23.967143473 +0000
++++ ../source/ext/ruby/gc.c.new	2019-09-04 21:41:10.115246447 +0000
+@@ -10127,6 +10127,14 @@
  #undef OPT
  	OBJ_FREEZE(opts);
      }
