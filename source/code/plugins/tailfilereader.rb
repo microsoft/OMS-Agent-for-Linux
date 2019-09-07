@@ -95,7 +95,7 @@ module Tailscript
       if @pos_file
         @pf_file = File.open(@pos_file, File::RDWR|File::CREAT)
         @pf_file.sync = true
-        @pf = PositionFile.parse(@pf_file)
+        @pf = PositionFile.parse(@pf_file, @log)
       end
 
       paths.each { |path|
@@ -317,7 +317,8 @@ module Tailscript
         }
       end
 
-      def self.parse(file)
+      def self.parse(file, log)
+        @log = log
         compact(file)
 
         file_mutex = Mutex.new
@@ -326,7 +327,7 @@ module Tailscript
         file.each_line {|line|
           m = /^([^\t]+)\t([0-9a-fA-F]+)\t([0-9a-fA-F]+)/.match(line)
           unless m
-            $log.warn "Unparsable line in pos_file: #{line}"
+            @log.warn "Unparsable line in pos_file: #{line}"
             next
           end
           path = m[1]
@@ -344,7 +345,7 @@ module Tailscript
         existent_entries = file.each_line.map { |line|
           m = /^([^\t]+)\t([0-9a-fA-F]+)\t([0-9a-fA-F]+)/.match(line)
           unless m
-            $log.warn "Unparsable line in pos_file: #{line}"
+            @log.warn "Unparsable line in pos_file: #{line}"
             next
           end
           path = m[1]
@@ -442,9 +443,17 @@ if __FILE__ == $0
       $options[:log_level] = level
     end
   end.parse!
+  begin
+    a = Tailscript::NewTail.new(ARGV[0])
+    a.start
+    a.shutdown
+  rescue => e
+    log = Logger.new(STDERR)
+    log.formatter = proc do |severity, time, progname, msg| 
+      "#{severity} #{msg}\n"
+    end
+    log.error "Tailfilereader crashed due to an unexpected exit --- #{e.message}  #{e.backtrace.inspect}"
+  end
 
-  a = Tailscript::NewTail.new(ARGV[0])
-  a.start
-  a.shutdown
 end
 
