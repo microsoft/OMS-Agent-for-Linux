@@ -1146,7 +1146,7 @@ module OMS
               # event = event[0] if event.is_a?(Array)
               source = data[:source] if data.is_a?(Hash) && data.key?(:source)
               if event.is_a?(String)
-                operation = LOG_ERROR
+                operation = ""
               elsif event.is_a?(Hash) && event.key?(:op)
                 operation = event[:op]
               end
@@ -1207,7 +1207,7 @@ module OMS
           val[:telemetry].each do |item|
             operation, event, source = item[:operation], item[:event], item[:source]
             debug "Handling operation=#{operation}, source=#{source}, event=#{event}"
-            if operation === LOG_ERROR
+            if source === INTERNAL
               @log.error(event)
             else
               OMS::Telemetry.push_back_qos_event(source, event)
