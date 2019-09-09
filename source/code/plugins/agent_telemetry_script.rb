@@ -66,8 +66,10 @@ module OMS
 
     def serialize
       qos_hash = self.AgentQoS.map! { |qos| obj_to_hash(qos) }
+      error_hash = self.AgentError.map! { |error| obj_to_hash(error) }
       hash = obj_to_hash(self)
       hash["AgentQoS"] = qos_hash
+      hash["AgentError"] = error_hash
       return hash.to_json
     end
   end

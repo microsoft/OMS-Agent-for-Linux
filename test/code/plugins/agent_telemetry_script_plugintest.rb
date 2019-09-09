@@ -120,6 +120,7 @@ class TelemetryUnitTest < Test::Unit::TestCase
     at  = OMS::AgentTelemetry.new
     aru = OMS::AgentResourceUsage.new
     qos = OMS::AgentQoS.new
+    err = OMS::AgentError.new
 
     aru.OMSMaxMemory = 268021
     aru.OMSMaxPercentMemory = 25
@@ -154,6 +155,9 @@ class TelemetryUnitTest < Test::Unit::TestCase
     qos.AvgLocalLatencyInMs = 4888
     qos.NetworkLatencyInMs = 29
 
+    err.Message = "Test"
+    err.Count = 14
+
     at.OSType = "Linux"
     at.OSDistro = "Ubuntu"
     at.OSVersion = "18.04"
@@ -163,6 +167,7 @@ class TelemetryUnitTest < Test::Unit::TestCase
     at.ConfigMgrEnabled = "false"
     at.AgentResourceUsage = aru
     at.AgentQoS = [qos]
+    at.AgentError = [err]
 
     expected_result = '{"OSType":"Linux","OSDistro":"Ubuntu","OSVersion":"18.04","ProcessorArchitecture":"x86_64","Region":"OnPremise","ResourceId":"","ConfigMgrEnabled":"false",' \
                       '"AgentResourceUsage":{"OMSMaxMemory":268021,"OMSMaxPercentMemory":25,"OMSMaxUserTime":15,"OMSMaxSystemTime":4,' \
@@ -170,7 +175,7 @@ class TelemetryUnitTest < Test::Unit::TestCase
                       '"OMIMaxUserTime":0,"OMIMaxSystemTime":0,"OMIAvgMemory":0,"OMIAvgPercentMemory":0,"OMIAvgUserTime":0,"OMIAvgSystemTime":0},' \
                       '"AgentQoS":[{"Source":"LINUX_SYSLOGS_BLOB.LOGMANAGEMENT","Message":"","OperationSuccess":"true","BatchCount":13,' \
                       '"Operation":"SendBatch","MinBatchEventCount":4,"MaxBatchEventCount":25,"AvgBatchEventCount":10,"MinEventSize":101,"MaxEventSize":393,' \
-                      '"AvgEventSize":165,"MinLocalLatencyInMs":1920,"MaxLocalLatencyInMs":59478,"AvgLocalLatencyInMs":4888,"NetworkLatencyInMs":29}]}'
+                      '"AvgEventSize":165,"MinLocalLatencyInMs":1920,"MaxLocalLatencyInMs":59478,"AvgLocalLatencyInMs":4888,"NetworkLatencyInMs":29}],"AgentError":[{"Message":"Test","Count":14}]}'
 
     assert_equal(expected_result, at.serialize, "failed serialization of telemetry request payload")
   end
