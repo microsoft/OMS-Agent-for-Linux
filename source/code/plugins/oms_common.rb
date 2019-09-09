@@ -1023,6 +1023,8 @@ module OMS
   require 'singleton'
   class BackgroundJobs
     include Singleton
+    UNKOWN = "UNKOWN"
+    LOG_ERROR = "LOG_ERROR"
 
     attr_reader :proc_cache
     def initialize
@@ -1137,11 +1139,12 @@ module OMS
         result = {}
         begin
           yield_ret = yield
-          yield_results = {}
           trace "yield_ret=#{yield_ret}"
+
+          yield_telemetry = []
           if yield_ret.is_a?(Array)
             yield_ret.each { |data|
-              operation, source, event = 'UNKOWN', 'UNKOWN', nil
+              operation, source, event = UNKOWN, UNKOWN, nil
               event = data[:event] if data.is_a?(Hash) && data.key?(:event)
               # event = event[0] if event.is_a?(Array)
               source = data[:source] if data.is_a?(Hash) && data.key?(:source)
@@ -1151,26 +1154,29 @@ module OMS
                 operation = event[:op]
               end
 
-              yield_results[:telemetry] = [] unless yield_results.key?(:telemetry)
-              yield_results[:telemetry].push({'operation': operation, 'event': event, 'source': source})
+              if event != nil and source != UNKOWN
+                yield_telemetry.push({'operation': operation, 'event': event, 'source': source})
+              end
             }
           end
-          result[:return] = yield_results
+          result[:telemetry] = yield_telemetry
+          result[:return] = yield_ret
         rescue => e # We should catch any exception to pass it to parent
           result[:exception] = {'class': e.class.name, 'msg': e.message, 'backtrace': e.backtrace}
         end
         # process is orphan
         Process.exit(false) if Process.ppid == 1
 
-        write_io.write(result)
         trace "write_io <= #{result}"
+        write_io.write(result)
       end
 
       add_process_to_cache(pid)
       write_io.close # For child use
       # blocking read on pipe
-      results = eval(read_io.read)
-      trace "Receiving results=#{results}"
+      read = read_io.read
+      results = eval(read)
+      trace "Receiving read=#{read} results=#{results}"
 
       read_io.close
       Process.waitpid(pid)
@@ -1198,24 +1204,22 @@ module OMS
         end
       end
 
-      # Handling Telemetry or simple return
-      if results.key?(:return) and results[:return] != nil
-        val = results[:return]
-
-        # Handling Telemetry
-        if val.key?(:telemetry) and val[:telemetry] != nil
-          val[:telemetry].each do |item|
-            operation, event, source = item[:operation], item[:event], item[:source]
-            debug "Handling operation=#{operation}, source=#{source}, event=#{event}"
-            if source === "LOG_ERROR"
-              @log.error(event)
-            else
-              OMS::Telemetry.push_back_qos_event(source, event)
-            end
+      # Handling Telemetry
+      if results.key?(:telemetry) and results[:telemetry] != nil
+        results[:telemetry].each do |item|
+          operation, event, source = item[:operation], item[:event], item[:source]
+          debug "Handling operation=#{operation}, source=#{source}, event=#{event}"
+          if operation === LOG_ERROR
+            @log.error(event)
+          else
+            OMS::Telemetry.push_back_qos_event(source, event)
           end
         end
-        # Simple return
-        return val
+      end
+
+      # Handling simple return
+      if results.key?(:return) and results[:return] != nil
+        return results[:return]
       end
 
       return nil
