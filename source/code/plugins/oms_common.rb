@@ -1019,4 +1019,219 @@ module OMS
     end
   end
 
+
+  require 'singleton'
+  class BackgroundJobs
+    include Singleton
+    UNKOWN = "UNKOWN"
+    LOG_ERROR = "LOG_ERROR"
+
+    attr_reader :proc_cache
+    def initialize
+      @proc_cache = {}
+      @proc_cache_lock = Mutex.new
+      @master_process = Process.pid
+      @log = $log
+
+      ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
+    end
+
+    private
+
+    def get_log_tag()
+      tag = "CHILD"
+      tag = "PARENT" if @master_process == Process.pid
+      return tag
+    end
+
+    def log(msg)
+      @log.info "#{self.class.name}:#{get_log_tag} #{msg}"
+    end
+
+    def debug(msg)
+      @log.debug "#{self.class.name}:#{get_log_tag} #{msg}"
+    end
+
+    def trace(msg)
+      @log.trace "#{self.class.name}:#{get_log_tag} #{msg}"
+    end
+
+    def error(msg)
+      @log.error "#{self.class.name}:#{get_log_tag} #{msg}"
+    end
+
+    def add_process_to_cache(pid)
+      @proc_cache_lock.synchronize {
+        @proc_cache[pid] = pid
+      }
+    end
+
+    def remove_process_from_cache(pid)
+      @proc_cache_lock.synchronize {
+        @proc_cache.delete(pid)
+      }
+    end
+
+    # This prevent more page faults from happening after the fork
+    def run_garbage_collection()
+      begin
+        h = {}
+        # Run GC 4 times to force garbage collection of short lived objects before doing the fork
+        4.times { # maximum 4 times
+          GC.stat(h)
+          live_slots = h[:heap_live_slots] || h[:heap_live_slot]
+          old_objects = h[:old_objects] || h[:old_object]
+          remwb_unprotects = h[:remembered_wb_unprotected_objects] || h[:remembered_shady_object]
+          young_objects = live_slots - old_objects - remwb_unprotects
+
+          break if young_objects < live_slots / 10
+
+          disabled = GC.enable
+          GC.start(full_mark: false)
+          GC.disable if disabled
+        }
+      rescue => e
+        error(e.inspect)
+      end
+      # TODO: Run GC compaction here if possible
+      # use this feature once is available, wait until ruby 2.7
+      # GC.compact
+    end
+
+    public
+
+    def self.finalize(object_id)
+      return if Process.ppid == 1 or Process.pid != self.instance.get_mpid
+      self.instance.cleanup
+    end
+
+    def get_mpid
+      return @master_process
+    end
+
+    def cleanup
+      return if @proc_cache.empty?
+      log "Cleanup jobs, pid=#{Process.pid} mpid=#{self.get_mpid} ppid=#{Process.ppid}"
+
+      @proc_cache.each do |pid, val|
+        Process.kill('SIGTERM', pid)
+      end
+
+      @proc_cache.each do |pid, val|
+        Process.kill('SIGKILL', pid)
+      end
+      @proc_cache_lock.synchronize {
+        @proc_cache.clear
+      }
+    end
+
+    def run_job_and_wait(&block)
+      read_io, write_io = IO.pipe
+
+      run_garbage_collection
+
+      pid = fork do
+        ["SIGHUP", "SIGTERM"].each do |sig|
+          Signal.trap(sig) { log "Child process ##{Process.pid} receiving #{sig}\n"; exit }
+        end
+
+        read_io.close # For parent's use, not child's use
+        result = {}
+        begin
+          yield_ret = yield
+          trace "yield_ret=#{yield_ret}"
+
+          yield_telemetry = []
+          if yield_ret.is_a?(Array)
+            yield_ret.each { |data|
+              operation, source, event = UNKOWN, UNKOWN, nil
+              event = data[:event] if data.is_a?(Hash) && data.key?(:event)
+              # event = event[0] if event.is_a?(Array)
+              source = data[:source] if data.is_a?(Hash) && data.key?(:source)
+              if event.is_a?(String)
+                operation = "LOG_ERROR"
+              elsif event.is_a?(Hash) && event.key?(:op)
+                operation = event[:op]
+              end
+
+              if event != nil and source != UNKOWN
+                yield_telemetry.push({'operation': operation, 'event': event, 'source': source})
+              end
+            }
+          end
+          result[:telemetry] = yield_telemetry
+          result[:return] = yield_ret
+        rescue => e # We should catch any exception to pass it to parent
+          result[:exception] = {'class': e.class.name, 'msg': e.message, 'backtrace': e.backtrace}
+        end
+        # process is orphan
+        Process.exit(false) if Process.ppid == 1
+
+        trace "write_io <= #{result}"
+        write_io.write(result)
+      end
+
+      add_process_to_cache(pid)
+      write_io.close # For child use
+      # blocking read on pipe
+      read = read_io.read
+      results = eval(read)
+      trace "Receiving read=#{read} results=#{results}"
+
+      read_io.close
+      Process.waitpid(pid)
+      remove_process_from_cache(pid)
+
+      unless results.is_a?(Hash)
+        log "results is not a hash, results=#{results}"
+        return results
+      end
+
+      # Handling Exception
+      if results.key?(:exception) and results[:exception] != nil
+        ex_class_name = results[:exception][:class]
+        ex_msg = results[:exception][:msg]
+        ex_backtrace = results[:exception][:backtrace]
+        if Object.const_defined?(ex_class_name)
+          ex = Object.const_get(ex_class_name, Class.new).new(ex_msg)
+          ex.set_backtrace(ex_backtrace)
+          raise ex
+        else
+          error "exception not found '#{ex_class_name}', we will raise a generic exception with msg='#{ex_msg}'"
+          ex = StandardError.new(ex_msg)
+          ex.set_backtrace(ex_backtrace)
+          raise ex
+        end
+      end
+
+      # Handling Telemetry
+      if results.key?(:telemetry) and results[:telemetry] != nil
+        results[:telemetry].each do |item|
+          operation, event, source = item[:operation], item[:event], item[:source]
+          debug "Handling operation=#{operation}, source=#{source}, event=#{event}"
+          if operation === LOG_ERROR
+            @log.error(event)
+          else
+            OMS::Telemetry.push_back_qos_event(source, event)
+          end
+        end
+      end
+
+      # Handling simple return
+      if results.key?(:return) and results[:return] != nil
+        return results[:return]
+      end
+
+      return nil
+    end
+
+    def run_job_async(callback, &block)
+      thread = Thread.new {
+        results = self.run_job_and_wait(&block)
+        callback.call(results) if callback != nil
+      }
+    end
+
+  end # BackgroundJobs
+
 end # module OMS

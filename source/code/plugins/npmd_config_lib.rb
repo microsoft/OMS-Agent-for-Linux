@@ -51,6 +51,7 @@ module NPMDConfig
     require 'rexml/document'
     require 'json'
     require 'ipaddr'
+    require 'socket'
 
     # Need to have method to get the subnetmask
     class ::IPAddr
@@ -123,28 +124,26 @@ module NPMDConfig
         end
 
         # Only accessible method
-        def self.createXmlFromUIConfigHash(configHash)
+        def self.createJsonFromUIConfigHash(configHash)
             begin
+                if configHash == nil
+                    Logger::logError "Config received is NIL"
+                    return nil
+                end
                 _subnetInfo = getProcessedSubnetHash(configHash["Subnets"])
-                _doc = REXML::Document.new
-                _doc.add_element("Configuration")
-                _agentsElement = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
-                _doc.root.elements << _agentsElement
-                _networksElement = createNetworkElements(configHash["Networks"], _subnetInfo["IDs"])
-                _doc.root.elements << _networksElement
-                _rulesElement = createRuleElements(configHash["Rules"], _subnetInfo["IDs"])
-                _doc.root.elements << _rulesElement
+                _doc = {"Configuration" => {}}
+                _doc["Configuration"] ["Metadata"] = createMetadataElements(configHash["Metadata"])
+                _doc["Configuration"] ["Agents"] = createAgentElements(configHash["Agents"], _subnetInfo["Masks"])
+                _doc["Configuration"] ["Networks"] = createNetworkElements(configHash["Networks"], _subnetInfo["IDs"])
+                _doc["Configuration"] ["Rules"] = createRuleElements(configHash["Rules"], _subnetInfo["IDs"]) unless !configHash.has_key?("Rules")
+                _doc["Configuration"] ["EPM"] = createEpmElements(configHash["Epm"]) unless !configHash.has_key?("Epm")
+                _doc["Configuration"] ["ER"] = createERElements(configHash["ER"]) unless !configHash.has_key?("ER")
 
-                _formatter = REXML::Formatters::Pretty.new(2)
-                _formatter.compact = true
-
-                _xml = String.new
-                _formatter.write(_doc, _xml)
-
-                _xml
+                _configJson = _doc.to_json
+                _configJson
             rescue StandardError => e
-                Logger::logError "Got error creating XML from UI Hash: #{e}", Logger::resc
-                raise "Got error creating AgentXml: #{e}"
+                Logger::logError "Got error creating JSON from UI Hash: #{e}", Logger::resc
+                raise "Got error creating AgentJson: #{e}"
             end
         end
 
@@ -172,63 +171,76 @@ module NPMDConfig
             end
         end
 
+        def self.createMetadataElements(metadataHash)
+            _metadata = Hash.new
+            _metadata["Version"] = metadataHash.has_key?("Version") ? metadataHash["Version"] : String.new
+            _metadata["Protocol"] = metadataHash.has_key?("Protocol") ? metadataHash["Protocol"] : String.new
+            _metadata["SubnetUid"] = metadataHash.has_key?("SubnetUid") ? metadataHash["SubnetUid"] : String.new
+            _metadata["AgentUid"] = metadataHash.has_key?("AgentUid") ? metadataHash["AgentUid"] : String.new
+            _metadata[:"WorkspaceResourceId"] = metadataHash["WorkspaceResourceID"] if metadataHash.has_key?("WorkspaceResourceID")
+            _metadata[:"WorkspaceId"] = metadataHash["WorkspaceID"] if metadataHash.has_key?("WorkspaceID")
+            _metadata[:"LastUpdated"] = metadataHash["LastUpdated"] if metadataHash.has_key?("LastUpdated")
+            return _metadata
+        end
+
         def self.createAgentElements(agentArray, maskHash)
-            _agents = REXML::Element.new("Agents")
+            _agents = Array.new
             agentArray.each do |x|
-                _agent = REXML::Element.new("Agent")
-                _agent.add_attribute("Name", x["Guid"])
-                _agent.add_attribute("Capabilities", x["Capability"])
+                _agent = Hash.new
+                _agent["Name"] = x["Guid"];
+                _agent["Capabilities"] = x["Capability"];
+                _agent["IPConfiguration"] = [];
+                
                 x["IPs"].each do |ip|
-                    _ipConfig = REXML::Element.new("IPConfiguration")
-                    _ipConfig.add_attribute("IP", ip["IP"])
-                    _subnetMask = maskHash[ip["SubnetName"]]
+                    _ipConfig = Hash.new
+                    _ipConfig["IP"] = ip["IP"];
+                    _subnetMask = maskHash[ip["SubnetName"]];
                     if _subnetMask.nil?
                         Logger::logWarn "Did not find subnet mask for subnet name #{ip["SubnetName"]} in hash", 2*Logger::loop
                         @@agent_ip_drops += 1
                     else
-                        _ipConfig.add_attribute("Mask", maskHash[ip["SubnetName"]])
-                        _agent.elements << _ipConfig
+                        _ipConfig["Mask"] = maskHash[ip["SubnetName"]];
                     end
+                    _agent["IPConfiguration"].push(_ipConfig);
                 end
-                if _agent.elements.empty?
+                _agents.push(_agent);
+                if _agents.empty?
                     @@agent_drops += 1
-                else
-                    _agents.elements << _agent
                 end
             end
             _agents
         end
 
         def self.createNetworkElements(networkArray, subnetIdHash)
-            _networks = REXML::Element.new("Networks")
+            _networks = Array.new
             networkArray.each do |x|
-                _network = REXML::Element.new("Network")
-                _network.add_attribute("Name", x["Name"])
+                _network = Hash.new
+                _network["Name"] = x["Name"];
+                _network["Subnet"] = Array.new
                 x["Subnets"].each do |sn|
+                    _subnet = Hash.new
                     _subnetId = subnetIdHash[sn]
                     if _subnetId.nil?
                         Logger::logWarn "Did not find subnet id for subnet name #{sn} in hash", 2*Logger::loop
                         @@network_subnet_drops += 1
                     else
-                        _snConfig = REXML::Element.new("Subnet")
-                        _snConfig.add_attribute("ID", subnetIdHash[sn])
-                        _snConfig.add_attribute("Disabled", "False")
-                        _snConfig.add_attribute("Tag", "")
-                        _network.elements << _snConfig
+                        _subnet["ID"] = subnetIdHash[sn];
+                        _subnet["Disabled"]  = ["False"] # TODO
+                        _subnet["Tag"]  = "" # TODO
                     end
+                    _network["Subnet"].push(_subnet);
                 end
-                if _network.elements.empty?
-                    @@network_drops += 1
-                else
-                    _networks.elements << _network
+                _networks.push(_network);
+                if _networks.empty?
+                    @@network_drops += 1                    
                 end
             end
             _networks
         end
 
-        def self.createActOnElements(actOnArray, subnetIdHash, xmlElemName)
-            _xmlElement = REXML::Element.new(xmlElemName)
-            actOnArray.each do |a|
+        def self.createActOnElements(elemArray, subnetIdHash)
+            _networkTestMatrix = Array.new
+            elemArray.each do |a|
                 _sSubnetId = "*"
                 _dSubnetId = "*"
                 if a["SS"] != "*" and a["SS"] != ""
@@ -244,41 +256,177 @@ module NPMDConfig
                     Logger::logWarn "Did not find subnet id for destination subnet name #{a["DS"].to_s} in hash", 2*Logger::loop
                     @@rule_subnetpair_drops += 1
                 else
-                    _snPair = REXML::Element.new("SubnetPair")
-                    _snPair.add_attribute("SourceSubnet", _sSubnetId)
-                    _snPair.add_attribute("SourceNetwork", a["SN"])
-                    _snPair.add_attribute("DestSubnet", _dSubnetId)
-                    _snPair.add_attribute("DestNetwork", a["DN"])
-                    _xmlElement.elements << _snPair
+                    # Process each subnetpair
+                    _snPair = Hash.new
+                    _snPair["SourceSubnet"] = _sSubnetId
+                    _snPair["SourceNetwork"] = a["SN"]
+                    _snPair["DestSubnet"] = _dSubnetId
+                    _snPair["DestNetwork"] = a["DN"]
+                    _networkTestMatrix.push(_snPair);
                 end
             end
-            _xmlElement
+            _networkTestMatrix
         end
 
         def self.createRuleElements(ruleArray, subnetIdHash)
-            _rules = REXML::Element.new("Rules")
+            _rules = Array.new
             ruleArray.each do |x|
-                _rule = REXML::Element.new("Rule")
-                _rule.add_attribute("Name", x["Name"])
-                _rule.add_attribute("Description", "")
-                _rule.add_attribute("Protocol", x["Protocol"])
-                _netTestMtx = createActOnElements(x["Rules"], subnetIdHash, "NetworkTestMatrix")
-                if _netTestMtx.elements.empty?
+                _rule = Hash.new
+                _rule["Name"] = x["Name"];
+                _rule["Description"] = x["Description"]
+                _rule["Protocol"] = x["Protocol"];
+                _rule["NetworkTestMatrix"] = createActOnElements(x["Rules"], subnetIdHash);
+                _rule["AlertConfiguration"] = Hash.new;
+                _rule["Exceptions"] = createActOnElements(x["Exceptions"], subnetIdHash);
+                _rule["DiscoverPaths"] = x["DiscoverPaths"]
+                
+                if _rule["NetworkTestMatrix"].empty?
                     Logger::logWarn "Skipping rule #{x["Name"]} as network test matrix is empty", Logger::loop
                     @@rule_drops += 1
                 else
-                    _alertConfig = REXML::Element.new("AlertConfiguration")
-                    _alertConfig.add_element("Loss", {"Threshold" => x["LossThreshold"] })
-                    _alertConfig.add_element("Latency", {"Threshold" => x["LatencyThreshold"]})
-                    _exceptions = createActOnElements(x["Exceptions"], subnetIdHash, "Exceptions")
-                    _rule.elements << _alertConfig
-                    _rule.elements << _netTestMtx
-                    _rule.elements << _exceptions
-                    _rules.elements << _rule
+                    # Alert Configuration
+                    _rule["AlertConfiguration"]["ChecksFailedPercent"]  = x["LossThreshold"]
+                    _rule["AlertConfiguration"]["RoundTripTimeMs"]  = x["LatencyThreshold"]
+                end
+                if !_rule.empty?
+                    _rules.push(_rule)
                 end
             end
             _rules
         end
+
+        def self.createEpmElements(epmHash)
+            return if epmHash.nil?
+            _epmRules = Hash.new
+            _rule = Array.new
+            epmHash.each do |key, rules|
+                for i in 0..rules.length-1
+                    _ruleHash = Hash.new
+                    _iRule = rules[i] # get individual rule
+                    _ruleHash["ID"] = _iRule["ID"]
+                    _ruleHash["Name"] = _iRule["Name"]
+                    _ruleHash["CMResourceId"] = _iRule.has_key?("CMResourceId") ? _iRule["CMResourceId"] : String.new
+                    _ruleHash["IngestionWorkspaceId"] = _iRule.has_key?("IngestionWorkspaceId") ? _iRule["IngestionWorkspaceId"] : String.new
+                    _ruleHash["WorkspaceAlias"] = _iRule.has_key?("WorkspaceAlias") ? _iRule["WorkspaceAlias"] : String.new
+                    _ruleHash["Redirect"] = "false"
+                    _ruleHash["NetTests"] = (_iRule.has_key?("NetworkThresholdLoss") and _iRule.has_key?("NetworkThresholdLatency")) ? "true" : "false"
+                    _ruleHash["AppTests"] = (_iRule.has_key?("AppThresholdLatency")) ? "true" : "false"
+                    if (_ruleHash["NetTests"] == "true")
+                        _ruleHash["NetworkThreshold"] = {"ChecksFailedPercent" => _iRule["NetworkThresholdLoss"], "RoundTripTimeMs" => _iRule["NetworkThresholdLatency"]}
+                    end
+
+                    if (_ruleHash["AppTests"] == "true")
+                        _ruleHash["AppThreshold"] = {"ChecksFailedPercent" => (_iRule.has_key?("AppThresholdLoss") ? _iRule["AppThresholdLoss"] : nil), "RoundTripTimeMs" => _iRule["AppThresholdLatency"]}
+                    end
+
+                    # Fill endpoints
+                    _epList = _iRule["Endpoints"]
+                    _endpointList = Array.new
+                    for j in 0.._epList.length-1
+                        _epHash = Hash.new
+                        _epHash["Name"] = _epList[j]["Name"]
+                        _epHash["ID"] = _epList[j]["Id"]
+                        _epHash["DestAddress"] = _epList[j]["URL"]
+                        _epHash["DestPort"] = _epList[j]["Port"]
+                        _epHash["TestProtocol"] = _epList[j]["Protocol"]
+                        _epHash["MonitoringInterval"] = _iRule["Poll"]
+                        _epHash["TimeDrift"] = _epList[j]["TimeDrift"]
+                        _endpointList.push(_epHash)
+                    end
+                    _ruleHash["Endpoints"] = _endpointList
+                    _rule.push(_ruleHash)
+                end
+            end
+            _epmRules["Rules"] = _rule
+            _epmRules
+        end
+
+        def self.createERElements(erHash)
+            return if erHash.nil?
+            _er = Hash.new
+            erHash.each do |key, rules|
+                # Fill Private Peering Rules
+                if key == "PrivatePeeringRules"
+                    _ruleList = Array.new
+                    for i in 0..rules.length-1
+                        _pvtRule = Hash.new
+                        _iRule = rules[i]
+                        _pvtRule["Name"] = _iRule["Name"]
+                        _pvtRule["ConnectionResourceId"] = _iRule["ConnectionResourceId"]
+                        _pvtRule["CircuitResourceId"] = _iRule["CircuitResourceId"]
+                        _pvtRule["CircuitName"] = _iRule["CircuitName"]
+                        _pvtRule["VirtualNetworkName"] = _iRule["vNetName"]
+                        _pvtRule["Protocol"] = _iRule["Protocol"]
+
+                        #Thresholds
+                        _thresholdMap = Hash.new
+                        _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"]
+                        _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"]
+                        _pvtRule["AlertConfiguration"] = _thresholdMap
+
+                        #OnPremAgents
+                        _onPremAgents = Array.new
+                        _onPremAgentList = _iRule["OnPremAgents"]
+                        for j in 0.._onPremAgentList.length-1
+                            _onPremAgents.push(_onPremAgentList[j])
+                        end
+                        _pvtRule["OnPremAgents"] = _onPremAgents
+
+                        #AzureAgents
+                        _azureAgents = Array.new
+                        _azureAgentsList = _iRule["AzureAgents"]
+                        for k in 0.._azureAgentsList.length-1
+                            _azureAgents.push(_azureAgentsList[k])
+                        end
+                        _pvtRule["AzureAgents"] = _azureAgents
+                        _ruleList.push(_pvtRule)
+                    end
+                    _er["PrivateRules"] = _ruleList
+                end
+
+                # Fill MS Peering Rules
+                if key == "MSPeeringRules"
+                    _ruleList = Array.new
+                    for i in 0..rules.length-1
+                        _msRule = Hash.new
+                        _iRule = rules[i]
+                        _msRule["Name"] = _iRule["Name"]
+                        _msRule["CircuitName"] = _iRule["CircuitName"]
+                        _msRule["Protocol"] = _iRule["Protocol"]
+                        _msRule["CircuitResourceId"] = _iRule["CircuitResourceId"]
+
+                        #Thresholds
+                        _thresholdMap = Hash.new
+                        _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"]
+                        _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"]
+                        _msRule["AlertConfiguration"] = _thresholdMap
+
+                        #OnPremAgents
+                        _onPremAgents = Array.new
+                        _onPremAgentList = _iRule["OnPremAgents"]
+                        for j in 0.._onPremAgentList.length-1
+                            _onPremAgents.push(_onPremAgentList[j])
+                        end
+                        _msRule["OnPremAgents"] = _onPremAgents
+
+                        #Urls
+                        _urls = Array.new
+                        _urlList = _iRule["UrlList"]
+                        for k in 0.._urlList.length-1
+                            _urlHash = Hash.new
+                            _urlHash["Target"] = _urlList[k]["url"]
+                            _urlHash["Port"] = _urlList[k]["port"]
+                            _urls.push(_urlHash)
+                        end
+                        _msRule["URLs"] = _urls
+                    end
+                    _ruleList.push(_msRule)
+                    _er["MSPeeringRules"] = _ruleList
+                end
+            end
+            _er
+        end
+
     end
 
     # This class holds the methods for parsing
@@ -304,17 +452,28 @@ module NPMDConfig
                 end
 
                 _config = _doc.elements[RootConfigTag + "/" + SolnConfigV3Tag]
+
                 if _config.nil? or _config.elements.empty?
                     Logger::logWarn "found nothing for path #{RootConfigTag}/#{SolnConfigV3Tag} in config string"
                     return nil
                 end
+                
+                @agentData = JSON.parse(_config.elements[AgentInfoTag].text())
+                @metadata = JSON.parse(_config.elements[MetadataTag].text())
 
                 _h = Hash.new
+                _h[KeyMetadata] = @metadata
                 _h[KeyNetworks] = getNetworkHashFromJson(_config.elements[NetworkInfoTag].text())
                 _h[KeySubnets]  = getSubnetHashFromJson(_config.elements[SubnetInfoTag].text())
                 _h[KeyAgents]   = getAgentHashFromJson(_config.elements[AgentInfoTag].text())
-                _h[KeyRules]    = getRuleHashFromJson(_config.elements[RuleInfoTag].text())
-                _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil? or _h[KeyRules].nil?)
+                _h[KeyRules]    = getRuleHashFromJson(_config.elements[RuleInfoTag].text()) unless _config.elements[RuleInfoTag].nil?
+                _h[KeyEpm]      = getEpmHashFromJson(_config.elements[EpmInfoTag].text()) unless _config.elements[EpmInfoTag].nil?
+                _h[KeyER]       = getERHashFromJson(_config.elements[ERInfoTag].text()) unless _config.elements[ERInfoTag].nil?
+                
+                _h = nil if (_h[KeyNetworks].nil? or _h[KeySubnets].nil? or _h[KeyAgents].nil?)
+                if _h == nil
+                    Logger::logError "UI Config parsed as nil"
+                end
                 return _h
 
             rescue REXML::ParseException => e
@@ -326,17 +485,62 @@ module NPMDConfig
 
         private
 
-        RootConfigTag   = "Configuration"
-        SolnConfigV3Tag = "NetworkMonitoringAgentConfigurationV3"
-        NetworkInfoTag  = "NetworkNameToNetworkMap"
-        SubnetInfoTag   = "SubnetIdToSubnetMap"
-        AgentInfoTag    = "AgentFqdnToAgentMap"
-        RuleInfoTag     = "RuleNameToRuleMap"
-        Version         = "Version"
-        KeyNetworks     = "Networks"
-        KeySubnets      = "Subnets"
-        KeyAgents       = "Agents"
-        KeyRules        = "Rules"
+        RootConfigTag           = "Configuration"
+        SolnConfigV3Tag         = "NetworkMonitoringAgentConfigurationV3"
+        MetadataTag             = "Metadata"
+        NetworkInfoTag          = "NetworkNameToNetworkMap"
+        SubnetInfoTag           = "SubnetIdToSubnetMap"
+        AgentInfoTag            = "AgentFqdnToAgentMap"
+        RuleInfoTag             = "RuleNameToRuleMap"
+        EpmInfoTag              = "EPMConfiguration"
+        EpmTestInfoTag          = "TestIdToTestMap"
+        EpmCMInfoTag            = "ConnectionMonitorIdToInfoMap"
+        EpmEndpointInfoTag      = "EndpointIdToEndpointMap"
+        EpmAgentInfoTag         = "AgentIdToTestIdsMap"
+        ERInfoTag               = "erConfiguration"
+        ERPrivatePeeringInfoTag = "erPrivateTestIdToERTestMap";
+        ERMSPeeringInfoTag      = "erMSTestIdToERTestMap";
+        ERCircuitInfoTag        = "erCircuitIdToCircuitResourceIdMap";
+        Version                 = "Version"
+        KeyMetadata             = "Metadata"
+        KeyNetworks             = "Networks"
+        KeySubnets              = "Subnets"
+        KeyAgents               = "Agents"
+        KeyRules                = "Rules"
+        KeyEpm                  = "Epm"
+        KeyER                   = "ER"
+
+        # Hash of {AgentID => {AgentContract}}
+        @agentData = {}
+
+        # Hash of Metadata
+        @metadata = {}
+
+        def self.getCurrentAgentId()
+            begin
+                _agentId = ""
+                _ips = []
+                addr_infos = Socket.getifaddrs
+                addr_infos.each do |addr_info|
+                    if addr_info.addr and (addr_info.addr.ipv4? or addr_info.addr.ipv6?)
+                        _ips.push(addr_info.addr.ip_address)
+                    end
+                end
+
+                @agentData.each do |key, value|
+                    next if value.nil? or !(value["IPs"].is_a?Array)
+                    value["IPs"].each do |ip|
+                        for ipAddr in _ips
+                            if ip["Value"] == ipAddr
+                                _agentId = key
+                                break
+                            end
+                        end
+                    end
+                end
+                return _agentId
+            end
+        end
 
         def self.getNetworkHashFromJson(text)
             begin
@@ -406,6 +610,9 @@ module NPMDConfig
                     _rule["Protocol"] = value["Protocol"] unless value["Protocol"].nil?
                     _rule["Rules"] = value["ActOn"]
                     _rule["Exceptions"] = value["Exceptions"]
+                    _rule["DiscoverPaths"] = value["DiscoverPaths"]
+                    _rule["Description"] = value["Description"]
+                    _rule["Enabled"] = value["Enabled"]
                     _a << _rule
                 end
                 _a
@@ -415,28 +622,229 @@ module NPMDConfig
             end
         end
 
+        def self.getEpmHashFromJson(text)
+            begin
+                _h = JSON.parse(text)
+                _agentId = getCurrentAgentId()
+                if _agentId.empty?
+                    return nil
+                else
+                    _epmRules = {"Rules" => []}
+                    # Check all tests related to current agent id and push their configurations to current agent
+                    _testIds = _h[EpmAgentInfoTag][_agentId]
+                    _testIds.each do |testId|
+                        _test = _h[EpmTestInfoTag][testId]
+                        _rule = Hash.new
+                        _rule["ID"] = testId
+                        _rule["Name"] = _test["Name"]
+                        _rule["Poll"] = _test["Poll"]
+                        _rule["AppThresholdLoss"] = _test["AppThreshold"].has_key?("Loss") ? _test["AppThreshold"]["Loss"] : "-2"
+                        _rule["AppThresholdLatency"] = _test["AppThreshold"]["Latency"]
+                        _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"]["Loss"]
+                        _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"]["Latency"]
+                        _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"].to_s : String.new
+
+                        # Iterate over ConnectionMonitorInfoMap to get following info
+                        if !_connectionMonitorId.empty?
+                            _cmMap = _h.has_key?(EpmCMInfoTag) ? _h[EpmCMInfoTag] : Hash.new
+                            if !_cmMap.empty?
+                                _cmId = _cmMap[_connectionMonitorId.to_s]
+                                _rule["CMResourceId"] = _cmId["resourceId"]
+                                _rule["IngestionWorkspaceId"] = _cmId["ingestionWorkspaceId"]
+                                _rule["WorkspaceAlias"] = _cmId["workspaceAlias"]
+                            end
+                        end
+
+                        # Collect endpoints details
+                        _rule["Endpoints"] = []
+
+                        # Get the list of endpoint ids
+                        _endpoints = _test["Endpoints"]
+                        _endpoints.each do |ep|
+                            _endpointHash = Hash.new
+                            _endpoint = _h[EpmEndpointInfoTag][ep]
+                            _endpointHash["Id"] = ep
+                            _endpointHash["Name"] = _endpoint.has_key?("name") ? _endpoint["name"] : String.new
+                            _endpointHash["URL"] = _endpoint["url"]
+                            _endpointHash["Port"] = _endpoint["port"]
+                            _endpointHash["Protocol"] = _endpoint["protocol"]
+                            _endpointHash["TimeDrift"] = getEndpointTimedrift(testId, ep, _test["Poll"], getWorkspaceId()) #TODO
+                            _rule["Endpoints"].push(_endpointHash)
+                        end
+                        _epmRules["Rules"].push(_rule)
+                    end
+                end
+                    _epmRules
+            rescue JSON::ParserError => e
+                Logger::logError "Error in Json Parse in EPM data: #{e}", Logger::resc
+                raise "Got exception in EPM parsing: #{e}"
+                nil
+            end
+        end
+
+        def self.getWorkspaceId()
+            begin
+                _workspaceId = @metadata.has_key?("WorkspaceID") ? @metadata["WorkspaceID"] : String.new
+                return _workspaceId
+            end
+        end
+
+        def self.getEndpointTimedrift(testId, endpointId, monitoringInterval, workspaceId)
+            begin
+                hashString = testId + endpointId + workspaceId
+                monIntervalInSecs = monitoringInterval * 60
+                hashCode = getHashCode(hashString)
+                timeDrift = hashCode % monIntervalInSecs
+                return timeDrift.to_s
+            end
+        end
+
+        def self.getHashCode(str)
+            result = 0
+            mul = 1
+            max_mod = 2**31 - 1
+
+            str.chars.reverse_each do |c|
+              result += mul * c.ord
+              result %= max_mod
+              mul *= 31
+            end
+            result
+        end
+
+        def self.getERHashFromJson(text)
+            begin
+                _h = JSON.parse(text)
+                _agentId = getCurrentAgentId()
+
+                if _agentId.empty?
+                    return nil
+                else
+                    _erRules = {"PrivatePeeringRules" => [], "MSPeeringRules" => []}
+                    # Iterate over OnPrem and Azure Agent Lists to check if this agent is part of this test
+                    _privateTestMap = _h[ERPrivatePeeringInfoTag]
+                    _microsoftTestMap = _h[ERMSPeeringInfoTag]
+                    _circuitIdMap = _h[ERCircuitInfoTag]
+
+                    if _privateTestMap.empty? && _microsoftTestMap.empty?
+                        Logger::logError "ER configuration rules deserialization failed.", Logger::resc
+                    end
+
+                    # Private Peering Rules
+                    if !_privateTestMap.empty?
+                        _privateTestMap.each do |key, value|
+                            # Get list of onPremAgents in this test
+                            _isAgentPresent = false
+                            _privateRule = Hash.new
+                            _onPremAgents = value["onPremAgents"]
+                            _onPremAgents.each do |x|
+                                if x == _agentId
+                                    # Append this test to ER Config
+                                    _isAgentPresent = true
+                                    _privateRule = getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
+                                    break;
+                                end
+                            end
+                            if !_isAgentPresent
+                                _azureAgents = value["azureAgents"]
+                                _azureAgents.each do |x|
+                                    if x == _agentId
+                                        _isAgentPresent = true
+                                        _privateRule = getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
+                                        break;
+                                    end
+                                end
+                            end
+                            if !_privateRule.empty?
+                                _erRules["PrivatePeeringRules"].push(_privateRule)
+                            end
+                        end
+                    end
+
+                    # MS Peering Rules
+                    if !_microsoftTestMap.empty?
+                        _microsoftTestMap.each do |key, value|
+                            _microsoftRule = Hash.new
+                            _onPremAgents = value["onPremAgents"]
+                            _onPremAgents.each do |x|
+                                if x == _agentId
+                                    # Append this test to ER Config
+                                    _isAgentPresent = true
+                                    _microsoftRule = getERMicrosoftRuleFromUIConfig(key, value, _circuitIdMap)
+                                    break;
+                                end
+                            end
+                            if !_microsoftRule.empty?
+                                _erRules["MSPeeringRules"].push(_microsoftRule)
+                            end
+                        end
+                    end
+                    _erRules
+                end
+            rescue JSON::ParserError => e
+                Logger::logError "Error in Json Parse in ER data: #{e}", Logger::resc
+                nil
+            end 
+        end
+
+        def self.getERPrivateRuleFromUIConfig(key, value, _circuitIdMap)
+            _ruleHash = Hash.new
+            _ruleHash["Name"] = key
+            _ruleHash["Protocol"] = value["protocol"]
+            _ruleHash["CircuitId"] = value["circuitId"]
+            _ruleHash["LossThreshold"] = value["threshold"]["loss"]
+            _ruleHash["LatencyThreshold"] = value["threshold"]["latency"]
+            _ruleHash["CircuitName"] = value["circuitName"]
+            _ruleHash["vNetName"]= value["vNet"]
+            _ruleHash["ConnectionResourceId"]= value["connectionResourceId"]
+            _ruleHash["CircuitResourceId"] = _circuitIdMap[value["circuitId"]]
+            _ruleHash["OnPremAgents"] = value["onPremAgents"]
+            _ruleHash["AzureAgents"] = value["azureAgents"]
+            return _ruleHash
+        end
+
+        def self.getERMicrosoftRuleFromUIConfig(key, value, _circuitIdMap)
+            _ruleHash = Hash.new
+            _ruleHash["Name"] = key
+            _ruleHash["CircuitName"] = value["circuitName"]
+            _ruleHash["CircuitId"] = value["circuitId"]
+            _ruleHash["Protocol"] = value["protocol"]
+            _ruleHash["CircuitResourceId"] = _circuitIdMap[value["circuitId"]]
+            _ruleHash["LossThreshold"] = value["threshold"]["loss"]
+            _ruleHash["LatencyThreshold"] = value["threshold"]["latency"]
+            _ruleHash["UrlList"] = value["urlList"]
+            _ruleHash["OnPremAgents"] = value["onPremAgents"]
+            return _ruleHash
+        end
     end
 
     # Only function needed to be called from this module
     def self.GetAgentConfigFromUIConfig(uiXml)
         _uiHash = UIConfigParser.parse(uiXml)
         AgentConfigCreator.resetErrorCheck()
-        _agentXml = AgentConfigCreator.createXmlFromUIConfigHash(_uiHash)
+        _agentJson = AgentConfigCreator.createJsonFromUIConfigHash(_uiHash)
         _errorStr = AgentConfigCreator.getErrorSummary()
-        return _agentXml, _errorStr
+        return _agentJson, _errorStr
     end
+
 end
 
 # NPM Contracts verification for data being uploaded
 module NPMContract
-    DATAITEM_AGENT = "agent"
-    DATAITEM_PATH  = "path"
-    DATAITEM_DIAG  = "diagnostics"
+    DATAITEM_AGENT                    = "agent"
+    DATAITEM_PATH                     = "path"
+    DATAITEM_DIAG                     = "diagnostics"
+    DATAITEM_ENDPOINT_HEALTH          = "endpointHealth"
+    DATAITEM_ENDPOINT_MONITORING      = "endpointMonitoringData"
+    DATAITEM_ENDPOINT_DIAGNOSTICS     = "endpointDiagnostics"
+    DATAITEM_EXROUTE_MONITORING       = "expressrouteMonitoringData"
+    DATAITEM_CONNECTIONMONITOR_TEST   = "connectionMonitorTestResult"
+    DATAITEM_CONNECTIONMONITOR_PATH   = "connectionMonitorPathData"
+
 
     DATAITEM_VALID = 1
-    DATAITEM_ERR_MISSING_FIELDS = 2
-    DATAITEM_ERR_INVALID_FIELDS = 3
-    DATAITEM_ERR_INVALID_TYPE = 4
+    DATAITEM_ERR_INVALID_FIELDS = 2
+    DATAITEM_ERR_INVALID_TYPE = 3
 
     CONTRACT_AGENT_DATA_KEYS = ["AgentFqdn",
                                 "AgentIP",
@@ -445,8 +853,9 @@ module NPMContract
                                 "PrefixLength",
                                 "AddressType",
                                 "SubType",
-                                "AgentId",
-                                "TimeGenerated"]
+                                "TimeGenerated",
+                                "OSType",
+                                "NPMAgentEnvironment"]
 
     CONTRACT_PATH_DATA_KEYS  = ["SourceNetwork",
                                 "SourceNetworkNodeInterface",
@@ -469,10 +878,183 @@ module NPMContract
                                 "LossHealthState",
                                 "Path",
                                 "Computer",
-                                "TimeGenerated"]
+                                "TimeGenerated",
+                                "Protocol",
+                                "MinHopLatencyList",
+                                "MaxHopLatencyList",
+                                "AvgHopLatencyList",
+                                "TraceRouteCompletionTime"]
 
-    CONTRACT_DIAG_DATA_KEYS  = ["Message",
-                                "SubType"]
+    CONTRACT_DIAG_DATA_KEYS  = ["TimeGenerated",
+                                "SubType",
+                                "NotificationCode",
+                                "NotificationType",
+                                "Computer"]
+
+    CONTRACT_ENDPOINT_HEALTH_DATA_KEYS  =  ["SubType",
+                                            "TestName",
+                                            "ServiceTestId",
+                                            "ConnectionMonitorResourceId",
+                                            "Target",
+                                            "Port",
+                                            "EndpointId",
+                                            "Protocol",
+                                            "TimeSinceActive",
+                                            "ServiceResponseTime",
+                                            "ServiceLossPercent",
+                                            "ServiceLossHealthState",
+                                            "ServiceResponseHealthState",
+                                            "ResponseCodeHealthState",
+                                            "ServiceResponseThresholdMode",
+                                            "ServiceResponseThreshold",
+                                            "ServiceResponseCode",
+                                            "Loss",
+                                            "LossHealthState",
+                                            "LossThresholdMode",
+                                            "LossThreshold",
+                                            "MedianLatency",
+                                            "LatencyThresholdMode",
+                                            "LatencyThreshold",
+                                            "LatencyHealthState",
+                                            "TimeGenerated",
+                                            "Computer"]
+
+    CONTRACT_ENDPOINT_PATH_DATA_KEYS = ["SubType",
+                                        "TestName",
+                                        "ServiceTestId",
+                                        "ConnectionMonitorResourceId",
+                                        "Target",
+                                        "Port",
+                                        "EndpointId",
+                                        "SourceNetworkNodeInterface",
+                                        "DestinationNetworkNodeInterface",
+                                        "Path",
+                                        "Loss",
+                                        "HighLatency",
+                                        "MedianLatency",
+                                        "LowLatency",
+                                        "LossHealthState",
+                                        "LatencyHealthState",
+                                        "LossThresholdMode",
+                                        "LossThreshold",
+                                        "LatencyThresholdMode",
+                                        "LatencyThreshold",
+                                        "Computer",
+                                        "Protocol",
+                                        "MinHopLatencyList",
+                                        "MaxHopLatencyList",
+                                        "AvgHopLatencyList",
+                                        "TraceRouteCompletionTime",
+                                        "TimeGenerated"]
+
+    CONTRACT_ENDPOINT_DIAG_DATA_KEYS = ["SubType",
+                                        "TestName",
+                                        "ServiceTestId",
+                                        "ConnectionMonitorResourceId",
+                                        "Target",
+                                        "NotificationCode",
+                                        "EndpointId",
+                                        "TimeGenerated",
+                                        "Computer"]
+
+    CONTRACT_EXROUTE_MONITOR_DATA_KEYS =   ["SubType",
+                                            "TimeGenerated",
+                                            "Circuit",
+                                            "ComputerEnvironment",
+                                            "vNet",
+                                            "Target",
+                                            "PeeringType",
+                                            "CircuitResourceId",
+                                            "ConnectionResourceId",
+                                            "Path",
+                                            "SourceNetworkNodeInterface",
+                                            "DestinationNetworkNodeInterface",
+                                            "Loss",
+                                            "HighLatency",
+                                            "MedianLatency",
+                                            "LowLatency",
+                                            "LossHealthState",
+                                            "LatencyHealthState",
+                                            "RuleName",
+                                            "TimeSinceActive",
+                                            "LossThreshold",
+                                            "LatencyThreshold",
+                                            "LossThresholdMode",
+                                            "LatencyThresholdMode",
+                                            "Computer",
+                                            "Protocol",
+                                            "MinHopLatencyList",
+                                            "MaxHopLatencyList",
+                                            "AvgHopLatencyList",
+                                            "TraceRouteCompletionTime",
+                                            "DiagnosticHop",
+                                            "DiagnosticHopLatency"]
+
+    CONTRACT_CONNECTIONMONITOR_TEST_RESULT_KEYS =  ["SubType",
+                                                    "RecordId",
+                                                    "ConnectionMonitorResourceId",
+                                                    "TimeCreated",
+                                                    "TestGroupName",
+                                                    "TestConfigurationName",
+                                                    "SourceType",
+                                                    "SourceResourceId",
+                                                    "SourceAddress",
+                                                    "SourceName",
+                                                    "SourceAgentId",
+                                                    "DestinationType",
+                                                    "DestinationResourceId",
+                                                    "DestinationAddress",
+                                                    "DestinationName",
+                                                    "DestinationAgentId",
+                                                    "Protocol",
+                                                    "DestinationPort",
+                                                    "DestinationIP",
+                                                    "ChecksTotal",
+                                                    "ChecksFailed",
+                                                    "ChecksFailedPercentThreshold",
+                                                    "RoundTripTimeMsThreshold",
+                                                    "MinRoundTripTimeMs",
+                                                    "MaxRoundTripTimeMs",
+                                                    "AvgRoundTripTimeMs",
+                                                    "TestResult",
+                                                    "AdditionalData",
+                                                    "IngestionWorkspaceResourceId"]
+
+    CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS =    ["SubType",
+                                                    "RecordId",
+                                                    "TopologyId",
+                                                    "ConnectionMonitorResourceId",
+                                                    "TimeCreated",
+                                                    "TestGroupName",
+                                                    "TestConfigurationName",
+                                                    "SourceType",
+                                                    "SourceResourceId",
+                                                    "SourceAddress",
+                                                    "SourceName",
+                                                    "SourceAgentId",
+                                                    "DestinationType",
+                                                    "DestinationResourceId",
+                                                    "DestinationAddress",
+                                                    "DestinationName",
+                                                    "DestinationAgentId",
+                                                    "ChecksTotal",
+                                                    "ChecksFailed",
+                                                    "ChecksFailedPercentThreshold",
+                                                    "RoundTripTimeMsThreshold",
+                                                    "MinRoundTripTimeMs",
+                                                    "MaxRoundTripTimeMs",
+                                                    "AvgRoundTripTimeMs",
+                                                    "HopAddresses",
+                                                    "HopTypes",
+                                                    "HopLinkTypes",
+                                                    "HopResourceIds",
+                                                    "Issues",
+                                                    "Hops",
+                                                    "DestinationPort",
+                                                    "Protocol",
+                                                    "PathTestResult",
+                                                    "AdditionalData",
+                                                    "IngestionWorkspaceResourceId"]
 
     def self.IsValidDataitem(item, itemType)
         _contract=[]
@@ -483,6 +1065,18 @@ module NPMContract
             _contract = CONTRACT_PATH_DATA_KEYS
         elsif itemType == DATAITEM_DIAG
             _contract = CONTRACT_DIAG_DATA_KEYS
+        elsif itemType == DATAITEM_ENDPOINT_HEALTH
+            _contract = CONTRACT_ENDPOINT_HEALTH_DATA_KEYS
+        elsif itemType == DATAITEM_ENDPOINT_MONITORING
+            _contract = CONTRACT_ENDPOINT_PATH_DATA_KEYS
+        elsif itemType == DATAITEM_ENDPOINT_DIAGNOSTICS
+            _contract = CONTRACT_ENDPOINT_DIAG_DATA_KEYS
+        elsif itemType == DATAITEM_EXROUTE_MONITORING
+            _contract = CONTRACT_EXROUTE_MONITOR_DATA_KEYS
+        elsif itemType == DATAITEM_CONNECTIONMONITOR_TEST
+            _contract = CONTRACT_CONNECTIONMONITOR_TEST_RESULT_KEYS
+        elsif itemType == DATAITEM_CONNECTIONMONITOR_PATH
+            _contract = CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS
         end
 
         return DATAITEM_ERR_INVALID_TYPE, nil if _contract.empty?
@@ -491,12 +1085,8 @@ module NPMContract
             return DATAITEM_ERR_INVALID_FIELDS, k if !_contract.include?(k)
         end
 
-        return DATAITEM_VALID, nil if item.length == _contract.length
-
-        _contract.each do |e|
-            return DATAITEM_ERR_MISSING_FIELDS, e if !item.keys.include?(e)
-        end
         return DATAITEM_VALID, nil
     end
 
 end
+

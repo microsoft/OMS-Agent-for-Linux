@@ -29,6 +29,7 @@ DPKG_CONF_QUALS="--force-confold --force-confdef"
 OMISERV_CONF="/etc/opt/omi/conf/omiserver.conf"
 OLD_OMISERV_CONF="/etc/opt/microsoft/scx/conf/omiserver.conf"
 OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
+OMS_ENV_FILE="/etc/opt/microsoft/omsagent/omsagent.env"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 OMI_SERVICE="/opt/omi/bin/service_control"
 
@@ -71,6 +72,8 @@ INSTALL_CURL=55 #64, temporary as 55 excludes from SLA
 INSTALL_GPG=65
 UNSUPPORTED_PKG_INSTALLER=66
 OPENSSL_PATH="openssl"
+BUNDLES_PATH="bundles"
+BUNDLES_LEGACY_PATH="bundles/v1"
 
 usage()
 {
@@ -238,6 +241,26 @@ is_suse11_platform_with_openssl1(){
      fi
   fi
   return 1
+}
+
+detect_cylance(){
+  if service --status-all 2>&1 | grep -Fq ' cylance'; then
+    return 0
+	fi
+  [ -f /etc/init.d/cylance ] && return 0
+  [ -f /etc/init.d/cylancesvc ] && return 0
+  [ -d /opt/cylance ] && return 0
+
+  return 1
+}
+
+# Cylance is conflicting with jemalloc
+# only disable jemalloc when cylance is present
+disable_jemalloc_if_cylance_exist(){
+  if detect_cylance; then
+    echo "Cylance detected, disabling jemalloc..."
+    sed -i 's/^LD_PRELOAD=/#LD_PRELOAD=/g' $OMS_ENV_FILE
+  fi
 }
 
 ulinux_detect_openssl_version()
@@ -1202,6 +1225,8 @@ case "$installMode" in
                cleanup_and_exit $OMS_INSTALL_FAILED
             fi
 
+            disable_jemalloc_if_cylance_exist
+
             # Install DSC
             if shouldInstall_omsconfig; then
                 pkg_add ${DSC_PKG} omsconfig
@@ -1233,17 +1258,23 @@ case "$installMode" in
                     fi
                 fi
             done
-            for i in bundles/*-bundle-test.sh; do
+
+            # Handling auoms 1.x vs 2.x installation
+            is_suse11_platform_with_openssl1
+            if [ $? -eq 0 ];then
+               BUNDLES_PATH=$BUNDLES_LEGACY_PATH
+            fi
+            for i in ${BUNDLES_PATH}/*-bundle-test.sh; do
                 # If filespec didn't expand, break out of loop
                 [ ! -f $i ] && break
 
                 # It's possible we have a test file without bundle; if so, ignore it
                 BUNDLE=`basename $i -bundle-test.sh`
-                [ ! -f bundles/${BUNDLE}-*universal.*.sh ] && continue
+                [ ! -f ${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh ] && continue
 
                 ./$i
                 if [ $? -eq 0 ]; then
-                    ./bundles/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
+                    ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
                         echo "$BUNDLE package failed to install and exited with status $TEMP_STATUS"
@@ -1314,6 +1345,8 @@ case "$installMode" in
             cleanup_and_exit $OMS_INSTALL_FAILED
         fi
 
+        disable_jemalloc_if_cylance_exist
+
         # Update DSC
         shouldInstall_omsconfig
         pkg_upd $DSC_PKG omsconfig $?
@@ -1355,17 +1388,23 @@ case "$installMode" in
                 fi
             fi
         done
-        for i in bundles/*-bundle-test.sh; do
+
+        # Handling auoms 1.x vs 2.x installation
+        is_suse11_platform_with_openssl1
+        if [ $? -eq 0 ];then
+           BUNDLES_PATH=$BUNDLES_LEGACY_PATH
+        fi
+        for i in ${BUNDLES_PATH}/*-bundle-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
 
             # It's possible we have a test file without bundle; if so, ignore it
             BUNDLE=`basename $i -bundle-test.sh`
-            [ ! -f bundles/${BUNDLE}-*universal.*.sh ] && continue
+            [ ! -f ${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh ] && continue
 
             ./$i
             if [ $? -eq 0 ]; then
-                ./bundles/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
+                ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
                     echo "$BUNDLE package failed to upgrade and exited with status $TEMP_STATUS"

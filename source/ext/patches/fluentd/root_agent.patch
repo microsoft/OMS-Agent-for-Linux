@@ -1,0 +1,45 @@
+--- ../source/ext/fluentd/lib/fluent/root_agent.rb	2019-07-25 17:44:03.645123703 -0700
++++ ../source/ext/fluentd/lib/fluent/root_agent.rb.new	2019-07-25 17:41:18.932764790 -0700
+@@ -119,23 +119,38 @@
+ 
+     def shutdown
+       # Shutdown Input plugin first to prevent emitting to terminated Output plugin
+-      @started_inputs.map { |i|
++      threads = @started_inputs.map { |i|
+         Thread.new do
+           begin
+-            log.info "shutting down input", type: Plugin.lookup_name_from_class(i.class), plugin_id: i.plugin_id
+-            i.shutdown
++            log.info "shutdown input", type: Plugin.lookup_name_from_class(i.class), plugin_id: i.plugin_id
++            measure_shutdown(Plugin.lookup_name_from_class(i.class)) { i.shutdown }
+           rescue => e
+             log.warn "unexpected error while shutting down input plugin", plugin: i.class, plugin_id: i.plugin_id, error_class: e.class, error: e
+             log.warn_backtrace
+           end
+         end
+-      }.each { |t| t.join }
++      }
++
++      sleep 1
++
++      threads.each { |t|
++        t.terminate if t.status == 'sleep'
++        t.join(0.1)
++      }
+ 
+       @labels.each { |n, l|
+         l.shutdown
+       }
+ 
+       super
++
++      # if other threads still alive clean them up
++      Thread.list.each {|t|
++        if t != Thread.current
++          t.kill
++          t.join(0.1)
++        end
++      }
+     end
+ 
+     def flush!

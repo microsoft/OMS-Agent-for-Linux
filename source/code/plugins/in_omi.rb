@@ -27,8 +27,7 @@ class OMIInput < Input
         begin
             record = JSON.parse record_txt
         rescue => e
-            $log.error "Unable to parse JSON from record: #{record_txt}"
-            $log.error "Error: #{e}"
+            $log.error "Unable to parse JSON. Record: #{record_txt}, Error: #{e}"
             record = []
         end
 

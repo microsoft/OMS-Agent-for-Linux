@@ -1,0 +1,17 @@
+--- ../source/ext/ruby/gc.c	2019-09-04 21:40:23.967143473 +0000
++++ ../source/ext/ruby/gc.c.new	2019-09-04 21:41:10.115246447 +0000
+@@ -10127,6 +10127,14 @@
+ #undef OPT
+ 	OBJ_FREEZE(opts);
+     }
++
++    /*
++     * Ruby doesn't benefit from many glibc malloc arenas due to GVL,
++     * remove or increase when we get Guilds
++     */
++    if (!getenv("MALLOC_ARENA_MAX")) {
++        mallopt(M_ARENA_MAX, 2);
++    }
+ }
+ 
+ #ifdef ruby_xmalloc

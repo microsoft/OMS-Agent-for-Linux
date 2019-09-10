@@ -66,7 +66,7 @@ module Fluent
         end
         
         while line = errio.gets
-          $log.error "#{line}"
+          $log.error "Error while reading from mongostat. Error: #{line}"
         end
         wait_thread.value
       }

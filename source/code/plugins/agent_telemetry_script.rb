@@ -1,4 +1,5 @@
 require 'optparse'
+require 'open3'
 
 module OMS
 
@@ -44,19 +45,31 @@ module OMS
     strongtyped_accessor :NetworkLatencyInMs, Integer
   end
 
+  class AgentError < StrongTypedClass
+    strongtyped_accessor :ErrorCode, Integer
+    strongtyped_accessor :Source, String
+    strongtyped_accessor :Message, String
+    strongtyped_accessor :Count, Integer
+  end
+
   class AgentTelemetry < StrongTypedClass
     strongtyped_accessor :OSType, String
     strongtyped_accessor :OSDistro, String
     strongtyped_accessor :OSVersion, String
+    strongtyped_accessor :ProcessorArchitecture, String
     strongtyped_accessor :Region, String
+    strongtyped_accessor :ResourceId, String
     strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :AgentResourceUsage, AgentResourceUsage
     strongtyped_accessor :AgentQoS, Array # of AgentQoS
+    strongtyped_accessor :AgentError, Array # of AgentError
 
     def serialize
       qos_hash = self.AgentQoS.map! { |qos| obj_to_hash(qos) }
+      error_hash = self.AgentError.map! { |error| obj_to_hash(error) }
       hash = obj_to_hash(self)
       hash["AgentQoS"] = qos_hash
+      hash["AgentError"] = error_hash
       return hash.to_json
     end
   end
@@ -73,12 +86,42 @@ module OMS
     attr_reader :ru_points
     attr_accessor :suppress_stdout
 
-    QOS_EVENTS_LIMIT = 1000
+    EVENTS_LIMIT = 1000
 
-    @@qos_events = {}
+    @@qos_events = {} # source => [event]
+    @@error_events = {} # message => count
+
+    # runs command out of proc, giving it timeout seconds before killing it
+    def run_command(command, timeout)
+      Open3.popen2(command, :pgroup=>true) do |_, stdout, wait_thr|
+        pid = wait_thr.pid
+        pgid = Process.getpgid(pid)
+        @omicli_pgids << pgid
+        deadline = Time.now + timeout
+        sleep 0.5 until Time.now > deadline or !wait_thr.status
+        if wait_thr.status
+          begin
+            `pkill -TERM -g #{pgid}`
+            sleep 1
+            if wait_thr.status
+              `pkill -KILL -g #{pgid}`
+            end
+          rescue => e
+            log_error("Failed to kill process(es) for command '#{command}'. #{e}")
+          end
+          OMS::Log.error_once("Telemetry failed with process timeout '#{command}'")
+          @omicli_pgids.pop
+          return ''
+        else
+          @omicli_pgids.pop
+          return stdout.read
+        end
+      end
+    end # run_command
 
     def initialize(omsadmin_conf_path, cert_path, key_path, pid_path, proxy_path, os_info, install_info, log = nil, verbose = false)
       @pids = {oms: 0, omi: 0}
+      @omicli_pgids = []
       @ru_points = {oms: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []},
                     omi: {usr_cpu: [], sys_cpu: [], amt_mem: [], pct_mem: []}}
 
@@ -102,9 +145,25 @@ module OMS
 
       @suppress_stdout = false
       @suppress_logging = false
+
+      @total_memory = 0
+      begin
+        run_command("/opt/omi/bin/omicli ei root/scx SCX_OperatingSystem | grep =", 5).each_line do |line|
+          @total_memory = line.sub("TotalVirtualMemorySize=","").strip.to_i if line =~ /TotalVirtualMemorySize/
+        end
+      rescue => e
+        log_error("Error finding max system memory. #{e}")
+      end
     end # initialize
 
-    # Logging methods
+    # ensure any remaining external processes spawned have been killed
+    def cleanup
+      @omicli_pgids.each do |pgid|
+        `pkill -KILL -g #{pgid}`
+      end
+      @omicli_pgids.clear
+    end # cleanup
+
     def log_info(message)
       print("info\t#{message}\n") if !@suppress_logging and !@suppress_stdout
       @log.info(message) if !@suppress_logging
@@ -120,13 +179,38 @@ module OMS
       @log.debug(message) if !@suppress_logging
     end
 
-    # Must be a class method in order to be exposed to all out_*.rb pushing qos events
-    def self.push_qos_event(operation, operation_success, message, source, batch, count, time)
+    def self.clear_qos
+      @@qos_events.clear
+    end
+
+    def self.clear_errors
+      @@error_events.clear
+    end
+
+    def self.push_back_qos_event(source, event)
+      return if event.nil?
+      if @@qos_events.has_key?(source)
+        if @@qos_events[source].size >= EVENTS_LIMIT
+          @@qos_events[source].shift # remove oldest qos event to cap memory use
+        end
+        @@qos_events[source] << event
+      else
+        @@qos_events[source] = [event]
+      end
+    end
+
+    # must be a class method in order to be exposed to all *.rb pushing qos events
+    def self.push_qos_event(operation, operation_success, message, source, batch = [], count = 1, time = 0)
+      event = { op: operation, op_success: operation_success, m: message, c: count }
       begin
-        event = { op: operation, op_success: operation_success, m: message, c: count, t: time }
+        event[:t] = time
         if batch.is_a? Hash and batch.has_key?('DataItems')
           records = batch['DataItems']
-          if batch['DataItems'][0].has_key?('Timestamp')
+
+          # Telemetry will drop any batches which have no records
+          return nil if records.empty?
+
+          if records[0].has_key?('Timestamp')
             now = Time.now
             times = records.map { |record| now - Time.parse(record['Timestamp']) }
             event[:min_l] = times[-1] # Records appear in order, so last record will have lowest latency
@@ -134,29 +218,39 @@ module OMS
             event[:sum_l] = times.sum
           end
           sizes = records.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize) # Remove possible nil entries with compact
-        elsif batch.is_a? Array
-          # These other logs, such as custom logs, don't have a parsed timestamp
+        elsif batch.is_a? Array # These other logs, such as custom logs, don't have a parsed timestamp
           sizes = batch.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize)
         else
-          return
+          OMS::Log.warn_once("Unexpected record format encountered in QoS: #{records.to_s}")
         end
 
         event[:min_s] = sizes.min
         event[:max_s] = sizes.max
         event[:sum_s] = sizes.sum
 
-        if @@qos_events.has_key?(source)
-          if @@qos_events[source].size >= QOS_EVENTS_LIMIT
-            @@qos_events[source].shift # remove oldest qos event to cap memory use
-          end
-          @@qos_events[source] << event
-        else
-          @@qos_events[source] = [event]
-        end
+        push_back_qos_event(source, event)
       rescue => e
         OMS::Log.error_once("Error pushing QoS event. #{e}")
       end
+      return event
     end # push_qos_event
+
+    def self.push_error_event(message)
+      event = { m: message, c: 1 }
+      begin
+        if @@error_events.size >= EVENTS_LIMIT
+          OMS::Log.warn_once("Incoming error event dropped to obey memory cap.")
+          return
+        elsif @@error_events.has_key?(event[:m])
+          @@error_events[event[:m]][:c] += 1
+        else
+          @@error_events[event[:m]] = event
+        end
+      rescue => e
+        OMS::Log.error_once("Error pushing error event. #{e}")
+      end
+      return event
+    end # push_error_event
 
     def self.array_avg(array)
       if array.empty?
@@ -166,7 +260,7 @@ module OMS
       end
     end # array_avg
 
-    def get_pids()
+    def get_pids
       @pids.each do |key, value|
         case key
         when :oms
@@ -183,20 +277,24 @@ module OMS
       end
     end
 
-    def poll_resource_usage()
+    def poll_resource_usage
       get_pids
       command = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, "\
                 "PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '%s'\" | grep ="
       begin
         if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(@omsadmin_conf_path)
           @pids.each do |key, value|
+            amt_mem = 0
+            pct_mem = 0
             if !value.zero?
-              `#{command % value}`.each_line do |line|
+              run_command("#{command % value}", 5).each_line do |line|
                 @ru_points[key][:usr_cpu] << line.sub("PercentUserTime=","").strip.to_i if line =~ /PercentUserTime/
                 @ru_points[key][:sys_cpu] << line.sub("PercentPrivilegedTime=", "").strip.to_i if  line =~ /PercentPrivilegedTime/
-                @ru_points[key][:amt_mem] << line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
-                @ru_points[key][:pct_mem] << line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
+                amt_mem = line.sub("UsedMemory=", "").strip.to_i if line =~ / UsedMemory/
+                pct_mem = line.sub("PercentUsedMemory=", "").strip.to_i if line =~ /PercentUsedMemory/
               end
+              @ru_points[key][:amt_mem] << amt_mem
+              @ru_points[key][:pct_mem] << (@total_memory.zero? ? pct_mem : ((amt_mem.to_f / @total_memory) * 100).to_i)
             else # pad with zeros when OMI might not be running
               @ru_points[key][:usr_cpu] << 0
               @ru_points[key][:sys_cpu] << 0
@@ -210,7 +308,7 @@ module OMS
       end
     end # poll_resource_usage
 
-    def calculate_resource_usage()
+    def calculate_resource_usage
       begin
         resource_usage = AgentResourceUsage.new
         resource_usage.OMSMaxMemory        = @ru_points[:oms][:amt_mem].max
@@ -245,8 +343,7 @@ module OMS
       end
     end
 
-    def calculate_qos()
-      # for now, since we are only instrumented to emit upload success, only merge based on source
+    def calculate_qos
       qos = []
 
       begin
@@ -286,11 +383,32 @@ module OMS
         return nil
       end
 
-      @@qos_events.clear
+      OMS::Telemetry.clear_qos
       return qos
     end
 
-    def create_body()
+    def calculate_errors
+      errors = []
+
+      begin
+        top = @@error_events.sort_by { |message, event| -event[:c] }[0 ... 5] # take up to the top 5 by message count
+        top.each do |pair|
+          event = pair[1] # sort_by returns length-two array with key, value
+          error_event = AgentError.new
+          error_event.Message = event[:m]
+          error_event.Count = event[:c]
+          errors << error_event
+        end
+      rescue => e
+        log_error("Error calculating errors. #{e}")
+        return nil
+      end
+
+      OMS::Telemetry.clear_errors
+      return errors
+    end
+
+    def create_body
       begin
         agent_telemetry = AgentTelemetry.new
         agent_telemetry.OSType = "Linux"
@@ -298,21 +416,24 @@ module OMS
           agent_telemetry.OSDistro = line.sub("OSName=","").strip if line =~ /OSName/
           agent_telemetry.OSVersion = line.sub("OSVersion=","").strip if line =~ /OSVersion/
         end
+        agent_telemetry.ProcessorArchitecture = `uname -m`
         agent_telemetry.Region = OMS::Configuration.azure_region
-        agent_telemetry.ConfigMgrEnabled = File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable").to_s
+        agent_telemetry.ResourceId = OMS::Configuration.azure_resource_id ? OMS::Configuration.azure_resource_id : ""
+        agent_telemetry.ConfigMgrEnabled = (!File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable")).to_s
         agent_telemetry.AgentResourceUsage = calculate_resource_usage
         agent_telemetry.AgentQoS = calculate_qos
-        return (!agent_telemetry.AgentResourceUsage.nil? and !agent_telemetry.AgentQoS.nil?) ? agent_telemetry : nil
+        agent_telemetry.AgentError = calculate_errors
+        return (!agent_telemetry.AgentResourceUsage.nil? and !agent_telemetry.AgentQoS.nil? and !agent_telemetry.AgentError.nil?) ? agent_telemetry : nil
       rescue => e
         log_error("Error creating telemetry request body. #{e}")
         return nil
       end
     end
 
-    def heartbeat()
+    def heartbeat
       # Check necessary inputs
       if @workspace_id.nil? or @agent_guid.nil? or @url_tld.nil? or
-        @workspace_id.empty? or @agent_guid.empty? or @url_tld.empty?
+          @workspace_id.empty? or @agent_guid.empty? or @url_tld.empty?
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
         return OMS::MISSING_CONFIG
       elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
@@ -335,8 +456,8 @@ module OMS
       # Form POST request and HTTP
       uri = "https://#{@workspace_id}.oms.#{@url_tld}/AgentService.svc/AgentTelemetry"
       req,http = OMS::Common.form_post_request_and_http(headers, uri, body,
-                      OpenSSL::X509::Certificate.new(File.open(@cert_path)),
-                      OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
+                                                        OpenSSL::X509::Certificate.new(File.open(@cert_path)),
+                                                        OpenSSL::PKey::RSA.new(File.open(@key_path)), @proxy_path)
 
       log_info("Generated telemetry request:\n#{req.body}") if @verbose
 
@@ -350,7 +471,7 @@ module OMS
 
       if !res.nil?
         log_info("OMS agent management service telemetry request response code: #{res.code}") if @verbose
-      
+
         if res.code == "200"
           log_info("OMS agent management service telemetry request success")
           return 0
@@ -399,11 +520,11 @@ if __FILE__ == $0
 
   require 'fluent/log'
   require 'fluent/engine'
-  
+
   $log = Fluent::Log.new(STDERR, Fluent::Log::LEVEL_TRACE)
 
   telemetry = OMS::Telemetry.new(omsadmin_conf_path, cert_path, key_path,
-                    pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
+                                 pid_path, proxy_path, os_info, install_info, log = nil, options[:verbose])
 
   telemetry.poll_resource_usage
   telemetry.heartbeat

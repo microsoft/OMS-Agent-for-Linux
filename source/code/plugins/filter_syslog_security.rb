@@ -27,15 +27,13 @@ module Fluent
     def shutdown
       super
     end
-    # TODO: fix after dsc removal: use fast_utc_to_iso8601_format from OMS_COMMON.rb
-    def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
-      utctime.strftime("%FT%T.%#{fraction_digits}NZ")
-    end
 
     def filter(tag, time, record)
       # Get the data type name (blob in ODS) from record tag
       # Only records that can be associated to a blob are processed
-      ident = record['ident']
+
+      # Get the correct identifier from the ident string or nil for unknown identifier
+      ident =  OMS::Security.get_ident(record['ident'])
       data_type = OMS::Security.get_data_type(ident)
       return nil if data_type.nil?
 
@@ -45,8 +43,8 @@ module Fluent
           'indent' => ident,
           # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
           # The time may be slightly in the future from the ingestion time.
-          'Timestamp' => fast_utc_to_iso8601_format(Time.now.utc),
-          'EventTime' => fast_utc_to_iso8601_format(Time.at(time).utc),
+          'Timestamp' => OMS::Common::fast_utc_to_iso8601_format(Time.now.utc),
+          'EventTime' => OMS::Common::fast_utc_to_iso8601_format(Time.at(time).utc),
           'Message' => "#{ident}: #{record['message']}",
           'Facility' =>  tags[tags.size - 2],
           'Severity' => tags[tags.size - 1]

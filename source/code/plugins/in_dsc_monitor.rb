@@ -94,7 +94,7 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
         sleep @check_status_interval
       end 
       rescue => e
-        $log.error e
+        $log.error "DSC check status failed. Error: #{e}"
       end
     end       
 
@@ -102,6 +102,8 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
       super
       @finished_check_install = true
       @finished_check_status = true
+      @thread_check_install.exit
+      @thread_check_status.exit
       @thread_check_install.join
       @thread_check_status.join
     end

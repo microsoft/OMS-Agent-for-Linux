@@ -31,6 +31,7 @@ module Fluent
     config_param :api_version, :string, :default => '2016-04-01'
     config_param :compress, :bool, :default => true
     config_param :time_generated_field, :string, :default => ''
+    config_param :run_in_background, :bool, :default => false
 
     def configure(conf)
       super
@@ -44,6 +45,7 @@ module Fluent
 
     def shutdown
       super
+      OMS::BackgroundJobs.instance.cleanup
     end
 
     ####################################################################################################
@@ -141,9 +143,9 @@ module Fluent
           request_id = SecureRandom.uuid
           dataSize = post_data(log_type, time_generated_field_name, records, request_id)
           time = Time.now - start
-          @log.trace "Success sending #{dataSize} bytes of data through API #{time.round(3)}s"
+          @log.debug "Success sending #{dataSize} bytes of data through API #{time.round(3)}s"
           write_status_file("true", "Sending success")
-          OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", tag, records, records.count, time)
+          return OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", tag, records, records.count, time)
         else
           raise "The log type '#{log_type}' is not valid. it should match #{@logtype_regex}"
         end
@@ -161,8 +163,10 @@ module Fluent
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously
       # try and fail to resend it. (Infinite failure loop)
-      OMS::Log.error_once("Unexpected exception, dropping data. Error:'#{e}'")
-      write_status_file("false", "Unexpected exception")
+      msg = "Unexpected exception, dropping data. Error:'#{e}'"
+      OMS::Log.error_once(msg)
+      write_status_file("false","Unexpected exception")
+      return msg
     end # handle_record
 
     # This method is called when an event reaches to Fluentd.
@@ -171,15 +175,7 @@ module Fluent
       [tag, record].to_msgpack
     end
 
-    # This method is called every flush interval. Send the buffer chunk to OMS. 
-    # 'chunk' is a buffer chunk that includes multiple formatted
-    # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
-    def write(chunk)
-      # Quick exit if we are missing something
-      if !OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
-        raise 'Missing configuration. Make sure to onboard. Will continue to buffer data.'
-      end
-
+    def self_write(chunk)
       # Group records based on their datatype because OMS does not support a single request with multiple datatypes.
       datatypes = {}
       chunk.msgpack_each {|(tag, record)|
@@ -197,10 +193,29 @@ module Fluent
           end
         end
       }
-
-      datatypes.each do |tag, records|
-        handle_records(tag, records)
+      ret = []
+      datatypes.each do |key, records|
+        ret << {'source': key, 'event': handle_records(key, records)}
       end
+      return ret
+    end
+
+    # This method is called every flush interval. Send the buffer chunk to OMS. 
+    # 'chunk' is a buffer chunk that includes multiple formatted
+    # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
+    def write(chunk)
+      # Quick exit if we are missing something
+      if !OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
+        raise 'Missing configuration. Make sure to onboard. Will continue to buffer data.'
+      end
+
+      if run_in_background
+        OMS::BackgroundJobs.instance.run_job_and_wait { self_write(chunk) }
+      else
+        self_write(chunk)
+      end
+
+
     end
 
   end # Class

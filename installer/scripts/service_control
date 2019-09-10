@@ -21,7 +21,8 @@
 
 OMSAGENT_START_WAIT_MAX=18
 OMSAGENT_STOP_WAIT_MAX=15
-STOP_PROCESS_WAIT_MAX=5
+STOP_SIGTERM_PROCESS_WAIT_MAX=10
+STOP_SIGKILL_PROCESS_WAIT_MAX=5
 WAIT_UNTIL_RUNNING_ITERATION_SLEEP=0.5
 WAIT_UNTIL_STOPPED_ITERATION_SLEEP=0.5
 
@@ -337,9 +338,17 @@ stop_omsagent_process()
     WS_STATUS=0 # Try yet again.
 
     echo -n "(Forced) "
-    kill -sigkill `cat $PIDFILE`
+    echo -n " Sending SIGTERM ..."
+    kill -sigterm `cat $PIDFILE`
     if [ $? -eq 0 ]; then
-        wait_until_omsagent_stopped $STOP_PROCESS_WAIT_MAX
+        wait_until_omsagent_stopped $STOP_SIGTERM_PROCESS_WAIT_MAX
+    fi
+    if [ $? -eq 1 ]; then
+        echo -n " Timeout reached, process could not be stopped, Sending SIGKILL ... "
+        kill -sigkill `cat $PIDFILE`
+        if [ $? -eq 0 ]; then
+            wait_until_omsagent_stopped $STOP_SIGKILL_PROCESS_WAIT_MAX
+        fi
     fi
     WS_STATUS=$?
     return $WS_STATUS
@@ -524,15 +533,6 @@ find_systemd_dir()
 
 enable_omsagent_service()
 {
-#    Don't use GC parameters for Ruby this will increase CPU usage
-#    export RUBY_GC_HEAP_GROWTH_FACTOR=1.1
-#    export RUBY_GC_MALLOC_LIMIT=4000100
-#    export RUBY_GC_MALLOC_LIMIT_MAX=16000100
-#    export RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR=1.1
-#    export RUBY_GC_OLDMALLOC_LIMIT=16000100
-#    export RUBY_GC_OLDMALLOC_LIMIT_MAX=16000100
-#    export RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR=0.9
-
     if [ ! -f $CONF_DIR/.service_registered ] && [ -f $OMSADMIN_CONF ]; then
         echo "INFO:  Configuring OMS agent service $WORKSPACE_ID ..."
         if [ ! -f $BIN_DIR/$OMSAGENT_WS ]; then

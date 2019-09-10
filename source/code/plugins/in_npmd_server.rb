@@ -299,6 +299,7 @@ module Fluent
                             _diagLogs   = _json["DataItems"].select {|x| x["SubType"] == NPM_DIAG}
                             _validUploadDataItems = Array.new
                             _batchTime = Time.now.utc.strftime("%Y-%m-%d %H:%M:%SZ")
+                            _subtypeList = ["EndpointHealth", "EndpointPath", "ExpressRoutePath", "EndpointDiagnostics", "ConnectionMonitorTestResult", "ConnectionMonitorPath"]
                             _uploadData.each do |item|
                                 item["TimeGenerated"] = _batchTime
                                 if item.key?("SubType")
@@ -316,6 +317,12 @@ module Fluent
                                         else
                                             Logger::logInfo "Network Agent data upload is skipped because it hasnt changed from the last time"
                                         end
+                                    # Append EPM, CM and ER data
+                                    elsif _subtypeList.include?item["SubType"]
+                                        Logger::logInfo "#{item["SubType"]} is uploaded"
+                                        _validUploadDataItems << item if is_valid_dataitem(item)
+                                    else
+                                        log_error "Invalid Subtype data received"
                                     end
                                 end
                             end
@@ -343,6 +350,18 @@ module Fluent
                 _itemType = NPMContract::DATAITEM_PATH
             elsif item["SubType"] == NPM_DIAG
                 _itemType = NPMContract::DATAITEM_DIAG
+            elsif item["SubType"] == "EndpointHealth"
+                _itemType = NPMContract::DATAITEM_ENDPOINT_HEALTH
+            elsif item["SubType"] == "EndpointPath"
+                _itemType = NPMContract::DATAITEM_ENDPOINT_MONITORING
+            elsif item["SubType"] == "EndpointDiagnostics"
+                _itemType = NPMContract::DATAITEM_ENDPOINT_DIAGNOSTICS
+            elsif item["SubType"] == "ExpressRoutePath"
+                _itemType = NPMContract::DATAITEM_EXROUTE_MONITORING
+            elsif item["SubType"] == "ConnectionMonitorTestResult"
+                _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_TEST
+            elsif item["SubType"] == "ConnectionMonitorPath"
+                _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_PATH
             end
 
             return false if _itemType.empty?

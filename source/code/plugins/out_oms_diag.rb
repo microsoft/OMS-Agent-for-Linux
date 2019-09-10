@@ -21,6 +21,7 @@ module Fluent
     config_param :key_path, :string, :default => '/etc/opt/microsoft/omsagent/certs/oms.key'
     config_param :proxy_conf_path, :string, :default => '/etc/opt/microsoft/omsagent/proxy.conf'
     config_param :compress, :bool, :default => true
+    config_param :run_in_background, :bool, :default => false
 
     def configure(conf)
       super
@@ -33,6 +34,7 @@ module Fluent
 
     def shutdown
       super
+      OMS::BackgroundJobs.instance.cleanup
     end
 
     def handle_record(ipname, record)
@@ -49,8 +51,7 @@ module Fluent
         time = ends - start
         count = record[OMS::Diag::RECORD_DATAITEMS].size
         @log.debug "Success sending diagnotic logs #{ipname} x #{count} in #{time.round(2)}s"
-        OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", ipname, record, count, time)
-        return true
+        return OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", ipname, record, count, time)
       end
     rescue OMS::RetryRequestException => e
       @log.info "Encountered retryable exception. Will retry sending diagnostic data later."
@@ -61,7 +62,9 @@ module Fluent
       # We encountered something unexpected. We drop the data because
       # if bad data caused the exception, the engine will continuously
       # try and fail to resend it. (Infinite failure loop)
-      OMS::Log.error_once("Unexpecting exception, dropping diagnostic data. Error:'#{e}'")
+      msg = "Unexpected exception, dropping diagnostic data. Error:'#{e}'"
+      OMS::Log.error_once(msg)
+      return msg
     end
 
     # This method is called when an event reaches to Fluentd.
@@ -74,12 +77,7 @@ module Fluent
       end
     end
 
-    def write(chunk)
-      # Quick exit if we are missing something
-      if !OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
-        raise OMS::RetryRequestException, 'Missing configuration. Make sure to onboard.'
-      end
-
+    def self_write(chunk)
       # ipname to dataitems array hash
       ipnameRecords = Hash.new
 
@@ -99,10 +97,26 @@ module Fluent
       end
 
       # getting diag records out of aggregated dataitems for serialization
+      ret = []
       ipnameRecords.each do |ipname, dataitemArray|
         OMS::Diag.ProcessDataItemsPostAggregation(dataitemArray, OMS::Configuration.agent_id)
-        record = OMS::Diag.CreateDiagRecord(dataitemArray, ipname)
-        handle_record(ipname, record)
+        records = OMS::Diag.CreateDiagRecord(dataitemArray, ipname)
+        ret << handle_record(ipname, records)
+        ret << {'source': ipname, 'event':  handle_record(ipname, records)}
+      end
+      return ret
+    end
+
+    def write(chunk)
+      # Quick exit if we are missing something
+      if !OMS::Configuration.load_configuration(omsadmin_conf_path, cert_path, key_path)
+        raise OMS::RetryRequestException, 'Missing configuration. Make sure to onboard.'
+      end
+
+      if run_in_background
+        OMS::BackgroundJobs.instance.run_job_and_wait { self_write(chunk) }
+      else
+        self_write(chunk)
       end
     end
 

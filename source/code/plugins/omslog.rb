@@ -2,6 +2,7 @@ module OMS
   class Log
     require 'set'
     require 'digest'
+    require_relative 'agent_telemetry_script'
 
     @@error_proc = Proc.new {|message| $log.error message }
     @@warn_proc  = Proc.new {|message| $log.warn message }
@@ -13,6 +14,7 @@ module OMS
     class << self
       def error_once(message, tag=nil)
         log_once(@@error_proc, @@debug_proc, message, tag)
+        OMS::Telemetry.push_error_event(message) if defined?(OMS::Telemetry.push_error_event)
       end
 
       def warn_once(message, tag=nil)

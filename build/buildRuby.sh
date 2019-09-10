@@ -55,6 +55,7 @@ elevate()
 # Helper script to build Ruby properly for OMS agent
 # Also builds fluentd since it lives under the Ruby directory
 
+HOME_DIR=`(cd ~/; pwd -P)`
 BASE_DIR=`(cd ..; pwd -P)`
 OMS_AGENTDIR=/opt/microsoft/omsagent
 
@@ -91,12 +92,12 @@ RUNNING_FOR_TEST=0
 
 case $RUBY_BUILD_TYPE in
     test)
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
         RUNNING_FOR_TEST=1
 	;;
 
     test_100)
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_101[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_101[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
         RUNNING_FOR_TEST=1
 
         export LD_LIBRARY_PATH=$SSL_101_LIBPATH:$LD_LIBRARY_PATH
@@ -104,7 +105,7 @@ case $RUBY_BUILD_TYPE in
 	;;
 
     test_110)
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_110[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_110[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
         RUNNING_FOR_TEST=1
 
         export LD_LIBRARY_PATH=$SSL_110_LIBPATH:$LD_LIBRARY_PATH
@@ -113,7 +114,7 @@ case $RUBY_BUILD_TYPE in
 
 #    100)
 #        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
-#        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+#        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 #
 #        export LD_LIBRARY_PATH=$SSL_100_LIBPATH:$LD_LIBRARY_PATH
 #        export PKG_CONFIG_PATH=${SSL_100_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
@@ -121,7 +122,7 @@ case $RUBY_BUILD_TYPE in
 
     100)
         INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_101[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_101[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_101_LIBPATH:$LD_LIBRARY_PATH
         export PKG_CONFIG_PATH=${SSL_101_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
@@ -129,7 +130,7 @@ case $RUBY_BUILD_TYPE in
 
     110)
         INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_110[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_110[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         export LD_LIBRARY_PATH=$SSL_110_LIBPATH:$LD_LIBRARY_PATH
         export PKG_CONFIG_PATH=${SSL_110_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
@@ -137,7 +138,7 @@ case $RUBY_BUILD_TYPE in
 
     *)
         INT_APPEND_DIR=""
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_JEMALLOC}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         if [ -n "$RUBY_BUILD_TYPE" ]; then
             echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, test_100, test_110, 100, 110 or blank" >& 2
@@ -176,27 +177,6 @@ fi
 if [ -d ${OMS_AGENTDIR} -a ${RUNNING_FOR_TEST} -eq 0 ]; then
     echo "FATAL: OMS agent is already installed at '${OMS_AGENTDIR}'! Must remove agent to build agent ..." >& 2
     exit 1
-fi
-
-if [ ! -z ${RUBY_CONFIGURE_QUALS_JEMALLOC} ]; then
-    if [ ! -d ${JEMALLOC_SRCDIR} ]; then
-        echo "Fatal: Jemalloc source code not found at ${JEMALLOC_SRCDIR}" >& 2; exit 1
-    fi
-
-    if [ ! -e ${JEMALLOC_LIB_SO} ]; then
-        echo "========================= Performing Building Jemalloc"
-        cd ${JEMALLOC_SRCDIR}
-        ./autogen.sh --prefix=${JEMALLOC_DSTDIR} --libdir=${JEMALLOC_DSTDIR}/lib
-        make
-        sudo make install_bin install_include install_lib
-        sudo ldconfig
-    fi
-
-#    export PATH=${JEMALLOC_SRCDIR}/bin:$PATH
-#    LDFLAGS=\"-L${JEMALLOC_LIB_SO}\"
-#    RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "CPPFLAGS=-I${JEMALLOC_SRCDIR}/include"  )
-#    export LD_LIBRARY_PATH=${JEMALLOC_LIBPATH}:$LD_LIBRARY_PATH
-#    export PKG_CONFIG_PATH=${JEMALLOC_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
 fi
 
 # Clean the version of Ruby from any existing files that aren't part of source
@@ -246,18 +226,36 @@ elevate make install
 
 export PATH=${RUBY_DESTDIR}/bin:$PATH
 
+#
+# Now build jemalloc
+#
+if [ ! -d ${JEMALLOC_SRCDIR} ]; then
+    echo "Fatal: Jemalloc source code not found at ${JEMALLOC_SRCDIR}" >& 2; exit 1
+else
+    echo "========================= Performing Building Jemalloc"
+    cd ${JEMALLOC_SRCDIR}
+    ./autogen.sh --prefix=${JEMALLOC_DSTDIR} --libdir=${JEMALLOC_DSTDIR}/lib
+    make clean
+    make -j4
+    sudo make install_bin install_include install_lib
+    sudo ldconfig
 
-if [ -e ${JEMALLOC_LIB_SO} ]; then
     echo "=========================== Copy JEMALLOC to ruby lib directory"
     sudo cp --force $JEMALLOC_LIB_SO ${RUBY_DESTDIR}/lib/
-else
-    sudo touch ${RUBY_DESTDIR}/lib/libjemalloc.so.2
 fi
 
 if [ $RUNNING_FOR_TEST -eq 1 ]; then
     echo "Installing Metaclass and Mocha (for UnitTest) into Ruby ..."
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/metaclass-0.0.4.gem
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mocha-1.8.0.gem
+
+    plugin_test_directory="${HOME_DIR}/bin/plugin"
+
+    # Due to the require_relative in fluentd's patched log.rb,
+    # we need to move plugins to their expected paths based on ruby_test_directory
+    sudo rm -rf ${plugin_test_directory}
+    mkdir ${plugin_test_directory}
+    cp ../../code/plugins/* ${plugin_test_directory}
 fi
 
 echo "Installing Bundler into Ruby ..."

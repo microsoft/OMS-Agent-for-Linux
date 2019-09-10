@@ -8,6 +8,7 @@ Type=simple
 User=omsagent
 Group=omiusers
 PIDFile=%RUN_DIR_WS%/omsagent.pid
+EnvironmentFile=/etc/opt/microsoft/omsagent/omsagent.env
 ExecStart=/opt/microsoft/omsagent/bin/omsagent \
   -d %RUN_DIR_WS%/omsagent.pid \
   -o %LOG_DIR_WS%/omsagent.log \
@@ -15,8 +16,8 @@ ExecStart=/opt/microsoft/omsagent/bin/omsagent \
   --no-supervisor
 ExecStop=/bin/rm -f %RUN_DIR_WS%/omsagent.pid
 KillMode=process
-KillSignal=SIGKILL
 TimeoutStartSec=10
+TimeoutStopSec=10
 
 [Install]
 WantedBy=multi-user.target

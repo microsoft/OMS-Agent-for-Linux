@@ -25,12 +25,32 @@ module Fluent
     def shutdown
       super
     end
-    # TODO: fix after dsc removal: use fast_utc_to_iso8601_format from OMS_COMMON.rb
-    def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
-      utctime.strftime("%FT%T.%#{fraction_digits}NZ")
+
+    # For perf debugging
+    def check_eps()
+      if @eps_counter == nil
+        @eps_counter = 0
+
+        @eps_thread = Thread.new {
+          current_time = Time.now
+          previous_time = current_time
+          loop {
+            current_time = Time.now
+            diff_time_ms = (current_time - previous_time)
+            if diff_time_ms >= 1
+              $log.info("EPS #{@eps_counter}, for #{diff_time_ms} second")
+              @eps_counter = 0
+            end
+            previous_time = current_time
+            sleep 1
+          }
+        }
+      end
+      @eps_counter += 1
     end
 
     def filter(tag, time, record)
+      # check_eps()
       pid = record["pid"]
       hostname = record["host"]
       tags = tag.split('.') # The tag should looks like this : oms.syslog.authpriv.notice
@@ -38,8 +58,8 @@ module Fluent
           'indent' => record['ident'],
           # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
           # The time may be slightly in the future from the ingestion time.
-          'Timestamp' => fast_utc_to_iso8601_format(Time.now.utc),
-          'EventTime' => fast_utc_to_iso8601_format(Time.at(time).utc),
+          'Timestamp' => OMS::Common::fast_utc_to_iso8601_format(Time.now.utc),
+          'EventTime' => OMS::Common::fast_utc_to_iso8601_format(Time.at(time).utc),
           'Host' => hostname,
           'HostIP' => 'Unknown IP',
           'Message' => record['message']
