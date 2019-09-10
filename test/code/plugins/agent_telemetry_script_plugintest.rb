@@ -120,6 +120,7 @@ class TelemetryUnitTest < Test::Unit::TestCase
     at  = OMS::AgentTelemetry.new
     aru = OMS::AgentResourceUsage.new
     qos = OMS::AgentQoS.new
+    err = OMS::AgentError.new
 
     aru.OMSMaxMemory = 268021
     aru.OMSMaxPercentMemory = 25
@@ -154,6 +155,9 @@ class TelemetryUnitTest < Test::Unit::TestCase
     qos.AvgLocalLatencyInMs = 4888
     qos.NetworkLatencyInMs = 29
 
+    err.Message = "Test"
+    err.Count = 14
+
     at.OSType = "Linux"
     at.OSDistro = "Ubuntu"
     at.OSVersion = "18.04"
@@ -163,14 +167,15 @@ class TelemetryUnitTest < Test::Unit::TestCase
     at.ConfigMgrEnabled = "false"
     at.AgentResourceUsage = aru
     at.AgentQoS = [qos]
+    at.AgentError = [err]
 
     expected_result = '{"OSType":"Linux","OSDistro":"Ubuntu","OSVersion":"18.04","ProcessorArchitecture":"x86_64","Region":"OnPremise","ResourceId":"","ConfigMgrEnabled":"false",' \
                       '"AgentResourceUsage":{"OMSMaxMemory":268021,"OMSMaxPercentMemory":25,"OMSMaxUserTime":15,"OMSMaxSystemTime":4,' \
                       '"OMSAvgMemory":182136,"OMSAvgPercentMemory":17,"OMSAvgUserTime":4,"OMSAvgSystemTime":2,"OMIMaxMemory":0,"OMIMaxPercentMemory":0,' \
                       '"OMIMaxUserTime":0,"OMIMaxSystemTime":0,"OMIAvgMemory":0,"OMIAvgPercentMemory":0,"OMIAvgUserTime":0,"OMIAvgSystemTime":0},' \
-                      '"AgentQoS":[{"Source":"LINUX_SYSLOGS_BLOB.LOGMANAGEMENT","Operation":"SendBatch","OperationSuccess":"true","Message":"",' \
-                      '"BatchCount":13,"MinBatchEventCount":4,"MaxBatchEventCount":25,"AvgBatchEventCount":10,"MinEventSize":101,"MaxEventSize":393,' \
-                      '"AvgEventSize":165,"MinLocalLatencyInMs":1920,"MaxLocalLatencyInMs":59478,"AvgLocalLatencyInMs":4888,"NetworkLatencyInMs":29}]}'
+                      '"AgentQoS":[{"Source":"LINUX_SYSLOGS_BLOB.LOGMANAGEMENT","Message":"","OperationSuccess":"true","BatchCount":13,' \
+                      '"Operation":"SendBatch","MinBatchEventCount":4,"MaxBatchEventCount":25,"AvgBatchEventCount":10,"MinEventSize":101,"MaxEventSize":393,' \
+                      '"AvgEventSize":165,"MinLocalLatencyInMs":1920,"MaxLocalLatencyInMs":59478,"AvgLocalLatencyInMs":4888,"NetworkLatencyInMs":29}],"AgentError":[{"Message":"Test","Count":14}]}'
 
     assert_equal(expected_result, at.serialize, "failed serialization of telemetry request payload")
   end
@@ -185,9 +190,9 @@ class TelemetryUnitTest < Test::Unit::TestCase
     assert_equal(41, OMS::Telemetry.array_avg(array), "incorrect average with Float input")
   end
 
-  def test_std_qos
+  def test_qos
     agent_telemetry = get_new_telemetry_obj
-    OMS::Telemetry.clear
+    OMS::Telemetry.clear_qos
     time = 40
 
     records = {"DataType"=>"LINUX_SYSLOGS_BLOB", "IPName"=>"logmanagement", "DataItems"=>
@@ -237,34 +242,31 @@ class TelemetryUnitTest < Test::Unit::TestCase
     assert_equal(time * 1000, perf.NetworkLatencyInMs, "wrong network latency parsed")
   end
 
-  def test_log_qos
+  def test_errors
     agent_telemetry = get_new_telemetry_obj
-    OMS::Telemetry.clear
+    OMS::Telemetry.clear_errors
 
-    (0..9).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL) }
-    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL) }
-    (0..7).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(c) (include) the third most numerous log message", OMS::INTERNAL) }
-    (0..2).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(d) (include) the fourth most numerous log message", OMS::INTERNAL) }
-    (0..0).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(e) (exclude) the least numerous log message", OMS::INTERNAL) }
-    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_ERROR, "true", "(f) (maybe) the tied fifth most numerous log message", OMS::INTERNAL) }
-    (0..1).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(g) (maybe) the tied fifth most numerous log message", OMS::INTERNAL) }
+    (0..9).each { OMS::Telemetry.push_error_event("(a) (include) the most numerous log message") }
+    (0..5).each { OMS::Telemetry.push_error_event("(b) (include) the second most numerous log message") }
+    (0..7).each { OMS::Telemetry.push_error_event("(c) (include) the third most numerous log message") }
+    (0..2).each { OMS::Telemetry.push_error_event("(d) (include) the fourth most numerous log message") }
+    (0..0).each { OMS::Telemetry.push_error_event("(e) (exclude) the least numerous log message") }
+    (0..1).each { OMS::Telemetry.push_error_event("(f) (maybe) the tied fifth most numerous log message") }
+    (0..1).each { OMS::Telemetry.push_error_event("(g) (maybe) the tied fifth most numerous log message") }
+    (0..4).each { OMS::Telemetry.push_error_event("(a) (include) the most numerous log message") }
+    (0..5).each { OMS::Telemetry.push_error_event("(b) (include) the second most numerous log message") }
+
+    errors = agent_telemetry.calculate_errors
+
+    assert_equal(5, errors.size, "fewer than five (the limit) log events found")
     
-    (0..4).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(a) (include) the most numerous log message", OMS::INTERNAL) }
-    (0..5).each { OMS::Telemetry.push_qos_event(OMS::LOG_FATAL, "true", "(b) (include) the second most numerous log message", OMS::INTERNAL) }
-
-    qos = agent_telemetry.calculate_qos
-
-    assert_equal(5, qos.size, "fewer than five (the limit) log events found")
+    assert(errors[0].Message.include?("(a)"), "unexpected most frequent error")
+    assert(errors[4].Message.include?("(f)") || errors[4].Message.include?("(g)"), "unexpected least frequent error")
+    errors.map { |q| assert(!q.Message.include?("(exclude)"), "unexpected infrequent error included") }
     
-    assert(qos[0].Message.include?("(a)"), "unexpected most frequent error")
-    assert(qos[4].Message.include?("(f)") || qos[4].Message.include?("(g)"), "unexpected least frequent error")
-    qos.map { |q| assert(!q.Message.include?("(exclude)"), "unexpected infrequent error included") }
-    
-    assert_equal(15, qos[0].BatchCount, "incorrect count for most numerous log message")
-    assert_equal(12, qos[1].BatchCount, "incorrect count for second most numerous log message")
-    assert_equal(2, qos[4].BatchCount, "incorrect count for fifth most numerous log message")
-
-    assert_equal(OMS::LOG_FATAL, qos[0].Operation, "incorrect operation for most numerous log message")
+    assert_equal(15, errors[0].Count, "incorrect count for most numerous log message")
+    assert_equal(12, errors[1].Count, "incorrect count for second most numerous log message")
+    assert_equal(2,  errors[4].Count, "incorrect count for fifth most numerous log message")
   end
 
   # def test_calculate_resource_usage_stopped

@@ -7,11 +7,6 @@ module OMS
 
   # Operation Types
   SEND_BATCH = "SendBatch"
-  LOG_ERROR = "LogError"
-  LOG_FATAL = "LogFatal"
-
-  # Sources
-  INTERNAL = "INTERNAL"
 
   class AgentResourceUsage < StrongTypedClass
     strongtyped_accessor :OMSMaxMemory, Integer
@@ -50,6 +45,13 @@ module OMS
     strongtyped_accessor :NetworkLatencyInMs, Integer
   end
 
+  class AgentError < StrongTypedClass
+    strongtyped_accessor :ErrorCode, Integer
+    strongtyped_accessor :Source, String
+    strongtyped_accessor :Message, String
+    strongtyped_accessor :Count, Integer
+  end
+
   class AgentTelemetry < StrongTypedClass
     strongtyped_accessor :OSType, String
     strongtyped_accessor :OSDistro, String
@@ -60,11 +62,14 @@ module OMS
     strongtyped_accessor :ConfigMgrEnabled, String
     strongtyped_accessor :AgentResourceUsage, AgentResourceUsage
     strongtyped_accessor :AgentQoS, Array # of AgentQoS
+    strongtyped_accessor :AgentError, Array # of AgentError
 
     def serialize
       qos_hash = self.AgentQoS.map! { |qos| obj_to_hash(qos) }
+      error_hash = self.AgentError.map! { |error| obj_to_hash(error) }
       hash = obj_to_hash(self)
       hash["AgentQoS"] = qos_hash
+      hash["AgentError"] = error_hash
       return hash.to_json
     end
   end
@@ -81,9 +86,10 @@ module OMS
     attr_reader :ru_points
     attr_accessor :suppress_stdout
 
-    QOS_EVENTS_LIMIT = 1000
+    EVENTS_LIMIT = 1000
 
-    @@qos_events = {}
+    @@qos_events = {} # source => [event]
+    @@error_events = {} # message => count
 
     # runs command out of proc, giving it timeout seconds before killing it
     def run_command(command, timeout)
@@ -173,14 +179,18 @@ module OMS
       @log.debug(message) if !@suppress_logging
     end
 
-    def self.clear
+    def self.clear_qos
       @@qos_events.clear
+    end
+
+    def self.clear_errors
+      @@error_events.clear
     end
 
     def self.push_back_qos_event(source, event)
       return if event.nil?
       if @@qos_events.has_key?(source)
-        if @@qos_events[source].size >= QOS_EVENTS_LIMIT
+        if @@qos_events[source].size >= EVENTS_LIMIT
           @@qos_events[source].shift # remove oldest qos event to cap memory use
         end
         @@qos_events[source] << event
@@ -189,68 +199,58 @@ module OMS
       end
     end
 
-    # handle batch send operations
-    def self.handle_std_event(event, source, batch, time)
-      event[:t] = time
-      if batch.is_a? Hash and batch.has_key?('DataItems')
-        records = batch['DataItems']
-
-        # Telemetry will drop any batches which have no records
-        return nil if records.empty?
-
-        if records[0].has_key?('Timestamp')
-          now = Time.now
-          times = records.map { |record| now - Time.parse(record['Timestamp']) }
-          event[:min_l] = times[-1] # Records appear in order, so last record will have lowest latency
-          event[:max_l] = times[0]
-          event[:sum_l] = times.sum
-        end
-        sizes = records.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize) # Remove possible nil entries with compact
-      elsif batch.is_a? Array # These other logs, such as custom logs, don't have a parsed timestamp
-        sizes = batch.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize)
-      else
-        OMS::Log.warn_once("Unexpected record format encountered in QoS: #{records.to_s}")
-      end
-
-      event[:min_s] = sizes.min
-      event[:max_s] = sizes.max
-      event[:sum_s] = sizes.sum
-
-      push_back_qos_event(source, event)
-      return event
-    end
-
-    # handle warn/error/fatal log messages
-    def self.handle_log_event(event, source)
-      if @@qos_events.has_key?(source)
-        if @@qos_events[source].size >= QOS_EVENTS_LIMIT
-          OMS::Log.warn_once("Incoming QoS log event dropped to obey memory cap.")
-          return
-        elsif @@qos_events[source].has_key?(event[:m]) # assume all duplicate messages will have the same severity
-          @@qos_events[source][event[:m]][:c] += 1
-        else
-          @@qos_events[source][event[:m]] = event
-        end
-      else
-        @@qos_events[source] = { event[:m] => event }
-      end
-      return event
-    end
-
-    # Must be a class method in order to be exposed to all *.rb pushing qos events
+    # must be a class method in order to be exposed to all *.rb pushing qos events
     def self.push_qos_event(operation, operation_success, message, source, batch = [], count = 1, time = 0)
       event = { op: operation, op_success: operation_success, m: message, c: count }
       begin
-        if [LOG_ERROR, LOG_FATAL].include?(operation)
-          event = handle_log_event(event, source)
+        event[:t] = time
+        if batch.is_a? Hash and batch.has_key?('DataItems')
+          records = batch['DataItems']
+
+          # Telemetry will drop any batches which have no records
+          return nil if records.empty?
+
+          if records[0].has_key?('Timestamp')
+            now = Time.now
+            times = records.map { |record| now - Time.parse(record['Timestamp']) }
+            event[:min_l] = times[-1] # Records appear in order, so last record will have lowest latency
+            event[:max_l] = times[0]
+            event[:sum_l] = times.sum
+          end
+          sizes = records.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize) # Remove possible nil entries with compact
+        elsif batch.is_a? Array # These other logs, such as custom logs, don't have a parsed timestamp
+          sizes = batch.map { |record| OMS::Common.parse_json_record_encoding(record) }.compact.map(&:bytesize)
         else
-          event = handle_std_event(event, source, batch, time)
+          OMS::Log.warn_once("Unexpected record format encountered in QoS: #{records.to_s}")
         end
+
+        event[:min_s] = sizes.min
+        event[:max_s] = sizes.max
+        event[:sum_s] = sizes.sum
+
+        push_back_qos_event(source, event)
       rescue => e
         OMS::Log.error_once("Error pushing QoS event. #{e}")
       end
       return event
     end # push_qos_event
+
+    def self.push_error_event(message)
+      event = { m: message, c: 1 }
+      begin
+        if @@error_events.size >= EVENTS_LIMIT
+          OMS::Log.warn_once("Incoming error event dropped to obey memory cap.")
+          return
+        elsif @@error_events.has_key?(event[:m])
+          @@error_events[event[:m]][:c] += 1
+        else
+          @@error_events[event[:m]] = event
+        end
+      rescue => e
+        OMS::Log.error_once("Error pushing error event. #{e}")
+      end
+      return event
+    end # push_error_event
 
     def self.array_avg(array)
       if array.empty?
@@ -260,7 +260,7 @@ module OMS
       end
     end # array_avg
 
-    def get_pids()
+    def get_pids
       @pids.each do |key, value|
         case key
         when :oms
@@ -277,7 +277,7 @@ module OMS
       end
     end
 
-    def poll_resource_usage()
+    def poll_resource_usage
       get_pids
       command = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, "\
                 "PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '%s'\" | grep ="
@@ -308,7 +308,7 @@ module OMS
       end
     end # poll_resource_usage
 
-    def calculate_resource_usage()
+    def calculate_resource_usage
       begin
         resource_usage = AgentResourceUsage.new
         resource_usage.OMSMaxMemory        = @ru_points[:oms][:amt_mem].max
@@ -343,66 +343,72 @@ module OMS
       end
     end
 
-    def calculate_qos()
-      # for now, since we are only instrumented to emit upload success, only merge based on source
+    def calculate_qos
       qos = []
 
       begin
         @@qos_events.each do |source, batches|
-          if source == INTERNAL
-            top = batches.sort_by { |message, event| -event[:c] }[0 ... 5] # take up to the top 5 by message count
-            top.each do |pair|
-              event = pair[1] # sort_by returns length-two array with key, value
-              qos_event = AgentQoS.new
-              qos_event.Source = source
-              qos_event.Operation = event[:op]
-              qos_event.OperationSuccess = event[:op_success]
-              qos_event.Message = event[:m]
-              qos_event.BatchCount = event[:c]
-              qos << qos_event
-            end
+          qos_event = AgentQoS.new
+          qos_event.Source = source
+          qos_event.Message = batches[0][:m]
+          qos_event.OperationSuccess = batches[0][:op_success]
+          qos_event.BatchCount = batches.size
+          qos_event.Operation = batches[0][:op]
+
+          counts = batches.map { |batch| batch[:c] }
+          qos_event.MinBatchEventCount = counts.min
+          qos_event.MaxBatchEventCount = counts.max
+          qos_event.AvgBatchEventCount = Telemetry.array_avg(counts)
+
+          qos_event.MinEventSize = batches.map { |batch| batch[:min_s] }.min
+          qos_event.MaxEventSize = batches.map { |batch| batch[:max_s] }.max
+          qos_event.AvgEventSize = batches.map { |batch| batch[:sum_s] }.sum / counts.sum
+
+          if batches[0].has_key? :min_l
+            qos_event.MinLocalLatencyInMs = (batches[-1][:min_l] * 1000).to_i # Latest batch will have smallest minimum latency
+            qos_event.MaxLocalLatencyInMs = (batches[0][:max_l] * 1000).to_i
+            qos_event.AvgLocalLatencyInMs = (((batches.map { |batch| batch[:sum_l] }).sum / counts.sum.to_f) * 1000).to_i
           else
-            qos_event = AgentQoS.new
-            qos_event.Source = source
-            qos_event.Message = batches[0][:m]
-            qos_event.OperationSuccess = batches[0][:op_success]
-            qos_event.BatchCount = batches.size
-            qos_event.Operation = batches[0][:op]
-
-            counts = batches.map { |batch| batch[:c] }
-            qos_event.MinBatchEventCount = counts.min
-            qos_event.MaxBatchEventCount = counts.max
-            qos_event.AvgBatchEventCount = Telemetry.array_avg(counts)
-
-            qos_event.MinEventSize = batches.map { |batch| batch[:min_s] }.min
-            qos_event.MaxEventSize = batches.map { |batch| batch[:max_s] }.max
-            qos_event.AvgEventSize = batches.map { |batch| batch[:sum_s] }.sum / counts.sum
-
-            if batches[0].has_key? :min_l
-              qos_event.MinLocalLatencyInMs = (batches[-1][:min_l] * 1000).to_i # Latest batch will have smallest minimum latency
-              qos_event.MaxLocalLatencyInMs = (batches[0][:max_l] * 1000).to_i
-              qos_event.AvgLocalLatencyInMs = (((batches.map { |batch| batch[:sum_l] }).sum / counts.sum.to_f) * 1000).to_i
-            else
-              qos_event.MinLocalLatencyInMs = 0
-              qos_event.MaxLocalLatencyInMs = 0
-              qos_event.AvgLocalLatencyInMs = 0
-            end
-
-            qos_event.NetworkLatencyInMs = (((batches.map { |batch| batch[:t] }).sum / batches.size.to_f) * 1000).to_i # average
-
-            qos << qos_event
+            qos_event.MinLocalLatencyInMs = 0
+            qos_event.MaxLocalLatencyInMs = 0
+            qos_event.AvgLocalLatencyInMs = 0
           end
+
+          qos_event.NetworkLatencyInMs = (((batches.map { |batch| batch[:t] }).sum / batches.size.to_f) * 1000).to_i # average
+
+          qos << qos_event
         end
       rescue => e
         log_error("Error calculating QoS. #{e}")
         return nil
       end
 
-      @@qos_events.clear
+      OMS::Telemetry.clear_qos
       return qos
     end
 
-    def create_body()
+    def calculate_errors
+      errors = []
+
+      begin
+        top = @@error_events.sort_by { |message, event| -event[:c] }[0 ... 5] # take up to the top 5 by message count
+        top.each do |pair|
+          event = pair[1] # sort_by returns length-two array with key, value
+          error_event = AgentError.new
+          error_event.Message = event[:m]
+          error_event.Count = event[:c]
+          errors << error_event
+        end
+      rescue => e
+        log_error("Error calculating errors. #{e}")
+        return nil
+      end
+
+      OMS::Telemetry.clear_errors
+      return errors
+    end
+
+    def create_body
       begin
         agent_telemetry = AgentTelemetry.new
         agent_telemetry.OSType = "Linux"
@@ -416,14 +422,15 @@ module OMS
         agent_telemetry.ConfigMgrEnabled = (!File.exist?("/etc/opt/omi/conf/omsconfig/omshelper_disable")).to_s
         agent_telemetry.AgentResourceUsage = calculate_resource_usage
         agent_telemetry.AgentQoS = calculate_qos
-        return (!agent_telemetry.AgentResourceUsage.nil? and !agent_telemetry.AgentQoS.nil?) ? agent_telemetry : nil
+        agent_telemetry.AgentError = calculate_errors
+        return (!agent_telemetry.AgentResourceUsage.nil? and !agent_telemetry.AgentQoS.nil? and !agent_telemetry.AgentError.nil?) ? agent_telemetry : nil
       rescue => e
         log_error("Error creating telemetry request body. #{e}")
         return nil
       end
     end
 
-    def heartbeat()
+    def heartbeat
       # Check necessary inputs
       if @workspace_id.nil? or @agent_guid.nil? or @url_tld.nil? or
           @workspace_id.empty? or @agent_guid.empty? or @url_tld.empty?
