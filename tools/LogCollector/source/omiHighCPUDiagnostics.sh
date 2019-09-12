@@ -183,6 +183,7 @@ do
             echo "Stacktrace for Process: ${ppuc[$ind]}">>$omiagent_trace_path
             echo "----------------------------------------------">>$omiagent_trace_path
             sudo gdb -p ${ppuc[$ind]} -batch -ex "thread apply all bt" -ex quit &>> $omiagent_trace_path
+	    sudo gdb -p ${ppuc[$ind]} -batch -ex "info sharedlibrary" -ex quit &>> $omiagent_trace_path
 
             while [ $index1 -lt ${#pt[@]} ]
             do
