@@ -306,12 +306,10 @@ module Fluent
                                     # Append FQDN to path data
                                     if !@fqdn.nil? and item["SubType"] == "NetworkPath"
                                         @num_path_data += 1 unless @num_path_data.nil?
-                                        item["Computer"] = @fqdn
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     # Append agent Guid to agent data
                                     elsif !@agentId.nil? and item["SubType"] == "NetworkAgent"
                                         @num_agent_data += 1 unless @num_agent_data.nil?
-                                        item["AgentId"] = @agentId
                                         if shouldUploadNetworkAgentInfo(item)
                                             _validUploadDataItems << item if is_valid_dataitem(item)
                                         else
