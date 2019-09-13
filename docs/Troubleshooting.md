@@ -280,6 +280,15 @@ The user will then have to edit the correct rsyslogd or syslog_ng config file an
 * Uninstall LAD extension.
 * Remove LAD files from the machine if they present in the following location: `/var/lib/waagent/Microsoft.Azure.Diagnostics.LinuxDiagnostic-<version>/` and `/var/opt/microsoft/omsagent/LAD/`
 
+#### Restoring and fixing current agent install:
+Follow these steps to recover from a bad state, like changing/removing important files under `/[etc/var]/opt/microsoft/omsagent`:
+* Extension Install:
+    * Purge the agent manually: `wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh --purge`
+    * Got to Azure Portal and remove the OMS extension, wait until you successfully remove the extension.
+    * From Azure Portal, install OMS extension again, and you should be able to see the agent successfully installed.
+* Github Install:
+    * Download from Github the same agent version that you have installed, and run upgrade command with `--force`:
+`sh omsagent*.sh --upgrade --force -w <WORKSPACE_ID> -s <SEKRET>`.
 ### My Nagios data is not showing up in the OMS Portal!
 #### Probable Causes
 * omsagent user does not have permissions to read from Nagios log file
