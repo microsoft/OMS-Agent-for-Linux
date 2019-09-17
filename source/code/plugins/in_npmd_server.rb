@@ -62,6 +62,8 @@ module Fluent
         OMS_ADMIN_CONF_PATH_COMP_TOTAL = 8
         OMS_ADMIN_CONF_PATH_COMP_WS_IDX = 5
         GUID_LEN = 36
+        START_TEXT = "\002"
+        END_TEXT = "\003"
 
         DIAG_TAG = "diag.oms.npmd"
         DIAG_IPNAME = "NetworkMonitoring"
@@ -306,12 +308,10 @@ module Fluent
                                     # Append FQDN to path data
                                     if !@fqdn.nil? and item["SubType"] == "NetworkPath"
                                         @num_path_data += 1 unless @num_path_data.nil?
-                                        item["Computer"] = @fqdn
                                         _validUploadDataItems << item if is_valid_dataitem(item)
                                     # Append agent Guid to agent data
                                     elsif !@agentId.nil? and item["SubType"] == "NetworkAgent"
                                         @num_agent_data += 1 unless @num_agent_data.nil?
-                                        item["AgentId"] = @agentId
                                         if shouldUploadNetworkAgentInfo(item)
                                             _validUploadDataItems << item if is_valid_dataitem(item)
                                         else
@@ -722,7 +722,7 @@ module Fluent
                             log_error "Configuration drops: #{_errorSummary}"
                         end
 
-                        @npmdClientSock.puts _agentConfig
+                        @npmdClientSock.puts START_TEXT + _agentConfig + END_TEXT
                         @npmdClientSock.flush
                         @num_config_sent += 1 unless @num_config_sent.nil?
                         Logger::logInfo "Configuration file sent to npmd_agent"
