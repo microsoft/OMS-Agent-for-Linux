@@ -640,8 +640,8 @@ module NPMDConfig
                         _rule["ID"] = testId
                         _rule["Name"] = _test["Name"]
                         _rule["Poll"] = _test["Poll"]
-                        _rule["AppThresholdLoss"] = _test["AppThreshold"].has_key?("Loss") ? _test["AppThreshold"]["Loss"] : "-2"
-                        _rule["AppThresholdLatency"] = _test["AppThreshold"].has_key?("Latency") ? _test["AppThreshold"]["Latency"] : "-2.0"
+                        _rule["AppThresholdLoss"] = (!_test["AppThreshold"].nil? and _test["AppThreshold"].has_key?("Loss")) ? _test["AppThreshold"]["Loss"] : "-2"
+                        _rule["AppThresholdLatency"] = (!_test["AppThreshold"].nil? and _test["AppThreshold"].has_key?("Latency")) ? _test["AppThreshold"]["Latency"] : "-2.0"
                         _rule["NetworkThresholdLoss"] = (!_test["NetworkThreshold"].nil? and _test["NetworkThreshold"].has_key?("Loss")) ? _test["NetworkThreshold"]["Loss"] : "-2"
                         _rule["NetworkThresholdLatency"] = (!_test["NetworkThreshold"].nil? and _test["NetworkThreshold"].has_key?("Latency")) ? _test["NetworkThreshold"]["Latency"] : "-2.0"
                         _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"].to_s : String.new
