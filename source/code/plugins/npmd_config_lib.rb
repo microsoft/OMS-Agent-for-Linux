@@ -309,6 +309,7 @@ module NPMDConfig
                     _ruleHash["IngestionWorkspaceId"] = _iRule.has_key?("IngestionWorkspaceId") ? _iRule["IngestionWorkspaceId"] : String.new
                     _ruleHash["WorkspaceAlias"] = _iRule.has_key?("WorkspaceAlias") ? _iRule["WorkspaceAlias"] : String.new
                     _ruleHash["Redirect"] = "false"
+                    _ruleHash["WorkspaceResourceID"] = _iRule["WorkspaceResourceID"];
                     _ruleHash["DiscoverPaths"] = _iRule.has_key?("DiscoverPaths") ? _iRule["DiscoverPaths"].to_s : "true"
                     _ruleHash["NetTests"] = (_iRule["NetworkThresholdLoss"] >= 0 and _iRule["NetworkThresholdLatency"] >= 0) ? "true" : "false"
                     _ruleHash["AppTests"] = (_iRule["AppThresholdLatency"] >= 0) ? "true" : "false"
@@ -642,6 +643,7 @@ module NPMDConfig
                         _rule["ID"] = testId
                         _rule["Name"] = _test["Name"]
                         _rule["Poll"] = _test["Poll"]
+                        _rule["WorkspaceResourceID"] = @metadata.has_key?("WorkspaceResourceID") ? @metadata["WorkspaceResourceID"] : String.new
                         _rule["DiscoverPaths"] = _test.has_key?("DiscoverPaths") ? _test["DiscoverPaths"].to_s : "true"
                         _rule["AppThresholdLoss"] = (!_test["AppThreshold"].nil? and _test["AppThreshold"].has_key?("Loss")) ? _test["AppThreshold"]["Loss"] : "-2"
                         _rule["AppThresholdLatency"] = (!_test["AppThreshold"].nil? and _test["AppThreshold"].has_key?("Latency")) ? _test["AppThreshold"]["Latency"] : "-2.0"
