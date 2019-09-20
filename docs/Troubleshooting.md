@@ -47,7 +47,7 @@ If none of these steps work for you the following channels for help are also ava
 
  **Note:** Editing configuration files for performance counters & syslog is overwritten if Portal Configuration is enabled. Disable configuration in the OMS Portal (all nodes) or for single nodes run the following:
 
- `sudo su omsagent -c /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable`
+ `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable'`
 
 ## Installation Error Codes
 
