@@ -641,7 +641,7 @@ module NPMDConfig
                         _rule["ID"] = testId
                         _rule["Name"] = _test["Name"]
                         _rule["Poll"] = _test["Poll"]
-                        _rule["DiscoverPaths"] = _test.has_key?("DiscoverPaths") ? _test["DiscoverPaths"]
+                        _rule["DiscoverPaths"] = _test.has_key?("DiscoverPaths") ? _test["DiscoverPaths"].to_s : "true"
                         _rule["AppThresholdLoss"] = _test["AppThreshold"].has_key?("Loss") ? _test["AppThreshold"]["Loss"] : "-2"
                         _rule["AppThresholdLatency"] = _test["AppThreshold"]["Latency"]
                         _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"]["Loss"]
