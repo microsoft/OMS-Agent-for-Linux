@@ -278,7 +278,7 @@ module NPMDConfig
                 _rule["NetworkTestMatrix"] = createActOnElements(x["Rules"], subnetIdHash);
                 _rule["AlertConfiguration"] = Hash.new;
                 _rule["Exceptions"] = createActOnElements(x["Exceptions"], subnetIdHash);
-                _rule["DiscoverPaths"] = x["DiscoverPaths"]
+                _rule["DiscoverPaths"] = x["DiscoverPaths"].to_s
                 
                 if _rule["NetworkTestMatrix"].empty?
                     Logger::logWarn "Skipping rule #{x["Name"]} as network test matrix is empty", Logger::loop
@@ -309,8 +309,11 @@ module NPMDConfig
                     _ruleHash["IngestionWorkspaceId"] = _iRule.has_key?("IngestionWorkspaceId") ? _iRule["IngestionWorkspaceId"] : String.new
                     _ruleHash["WorkspaceAlias"] = _iRule.has_key?("WorkspaceAlias") ? _iRule["WorkspaceAlias"] : String.new
                     _ruleHash["Redirect"] = "false"
+                    _ruleHash["WorkspaceResourceID"] = _iRule["WorkspaceResourceID"];
+                    _ruleHash["DiscoverPaths"] = _iRule.has_key?("DiscoverPaths") ? _iRule["DiscoverPaths"].to_s : "true"
                     _ruleHash["NetTests"] = (_iRule["NetworkThresholdLoss"] >= 0 and _iRule["NetworkThresholdLatency"] >= 0) ? "true" : "false"
                     _ruleHash["AppTests"] = (_iRule["AppThresholdLatency"] >= 0) ? "true" : "false"
+
                     if (_ruleHash["NetTests"] == "true")
                         _ruleHash["NetworkThreshold"] = {"ChecksFailedPercent" => _iRule["NetworkThresholdLoss"], "RoundTripTimeMs" => _iRule["NetworkThresholdLatency"]}
                     end
@@ -327,10 +330,10 @@ module NPMDConfig
                         _epHash["Name"] = _epList[j]["Name"]
                         _epHash["ID"] = _epList[j]["Id"]
                         _epHash["DestAddress"] = _epList[j]["URL"]
-                        _epHash["DestPort"] = _epList[j]["Port"]
+                        _epHash["DestPort"] = _epList[j]["Port"].to_s
                         _epHash["TestProtocol"] = _epList[j]["Protocol"]
-                        _epHash["MonitoringInterval"] = _iRule["Poll"]
-                        _epHash["TimeDrift"] = _epList[j]["TimeDrift"]
+                        _epHash["MonitoringInterval"] = _iRule["Poll"].to_s
+                        _epHash["TimeDrift"] = _epList[j]["TimeDrift"].to_s
                         _endpointList.push(_epHash)
                     end
                     _ruleHash["Endpoints"] = _endpointList
@@ -640,10 +643,13 @@ module NPMDConfig
                         _rule["ID"] = testId
                         _rule["Name"] = _test["Name"]
                         _rule["Poll"] = _test["Poll"]
+                        _rule["WorkspaceResourceID"] = @metadata.has_key?("WorkspaceResourceID") ? @metadata["WorkspaceResourceID"] : String.new
+                        _rule["DiscoverPaths"] = _test.has_key?("DiscoverPaths") ? _test["DiscoverPaths"].to_s : "true"
                         _rule["AppThresholdLoss"] = (!_test["AppThreshold"].nil? and _test["AppThreshold"].has_key?("Loss")) ? _test["AppThreshold"]["Loss"] : "-2"
                         _rule["AppThresholdLatency"] = (!_test["AppThreshold"].nil? and _test["AppThreshold"].has_key?("Latency")) ? _test["AppThreshold"]["Latency"] : "-2.0"
                         _rule["NetworkThresholdLoss"] = (!_test["NetworkThreshold"].nil? and _test["NetworkThreshold"].has_key?("Loss")) ? _test["NetworkThreshold"]["Loss"] : "-2"
                         _rule["NetworkThresholdLatency"] = (!_test["NetworkThreshold"].nil? and _test["NetworkThreshold"].has_key?("Latency")) ? _test["NetworkThreshold"]["Latency"] : "-2.0"
+
                         _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"].to_s : String.new
 
                         # Iterate over ConnectionMonitorInfoMap to get following info
@@ -914,7 +920,10 @@ module NPMContract
                                             "LossHealthState",
                                             "LossThresholdMode",
                                             "LossThreshold",
+                                            "NetworkTestEnabled",
                                             "MedianLatency",
+                                            "HighLatency",
+                                            "LowLatency",
                                             "LatencyThresholdMode",
                                             "LatencyThreshold",
                                             "LatencyHealthState",
@@ -927,11 +936,13 @@ module NPMContract
                                         "ConnectionMonitorResourceId",
                                         "Target",
                                         "Port",
+                                        "TimeSinceActive",
                                         "EndpointId",
                                         "SourceNetworkNodeInterface",
                                         "DestinationNetworkNodeInterface",
                                         "Path",
                                         "Loss",
+                                        "NetworkTestEnabled",
                                         "HighLatency",
                                         "MedianLatency",
                                         "LowLatency",
@@ -994,6 +1005,7 @@ module NPMContract
 
     CONTRACT_CONNECTIONMONITOR_TEST_RESULT_KEYS =  ["SubType",
                                                     "RecordId",
+                                                    "Computer",
                                                     "ConnectionMonitorResourceId",
                                                     "TimeCreated",
                                                     "TestGroupName",
@@ -1024,6 +1036,7 @@ module NPMContract
 
     CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS =    ["SubType",
                                                     "RecordId",
+                                                    "Computer",
                                                     "TopologyId",
                                                     "ConnectionMonitorResourceId",
                                                     "TimeCreated",
