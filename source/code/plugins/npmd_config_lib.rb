@@ -162,7 +162,7 @@ module NPMDConfig
                 subnetHash.each do |key, value|
                     _tempIp = IPAddr.new(value)
                     _h["Masks"][key] = getNetMask(_tempIp)
-                    _h["IDs"][key] = _tempIp.to_s
+                    _h["IDs"][key] = value
                 end
                 _h
             rescue StandardError => e
@@ -188,7 +188,7 @@ module NPMDConfig
             agentArray.each do |x|
                 _agent = Hash.new
                 _agent["Name"] = x["Guid"];
-                _agent["Capabilities"] = x["Capability"];
+                _agent["Capabilities"] = x["Capability"].to_s;
                 _agent["IPConfiguration"] = [];
                 
                 x["IPs"].each do |ip|
@@ -225,7 +225,7 @@ module NPMDConfig
                         @@network_subnet_drops += 1
                     else
                         _subnet["ID"] = subnetIdHash[sn];
-                        _subnet["Disabled"]  = ["False"] # TODO
+                        _subnet["Disabled"]  = "False" # TODO
                         _subnet["Tag"]  = "" # TODO
                     end
                     _network["Subnet"].push(_subnet);
@@ -274,7 +274,7 @@ module NPMDConfig
                 _rule = Hash.new
                 _rule["Name"] = x["Name"];
                 _rule["Description"] = x["Description"]
-                _rule["Protocol"] = x["Protocol"];
+                _rule["Protocol"] = x["Protocol"].to_s;
                 _rule["NetworkTestMatrix"] = createActOnElements(x["Rules"], subnetIdHash);
                 _rule["AlertConfiguration"] = Hash.new;
                 _rule["Exceptions"] = createActOnElements(x["Exceptions"], subnetIdHash);
@@ -285,8 +285,8 @@ module NPMDConfig
                     @@rule_drops += 1
                 else
                     # Alert Configuration
-                    _rule["AlertConfiguration"]["ChecksFailedPercent"]  = x["LossThreshold"]
-                    _rule["AlertConfiguration"]["RoundTripTimeMs"]  = x["LatencyThreshold"]
+                    _rule["AlertConfiguration"]["ChecksFailedPercent"]  = x["LossThreshold"].to_s
+                    _rule["AlertConfiguration"]["RoundTripTimeMs"]  = x["LatencyThreshold"].to_s
                 end
                 if !_rule.empty?
                     _rules.push(_rule)
@@ -315,11 +315,11 @@ module NPMDConfig
                     _ruleHash["AppTests"] = (_iRule["AppThresholdLatency"] >= 0) ? "true" : "false"
 
                     if (_ruleHash["NetTests"] == "true")
-                        _ruleHash["NetworkThreshold"] = {"ChecksFailedPercent" => _iRule["NetworkThresholdLoss"], "RoundTripTimeMs" => _iRule["NetworkThresholdLatency"]}
+                        _ruleHash["NetworkThreshold"] = {"ChecksFailedPercent" => _iRule["NetworkThresholdLoss"].to_s, "RoundTripTimeMs" => _iRule["NetworkThresholdLatency"].to_s}
                     end
 
                     if (_ruleHash["AppTests"] == "true")
-                        _ruleHash["AppThreshold"] = {"ChecksFailedPercent" => (_iRule.has_key?("AppThresholdLoss") ? _iRule["AppThresholdLoss"] : nil), "RoundTripTimeMs" => _iRule["AppThresholdLatency"]}
+                        _ruleHash["AppThreshold"] = {"ChecksFailedPercent" => (_iRule.has_key?("AppThresholdLoss") ? _iRule["AppThresholdLoss"].to_s : nil), "RoundTripTimeMs" => _iRule["AppThresholdLatency"].to_s}
                     end
 
                     # Fill endpoints
@@ -359,12 +359,12 @@ module NPMDConfig
                         _pvtRule["CircuitResourceId"] = _iRule["CircuitResourceId"]
                         _pvtRule["CircuitName"] = _iRule["CircuitName"]
                         _pvtRule["VirtualNetworkName"] = _iRule["vNetName"]
-                        _pvtRule["Protocol"] = _iRule["Protocol"]
+                        _pvtRule["Protocol"] = _iRule["Protocol"].to_s
 
                         #Thresholds
                         _thresholdMap = Hash.new
-                        _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"]
-                        _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"]
+                        _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"].to_s
+                        _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"].to_s
                         _pvtRule["AlertConfiguration"] = _thresholdMap
 
                         #OnPremAgents
@@ -384,7 +384,7 @@ module NPMDConfig
                         _pvtRule["AzureAgents"] = _azureAgents
                         _ruleList.push(_pvtRule)
                     end
-                    _er["PrivateRules"] = _ruleList
+                    _er[:"PrivateRules"] = _ruleList if !_ruleList.empty?
                 end
 
                 # Fill MS Peering Rules
@@ -395,13 +395,13 @@ module NPMDConfig
                         _iRule = rules[i]
                         _msRule["Name"] = _iRule["Name"]
                         _msRule["CircuitName"] = _iRule["CircuitName"]
-                        _msRule["Protocol"] = _iRule["Protocol"]
+                        _msRule["Protocol"] = _iRule["Protocol"].to_s
                         _msRule["CircuitResourceId"] = _iRule["CircuitResourceId"]
 
                         #Thresholds
                         _thresholdMap = Hash.new
-                        _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"]
-                        _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"]
+                        _thresholdMap["ChecksFailedPercent"] = _iRule["LossThreshold"].to_s
+                        _thresholdMap["RoundTripTimeMs"] = _iRule["LatencyThreshold"].to_s
                         _msRule["AlertConfiguration"] = _thresholdMap
 
                         #OnPremAgents
@@ -418,13 +418,13 @@ module NPMDConfig
                         for k in 0.._urlList.length-1
                             _urlHash = Hash.new
                             _urlHash["Target"] = _urlList[k]["url"]
-                            _urlHash["Port"] = _urlList[k]["port"]
+                            _urlHash["Port"] = _urlList[k]["port"].to_s
                             _urls.push(_urlHash)
                         end
                         _msRule["URLs"] = _urls
                     end
                     _ruleList.push(_msRule)
-                    _er["MSPeeringRules"] = _ruleList
+                    _er[:"MSPeeringRules"] = _ruleList if !_ruleList.empty?
                 end
             end
             _er
@@ -608,12 +608,12 @@ module NPMDConfig
                         !(value["Exceptions"].is_a?Array)
                     _rule = Hash.new
                     _rule["Name"] = key
-                    _rule["LossThreshold"] = value["Threshold"]["Loss"]
-                    _rule["LatencyThreshold"] = value["Threshold"]["Latency"]
+                    _rule["LossThreshold"] = (!value["Threshold"].nil? and value["Threshold"].has_key?("Loss")) ? value["Threshold"]["Loss"] : "-2"
+                    _rule["LatencyThreshold"] = (!value["Threshold"].nil? and value["Threshold"].has_key?("Latency")) ? value["Threshold"]["Latency"] : "-2.0"
                     _rule["Protocol"] = value["Protocol"] unless value["Protocol"].nil?
                     _rule["Rules"] = value["ActOn"]
                     _rule["Exceptions"] = value["Exceptions"]
-                    _rule["DiscoverPaths"] = value["DiscoverPaths"]
+                    _rule["DiscoverPaths"] = value.has_key?("DiscoverPaths") ? value["DiscoverPaths"].to_s : "true"
                     _rule["Description"] = value["Description"]
                     _rule["Enabled"] = value["Enabled"]
                     _a << _rule
@@ -800,8 +800,8 @@ module NPMDConfig
             _ruleHash["Name"] = key
             _ruleHash["Protocol"] = value["protocol"]
             _ruleHash["CircuitId"] = value["circuitId"]
-            _ruleHash["LossThreshold"] = value["threshold"]["loss"]
-            _ruleHash["LatencyThreshold"] = value["threshold"]["latency"]
+            _ruleHash["LossThreshold"] = (!value["threshold"].nil? and value["threshold"].has_key?("loss")) ? value["threshold"]["loss"] : "-2"
+            _ruleHash["LatencyThreshold"] = (!value["threshold"].nil? and value["threshold"].has_key?("latency")) ? value["threshold"]["latency"] : "-2.0"
             _ruleHash["CircuitName"] = value["circuitName"]
             _ruleHash["vNetName"]= value["vNet"]
             _ruleHash["ConnectionResourceId"]= value["connectionResourceId"]
@@ -818,8 +818,8 @@ module NPMDConfig
             _ruleHash["CircuitId"] = value["circuitId"]
             _ruleHash["Protocol"] = value["protocol"]
             _ruleHash["CircuitResourceId"] = _circuitIdMap[value["circuitId"]]
-            _ruleHash["LossThreshold"] = value["threshold"]["loss"]
-            _ruleHash["LatencyThreshold"] = value["threshold"]["latency"]
+            _ruleHash["LossThreshold"] = (!value["threshold"].nil? and value["threshold"].has_key?("loss")) ? value["threshold"]["loss"] : "-2"
+            _ruleHash["LatencyThreshold"] = (!value["threshold"].nil? and value["threshold"].has_key?("latency")) ? value["threshold"]["latency"] : "-2.0"
             _ruleHash["UrlList"] = value["urlList"]
             _ruleHash["OnPremAgents"] = value["onPremAgents"]
             return _ruleHash
