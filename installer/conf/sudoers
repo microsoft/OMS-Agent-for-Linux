@@ -41,6 +41,9 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSAuditdPlugin.sh
 # run omsbaseline
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/plugin/omsbaseline *
 
+# run process investigator
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/plugin/processinvestigator *
+
 # run omsantimalware
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/plugin/collectantimalwareinfo.rb
 
