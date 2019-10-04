@@ -1,28 +1,31 @@
 /*
 @TargetNode='Localhost'
 */
-
-instance of MSFT_nxServiceResource
+ 
+instance of MSFT_nxServiceResource as $TestPolicyResource1ref
 {
                 Name = "*";
                 Controller = "*";
                 ResourceId = "[MSFT_nxServiceResource]Inventory";
                 ModuleName = "nx";
                 ModuleVersion = "1.0";
-
-
+                Enabled=True;
 };
-
-
+ 
+instance of MSFT_nxServiceResource as $TestPolicyResource1ref2
+{
+                Name = "*";
+                Controller = "*";
+                ResourceId = "[MSFT_nxServiceResource]Inventory2";
+                ModuleName = "nx";
+                ModuleVersion = "1.0";
+                Enabled=False;
+};
+ 
 instance of OMI_ConfigurationDocument
 {
   DocumentType = "inventory";
-
      Version="2.0.0";
      MinimumCompatibleVersion = "2.0.0";
      Name="InventoryConfig";
-
-
 };
-
-
