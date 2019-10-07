@@ -4,7 +4,7 @@ require 'test/unit'
 
 require 'tempfile'
 
-require_relative 'vminsights_test_mockoms.rb'
+#require_relative 'vminsights_test_mockoms.rb'
 require_relative 'vminsights_test_mixins.rb'
 require_relative 'vminsights_test_mocklog.rb'
 
@@ -12,7 +12,7 @@ module Fluent
 
     require_relative File.join(SourcePath, 'in_vminsights.rb')
 
-    class VMInsights_test < Test::Unit::TestCase
+    class VMInsights_test < ::Test::Unit::TestCase
 
         def initialize(*args)
             super(*args)
@@ -174,7 +174,7 @@ module Fluent
     end # class VMInsights_test
 
     class MockMetricsEngine
-        include Test::Unit::Assertions
+        include ::Test::Unit::Assertions
 
         def initialize
             @start = 0
