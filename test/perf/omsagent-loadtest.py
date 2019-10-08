@@ -18,178 +18,8 @@ from datetime import datetime
 from logging.handlers import SysLogHandler
 
 import psutil
-from psutil import _pslinux as _psplatform
 import numpy as np
 PY3 = sys.version_info[0] == 3
-
-plugins_config_format = {
-    'filter_syslog': """
-        <filter oms.syslog.**>
-          type filter_syslog
-        </filter>
-    """,
-    'in_dummy': """
-       <source>
-         @type dummy
-         log_level %(log_level)s
-         rate %(dummy_eps)s
-         auto_increment_key idx
-         tag %(tag)s
-         dummy {"message":"in_dummy %(dummy_event)s"}
-       </source>
-   """,
-    'in_oms_syslog': """
-        <source>
-          type oms_syslog
-          log_level %(log_level)s
-          path %(syslog_path)s
-          protocol_type %(syslog_protocol)s
-          delimiter %(syslog_delimiter)s
-          tag oms.syslog
-        </source>
-        <filter oms.syslog.**>
-          type filter_syslog
-        </filter>
-        """,
-    'in_syslog': """
-        <source>
-          type syslog
-          log_level %(log_level)s
-          port %(syslog_port)s
-          bind %(syslog_host)s
-          path %(syslog_path)s
-          protocol_type %(syslog_protocol)s
-          delimiter %(syslog_delimiter)s
-          tag oms.syslog
-        </source>
-        <filter oms.syslog.**>
-          type filter_syslog
-        </filter>
-        """,
-    'in_security_events': """
-        <source>
-          type oms_syslog
-          log_level %(log_level)s
-          port %(security_events_port)s
-          bind %(syslog_host)s
-          path %(syslog_path)s
-          protocol_type %(syslog_protocol)s
-          tag oms.security
-          format %(CEF_format)s
-        </source>
-        <filter oms.security.**>
-          type filter_syslog_security
-        </filter>
-    """,
-    'in_tcp': """
-        <source>
-          @type tcp
-          log_level %(log_level)s
-          tag oms.tcp.events
-          format none
-          port %(syslog_port)s
-          bind %(syslog_host)s
-          delimiter \n
-        </source>
-        """,
-    'in_forward': """
-        <source>
-          @type forward
-          log_level %(log_level)s
-          port %(fluent_port)s
-          bind %(fluent_host)s
-        </source>
-        """,
-    'in_tail': """
-        <source>
-          type sudo_tail
-          log_level %(log_level)s
-          path %(tail_path)s
-          pos_file %(tail_path)s.pos
-          read_from_head %(tail_read_from_head)s
-          run_interval %(tail_run_interval)s
-          tag oms.blob.CustomLog.CUSTOM_LOG_BLOB.customlog_CL_13a39935-8f3b-43f5-85f3-28c2d8ec4000.*
-          format none
-        </source>
-        """,
-    'out_stdout': """
-        <match **>
-          type stdout
-        </match>
-        """,
-    'out_null': """
-        <match **>
-          type null
-        </match>
-        """,
-    'out_file': """
-        <match oms.**>
-          type file
-          log_level %(log_level)s
-          path %(out_file_path)s
-          num_threads %(nb_out_threads)s
-
-          buffer_type file
-          buffer_path %(test_dir)s/out_file.*.buffer
-
-          buffer_chunk_limit 10m
-          buffer_queue_limit 10
-          buffer_queue_full_action drop_oldest_chunk
-          flush_interval %(buffer_flush_interval)s
-          retry_limit %(retry_limit)s
-          retry_wait 5s
-          max_retry_wait 9m
-          flush_at_shutdown true
-        </match>
-        """,
-    'out_oms': """
-        <match oms.**>
-          type out_oms
-          log_level %(log_level)s
-          num_threads %(nb_out_threads)s
-
-          omsadmin_conf_path %(omsadmin_conf_path)s
-          cert_path %(cert_path)s
-          key_path %(key_path)s
-
-          buffer_type file
-          buffer_path %(test_dir)s/out_oms_1*.buffer
-
-          buffer_chunk_limit 50m
-          buffer_queue_limit 10
-          buffer_queue_full_action drop_oldest_chunk
-          flush_interval %(buffer_flush_interval)s
-          retry_limit %(retry_limit)s
-          retry_wait 30s
-          max_retry_wait 9m
-          flush_at_shutdown true
-        </match>
-        """,
-    'out_oms_blob': """
-        <match oms.blob.**>
-          type out_oms_blob
-          log_level %(log_level)s
-          num_threads %(nb_out_threads)s
-
-          omsadmin_conf_path %(omsadmin_conf_path)s
-          cert_path %(cert_path)s
-          key_path %(key_path)s
-
-          buffer_type file
-          buffer_path %(test_dir)s/out_oms_blob*.buffer
-
-          buffer_chunk_limit 10m
-          buffer_queue_limit 10
-          buffer_queue_full_action drop_oldest_chunk
-          flush_interval %(buffer_flush_interval)s
-          retry_limit %(retry_limit)s
-          retry_wait 5s
-          max_retry_wait 9m
-          flush_at_shutdown true
-        </match>
-        """,
-}
-
 
 def gethostname():
     try:
@@ -203,16 +33,19 @@ def build_random_msg_string(size):
 
 
 def get_all_plugins_name():
-    return plugins_config_format.keys()
+    return ['syslog', 'syslog_cef', 'file', 'msgpack']
 
 
 def get_ruby_version(path):
+    if not os.path.isfile(path):
+        return ''
     cmd = '%s --version' % path
     lines = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.readlines()
     return lines[0].split(' ')[1]
 
 
 def net_connections(protocol='udp'):
+    from psutil import _pslinux as _psplatform
     """Parse /proc/net/tcp* and /proc/net/udp* files."""
     BIGFILE_BUFFERING = -1 if PY3 else 8192
     filename = "/proc/net/%s" % protocol
@@ -304,7 +137,8 @@ def profile(processes, profiler, cpu_interval=0):
                 profiler[key] = {'cpu': [], 'mem': [], 'minor_flt': [], 'major_flt': [], 'threads': {}}
             result = measure(process, cpu_interval)
             profiler[key]['cpu'].append(result['cpu'])
-            profiler[key]['mem'].append(result['pss'] / 10 ** 6)
+            profiler[key]['mem'].append(result['rss'] / 10 ** 6)
+            # profiler[key]['mem'].append(result['pss'] / 10 ** 6)
             # profiler[key]['minor_flt'].append(result['minor_flt'])
             # profiler[key]['major_flt'].append(result['major_flt'])
 
@@ -346,9 +180,9 @@ class OutputWriter:
         return 0
 
 
-class ForwardWriter(OutputWriter):
+class MsgPackWriter(OutputWriter):
     def __init__(self, tag, path, msg_size):
-        OutputWriter.__init__(self, 'in_forward', tag, path, msg_size)
+        OutputWriter.__init__(self, 'msgpack', tag, path, msg_size)
         self.protocol = 'tcp'
         self.host, port = self.path.split(':')
         self.port = int(port)
@@ -384,7 +218,7 @@ class ForwardWriter(OutputWriter):
 
 class TailFileWriter(OutputWriter):
     def __init__(self, tag, path, msg_size):
-        OutputWriter.__init__(self, 'in_tail', tag, path, msg_size)
+        OutputWriter.__init__(self, 'file', tag, path, msg_size)
         self.max_file_size = 10 * 1024 * 1024 * 1024  # 10 GB
 
     def get_protocol(self):
@@ -488,7 +322,7 @@ class MySysLogHandler(SysLogHandler):
 
 class SyslogWriter(OutputWriter):
     def __init__(self, tag, path, msg_size, protocol="udp"):
-        OutputWriter.__init__(self, 'in_syslog', tag, path, msg_size)
+        OutputWriter.__init__(self, 'syslog', tag, path, msg_size)
         self.host = None
         self.port = None
         self.is_unix_socket = (protocol.lower() == 'unix')
@@ -522,7 +356,7 @@ class SyslogWriter(OutputWriter):
                 socktype = None
 
             self.logger = logging.getLogger('omstest')
-            self.logger.setLevel(logging.INFO)
+            self.logger.setLevel(logging.DEBUG)
             print(self.get_address())
             self.logger.addHandler(self.get_syslog_handler(self.get_address(), socktype))
         return self.logger
@@ -545,20 +379,20 @@ class SyslogWriter(OutputWriter):
 
         logger = self.get_logger()
         for i in range(eps):
-            msg = 'idx=%d %s %s' % (self.index, self.get_name(), self.msg) if self.include_counter else self.msg
-            msg += '\n'
-            # print(msg)
-            logger.log(logging.INFO, msg)
+            message = 'idx=%d %s %s' % (self.index, self.get_name(), self.msg) if self.include_counter else self.msg
+            message += '\n'
+            # print(message)
+            logger.log(logging.INFO, message)
             self.index += 1
 
 
 class CEFWriter(SyslogWriter):
-    CEF_SAMPLE = '0|Palo Alto Networks|PAN-OS|8.0.0|general|SYSTEM|3|rt=Nov 04 2018 07:15:46 GMT deviceExternalId=unknown cs3Label=Virtual System cs3= fname= flexString2Label=Module flexString2=general msg= Failed password for root from 116.31.116.38 port 63605 ssh2 externalId=5705651 cat=general PanOSDGl1=0 PanOSDGl2=0 PanOSDGl3=0 PanOSDGl4=0 PanOSVsysName= dvchost=palovmfw PanOSActionFlags=0x0'
+    CEF_SAMPLE = '0|omsagent-loadtest|PAN-OS|8.0.0|general|SYSTEM|3|rt=Nov 04 2018 07:15:46 GMT deviceExternalId=unknown cs3Label=Virtual System cs3= fname= flexString2Label=Module flexString2=general msg= Failed password for root from 116.31.116.38 port 63605 ssh2 externalId=5705651 cat=general PanOSDGl1=0 PanOSDGl2=0 PanOSDGl3=0 PanOSDGl4=0 PanOSVsysName= dvchost=palovmfw PanOSActionFlags=0x0'
 
     def __init__(self, tag, path, msg_size, protocol):
         SyslogWriter.__init__(self, tag, path, msg_size, protocol)
-        self.include_counter = False
-        self.name = 'in_security_events'
+        self.include_counter = True
+        self.name = 'syslog_cef'
         self.msg = self.CEF_SAMPLE
 
     def get_syslog_handler(self, address, socktype):
@@ -569,12 +403,7 @@ class CEFWriter(SyslogWriter):
 class TcpWriter(SyslogWriter):
     def __init__(self, tag, path, msg_size):
         SyslogWriter.__init__(self, tag, path, msg_size, 'tcp')
-        self.name = 'in_tcp'
-
-class SyslogOMSWriter(SyslogWriter):
-    def __init__(self, tag, path, msg_size, protocol):
-        SyslogWriter.__init__(self, tag, path, msg_size, protocol)
-        self.name = 'in_oms_syslog'
+        self.name = 'tcp'
 
 class ProcessWrapper:
     def __init__(self, cmd_fmt, cmd_args):
@@ -603,7 +432,7 @@ class ConfigManager:
             self.SECURITY_PATH = '%(syslog_path)s' % constants
         else:
             self.SYSLOG_PATH = '%(syslog_host)s:%(syslog_port)s' % constants
-            self.SECURITY_PATH = '%(syslog_host)s:%(security_events_port)s' % constants
+            self.SECURITY_PATH = '%(syslog_host)s:%(syslog_port)s' % constants
         self.FLUENT_PATH = '%(fluent_host)s:%(fluent_port)s' % constants
         self.TAIL_PATH = '%(tail_path)s' % constants
         self.TESTING_FOLDER_PATH = constants['test_dir']
@@ -612,10 +441,9 @@ class ConfigManager:
 
         self.available_writers = [
             SyslogWriter(self.tag, self.SYSLOG_PATH, self.event_size, constants['syslog_protocol']),
-            SyslogOMSWriter(self.tag, '%(syslog_path)s' % constants, self.event_size, 'unix'),
-            CEFWriter(self.tag, self.SECURITY_PATH, self.event_size, constants['syslog_protocol']),
+            CEFWriter(self.tag, self.SYSLOG_PATH, self.event_size, constants['syslog_protocol']),
             TailFileWriter(self.tag, self.TAIL_PATH, self.event_size),
-            ForwardWriter(self.tag, self.FLUENT_PATH, self.event_size),
+            MsgPackWriter(self.tag, self.FLUENT_PATH, self.event_size),
             # TcpWriter(self.tag, self.SYSLOG_PATH, self.event_size)
         ]
 
@@ -630,22 +458,6 @@ class ConfigManager:
             print("Warning: No writers was found for these plugins '%s'" % ", ".join(names))
         return writers
 
-    def create_oms_config_file(self, plugins):
-        path = self.constants['omsagent_config_path']
-        plugins_configuration = {}
-        for plugin_name, fmt in plugins_config_format.iteritems():
-            plugins_configuration[plugin_name] = fmt % self.constants
-
-        dirname = os.path.dirname(path)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
-
-        with open(path, "w", ) as myfile:
-            for name in plugins:
-                if name in plugins_configuration:
-                    myfile.write(plugins_configuration[name])
-                else:
-                    print("Warning plugin '%s' was not found, will be ignored" % name)
 
 
 class LoadBench:
@@ -654,13 +466,6 @@ class LoadBench:
         self.sampling_rate = sampling_rate
         self.config_mgr = config_mgr
         self.do_profiling = True
-        self.stats_logs = [
-            '/var/opt/microsoft/omsagent/log/stats_in_dummy.log',
-            '/var/opt/microsoft/omsagent/log/stats_out_oms_blob.log',
-            '/var/opt/microsoft/omsagent/log/stats_out_oms.log',
-            '/var/opt/microsoft/omsagent/log/stats_in_sudo_tail.log',
-            '/var/opt/microsoft/omsagent/log/stats_in_syslog.log'
-        ]
         self.test_status_path = os.path.join(os.path.dirname(self.config_mgr.constants['result_path']), 'status.txt')
 
         self.reset_workspace()
@@ -678,12 +483,6 @@ class LoadBench:
             lines.append('--------------- Configuration ----------------\n')
             for name, value in self.config_mgr.constants.iteritems():
                 lines.append("%s\t\t\t: %s\n" % (name, value))
-
-            lines.append('--------------- Stats files ----------------\n')
-            for stats_filename in self.stats_logs:
-                lines.append(stats_filename + ' :\n')
-                with open(stats_filename, "r") as f_stats:
-                    lines += f_stats.readlines()
             lines.append('--------------- Test dir ----------------\n')
             listing_files = 'ls -la %s' % self.config_mgr.TESTING_FOLDER_PATH
             content = subprocess.Popen(listing_files.split(' '), stdout=subprocess.PIPE,
@@ -697,34 +496,6 @@ class LoadBench:
         os.system("mkdir -p %s" % self.config_mgr.TESTING_FOLDER_PATH)
         os.system("sudo chmod 777 -R  %s" % self.config_mgr.TESTING_FOLDER_PATH)
         os.system("sudo rm -rf %s/* " % self.config_mgr.TESTING_FOLDER_PATH)
-
-        for stats_file in self.stats_logs:
-            os.system(("echo > %s" % stats_file))
-
-    def parse_stats_files(self):
-        stats = {}
-        for stats_file in self.stats_logs:
-            filename = os.path.splitext(os.path.basename(stats_file))[0]
-            stats[filename] = {}
-            with open(stats_file, "r") as f:
-                for line in f.readlines():
-                    line = line.strip('').strip('\n')
-                    if line is '':
-                        continue
-                    try:
-                        json_stat = json.loads(line)
-                        if json_stat['msg'] == 'success':
-                            for name, val in json_stat.iteritems():
-                                if name == 'msg':
-                                    continue
-                                if name not in stats[filename]:
-                                    stats[filename][name] = []
-                                stats[filename][name].append(json_stat[name])
-                        else:
-                            print(json_stat)
-                    except Exception as e:
-                        pass
-        return stats
 
     def run_load(self, eps, processes, writers):
                 return self.run_load_for_duration(eps, processes, writers, self.run_time, self.sampling_rate)
@@ -778,7 +549,7 @@ class LoadBench:
                 time.sleep(sleep_time)
                 elapsed_time += (time.time() - begin_time)
 
-            if round(elapsed_time - previous_elapsed_time, 1) > 1:
+            if round(elapsed_time - previous_elapsed_time, 2) > 1:
                 print('%s: Took more than 1s for %d EPS: total_time=%.3f s, resp_time=%.2f s, profile_time=%.2f s, '
                       'sleep_time=%.2f s' % (datetime.now().time(), eps, elapsed_time - previous_elapsed_time,
                                              diff_time, profile_diff_time, sleep_time))
@@ -787,17 +558,16 @@ class LoadBench:
         # wait more times for collecting more data
         # force flushing
         processes = self.clear_dead_process(processes)
-#         for proc in processes:
-#             if proc.is_running():
-#                 proc.send_signal(psutil.signal.SIGUSR1)
+        for proc in processes:
+            if proc.is_running():
+                proc.send_signal(psutil.signal.SIGUSR1)
 
         return profiler, response_times, nb_events
 
     def save_results(self, results, write_header=True):
         path = self.config_mgr.constants['result_path']
-        header_list = ['ruby', 'res', 'proc', 'plugins', 'eps', 'run_time', 'out_threads', 'perf_tuning',
-                       'avg_cpu', 'max_cpu', 'avg_mem', 'max_mem', 'last_mem', 'minor_flt', 'major_flt', 'nb_events',
-                       'drops']
+        header_list = ['res', 'proc', 'plugins', 'eps', 'run_time', 'avg_cpu', 'max_cpu', 'avg_mem', 'max_mem',
+        'last_mem', 'minor_flt', 'major_flt', 'nb_events', 'drops']
 
         with open(path, "a") as csvfile, open(path + '.json', 'a') as jsonfile:
             # json
@@ -807,15 +577,6 @@ class LoadBench:
             stats_header = []
             # compute stats
             stats_entries = []
-            for out_plugin, stats in results['plugin_stats'].iteritems():
-                for stats_name, values in stats.iteritems():
-                    if 'time' in stats_name:
-                        stats_entries.append(int(np.mean(values)) if len(values) > 0 else 0)
-                        stats_name = stats_name + '_avg'
-                    else:
-                        stats_entries.append(int(np.sum(values)))
-                    stats_header.append(stats_name)
-
             for procname, sampling in results['profiling'].iteritems():
                 max_cpu = max(sampling['cpu']) if any(sampling['cpu']) else 0
                 avg_cpu = np.mean(sampling['cpu']) if any(sampling['mem']) else 0
@@ -827,10 +588,9 @@ class LoadBench:
                 stats_line = ",".join(map(str, stats_entries))
                 drops = '|'.join(results['drops']) if len(results['drops']) > 0 else 0
                 print("%s cpu=%.2f %%, mem=%d MB" % (procname, avg_cpu, avg_mem))
-                line = ('"%s", "%s" ,"%s", "%s", %d, %s, %s, "%s", %.2f, %.2f, %d, %d, %d, %d, %d, %d, %s, %s\n' %
-                        (
-                        results['ruby'], get_resources(), procname, results['plugins'], results['eps'], results['run_time'],
-                        results['nb_out_threads'], results['perf_tuning'], avg_cpu, max_cpu, avg_mem, max_mem, last_mem,
+                line = ('"%s" ,"%s", "%s", %d, %s, %.2f, %.2f, %d, %d, %d, %d, %d, %d, %s, %s\n' %
+                        (get_resources(), procname, results['plugins'], results['eps'], results['run_time'],
+                        avg_cpu, max_cpu, avg_mem, max_mem, last_mem,
                         minor_flt, major_flt, results['nb_events'], drops, stats_line))
                 lines.append(line)
 
@@ -842,32 +602,6 @@ class LoadBench:
                 csvfile.write(header)
             csvfile.writelines(lines)
 
-
-RUBY_ENV_CONFIG = {
-    'none': {},
-    'jemalloc': {
-        'LD_PRELOAD': '/usr/lib/x86_64-linux-gnu/libjemalloc.so.1'
-    },
-    'gc_env': {
-        "RUBY_GC_HEAP_GROWTH_FACTOR": 1.1,
-        "RUBY_GC_MALLOC_LIMIT": 4000100,
-        "RUBY_GC_MALLOC_LIMIT_MAX": 16000100,
-        "RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR": 1.1,
-        "RUBY_GC_OLDMALLOC_LIMIT": 16000100,
-        "RUBY_GC_OLDMALLOC_LIMIT_MAX": 16000100,
-        "RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR": 0.9,
-    },
-    'gc_env_2': {
-        "RUBY_GC_HEAP_GROWTH_FACTOR": 1.1,
-        "RUBY_GC_MALLOC_LIMIT": 1000100,
-        "RUBY_GC_MALLOC_LIMIT_MAX": 4000100,
-        "RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR": 1.1,
-        "RUBY_GC_OLDMALLOC_LIMIT": 4000100,
-        "RUBY_GC_OLDMALLOC_LIMIT_MAX": 4000100,
-        "RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR": 0.9,
-    }
-}
-
 WORKSPACE_DIR = './workspace'
 TEST_DIR = os.path.join(WORKSPACE_DIR, 'test_dir')
 RUBY_PATH_OMS = "/opt/microsoft/omsagent/ruby/bin/ruby"
@@ -876,43 +610,28 @@ RUBY_PATH_LOCAL = "/usr/local/bin/ruby"
 RUBY_PROF_PATH = "/usr/local/bin/ruby-prof"
 DEFAULT_VARS = {
     'tag': 'oms.tag.perf',
-    'dummy_rate': '1',
-    'log_level': 'debug',
-    'ruby_path': RUBY_PATH_OMS,
-    'ruby_params': '',
-    'nb_out_threads': '1',
-    'CEF_format': '/^(?<time>(?:\w+ +){2,3}(?:\d+:){2}\d+):? ?(?:(?<host>[^: ]+) ?:?)? (?<ident>[a-zA-Z0-9_%\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?: *(?<message>.*)$/',
     'syslog_port': '25224',
     'security_events_port': '25226',
     'syslog_path': '%s/in_syslog.socket' % TEST_DIR,
     'syslog_host': '0.0.0.0',
     'syslog_protocol': 'tcp',
-    'syslog_delimiter': r'"\n"',
     'fluent_port': '24224',
     'fluent_host': '0.0.0.0',
-    'retry_limit': '50',
-    'buffer_flush_interval': '20s',
-    'tail_run_interval': '60',
     'tail_path': '%s/in_tail.log' % TEST_DIR,
-    'out_file_path': '%s/out_file.log' % TEST_DIR,
     'test_dir': TEST_DIR,
     'omsadmin_conf_path': '/etc/opt/microsoft/omsagent/conf/omsadmin.conf',
     'cert_path': '/etc/opt/microsoft/omsagent/certs/oms.crt',
     'key_path': '/etc/opt/microsoft/omsagent/certs/oms.key',
-    'omsagent_config_path': '%s/omsagent.conf' % WORKSPACE_DIR,
-    'omsagent_output_path': '%s/output.log' % WORKSPACE_DIR,
+    'omsagent_config_path': '/etc/opt/microsoft/omsagent/conf/omsagent.conf',
     'omsagent_path': '/opt/microsoft/omsagent/bin/omsagent',
     'result_path': '%s/results.csv' % WORKSPACE_DIR,
-    'wait_time_after_completion': '5',
-    'tail_read_from_head': 'false',
+    'wait_time_after_completion': '0',
     'perf_tuning': 'none',
     'event_size': '1000',
     'network_queue': '21299',
 }
 
-config_path_to_check = ['ruby_path', 'omsadmin_conf_path', 'cert_path', 'key_path', 'omsagent_path']
-
-oms_setups_cmds = [
+disable_oms_dsc_cmds = [
     'sudo /opt/microsoft/omsagent/bin/service_control stop',
     'sudo /opt/microsoft/omsagent/bin/service_control disable',
     'sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable',
@@ -924,13 +643,11 @@ network_setups_cmds = [
     'sysctl -w net.core.rmem_default=%(network_queue)s',
 ]
 
-
 def run_cmds(cmds):
     for cmd in cmds:
         cmd = cmd % DEFAULT_VARS
         out = subprocess.Popen(cmd.split(' '), stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT).stdout.readlines()
-
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -951,11 +668,8 @@ def main(argv):
     parser.add_argument("--eps", required=False, type=int, help="EPS in seconds", default=1)
     parser.add_argument("--sample-rate", required=False, type=float, help="sampling rate in seconds", default=0.5)
     parser.add_argument("--pids", required=False, help="pids of processes to collect metrics", default='')
-    parser.add_argument("--pgrep", required=False, help="process name to collect metrics", default='')
-    parser.add_argument("--no-profiling", required=False, help="", action='store_true')
-    parser.add_argument("--rubyprof", help="enable cpu profiling with ruby-prof", action='store_true')
-    parser.add_argument("--stackprof", help="enable cpu profiling with stackprof", action='store_true')
-    parser.add_argument("--jit", help="enable ruby JIT compilation", action='store_true')
+    parser.add_argument("--pgrep", required=False, help="process name to collect metrics", default='omsagent')
+    parser.add_argument("--do-profiling", required=False, help="", action='store_true')
     parser.add_argument("--plugins", required=False,
                         help="choose which plugins to enable, available plugins: %s" % ','.join(get_all_plugins_name()),
                         default='')
@@ -965,28 +679,12 @@ def main(argv):
         print("unknown args:", unknown)
     args = vars(args)
 
-    do_profiling = not args['no_profiling']
-    paths_not_exists = []
+    do_profiling = args['do_profiling']
     for name in DEFAULT_VARS.keys():
         if name in args and args[name] is not None:
             DEFAULT_VARS[name] = args[name]
 
-        # if do_profiling:
-        #     if name in config_path_to_check and name.endswith('_path') and not os.path.exists(DEFAULT_VARS[name]):
-        #         paths_not_exists.append(DEFAULT_VARS[name])
-
-    if len(paths_not_exists) > 0:
-        print("Error: these paths don't exist, canceling load: %s" % ',\n '.join(paths_not_exists))
-
-    rubyprof = args['rubyprof']
-    stackprof = args['stackprof']
-
-
-    if args['jit']:
-        DEFAULT_VARS['ruby_params'] = DEFAULT_VARS['ruby_params'] + '--jit '
-
     eps = args['eps']
-    DEFAULT_VARS['dummy_eps'] = str(eps)
     run_time = args['run_time']
     plugins = filter(None, args['plugins'].split(','))
     rate = args['sample_rate']
@@ -997,32 +695,9 @@ def main(argv):
                                      stderr=subprocess.STDOUT).stdout.readlines()
         pids += [int(p.strip('\n')) for p in list_pids]
 
-    # run_cmds(network_setups_cmds)
-    spawn_new_process = do_profiling  and not any(pids)
     config_mgr = ConfigManager(DEFAULT_VARS)
     loadbench = LoadBench(run_time, rate, config_mgr)
     loadbench.do_profiling = do_profiling
-    if spawn_new_process:
-        if not any(plugins):
-            raise Exception("No plugin was provided: plz use --plugins arguments to set input and output plugins")
-        environments = {}
-
-        cmd_fmt = "%(ruby_path)s %(ruby_params)s%(omsagent_path)s --no-supervisor -c %(omsagent_config_path)s -o %(omsagent_output_path)s"
-        if rubyprof:
-            os.system('mkdir -p ./omsperf')
-            cmd_fmt = "/usr/local/bin/ruby-prof --mode=cpu -p flat_with_line_numbers --file=./omsperf/perf_line_numb.txt %(omsagent_path)s -- --no-supervisor -c %(omsagent_config_path)s -o %(omsagent_output_path)s"
-        elif stackprof:
-            cmd_fmt = "./stackprof.rb %(omsagent_path)s --no-supervisor -c %(omsagent_config_path)s -o %(omsagent_output_path)s"
-
-        proc = ProcessWrapper(cmd_fmt, DEFAULT_VARS)
-        for perf_tuning in args['perf_tuning'].split(','):
-            if perf_tuning in RUBY_ENV_CONFIG:
-                environments.update(RUBY_ENV_CONFIG[perf_tuning])
-
-        run_cmds(oms_setups_cmds)
-        config_mgr.create_oms_config_file(plugins)
-        print("CMD: %s" % proc.get_cmd())
-        pids = [proc.start_process(envs=environments)]
 
     plugin_names = '|'.join(plugins)
     processes = []
@@ -1035,51 +710,27 @@ def main(argv):
 
     profiling, response_times, nb_events = loadbench.run_load(eps, processes, writers)
     wait_time_after_completion = int(config_mgr.constants['wait_time_after_completion'])
-    if spawn_new_process:
-        elapsed_time = 0.0
-        # if wait_time_after_completion > run_time:
-        #     wait_time_after_completion = run_time / 2
-
-        print("Waiting %d seconds after completion" % wait_time_after_completion)
-        while elapsed_time < wait_time_after_completion:
-            begin_time = time.time()
-            loadbench.save_test_status('wait_time_after_completion', elapsed_time, profiling)
-            time.sleep(5)
-            elapsed_time += (time.time() - begin_time)
-
-        # Gracefully terminate processes
-        for proc in processes:
-            if proc.is_running():
-                proc.send_signal(psutil.signal.SIGTERM)
-        time.sleep(5)
-        # cleanup created process
-        os.system(("sudo kill -9 %s" % ' '.join(map(str, pids))))
-    else:
+    if wait_time_after_completion > 0:
         print("Waiting %d seconds after completion" % wait_time_after_completion)
         time.sleep(wait_time_after_completion)
 
-    plugin_stats = loadbench.parse_stats_files()
     dropped_events = ['%s:%d' % (w.get_protocol(), w.get_number_dropped_event()) for w in writers]
-
-    result = {
-        'ruby': get_ruby_version(config_mgr.constants['ruby_path']),
-        'perf_tuning': config_mgr.constants['perf_tuning'],
-        "eps": eps,
-        "sampling_rate": rate,
-        "run_time": run_time,
-        'nb_out_threads': config_mgr.constants['nb_out_threads'],
-        'profiling': profiling,
-        'response_times': response_times,
-        'plugins': plugin_names,
-        'nb_events': nb_events,
-        'plugin_stats': plugin_stats,
-        'drops': dropped_events
-    }
 
     print("Response times: avg=%.2f s, max=%.2fs" % (np.mean(response_times), max(response_times)))
     if do_profiling:
+        result = {
+            "eps": eps,
+            "sampling_rate": rate,
+            "run_time": run_time,
+            'profiling': profiling,
+            'response_times': response_times,
+            'plugins': plugin_names,
+            'nb_events': nb_events,
+            'drops': dropped_events
+        }
         loadbench.save_results(result)
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
