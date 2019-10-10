@@ -99,7 +99,7 @@ module VMInsights
         def get_filesystems
             result = []
             df = File.join(@root, "bin", "df")
-            IO.popen([df, "--block-size=1", "--output=fstype,source,target,size,avail" ], { :in => :close, :err => File::NULL }) { |io|
+            IO.popen([df, "--block-size=1 -T"," | awk '{print $2, $1, $7, $3, $5}'" ], { :in => :close, :err => File::NULL }) { |io|
                 while (line = io.gets)
                     if (line =~ /ext[234]/)
                         begin
@@ -140,7 +140,7 @@ module VMInsights
         end
 
         def get_disk_stats(dev)
-            raise ArgumentError, "#{dev} does not start with /dev" unless dev.start_with? "/dev"
+            # raise ArgumentError, "#{dev} does not start with /dev" unless dev.start_with? "/dev"
             raise @baseline_exception if @baseline_exception
             @saved_disk_data.get_disk_stats(dev)
         end
@@ -172,11 +172,11 @@ module VMInsights
             def baseline
                 @sector_sizes.replace(get_sector_sizes)
                 @saved_disk_data = { }
-                @sector_sizes.each_pair { |d, s| @saved_disk_data[d] = get_disk_data(d[5, d.length], s) }
+                @sector_sizes.each_pair { |d, s| @saved_disk_data[d] = get_disk_data(d, s) }
             end
 
             def get_disk_stats(dev)
-                current = get_disk_data dev[5, dev.length], get_sector_size(dev)
+                current = get_disk_data dev, get_sector_size(dev)
                 raise IDataCollector::Unavailable, "no data for #{dev}" if current.nil?
                 previous = @saved_disk_data[dev]
                 @saved_disk_data[dev] = current
@@ -189,16 +189,29 @@ module VMInsights
             def get_sector_size(dev)
                 raise ArgumentError, "dev is nil" if dev.nil?
                 data = get_sector_sizes(dev)
+                File.open("./kakakaka", "a") do |fo|
+                    fo.write("Sector size received dict #{data} \n")
+                end
                 data[dev]
             end
 
             def get_sector_sizes(*devices)
-                cmd = [ File.join(@root, "bin", "lsblk"), "-psdJ", "-oNAME,FSTYPE,LOG-SEC" ].concat(devices)
+                if devices.length > 0
+                    devices.map! { |d| d.start_with?('/dev') ? d : "/dev/"+d }
+                end
+                cmd = [ File.join(@root, "bin", "lsblk"), "-sd", "-oNAME,LOG-SEC" ].concat(devices)
                 result = { }
                 begin
-                    IO.popen(cmd, { :in => :close, :err => File::NULL }) { |io|
-                        data = JSON.load(io)
-                        data["blockdevices"].each { |d| result[d["name"]] = d["log-sec"].to_i }
+                    IO.popen(cmd, { :in => :close }) { |io|
+                        while (line = io.gets)
+                            File.open("./kakakaka", "a") do |fo|
+                                fo.write("actual line: #{line} \n")
+                            end
+                            next if line.include? "NAME"
+                            s = line.split(" ")
+                            next if s.length < 2
+                            result[s[0]] = s[1].to_i
+                        end
                     }
                 rescue Errno::ENOENT => ex
                     # telemetry
@@ -207,6 +220,9 @@ module VMInsights
             end
 
             def get_disk_data(dev, sector_size)
+                if dev.count('/') > 0
+                    dev = dev[5, dev.length]
+                end
                 path = File.join(@root, "sys", "class", "block", dev, "stat")
                 File.open(path, "rb") { |f|
                     line = f.gets

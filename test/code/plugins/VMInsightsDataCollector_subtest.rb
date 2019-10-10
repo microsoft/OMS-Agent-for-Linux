@@ -25,7 +25,7 @@ module VMInsights
 
             mkdir_p @mock_root_dir, "bin"
             @df = File.join(@mock_root_dir, DF)
-            @df_result = @lscpu + ".result"
+            @df_result = @df + ".result"
             @lsblk = File.join(@mock_root_dir, LSBLK)
             @lsblk_result = @lsblk + ".result"
             mock_lsblk
@@ -372,7 +372,7 @@ module VMInsights
         def test_get_filesystems_live
             check_for_df
             expected = {}
-            IO.popen("sh -c '#{DF} --type=ext2 --type=ext3 --type=ext4 --block-size=1 --output=source,target,size | tail -n +2'") { |io|
+            IO.popen([DF, "--type=ext2 --type=ext3 --type=ext4 --block-size=1", "| awk '{print $1,$6,$2}' | tail -n +2" ], { :in => :close, :err => File::NULL }) { |io|
                 data = io.readlines
                 data.each { |line|
                     s = line.split(" ")
@@ -592,7 +592,7 @@ module VMInsights
             lsblk_path = "/bin/lsblk"
             omit_unless File.exists?(lsblk_path), "(Linux only)"
             sector_size = {}
-            IO.popen("sh -c '#{LSBLK} -snpdoFSTYPE,NAME,LOG-SEC | tr -s \" \"  | sed -n \"/ext[234]/s/[^ ]* //p\"'") { |io|
+            IO.popen("sh -c '#{LSBLK} -sndoNAME,LOG-SEC | tr -s \" \"'") { |io|
                 while (line = io.gets)
                     data = line.split(" ")
                     sector_size[data[0]] = data[1].to_i
@@ -614,7 +614,7 @@ module VMInsights
                 f.rewind
                 while f.gets do end
             }
-
+            # sleep 1000
             actual = { }
             time_before_get = Time.now
             sector_size.each_key { |k| actual[k] = @object_under_test.get_disk_stats(k) }
@@ -626,7 +626,7 @@ module VMInsights
             # compare
             min_delta_time = time_before_get - time_after_baseline
             max_delta_time = time_after_get - time_before_baseline
-
+            
             sector_size.each_key { |dev|
                 a = actual[dev]
                 refute_nil a, "#{dev} not found"
@@ -634,7 +634,7 @@ module VMInsights
                 after = live_disk_data_after[dev]
                 assert_in_range min_delta_time, max_delta_time, a.delta_time, dev
                 assert_in_range 0, (after[:reads] - before[:reads]), a.reads, dev
-                assert_in_range 0, (after[:bytes_read] - before[:bytes_read]), a.bytes_read, dev
+                assert_in_range 0, (after[:bytes_read] - before[:bytes_read]), a.bytes_read, dev, actual
                 assert_in_range 0, (after[:writes] - before[:writes]), a.writes, dev
                 assert_in_range 0, (after[:bytes_written] - before[:bytes_written]), a.bytes_written, dev
             }
@@ -655,7 +655,8 @@ module VMInsights
             check_for_baseline_common
             @object_under_test.baseline
 
-            mock_lsblk [ { "name" => "/dev/new_disk", "fstype" => "ext4", "log-sec" => 17 } ]
+            #mock_lsblk [ { "name" => "/dev/new_disk", "fstype" => "ext4", "log-sec" => 17 } ]
+            mock_lsblk "/dev/new_disk 17"
             make_mock_disk_stats [
                                     { :name => "new_disk", :reads => 1, :read_sectors => 2, :writes => 3, :write_sectors => 4 }
                                  ]
@@ -768,8 +769,14 @@ module VMInsights
 
             }
 
-            mock_lsblk disks.map { |k, v| { "name" => "/dev/#{k}", "fstype" => "ext4", "log-sec" => v[:sector_size] } }
-
+            mock_lsblk_devs = ""
+            disks.each do |k, v|
+                mock_lsblk_devs += "/dev/#{k} "
+                mock_lsblk_devs += v[:sector_size].to_s
+                mock_lsblk_devs += "\n"
+            end
+            # mock_lsblk disks.map { |k, v| { "name" => "/dev/#{k}", "fstype" => "ext4", "log-sec" => v[:sector_size] } }
+            mock_lsblk mock_lsblk_devs
             # make_mock_disk_stats using big and small for initial values
             current = disks.map { |k, v|
                                     baseline = v[:base].clone
@@ -939,7 +946,7 @@ module VMInsights
             File.open("/proc/diskstats", ReadASCII) { |f|
                 while line = f.gets
                     data = line.split(" ")
-                    dev = "/dev/#{data[2]}"
+                    dev = data[2]
                     next unless devices.key? dev
                     result[dev] = {
                         :reads => data[1 + 2].to_i,
@@ -1071,14 +1078,15 @@ module VMInsights
             f.puts " #{uptime} \t #{idle}\t"
         end
 
-        def assert_in_range(expected_low, expected_high, actual, msg=nil)
-            assert_range (expected_low .. expected_high), actual, msg
+        def assert_in_range(expected_low, expected_high, actual, msg=nil, stuffs=nil)
+            assert_range (expected_low .. expected_high), actual, msg, stuffs
+            exit!
         end
 
-        def assert_range(range, actual, msg=nil)
+        def assert_range(range, actual, msg=nil, stuffs=nil)
             assert range.cover?(actual), Proc.new {
                 msg = msg.nil? ? "" : "#{msg}: "
-                "#{msg}#{actual} should be in #{range}"
+                "#{msg}#{actual} #{@root}should#{stuffs} be in #{range}"
             }
         end
 
@@ -1180,7 +1188,7 @@ module VMInsights
 
             File.open(@df, WriteASCII, 0755) { |f|
                 f.puts "#!/bin/sh"
-                f.puts "if [ \"$*\" != '--block-size=1 --output=fstype,source,target,size,avail' ]; then echo bad args: $* > #{@df_result} ; exit 1; fi"
+                f.puts "if [ \"$1\" != \"--block-size=1 -T\" ]; then echo bad args: $* > #{@df_result} ; exit 1; fi"
                 f.puts "echo 'Type     Filesystem     Mounted on        1B-blocks        Avail'"
                 a.each { |d| f.puts "echo '#{d.make_df}'" }
                 f.puts "echo -n > #{@df_result}"
@@ -1188,14 +1196,14 @@ module VMInsights
             }
         end
 
-        def mock_lsblk(devs = [], expected_dev=nil)
+        def mock_lsblk(devs = "", expected_dev=nil)
             File.open(@lsblk, WriteASCII, 0755) { |f|
                 marker="__MARK#{randint}__"
                 f.puts "#!/bin/sh"
-                f.puts "if [ \"$1\" != '-psdJ' -o \"$2\" != '-oNAME,FSTYPE,LOG-SEC' ]; then echo bad args: $* > #{@lsblk_result} ; exit 1; fi"
+                f.puts "if [ \"$1\" != '-sd' -o \"$2\" != '-oNAME,LOG-SEC' ]; then echo bad args: $* > #{@lsblk_result} ; exit 1; fi"
                 f.puts "if [ $# -ne 3 -o \"$3\" != '#{expected_dev}' ]; then echo bad args: $* > #{@lsblk_result} ; exit 1; fi" unless expected_dev.nil?
                 f.puts "cat <<#{marker}"
-                f.puts JSON.generate({ "blockdevices" => devs })
+                f.puts devs
                 f.puts "#{marker}"
                 f.puts "echo -n > #{@lsblk_result}"
                 f.puts "exit 0"
