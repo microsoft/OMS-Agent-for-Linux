@@ -1,4 +1,4 @@
-# Operations Management Suite Agent for Linux (2019-04)
+# Operations Management Suite Agent for Linux (2019-10)
 
 ## Overview
 Welcome to the Log Analytics agent for Linux! The agent for Linux enables rich and real-time analytics for operational data (Syslog, performance, alerts, inventory) from Linux servers, Docker containers and monitoring tools like Nagios, Zabbix and System Center.
@@ -31,7 +31,7 @@ If you are an Azure customer, we have an Azure VM extension that allows you to e
 
 ## [Full installation guide](https://docs.microsoft.com/azure/azure-monitor/platform/log-analytics-agent)
 
-## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.11.0-9/omsagent-1.11.0-9.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.1-0/omsagent-1.12.1-0.universal.x64.sh)
 
 ## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.11.0-9/omsagent-1.11.0-9.universal.x86.sh)
 
