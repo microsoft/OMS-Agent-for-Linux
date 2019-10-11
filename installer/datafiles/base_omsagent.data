@@ -95,6 +95,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/filter_syslog_security.rb;               source/code/plugins/filter_syslog_security.rb;         744; root; root
 /opt/microsoft/omsagent/plugin/filter_changetracking.rb;                source/code/plugins/filter_changetracking.rb;          744; root; root
 /opt/microsoft/omsagent/plugin/changetracking_lib.rb;                   source/code/plugins/changetracking_lib.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/out_oms_changetracking_file.rb;                   source/code/plugins/out_oms_changetracking_file.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/filter_collectd.rb;                      source/code/plugins/filter_collectd.rb;                744; root; root
 /opt/microsoft/omsagent/plugin/collectd_lib.rb;                         source/code/plugins/collectd_lib.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/filter_operation.rb;                     source/code/plugins/filter_operation.rb;               744; root; root
