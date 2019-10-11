@@ -189,28 +189,24 @@ module VMInsights
             def get_sector_size(dev)
                 raise ArgumentError, "dev is nil" if dev.nil?
                 data = get_sector_sizes(dev)
-                File.open("./kakakaka", "a") do |fo|
-                    fo.write("Sector size received dict #{data} \n")
-                end
                 data[dev]
             end
 
             def get_sector_sizes(*devices)
-                if devices.length > 0
-                    devices.map! { |d| d.start_with?('/dev') ? d : "/dev/"+d }
-                end
-                cmd = [ File.join(@root, "bin", "lsblk"), "-sd", "-oNAME,LOG-SEC" ].concat(devices)
+                # if devices.length > 0
+                #     devices.map! { |d| d.start_with?('/dev') ? d : "/dev/"+d }
+                # end
+                cmd = [ File.join(@root, "bin", "lsblk"), "-sd", "-oNAME,LOG-SEC" ]
                 result = { }
                 begin
                     IO.popen(cmd, { :in => :close }) { |io|
                         while (line = io.gets)
-                            File.open("./kakakaka", "a") do |fo|
-                                fo.write("actual line: #{line} \n")
-                            end
                             next if line.include? "NAME"
                             s = line.split(" ")
                             next if s.length < 2
-                            result[s[0]] = s[1].to_i
+                            if (devices.empty? || devices.include?(s[0]))
+                                result[s[0]] = s[1].to_i
+                            end
                         end
                     }
                 rescue Errno::ENOENT => ex
@@ -332,7 +328,8 @@ module VMInsights
                     dev = line[0]
                     next unless ((0...10).include? dev.length) && (dev.end_with? ":")
                     dev.chop!
-                    next if Dir.exist? File.join(sys_devices_virtual_net, dev)
+                    # Note: Does not work for docker as all devices are virtual
+                    # next if Dir.exist? File.join(sys_devices_virtual_net, dev)
                     result[dev] = RawNetData.new(dev, now, devices_up[dev], line[1].to_i, line[9].to_i)
                 end
             }
