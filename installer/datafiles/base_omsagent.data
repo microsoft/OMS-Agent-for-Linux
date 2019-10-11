@@ -135,10 +135,10 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/scom_configuration.rb;                   source/code/plugins/scom_configuration.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/out_scom.rb;                             source/code/plugins/out_scom.rb;                       744; root; root
 
-/opt/microsoft/omsagent/plugins/VMInsightsDataCollector.rb;             source/code/plugins/VMInsightsDataCollector.rb;        744; root; root
-/opt/microsoft/omsagent/plugins/VMInsightsEngine.rb;                    source/code/plugins/VMInsightsEngine.rb;               744; root; root
-/opt/microsoft/omsagent/plugins/VMInsightsIDataCollector.rb;            source/code/plugins/VMInsightsIDataCollector.rb;       744; root; root
-/opt/microsoft/omsagent/plugins/in_vminsights.rb;                       source/code/plugins/in_vminsights.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/VMInsightsDataCollector.rb;              source/code/plugins/VMInsightsDataCollector.rb;        744; root; root
+/opt/microsoft/omsagent/plugin/VMInsightsEngine.rb;                     source/code/plugins/VMInsightsEngine.rb;               744; root; root
+/opt/microsoft/omsagent/plugin/VMInsightsIDataCollector.rb;             source/code/plugins/VMInsightsIDataCollector.rb;       744; root; root
+/opt/microsoft/omsagent/plugin/in_vminsights.rb;                        source/code/plugins/in_vminsights.rb;                  744; root; root
 
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
