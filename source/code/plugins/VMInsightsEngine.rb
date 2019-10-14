@@ -202,6 +202,7 @@ module VMInsights
 
             def logical_disks
                 @data_collector.get_filesystems.each { |fs|
+                    @log.info "KAKAKA at #{fs} second interval"
                     common_tag = { "#{MetricTuple::Origin}/mountId" => fs.mount_point }
                     yield MetricTuple.factory "LogicalDisk", "Status", 1, common_tag
                     yield MetricTuple.factory "LogicalDisk", "FreeSpacePercentage", (100.0 * fs.free_space_in_bytes) / fs.size_in_bytes, common_tag
@@ -209,7 +210,9 @@ module VMInsights
                                         fs.free_space_in_bytes / (1024 * 1024),
                                         common_tag.merge({"#{MetricTuple::Origin}/diskSizeMB" => fs.size_in_bytes / (1024 * 1024)})
                     begin
-                        perf = @data_collector.get_disk_stats(fs.device_name)
+                        device_name_trunc = fs.device_name[5, fs.device_name.length]
+                        perf = @data_collector.get_disk_stats(device_name_trunc)
+                        @log.info "perf #{perf} second interval"
                         delta_time = perf.delta_time.to_f
                         reads = perf.reads
                         writes = perf.writes
