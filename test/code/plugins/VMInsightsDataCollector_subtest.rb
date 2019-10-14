@@ -74,18 +74,17 @@ module VMInsights
             }
         end
 
-        # docker container runs as root. therefore this does not work.
-        # def test_proc_meminfo_unreadable
-        #     File.new(@proc_meminfo, "w", 0222).close
-        #     begin
-        #         File.open(@proc_meminfo, "r") { |f| }
-        #         omit "#{@proc_meminfo} not R/O"
-        #     rescue Errno::EACCES    # ensure the file has been made unreadable before making test assertions
-        #         assert_raises(Errno::EACCES) { ||
-        #             @object_under_test.get_available_memory_kb
-        #         }
-        #     end
-        # end
+        def test_proc_meminfo_unreadable
+            File.new(@proc_meminfo, "w", 0222).close
+            begin
+                File.open(@proc_meminfo, "r") { |f| }
+                omit "#{@proc_meminfo} not R/O"
+            rescue Errno::EACCES    # ensure the file has been made unreadable before making test assertions
+                assert_raises(Errno::EACCES) { ||
+                    @object_under_test.get_available_memory_kb
+                }
+            end
+        end
 
         def test_proc_meminfo_empty
             File.new(@proc_meminfo, "w").close
@@ -397,18 +396,17 @@ module VMInsights
             }
         end
 
-        # docker container runs as root. therefore this does not work.
-        # def test_proc_uptime_unreadable
-        #     File.chmod(0222, @proc_uptime)
-        #     begin
-        #         File.open(@proc_uptime, "r") { |f| }
-        #         omit "#{@proc_uptime} not R/O"
-        #     rescue Errno::EACCES    # ensure the file has been made unreadable before making test assertions
-        #         assert_raises(Errno::EACCES) { ||
-        #             @object_under_test.get_cpu_idle
-        #         }
-        #     end
-        # end
+        def test_proc_uptime_unreadable
+            File.chmod(0222, @proc_uptime)
+            begin
+                File.open(@proc_uptime, "r") { |f| }
+                omit "#{@proc_uptime} not R/O"
+            rescue Errno::EACCES    # ensure the file has been made unreadable before making test assertions
+                assert_raises(Errno::EACCES) { ||
+                    @object_under_test.get_cpu_idle
+                }
+            end
+        end
 
         def test_proc_uptime_empty
             File.new(@proc_uptime, "w").close
@@ -560,6 +558,7 @@ module VMInsights
             [ netdev_path, virtnet_path, netroute_path ].each { |p| omit_unless File.exists?(p), "(Linux only)" }
 
             net_stats_before = get_live_net_stats
+            omit "all network devices are virtual" unless net_stats_before.empty? == false
             @object_under_test = DataCollector.new
             @object_under_test.baseline
             make_some_network_traffic
@@ -616,7 +615,7 @@ module VMInsights
                 f.rewind
                 while f.gets do end
             }
-            # sleep 1000
+
             actual = { }
             time_before_get = Time.now
             sector_size.each_key { |k| actual[k] = @object_under_test.get_disk_stats(k) }
@@ -636,7 +635,7 @@ module VMInsights
                 after = live_disk_data_after[dev]
                 assert_in_range min_delta_time, max_delta_time, a.delta_time, dev
                 assert_in_range 0, (after[:reads] - before[:reads]), a.reads, dev
-                assert_in_range 0, (after[:bytes_read] - before[:bytes_read]), a.bytes_read, dev, actual
+                assert_in_range 0, (after[:bytes_read] - before[:bytes_read]), a.bytes_read, dev
                 assert_in_range 0, (after[:writes] - before[:writes]), a.writes, dev
                 assert_in_range 0, (after[:bytes_written] - before[:bytes_written]), a.bytes_written, dev
             }
@@ -930,11 +929,13 @@ module VMInsights
             #   all devices are online
             #   no devices will go up or down during the test
             result = {}
+            sys_devices_virtual_net = File.join("/", "sys", "devices", "virtual", "net")
             File.open("/proc/net/dev", ReadASCII) { |f|
                 while line = f.gets
                     if line =~ /^ *eth[0-9]*:/
                         line.lstrip!
                         tokens = line.split(/[: ] */)
+                        next if Dir.exist? File.join(sys_devices_virtual_net, tokens[0])
                         result[tokens[0]] = { :received => tokens[1].to_i, :sent => tokens[9].to_i }
                     end
                 end
@@ -1080,15 +1081,14 @@ module VMInsights
             f.puts " #{uptime} \t #{idle}\t"
         end
 
-        def assert_in_range(expected_low, expected_high, actual, msg=nil, stuffs=nil)
-            assert_range (expected_low .. expected_high), actual, msg, stuffs
-            # exit!
+        def assert_in_range(expected_low, expected_high, actual, msg=nil)
+            assert_range (expected_low .. expected_high), actual, msg
         end
 
-        def assert_range(range, actual, msg=nil, stuffs=nil)
+        def assert_range(range, actual, msg=nil)
             assert range.cover?(actual), Proc.new {
                 msg = msg.nil? ? "" : "#{msg}: "
-                "#{msg}#{actual} #{@root}should#{stuffs} be in #{range}"
+                "#{msg}#{actual} should be in #{range}"
             }
         end
 
