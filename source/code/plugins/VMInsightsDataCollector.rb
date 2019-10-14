@@ -140,7 +140,6 @@ module VMInsights
         end
 
         def get_disk_stats(dev)
-            # raise ArgumentError, "#{dev} does not start with /dev" unless dev.start_with? "/dev"
             raise @baseline_exception if @baseline_exception
             @saved_disk_data.get_disk_stats(dev)
         end
@@ -197,8 +196,8 @@ module VMInsights
                 result = { }
                 begin
                     IO.popen(cmd, { :in => :close }) { |io|
+                        line = io.gets
                         while (line = io.gets)
-                            next if line.include? "NAME"
                             s = line.split(" ")
                             next if s.length < 2
                             if (devices.empty? || devices.include?(s[0]))
@@ -213,9 +212,6 @@ module VMInsights
             end
 
             def get_disk_data(dev, sector_size)
-                if dev.count('/') > 0
-                    dev = dev[5, dev.length]
-                end
                 path = File.join(@root, "sys", "class", "block", dev, "stat")
                 File.open(path, "rb") { |f|
                     line = f.gets

@@ -558,7 +558,7 @@ module VMInsights
             [ netdev_path, virtnet_path, netroute_path ].each { |p| omit_unless File.exists?(p), "(Linux only)" }
 
             net_stats_before = get_live_net_stats
-            omit "all network devices are virtual" unless net_stats_before.empty? == false
+            omit "all network devices are virtual" if net_stats_before.empty?
             @object_under_test = DataCollector.new
             @object_under_test.baseline
             make_some_network_traffic
@@ -627,7 +627,7 @@ module VMInsights
             # compare
             min_delta_time = time_before_get - time_after_baseline
             max_delta_time = time_after_get - time_before_baseline
-            
+
             sector_size.each_key { |dev|
                 a = actual[dev]
                 refute_nil a, "#{dev} not found"
@@ -656,8 +656,7 @@ module VMInsights
             check_for_baseline_common
             @object_under_test.baseline
 
-            #mock_lsblk [ { "name" => "/dev/new_disk", "fstype" => "ext4", "log-sec" => 17 } ]
-            mock_lsblk "/dev/new_disk 17"
+            mock_lsblk "new_disk 17"
             make_mock_disk_stats [
                                     { :name => "new_disk", :reads => 1, :read_sectors => 2, :writes => 3, :write_sectors => 4 }
                                  ]
@@ -772,11 +771,10 @@ module VMInsights
 
             mock_lsblk_devs = ""
             disks.each do |k, v|
-                mock_lsblk_devs += "/dev/#{k} "
+                mock_lsblk_devs += "#{k} "
                 mock_lsblk_devs += v[:sector_size].to_s
                 mock_lsblk_devs += "\n"
             end
-            # mock_lsblk disks.map { |k, v| { "name" => "/dev/#{k}", "fstype" => "ext4", "log-sec" => v[:sector_size] } }
             mock_lsblk mock_lsblk_devs
             # make_mock_disk_stats using big and small for initial values
             current = disks.map { |k, v|
@@ -1160,7 +1158,7 @@ module VMInsights
                     Random.rand(20), @free
                 ]
             end
-            
+
             attr_reader :dev, :mp, :size, :free
         end
 
