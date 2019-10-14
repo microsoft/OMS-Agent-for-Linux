@@ -558,7 +558,7 @@ module VMInsights
             [ netdev_path, virtnet_path, netroute_path ].each { |p| omit_unless File.exists?(p), "(Linux only)" }
 
             net_stats_before = get_live_net_stats
-            omit "all network devices are virtual" if net_stats_before.empty?
+            omit "all network devices are virtual; possibly being run inside a container" if net_stats_before.empty?
             @object_under_test = DataCollector.new
             @object_under_test.baseline
             make_some_network_traffic
@@ -656,24 +656,24 @@ module VMInsights
             check_for_baseline_common
             @object_under_test.baseline
 
-            mock_lsblk "new_disk 17"
+            mock_lsblk "NAME LOG-SEC\nnew_disk 17"
             make_mock_disk_stats [
                                     { :name => "new_disk", :reads => 1, :read_sectors => 2, :writes => 3, :write_sectors => 4 }
                                  ]
 
             time_before_1st_get = Time.now
             ex = assert_raises(IDataCollector::Unavailable) { ||
-                @object_under_test.get_disk_stats("/dev/new_disk")
+                @object_under_test.get_disk_stats("new_disk")
             }
             time_after_1st_get = Time.now
-            assert ex.message.include?("no previous data for /dev/new_disk"), ex.inspect
+            assert ex.message.include?("no previous data for new_disk"), ex.inspect
 
             sleep 1
             make_mock_disk_stats [
                                     { :name => "new_disk", :reads => 11, :read_sectors => 22, :writes => 33, :write_sectors => 44 }
                                  ]
             time_before_2nd_get = Time.now
-            actual = @object_under_test.get_disk_stats("/dev/new_disk")
+            actual = @object_under_test.get_disk_stats("new_disk")
             time_after_2nd_get = Time.now
             # should have polled lsblk to get sector size
             assert_lsblk_exit
@@ -699,17 +699,17 @@ module VMInsights
             sleep 1
             time_before_1st_get = Time.now
             ex = assert_raises(IDataCollector::Unavailable) { ||
-                @object_under_test.get_disk_stats("/dev/sda10")
+                @object_under_test.get_disk_stats("sda10")
             }
             time_after_1st_get = Time.now
-            assert ex.message.include?("no previous data for /dev/sda10"), ex.inspect
+            assert ex.message.include?("no previous data for sda10"), ex.inspect
 
             sleep 1
             make_mock_disk_stats [
                                     { :name => "sda10", :reads => 11, :read_sectors => 22, :writes => 33, :write_sectors => 44 }
                                  ]
             time_before_2nd_get = Time.now
-            actual = @object_under_test.get_disk_stats("/dev/sda10")
+            actual = @object_under_test.get_disk_stats("sda10")
             time_after_2nd_get = Time.now
 
             assert_equal "sda10", actual.device
@@ -769,7 +769,7 @@ module VMInsights
 
             }
 
-            mock_lsblk_devs = ""
+            mock_lsblk_devs = "NAME LOG-SEC\n"
             disks.each do |k, v|
                 mock_lsblk_devs += "#{k} "
                 mock_lsblk_devs += v[:sector_size].to_s
@@ -795,7 +795,7 @@ module VMInsights
                     dev = disks[dev_name]
                     delta = dev[:deltas][i]
                     c.merge!(delta) { |k, old_val, delta| (old_val + delta) % modulus }
-                    expected["/dev/#{dev_name}"] = {
+                    expected["#{dev_name}"] = {
                         "reads" => delta[:reads],
                         "bytes_read" => delta[:read_sectors] * dev[:sector_size],
                         "writes" => delta[:writes],
