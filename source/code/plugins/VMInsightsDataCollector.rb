@@ -141,6 +141,9 @@ module VMInsights
 
         def get_disk_stats(dev)
             raise @baseline_exception if @baseline_exception
+            if dev.count('/') > 0
+                dev = dev[5, dev.length]
+            end
             @saved_disk_data.get_disk_stats(dev)
         end
 
