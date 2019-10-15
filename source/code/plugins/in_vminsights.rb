@@ -7,7 +7,7 @@ class Fluent::VMInsights < Fluent::Input
     require_relative 'VMInsightsDataCollector.rb'
     require_relative 'VMInsightsEngine.rb'
 
-    Fluent::Plugin.register_input('perfmetrics', self)
+    Fluent::Plugin.register_input('vminsights', self)
 
     config_param :tag, :string
     config_param :poll_interval, :integer, :default => 60
