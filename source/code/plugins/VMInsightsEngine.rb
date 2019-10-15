@@ -209,8 +209,11 @@ module VMInsights
                                         fs.free_space_in_bytes / (1024 * 1024),
                                         common_tag.merge({"#{MetricTuple::Origin}/diskSizeMB" => fs.size_in_bytes / (1024 * 1024)})
                     begin
-                        device_name_trunc = fs.device_name[5, fs.device_name.length]
-                        perf = @data_collector.get_disk_stats(device_name_trunc)
+                        dname - fs.device_name
+                        if dname.count('/') > 0
+                            dname = dname[5, dname.length]
+                        end
+                        perf = @data_collector.get_disk_stats(dname)
                         delta_time = perf.delta_time.to_f
                         reads = perf.reads
                         writes = perf.writes
