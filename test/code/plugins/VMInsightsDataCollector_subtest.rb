@@ -372,7 +372,7 @@ module VMInsights
         def test_get_filesystems_live
             check_for_df
             expected = {}
-            IO.popen([DF, "--type=ext2 --type=ext3 --type=ext4 --block-size=1", "| awk '{print $1,$6,$2}' | tail -n +2" ], { :in => :close, :err => File::NULL }) { |io|
+            IO.popen("#{DF} --type=ext2 --type=ext3 --type=ext4 --block-size=1 | awk '{print $1,$6,$2}' | tail -n +2", { :in => :close}) { |io|
                 data = io.readlines
                 data.each { |line|
                     s = line.split(" ")
@@ -382,6 +382,8 @@ module VMInsights
             @object_under_test = DataCollector.new
             @object_under_test.baseline
             actual = @object_under_test.get_filesystems
+            filesystems = actual.collect{|fs| fs.device_name}.to_set
+            omit "Running on container" if expected.size != actual.size && filesystems.size == expected.size
             assert expected.size == actual.size, Proc.new { "Count mismatch.\n\tExpected: #{expected}\n\tActual: #{actual}" }
             actual.each { |f|
                 str = f.inspect
@@ -1188,7 +1190,7 @@ module VMInsights
 
             File.open(@df, WriteASCII, 0755) { |f|
                 f.puts "#!/bin/sh"
-                f.puts "if [ \"$1\" != \"--block-size=1 -T\" ]; then echo bad args: $* > #{@df_result} ; exit 1; fi"
+                f.puts "if [ \"$1\" != \"--block-size=1\" ]; then echo bad args: $* > #{@df_result} ; exit 1; fi"
                 f.puts "echo 'Type     Filesystem     Mounted on        1B-blocks        Avail'"
                 a.each { |d| f.puts "echo '#{d.make_df}'" }
                 f.puts "echo -n > #{@df_result}"

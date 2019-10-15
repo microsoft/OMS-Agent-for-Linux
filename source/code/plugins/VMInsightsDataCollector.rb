@@ -99,7 +99,12 @@ module VMInsights
         def get_filesystems
             result = []
             df = File.join(@root, "bin", "df")
-            IO.popen([df, "--block-size=1 -T"," | awk '{print $2, $1, $7, $3, $5}'" ], { :in => :close, :err => File::NULL }) { |io|
+            if @root != '/'
+                cmd = "#{df} --block-size=1 -T"
+            else
+                cmd = "#{df} --block-size=1 -T | awk '{print $2, $1, $7, $3, $5}'"
+            end
+            IO.popen(cmd, { :in => :close }) { |io|
                 while (line = io.gets)
                     if (line =~ /ext[234]/)
                         begin
