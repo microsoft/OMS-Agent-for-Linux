@@ -22,15 +22,15 @@ module Fluent
         def setup
             @test_start_time = Time.now
             @object_under_test = VMInsights.new
-            @mock_tag = "ThE TaG NaMe"
+            @mock_tag = String.new "ThE TaG NaMe"
             @mock_log = ::VMInsights::MockLog.new
             @mock_log.ignore_range = ::VMInsights::MockLog::NONE
             @mock_metric_engine = MockMetricsEngine.new
 
             @conf = {
-                :tag => @mock_tag,
-                :log => @mock_log,
-                :MockMetricsEngine => @mock_metric_engine,
+                "tag" => @mock_tag,
+                "log" => @mock_log,
+                "MockMetricsEngine" => @mock_metric_engine,
             }
 
         end
