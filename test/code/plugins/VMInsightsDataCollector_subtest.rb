@@ -345,22 +345,22 @@ module VMInsights
             expected = make_expected_disks 4
             stuff = [
                 DfGarbage.new("this is#{__LINE__} some random garbage"),
-                DfGarbage.new("ext1 /dev/foo#{__LINE__} / 42 17"),
-                DfGarbage.new("ext5 /dev/foo#{__LINE__} / 42 17"),
-                DfGarbage.new("ext4 /dev/foo#{__LINE__} / 42"),
-                DfGarbage.new("ext4 /dev1/foo#{__LINE__} / 42 17"),
-                DfGarbage.new("ext4 /dev/foo#{__LINE__} /shazam 0 17"),
-                DfGarbage.new("ext4 /dev/foo#{__LINE__} shazam 42 17"),
-                DfGarbage.new("ext4 /dev/foo#{__LINE__} /shazam not_int 17"),
-                DfGarbage.new("ext4 /dev/foo#{__LINE__} /shazam 42 not_int"),
-                DfGarbage.new("ext4 /dev/foo#{__LINE__} /shazam 0x42 17"),
-                DfGarbage.new("ext4 /dev/foo#{__LINE__} /shazam 42 0x17"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext1 42 42 17 2 /"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext5 42 42 17 2 /"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 2 /"),
+                DfGarbage.new("/dev1/foo#{__LINE__} ext4 42 42 17 5 /"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4 0 42 17 3 /shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 17 3 shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4 not_int 42 17 3 /shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 not_int 3 /shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4 0x42 42 17 4 /shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 0x17 4 /shazam"),
             ].concat(expected)
             # these look funky, but they should be interpreted as decimal numbers
-            stuff << DfGarbage.new("ext4 /dev/bar1 /shazam 042 17")
-            expected << Fs.new("/dev/bar1", "/shazam", 42, 17, 4)
-            stuff << DfGarbage.new("ext4 /dev/bar2 /shazam 42 017")
-            expected << Fs.new("/dev/bar2", "/shazam", 42, 17, 4)
+            stuff << DfGarbage.new("/dev/bar1 ext4 042 42 17 3 /shazam")
+            expected << Fs.new("bar1", "/shazam", 42, 17, 4)
+            stuff << DfGarbage.new("/dev/bar2 ext4 42 42 017 2 /shazam")
+            expected << Fs.new("bar2", "/shazam", 42, 17, 4)
 
             stuff.shuffle!
             mock_proc_df stuff
@@ -376,14 +376,15 @@ module VMInsights
                 data = io.readlines
                 data.each { |line|
                     s = line.split(" ")
-                    expected[s[0]] = [ s[1], s[2].to_i, false ]
+                    ind = s[0].index('/', 1)
+                    key = s[0][ind+1..-1]
+                    omit "running in container" if expected.has_key? key
+                    expected[key] = [ s[1], s[2].to_i, false ]
                 }
             }
             @object_under_test = DataCollector.new
             @object_under_test.baseline
             actual = @object_under_test.get_filesystems
-            filesystems = actual.collect{|fs| fs.device_name}.to_set
-            omit "Running on container" if expected.size != actual.size && filesystems.size == expected.size
             assert expected.size == actual.size, Proc.new { "Count mismatch.\n\tExpected: #{expected}\n\tActual: #{actual}" }
             actual.each { |f|
                 str = f.inspect
@@ -1152,12 +1153,14 @@ module VMInsights
             end
 
             def make_df
-                "ext%d %-*s %-*s %*d %*d" % [
-                    @type,
+                "%-*s ext%d %*d %*d %*d %*d %-*s" % [
                     Random.rand(20), @dev,
-                    Random.rand(20), @mp,
+                    @type,
                     Random.rand(20), @size,
-                    Random.rand(20), @free
+                    Random.rand(20), 42,
+                    Random.rand(20), @free,
+                    Random.rand(20), 42,
+                    Random.rand(20), @mp
                 ]
             end
 
@@ -1176,7 +1179,7 @@ module VMInsights
             seed = Random.rand(26)
             Array.new(n) { |i|
                 i = (i + seed) % 26
-                dev = "/dev/harddisk%s" % ('a' ... 'z').to_a[i]
+                dev = "harddisk%s" % ('a' ... 'z').to_a[i]
                 mount = "/xyzzy/mnt#{i}"
                 size = Random.rand(1024 * 1024 * 1024 * 1024)
                 free = Random.rand(size + 1)
@@ -1185,13 +1188,12 @@ module VMInsights
         end
 
         def mock_proc_df(a)
-            # df --block-size=1 --output=fstype,source,target,size,avail
-            # Type     Filesystem     Mounted on        1B-blocks        Avail
-
+            # df --block-size=1 -T
+            # Filesystem     Type        1B-blocks        Used    Available Use% Mounted on
             File.open(@df, WriteASCII, 0755) { |f|
                 f.puts "#!/bin/sh"
-                f.puts "if [ \"$1\" != \"--block-size=1\" ]; then echo bad args: $* > #{@df_result} ; exit 1; fi"
-                f.puts "echo 'Type     Filesystem     Mounted on        1B-blocks        Avail'"
+                f.puts "if [ \"$*\" != \"--block-size=1 -T\" ]; then echo bad args: $* > #{@df_result} ; exit 1; fi"
+                f.puts "echo 'Filesystem     Type        1B-blocks        Used    Available Use% Mounted on'"
                 a.each { |d| f.puts "echo '#{d.make_df}'" }
                 f.puts "echo -n > #{@df_result}"
                 f.puts "exit 0"

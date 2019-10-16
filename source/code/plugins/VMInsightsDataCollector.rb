@@ -99,17 +99,12 @@ module VMInsights
         def get_filesystems
             result = []
             df = File.join(@root, "bin", "df")
-            if @root != '/'
-                cmd = "#{df} --block-size=1 -T"
-            else
-                cmd = "#{df} --block-size=1 -T | awk '{print $2, $1, $7, $3, $5}'"
-            end
-            IO.popen(cmd, { :in => :close }) { |io|
+            IO.popen([df, "--block-size=1", "-T"], { :in => :close, :err => File::NULL }) { |io|
                 while (line = io.gets)
-                    if (line =~ /ext[234]/)
+                    a = line.split(" ")
+                    if (a[1] =~ /ext[234]/)
                         begin
-                            a = line.split(" ")
-                            result << Fs.new(a[1], a[2], a[3], a[4]) if a.size == 5
+                            result << Fs.new(a[0], a[6], a[2], a[4]) if a.size == 7
                         rescue ArgumentError => ex
                             # malformed input
                         end
@@ -146,9 +141,6 @@ module VMInsights
 
         def get_disk_stats(dev)
             raise @baseline_exception if @baseline_exception
-            if dev.count('/') > 0
-                dev = dev[5, dev.length]
-            end
             @saved_disk_data.get_disk_stats(dev)
         end
 
@@ -204,7 +196,7 @@ module VMInsights
                 result = { }
                 begin
                     IO.popen(cmd, { :in => :close }) { |io|
-                        line = io.gets
+                        io.gets # skips the header
                         while (line = io.gets)
                             s = line.split(" ")
                             next if s.length < 2
@@ -354,8 +346,12 @@ module VMInsights
 
         class Fs
             def initialize(device_name, mount_point, size_in_bytes, free_space_in_bytes)
-                raise ArgumentError, device_name unless device_name.start_with?("/dev/")
                 raise ArgumentError, mount_point unless mount_point.start_with? "/"
+                ind = device_name.index('/', 1)
+                unless ind.nil?
+                    raise ArgumentError, device_name unless device_name.start_with?("/dev/")
+                    device_name = device_name[ind+1..-1]
+                end
                 @device_name = device_name
                 @mount_point = mount_point
                 @size_in_bytes = Integer(size_in_bytes, 10)
