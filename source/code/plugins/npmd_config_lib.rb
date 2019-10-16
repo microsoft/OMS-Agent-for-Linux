@@ -735,7 +735,7 @@ module NPMDConfig
                     _circuitIdMap = _h[ERCircuitInfoTag]
 
                     if _privateTestMap.empty? && _microsoftTestMap.empty?
-                        Logger::logInfo "ER configuration rules deserialization failed."
+                        Logger::logInfo "ER configuration is not present"
                     end
 
                     # Private Peering Rules
@@ -893,11 +893,8 @@ module NPMContract
                                 "AvgHopLatencyList",
                                 "TraceRouteCompletionTime"]
 
-    CONTRACT_DIAG_DATA_KEYS  = ["TimeGenerated",
-                                "SubType",
-                                "NotificationCode",
-                                "NotificationType",
-                                "Computer"]
+    CONTRACT_DIAG_DATA_KEYS  = ["SubType",
+                                "Message"]
 
     CONTRACT_ENDPOINT_HEALTH_DATA_KEYS  =  ["SubType",
                                             "TestName",
