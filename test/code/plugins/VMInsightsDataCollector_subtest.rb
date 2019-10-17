@@ -355,6 +355,8 @@ module VMInsights
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 not_int 3 /shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 0x42 42 17 4 /shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 0x17 4 /shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} text4 42 42 17 4 /shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} ext4b 42 42 17 4 /shazam"),
             ].concat(expected)
             # these look funky, but they should be interpreted as decimal numbers
             stuff << DfGarbage.new("/dev/bar1 ext4 042 42 17 3 /shazam")
