@@ -203,13 +203,13 @@ class NPMDConfigUT < Test::Unit::TestCase
 
     def test_contract_03_diag_data
         # Checking for valid diag data case
-        _validDiagDataStr='{"TimeGenerated":"abcd", "SubType":"NPMDiagLnx", "NotificationCode":"1234", "NotificationType":"Diagnostics", "Computer":"abcd"}'
+        _validDiagDataStr='{"SubType":"NPMDiagLnx", "Message": "Diagnostic message for Linux"}'
         _validDiagData = JSON.parse(_validDiagDataStr)
         _res, _prob = NPMContract::IsValidDataitem(_validDiagData, NPMContract::DATAITEM_DIAG)
         assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid diag data sent but validation returned invalid")
 
         # Checking for invalid fields case
-        _invalidFieldsStr='{"SubType":"NPMDiagLnx", "Message": "Diagnostic message for Linux"}'
+        _invalidFieldsStr='{"SubType":"NPMDiagLnx", "Message": "Diagnostic message for Linux", "Notificationecode":"1234"}'
         _invalidFields = JSON.parse(_invalidFieldsStr)
         _res, _prob = NPMContract::IsValidDataitem(_invalidFields, NPMContract::DATAITEM_DIAG)
         assert_equal(NPMContract::DATAITEM_ERR_INVALID_FIELDS, _res, "diag data with invalid fields sent but validation did not give correct error")
