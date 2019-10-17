@@ -347,11 +347,8 @@ module VMInsights
         class Fs
             def initialize(device_name, mount_point, size_in_bytes, free_space_in_bytes)
                 raise ArgumentError, mount_point unless mount_point.start_with? "/"
-                ind = device_name.index('/', 1)
-                unless ind.nil?
-                    raise ArgumentError, device_name unless device_name.start_with?("/dev/")
-                    device_name = device_name[ind+1..-1]
-                end
+                raise ArgumentError, device_name unless device_name.start_with?("/dev/")
+                device_name = device_name.sub(/^\/dev\//, '')
                 @device_name = device_name
                 @mount_point = mount_point
                 @size_in_bytes = Integer(size_in_bytes, 10)

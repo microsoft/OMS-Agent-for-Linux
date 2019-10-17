@@ -360,9 +360,9 @@ module VMInsights
             ].concat(expected)
             # these look funky, but they should be interpreted as decimal numbers
             stuff << DfGarbage.new("/dev/bar1 ext4 042 42 17 3 /shazam")
-            expected << Fs.new("bar1", "/shazam", 42, 17, 4)
+            expected << Fs.new("/dev/bar1", "/shazam", 42, 17, 4)
             stuff << DfGarbage.new("/dev/bar2 ext4 42 42 017 2 /shazam")
-            expected << Fs.new("bar2", "/shazam", 42, 17, 4)
+            expected << Fs.new("/dev/bar2", "/shazam", 42, 17, 4)
 
             stuff.shuffle!
             mock_proc_df stuff
@@ -377,10 +377,10 @@ module VMInsights
             IO.popen("#{DF} --type=ext2 --type=ext3 --type=ext4 --block-size=1 | awk '{print $1,$6,$2}' | tail -n +2", { :in => :close}) { |io|
                 data = io.readlines
                 data.each { |line|
+                    raise ArgumentError, line unless line.start_with?("/dev/")
                     s = line.split(" ")
-                    ind = s[0].index('/', 1)
-                    key = s[0][ind+1..-1]
-                    omit "running in container" if expected.has_key? key
+                    key = s[0].sub(/^\/dev\//, '')
+                    omit "#{key} is mounted multiple times. Running in a container" if expected.has_key? key
                     expected[key] = [ s[1], s[2].to_i, false ]
                 }
             }
@@ -1141,7 +1141,7 @@ module VMInsights
             end
 
             def equivilent?(actual)
-                @dev == actual.device_name &&
+                @dev == '/dev/' + actual.device_name &&
                 @mp == actual.mount_point &&
                 @size == actual.size_in_bytes &&
                 @free == actual.free_space_in_bytes
@@ -1181,7 +1181,7 @@ module VMInsights
             seed = Random.rand(26)
             Array.new(n) { |i|
                 i = (i + seed) % 26
-                dev = "harddisk%s" % ('a' ... 'z').to_a[i]
+                dev = "/dev/harddisk%s" % ('a' ... 'z').to_a[i]
                 mount = "/xyzzy/mnt#{i}"
                 size = Random.rand(1024 * 1024 * 1024 * 1024)
                 free = Random.rand(size + 1)
