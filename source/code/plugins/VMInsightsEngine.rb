@@ -67,24 +67,18 @@ module VMInsights
                     abort_on_exception = false
 
                     @cummulative_data.initialize_from_baseline @data_collector.baseline
-                    mma_ids = @data_collector.get_mma_ids
-                    unless mma_ids
-                            @log.error "Unable to get MMA IDs. Terminating"
-                    else
-                        MetricTuple.mma_ids (if mma_ids.kind_of? Array then mma_ids.map { |g| "m-#{g}" } else "m-#{mma_ids}" end)
-                        MetricTuple.computer computer
-                        begin
-                                @log.info "Starting polling loop at #{interval} second interval"
-                                while @run do
-                                        @mutex.synchronize {
-                                                @condvar.wait(@mutex, interval) if @run
-                                        }
-                                        yield_metrics_message() if @run
-                                end
-                        ensure
-                                # protected_yield telemetry_message ConnectorStop
-                                @log.info "Stopping polling"
-                        end
+                    MetricTuple.computer computer
+                    begin
+                            @log.info "Starting polling loop at #{interval} second interval"
+                            while @run do
+                                    @mutex.synchronize {
+                                            @condvar.wait(@mutex, interval) if @run
+                                    }
+                                    yield_metrics_message() if @run
+                            end
+                    ensure
+                            # protected_yield telemetry_message ConnectorStop
+                            @log.info "Stopping polling"
                     end
                 }
             end
@@ -294,7 +288,6 @@ module VMInsights
                     result = {}
                     raise ArgumentError, "tags (#{tags.class}) must be a Hash" unless tags.kind_of? Hash
                     tags = Hash.new.merge! tags
-                    tags["#{Origin}/machineId"] = @@mma_ids
 
                     result[:Origin] = Origin
                     result[:Namespace] = namespace
@@ -312,13 +305,7 @@ module VMInsights
                     @@computer = name
                 end
 
-                def self.mma_ids(ids)
-                    raise ArgumentError, "MMA IDs cannot be nil" if ids.nil?
-                    @@mma_ids = ids
-                end
-
                 @@computer = nil
-                @@mma_ids = nil
 
                 Origin = "vm.azm.ms"
             end # class MetricTuple

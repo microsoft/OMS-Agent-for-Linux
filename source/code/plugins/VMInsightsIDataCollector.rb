@@ -23,14 +23,6 @@ module VMInsights
             not_implemented
         end
 
-        # returns:
-        #   string if there is one
-        #   an array of strings if there is more
-        # raises:
-        #   Unavailable if none are found.
-        def get_mma_ids
-            not_implemented
-        end
 
         # returns: free, total
         def get_available_memory_kb

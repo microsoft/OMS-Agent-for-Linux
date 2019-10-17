@@ -298,7 +298,6 @@ module VMInsights
         end
 
         def test_multihome
-            @dc.mock_mma_ids = [ "Larry", "Moe", "Curly" ]
             test_one_message
         end
 
@@ -838,29 +837,10 @@ module VMInsights
         end
 
         def assert_tags tags
-            expected_mma_ids = @dc.mock_mma_ids
-            refute_predicate expected_mma_ids, :nil?
 
             assert_instance_of String, tags
             tags = JSON.parse(tags)
             assert_instance_of Hash, tags
-
-            assert tags.key?("#{ExpectedOrigin}/machineId")
-            actual_mma_ids = tags["#{ExpectedOrigin}/machineId"]
-
-            if expected_mma_ids.kind_of? String
-                assert_instance_of String, actual_mma_ids
-                assert_equal "m-#{expected_mma_ids}", actual_mma_ids
-            elsif expected_mma_ids.kind_of? Array
-                expected_mma_ids = expected_mma_ids.map { |g| "m-#{g}" }
-                assert_instance_of Array, actual_mma_ids
-                diff = expected_mma_ids - actual_mma_ids
-                assert diff.empty?, "expected #{diff} not in actual"
-                diff = actual_mma_ids - expected_mma_ids
-                assert diff.empty?, "actual #{diff} not in expected"
-            else
-                flunk "expected #{expected_mma_ids.class}(#{expected_mma_ids}). #{actual_mma_ids.class}(#{actual_mma_ids}) is wrong type"
-            end
 
             tags
         end
@@ -1267,8 +1247,6 @@ module VMInsights
 
             @mock_net = []
 
-            @mock_mma_ids = "deadbeef-abcd-efgh-ijkl-1234567890123456"
-
             @baselined = false
 
             @sample_intervals = []
@@ -1317,9 +1295,6 @@ module VMInsights
             @mock_cpu_count
         end
 
-        def get_mma_ids
-            @mock_mma_ids
-        end
 
         def get_filesystems
             raise @get_filesystems_exception unless @get_filesystems_exception.nil?
@@ -1365,7 +1340,6 @@ module VMInsights
         attr_writer :get_cpu_use_exception, :get_cpu_count_exception
         attr_writer :get_filesystems_exception, :mock_filesystems
         attr_writer :get_disk_stats_exception, :mock_disk_stats
-        attr_accessor :mock_mma_ids
         attr_reader :sample_intervals, :mock_cpu_count
 
     private
