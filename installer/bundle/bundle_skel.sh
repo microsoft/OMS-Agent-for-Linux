@@ -1356,6 +1356,29 @@ case "$installMode" in
             cleanup_and_exit $DSC_INSTALL_FAILED
         fi
 
+        DSC_COMMON_PATH_PREFIX="/opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/"
+        DSC_COMMON_HOTFIX_FILES=( "agent_common.rb"
+                                  "agent_telemetry_script.rb"
+                                  "blocklock.rb"
+                                  "heartbeat_lib.rb"
+                                  "in_agent_telemetry.rb"
+                                  "in_oms_omi.rb"
+                                  "oms_common.rb"
+                                  "oms_configuration.rb"
+                                  "oms_diag_lib.rb"
+                                  "oms_omi_lib.rb"
+                                  "out_oms.rb"
+                                  "out_oms_blob.rb"
+                                  "out_oms_diag.rb" )
+
+        for f in "${DSC_COMMON_HOTFIX_FILES[@]}"
+        do
+            rm "$DSC_COMMON_PATH_PREFIX$f"
+        done
+
+        rm /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/in_sudo_tail.rb
+        rm /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/tailfilereader.rb
+
         if [ $KIT_STATUS -eq 0 ]; then
             # Remove fluentd conf for OMSConsistencyInvoker upon upgrade, if it exists
             rm -f /etc/opt/microsoft/omsagent/conf/omsagent.d/omsconfig.consistencyinvoker.conf
