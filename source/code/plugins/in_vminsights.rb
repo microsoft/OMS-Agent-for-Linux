@@ -18,8 +18,6 @@ class Fluent::VMInsights < Fluent::Input
     end
 
     def configure(conf)
-puts __FILE__, __LINE__
-puts conf.inspect
         super
 
         begin
