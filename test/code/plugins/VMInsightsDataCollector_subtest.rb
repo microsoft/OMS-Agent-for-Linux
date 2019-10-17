@@ -156,63 +156,6 @@ module VMInsights
             assert_operator actual_available, :<, actual_total, "Available memory should be < Total memory"
         end
 
-        def test_get_mma_id_no_baseline
-            ex = assert_raises(RuntimeError) { ||
-                @object_under_test.get_mma_ids
-            }
-            assert ex.message.include?("baseline has not been called"), ex.inspect
-        end
-
-        def test_get_mma_id_not_available
-            check_for_baseline_common
-            @object_under_test.baseline
-            ex = assert_raises(IDataCollector::Unavailable) { ||
-                @object_under_test.get_mma_ids
-            }
-            assert ex.message.include?("no MMA ids found"), ex.inspect
-        end
-
-        def test_get_mma_id_not_available0
-            check_for_baseline_common
-            create_mock_mma_ids 0
-            @object_under_test.baseline
-            ex = assert_raises(IDataCollector::Unavailable) { ||
-                @object_under_test.get_mma_ids
-            }
-            assert ex.message.include?("no MMA ids found"), ex.inspect
-        end
-
-        def test_get_mma_id_single
-            check_for_baseline_common
-            expected_mma_id = (create_mock_mma_ids 1)[0]
-            @object_under_test.baseline
-            actual_mma_ids = @object_under_test.get_mma_ids
-            assert_kind_of String, actual_mma_ids
-            assert_equal expected_mma_id, actual_mma_ids
-        end
-
-        def test_get_mma_id_multiple
-            check_for_baseline_common
-            expected_mma_ids = create_mock_mma_ids 3
-            @object_under_test.baseline
-            actual_mma_ids = @object_under_test.get_mma_ids
-            assert_kind_of Array, actual_mma_ids
-            assert_equal expected_mma_ids.size, actual_mma_ids.size, actual_mma_ids.to_s
-            diff = expected_mma_ids - actual_mma_ids
-            assert diff.empty?, "expected #{diff} not in actual"
-            diff = actual_mma_ids - expected_mma_ids
-            assert diff.empty?, "actual #{diff} not in expected"
-        end
-
-        def test_get_mma_id_old_not_multihome_capable
-            check_for_baseline_common
-            expected_mma_id = (create_mock_mma_ids 1, false)[0]
-            @object_under_test.baseline
-            actual_mma_ids = @object_under_test.get_mma_ids
-            assert_kind_of String, actual_mma_ids
-            assert_equal expected_mma_id, actual_mma_ids
-        end
-
         def test_get_cpu_idle_baseline
             check_for_baseline_common
             expected_uptime = 42
@@ -858,31 +801,6 @@ module VMInsights
             n.each { |i|
                 result = File.join(result, i)
                 Dir.mkdir result unless Dir.exist? result
-            }
-            result
-        end
-
-        def create_mock_mma_ids(how_many, multihome=true)
-            result = Array.new(how_many) { |i| guid(randint<<8 + i) }
-            result.each { |id|
-                ws = guid
-                d = @oms_agent_basedir
-                d = mkdir_p(@oms_agent_basedir, ws) if multihome
-                d = mkdir_p d, "conf"
-                File.open(File.join(d, "omsadmin.conf"), WriteASCII) { |f|
-                    f.puts [
-                        "WORKSPACE_ID=#{ws}",
-                        "AGENT_GUID=#{id}",
-                        "LOG_FACILITY=local0",
-                        "CERTIFICATE_UPDATE_ENDPOINT=https://#{guid}.oms.opinsights.azure.com/ConfigurationService.Svc/RenewCertificate",
-                        "URL_TLD=opinsights.azure.com",
-                        "DSC_ENDPOINT=https://scus-agentservice-prod-1.azure-automation.net/Accounts/#{guid}/Nodes\(AgentId='#{id}'\)",
-                        "OMS_ENDPOINT=https://#{guid}.ods.opinsights.azure.com/OperationalData.svc/PostJsonDataItems",
-                        "AZURE_RESOURCE_ID=/subscriptions/#{guid}/resourcegroups/vme_test/providers/microsoft.compute/virtualmachines/vmeubt1804",
-                        "OMSCLOUD_ID=7783-7084-3265-9085-8269-3286-77",
-                        "UUID=#{guid.upcase}",
-                    ]
-                }
             }
             result
         end

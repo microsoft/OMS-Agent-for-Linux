@@ -297,10 +297,6 @@ module VMInsights
             test_one_message
         end
 
-        def test_multihome
-            test_one_message
-        end
-
         def test_cpu_use_not_available
             mock_error = IDataCollector::Unavailable.new "mock cpu percent error"
             @dc.get_cpu_use_exception = mock_error

@@ -9,14 +9,12 @@ module VMInsights
         def initialize(root_directory_name="/")
             @root = root_directory_name
             @baseline_exception = RuntimeError.new "baseline has not been called"
-            @mma_id = nil
             @cpu_count = nil
             @saved_net_data = nil
             @saved_disk_data = DiskInventory.new(@root)
         end
 
         def baseline
-            @mma_ids = load_mma_ids
             @baseline_exception = nil
             @cpu_count, is_64_bit = get_cpu_info_baseline
             DataWithWrappingCounter.set_32_bit(! is_64_bit)
@@ -30,12 +28,6 @@ module VMInsights
         end
 
         def end_sample
-        end
-
-        def get_mma_ids
-            raise @baseline_exception if @baseline_exception
-            raise IDataCollector::Unavailable, "no MMA ids found" unless @mma_ids
-            @mma_ids
         end
 
         def get_available_memory_kb
@@ -368,40 +360,6 @@ module VMInsights
 
             attr_reader :device_name, :mount_point, :size_in_bytes, :free_space_in_bytes
             alias_method :to_s, :inspect
-        end
-
-        def load_mma_ids
-            multihome_capable = false
-            ids = []
-            oms_base_dir = File.join @root, "etc", "opt", "microsoft", "omsagent"
-            Dir.glob(File.join(oms_base_dir, "????????-????-????-????-????????????", "conf", "omsadmin.conf")) { |p|
-                multihome_capable = true
-                IO.foreach(p) { |s|
-                    if (s.start_with? "AGENT_GUID=")
-                        ids << s.chomp.split("=")[1]
-                        break
-                    end
-                }
-            }
-            # fallback for OMS Agent older versions that don't support multi-homing
-            unless multihome_capable
-                Dir.glob(File.join(oms_base_dir, "conf", "omsadmin.conf")) { |p|
-                    IO.foreach(p) { |s|
-                        if (s.start_with? "AGENT_GUID=")
-                            ids << s.chomp.split("=")[1]
-                            break
-                        end
-                    }
-                }
-            end
-            case ids.size
-                when 0
-                    nil
-                when 1
-                    ids[0]
-                else
-                    ids
-            end
         end
 
         def get_cpu_info_baseline
