@@ -1357,21 +1357,21 @@ case "$installMode" in
         fi
 
         # Hotfix DSC bug for nxOMSPlugin: removing 15 files that were not cleaned up by DSC
-        rm /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/in_sudo_tail.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/tailfilereader.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/agent_common.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/agent_telemetry_script.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/blocklock.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/heartbeat_lib.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/in_agent_telemetry.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/in_oms_omi.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_common.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_configuration.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_diag_lib.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_omi_lib.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/out_oms.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/out_oms_blob.rb
-        rm /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/out_oms_diag.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/in_sudo_tail.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/tailfilereader.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/agent_common.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/agent_telemetry_script.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/blocklock.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/heartbeat_lib.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/in_agent_telemetry.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/in_oms_omi.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_common.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_configuration.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_diag_lib.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/oms_omi_lib.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/out_oms.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/out_oms_blob.rb
+        rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/out_oms_diag.rb
 
         if [ $KIT_STATUS -eq 0 ]; then
             # Remove fluentd conf for OMSConsistencyInvoker upon upgrade, if it exists
