@@ -17,9 +17,14 @@ module Fluent
         def initialize(*args)
             super(*args)
             @clean_up = []
+            Plugin.register_filter("mock_filter", MockFilter)
         end
 
         def setup
+            mock_system_config_input = MockConf.new
+            system_config = SystemConfig.create(mock_system_config_input)
+            Engine.init system_config
+            Engine.root_agent.add_filter "mock_filter", "**", {}
             @test_start_time = Time.now
             @object_under_test = VMInsights.new
             @mock_tag = String.new "ThE TaG NaMe"
@@ -47,7 +52,7 @@ module Fluent
 
             begin
                 @mock_log.check
-            rescue Exception => ex
+            rescue Exception
                 puts "#{@mock_log}"
                 raise
             end
@@ -55,17 +60,16 @@ module Fluent
         end
 
         def test_default_parameters
-            assert_param :tag, :string
-            assert_param :poll_interval, :integer, :default => 60
+            assert_equal @mock_tag, @object_under_test.tag
+            assert_equal 60, @object_under_test.poll_interval
         end
 
         def test_default_configure
             @object_under_test.configure @conf
 
-            assert_same @conf, @object_under_test.passed_conf
             router = @object_under_test.router
             assert_not_nil router
-            assert_equal [], router.messages
+            assert_equal [], MockFilter.instance.messages
             logs = @mock_log.to_a
             assert logs.size == 0, Proc.new() { @mock_log.to_s }
         end
@@ -88,7 +92,7 @@ module Fluent
         def test_metric_data_uploaded
             router = @object_under_test.router
             assert_not_nil router
-            assert_equal [], router.messages
+            assert_equal [], MockFilter.instance.messages
 
             @conf[:poll_interval] = 1
             @object_under_test.configure @conf
@@ -101,15 +105,15 @@ module Fluent
                 @object_under_test.start
                 (1..3).each { |i| sleep(1) unless @mock_metric_engine.running? }
 
-                count_before = router.messages.size
+                count_before = MockFilter.instance.messages.size
                 @mock_metric_engine.add_data [ expected_data ]
                 time_before = Time.now
-                (1..3).each { |i| sleep(1) if router.messages.size == count_before }
+                (1..3).each { |i| sleep(1) if MockFilter.instance.messages.size == count_before }
                 time_after = Time.now
 
-                assert_equal (count_before + 1), router.messages.size
+                assert_equal (count_before + 1), MockFilter.instance.messages.size
 
-                tag, time, wrapper = *(router.messages[count_before])
+                tag, time, wrapper = *(MockFilter.instance.messages[count_before])
 
                 assert_equal @mock_tag, tag
 
@@ -136,10 +140,6 @@ module Fluent
         end
 
     private
-
-        def assert_param key, *expected
-            assert_equal expected, Fluent::Input.params(Fluent::VMInsights)[key]
-        end
 
         def make_temp_directory name
             Dir.mkdir name
@@ -232,6 +232,31 @@ module Fluent
             end
         end
 
+    end
+
+    class MockConf
+        def elements
+            []
+        end
+    end
+
+    class MockFilter < Filter
+        def initialize
+puts "", __FILE__, __LINE__, "initialize #{self.inspect}"
+            @@instance = self
+        end
+
+        def filter(tag, time, record)
+puts tag, time, record
+        end
+
+        def messages
+            []
+        end
+
+        def self.instance
+            @@instance
+        end
     end
 
 end # module
