@@ -21,10 +21,6 @@ module Fluent
         end
 
         def setup
-            mock_system_config_input = MockConf.new
-            system_config = SystemConfig.create(mock_system_config_input)
-            Engine.init system_config
-            Engine.root_agent.add_filter "mock_filter", "**", {}
             @test_start_time = Time.now
             @object_under_test = VMInsights.new
             @mock_tag = String.new "ThE TaG NaMe"
@@ -37,6 +33,11 @@ module Fluent
                 "log" => @mock_log,
                 "MockMetricsEngine" => @mock_metric_engine,
             }
+
+            mock_system_config_input = MockConf.new
+            system_config = SystemConfig.create(mock_system_config_input)
+            Engine.init system_config
+            Engine.root_agent.add_filter "mock_filter", @mock_tag, {}
 
         end
 
@@ -59,14 +60,14 @@ module Fluent
             @mock_log = nil
         end
 
-        def test_default_parameters
-            assert_equal @mock_tag, @object_under_test.tag
-            assert_equal 60, @object_under_test.poll_interval
-        end
-
         def test_default_configure
+            router = @object_under_test.router
+            assert_nil router
+
             @object_under_test.configure @conf
 
+            assert_equal @mock_tag, @object_under_test.tag
+            assert_equal 60, @object_under_test.poll_interval
             router = @object_under_test.router
             assert_not_nil router
             assert_equal [], MockFilter.instance.messages
@@ -90,8 +91,6 @@ module Fluent
         end
 
         def test_metric_data_uploaded
-            router = @object_under_test.router
-            assert_not_nil router
             assert_equal [], MockFilter.instance.messages
 
             @conf[:poll_interval] = 1
@@ -131,6 +130,9 @@ module Fluent
                 assert_equal expected_data.size, array.size, text
                 assert_equal expected_data, array
 
+            rescue => ex
+                puts "#{__FILE__}[#{__LINE__}]: #{ex}\n#{ex.backtrace}"
+                raise
             ensure
                 @mock_log.clear
                 @object_under_test.shutdown
@@ -242,16 +244,18 @@ module Fluent
 
     class MockFilter < Filter
         def initialize
-puts "", __FILE__, __LINE__, "initialize #{self.inspect}"
             @@instance = self
+            @messages = []
         end
 
         def filter(tag, time, record)
-puts tag, time, record
+puts __FILE__, tag, time, record
+            @messages << [ tag, time, record ]
+            nil
         end
 
         def messages
-            []
+            @messages.clone
         end
 
         def self.instance
