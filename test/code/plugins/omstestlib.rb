@@ -11,26 +11,33 @@ module OMS
       @logs = []
     end
     
-    #Making message optional here because a Fluentd call was throwing ArgumentError
-    # $log.trace { "registered #{name} plugin '#{type}'" } (fluentd-0.12.24/lib/fluent/plugin.rb:122)
-    def trace(message="")
-      @logs << message
+    def trace(*message, &block)
+      message << "" if message.empty? # maintain compatability with previous "fix"
+      collect_log(message, block)
     end
     
-    def debug(message)
-      @logs << message
+    def debug(*message, &block)
+      collect_log(message, block)
     end
 
-    def info(message)
-      @logs << message
+    def info(*message, &block)
+      collect_log(message, block)
     end
 
-    def warn(message)
-      @logs << message
+    def warn(*message, &block)
+      collect_log(message, block)
     end
     
-    def error(message)
-      @logs << message
+    def error(*message, &block)
+      collect_log(message, block)
+    end
+
+  private
+
+    def collect_log(message, block)
+      # TODO conform to the real fluentd logger and process the block
+      # message << block.call if block
+      @logs << message[0] unless message.empty?
     end
   end
 
