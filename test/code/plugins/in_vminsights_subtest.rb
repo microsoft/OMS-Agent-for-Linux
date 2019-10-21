@@ -21,9 +21,8 @@ module Fluent
         end
 
         def setup
-            @test_start_time = Time.now
             @object_under_test = VMInsights.new
-            @mock_tag = String.new "ThE TaG NaMe"
+            @mock_tag = String.new "ThE.TaG.NaMe" # to use as a filter match pattern, can't have spaces in it
             @mock_log = ::VMInsights::MockLog.new
             @mock_log.ignore_range = ::VMInsights::MockLog::NONE
             @mock_metric_engine = MockMetricsEngine.new
@@ -31,7 +30,7 @@ module Fluent
             @conf = {
                 "tag" => @mock_tag,
                 "log" => @mock_log,
-                "MockMetricsEngine" => @mock_metric_engine,
+                :MockMetricsEngine => @mock_metric_engine,
             }
 
             mock_system_config_input = MockConf.new
@@ -93,8 +92,9 @@ module Fluent
         def test_metric_data_uploaded
             assert_equal [], MockFilter.instance.messages
 
-            @conf[:poll_interval] = 1
+            @conf["poll_interval"] = 1
             @object_under_test.configure @conf
+            assert_equal 1, @object_under_test.poll_interval
             logs = @mock_log.to_a
             assert logs.size == 0, Proc.new() { @mock_log.to_s }
             @mock_log.ignore_range = ::VMInsights::MockLog::DEBUG_AND_BELOW
@@ -104,11 +104,13 @@ module Fluent
                 @object_under_test.start
                 (1..3).each { |i| sleep(1) unless @mock_metric_engine.running? }
 
+                assert @mock_metric_engine.running?
+
                 count_before = MockFilter.instance.messages.size
                 @mock_metric_engine.add_data [ expected_data ]
-                time_before = Time.now
+                time_before = Engine.now
                 (1..3).each { |i| sleep(1) if MockFilter.instance.messages.size == count_before }
-                time_after = Time.now
+                time_after = Engine.now
 
                 assert_equal (count_before + 1), MockFilter.instance.messages.size
 
@@ -130,12 +132,11 @@ module Fluent
                 assert_equal expected_data.size, array.size, text
                 assert_equal expected_data, array
 
-            rescue => ex
-                puts "#{__FILE__}[#{__LINE__}]: #{ex}\n#{ex.backtrace}"
-                raise
             ensure
                 @mock_log.clear
                 @object_under_test.shutdown
+
+                refute @mock_metric_engine.running?
 
                 @mock_metric_engine.check
             end
@@ -249,7 +250,6 @@ module Fluent
         end
 
         def filter(tag, time, record)
-puts __FILE__, tag, time, record
             @messages << [ tag, time, record ]
             nil
         end
