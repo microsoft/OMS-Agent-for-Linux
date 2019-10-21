@@ -6,11 +6,11 @@
 
 
 # Values to be updated upon each new release
-GITHUB_RELEASE_X86="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.2-0/"
-GITHUB_RELEASE="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.2-0/"
+GITHUB_RELEASE_X86="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.7-0/"
+GITHUB_RELEASE_X64="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.7-0/"
 
-BUNDLE_X64="omsagent-1.12.2-0.universal.x64.sh"
-BUNDLE_X86="omsagent-1.12.2-0.universal.x86.sh"
+BUNDLE_X64="omsagent-1.12.7-0.universal.x64.sh"
+BUNDLE_X86="omsagent-1.12.7-0.universal.x86.sh"
 
 usage()
 {
@@ -98,7 +98,7 @@ fi
 # Download, install, and onboard OMSAgent for Linux, depending on architecture of machine
 if [ $(uname -m) = 'x86_64' ]; then
     # x64 architecture
-    wget -O ${BUNDLE_X64} ${GITHUB_RELEASE}${BUNDLE_X64} && $SUDO sh ./${BUNDLE_X64} ${bundleParameters}
+    wget -O ${BUNDLE_X64} ${GITHUB_RELEASE_X64}${BUNDLE_X64} && $SUDO sh ./${BUNDLE_X64} ${bundleParameters}
 else
     # x86 architecture
     wget -O ${BUNDLE_X86} ${GITHUB_RELEASE_X86}${BUNDLE_X86} && $SUDO sh ./${BUNDLE_X86} ${bundleParameters}
