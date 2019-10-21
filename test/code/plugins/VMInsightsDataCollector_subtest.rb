@@ -72,6 +72,7 @@ module VMInsights
             ex = assert_raises(Errno::ENOENT) { ||
                 @object_under_test.get_available_memory_kb
             }
+            assert ex.message.include?("/proc/meminfo"), ex.inspect
         end
 
         def test_proc_meminfo_unreadable
@@ -91,6 +92,7 @@ module VMInsights
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_available_memory_kb
             }
+            assert ex.message.include?("Available memory not found"), ex.inspect
         end
 
         def test_proc_meminfo_garbage
@@ -100,6 +102,7 @@ module VMInsights
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_available_memory_kb
             }
+            assert ex.message.include?("Available memory not found"), ex.inspect
         end
 
         def test_proc_meminfo_all_missing
@@ -109,6 +112,7 @@ module VMInsights
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_available_memory_kb
             }
+            assert ex.message.include?("Available memory not found"), ex.inspect
         end
 
         def test_proc_meminfo_total_missing
@@ -148,7 +152,7 @@ module VMInsights
 
         def test_get_available_live
             meminfo_path = "/proc/meminfo"
-            omit_unless File.exists?(meminfo_path), "(Linux only)"
+            omit_unless File.exist?(meminfo_path), "(Linux only)"
 
             @object_under_test = DataCollector.new
             actual_available, actual_total = @object_under_test.get_available_memory_kb
@@ -361,6 +365,7 @@ module VMInsights
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_cpu_idle
             }
+            assert ex.message.include?("Uptime not found"), ex.inspect
         end
 
         def test_proc_uptime_garbage
@@ -370,6 +375,7 @@ module VMInsights
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_cpu_idle
             }
+            assert ex.message.include?("Uptime not found"), ex.inspect
         end
 
         def test_get_net_stats_no_baseline
@@ -379,7 +385,7 @@ module VMInsights
             assert ex.message.include?("baseline has not been called"), ex.inspect
         end
 
-        def assert_get_net_stats(send_base, rec_base, modulus = (2**64))
+        def assert_get_net_stats(send_base, rec_base, modulus = (2 ** 64))
             check_for_baseline_common
             expected = {
                 "mockb" => { :base_sent => send_base, :base_rec => randint % 1492, :sent => modulus - 24, :rec => 71 },
@@ -491,19 +497,19 @@ module VMInsights
 
         def test_get_net_stats_rollover
             make_mock_lscpu 1, false
-            assert_get_net_stats (2**64) - 1, (2**32) - 1, (2 ** 64)
+            assert_get_net_stats (2 ** 64) - 1, (2 ** 32) - 1, (2 ** 64)
         end
 
         def test_get_net_stats_rollover32
             make_mock_lscpu 1, true
-            assert_get_net_stats (2**16) - 1, (2**32) - 1, (2 **32)
+            assert_get_net_stats (2 ** 16) - 1, (2 ** 32) - 1, (2 ** 32)
         end
 
         def test_get_net_stats_live
             netdev_path = "/proc/net/dev"
             virtnet_path = "/sys/devices/virtual/net"
             netroute_path = "/proc/net/route"
-            [ netdev_path, virtnet_path, netroute_path ].each { |p| omit_unless File.exists?(p), "(Linux only)" }
+            [ netdev_path, virtnet_path, netroute_path ].each { |p| omit_unless File.exist?(p), "(Linux only)" }
 
             net_stats_before = get_live_net_stats
             omit "all network devices are virtual; possibly being run inside a container" if net_stats_before.empty?
@@ -539,7 +545,7 @@ module VMInsights
 
         def test_get_disk_stats_live
             lsblk_path = "/bin/lsblk"
-            omit_unless File.exists?(lsblk_path), "(Linux only)"
+            omit_unless File.exist?(lsblk_path), "(Linux only)"
             sector_size = {}
             IO.popen("sh -c '#{LSBLK} -sndoNAME,LOG-SEC | tr -s \" \"'") { |io|
                 while (line = io.gets)

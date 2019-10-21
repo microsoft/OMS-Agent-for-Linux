@@ -492,7 +492,6 @@ module VMInsights
 
             @object_under_test.stop
             assert_false @object_under_test.running?
-            time_after_stop = Time.now
 
             assert_operator metric_samples.length, :>=, 8
             assert_equal metric_samples.length, @dc.sample_intervals.length
@@ -669,7 +668,7 @@ module VMInsights
                         refute a.key?(LogicalDisk::WriteBytesPerSecond), label
                         refute a.key?(LogicalDisk::WritesPerSecond), label
                     end
-                rescue Test::Unit::AssertionFailedError => afe
+                rescue Test::Unit::AssertionFailedError
                     print "\n#{File.basename(__FILE__)}(#{__LINE__}): #{label}:\n\t#{f.inspect}\n\t#{a.inspect}\n"
                     raise
                 end
@@ -703,7 +702,6 @@ module VMInsights
 
             @object_under_test.stop
             assert_false @object_under_test.running?
-            time_after_stop = Time.now
 
             assert_equal expected.size, metric_samples.length
             assert_equal expected.size, @dc.sample_intervals.length
@@ -744,7 +742,7 @@ module VMInsights
                         aw = a[Network::Write]
                         assert_in_delta n.sent, aw, 0.0000001
 
-                    rescue Test::Unit::AssertionFailedError => afe
+                    rescue Test::Unit::AssertionFailedError
                         print "\n#{File.basename(__FILE__)}(#{__LINE__}): #{i}:\n\t#{n.inspect}\n\t#{a}\n"
                         raise
                     end
@@ -765,7 +763,7 @@ module VMInsights
 
             begin
                 @@universal_validators.start_sample
-            rescue Test::Unit::AssertionFailedError => afe
+            rescue Test::Unit::AssertionFailedError
                 print "\n#{File.basename(__FILE__)}(#{__LINE__}): #{label}: #{sample}\n"
                 raise
             end
@@ -817,7 +815,7 @@ module VMInsights
                     @@universal_validators.validate(namespace, name, value, tags)
 
                     block[namespace, name, value, tags] unless block.nil?
-                rescue Test::Unit::AssertionFailedError => afe
+                rescue Test::Unit::AssertionFailedError
                     print "\n#{File.basename(__FILE__)}(#{__LINE__}): #{label}: sample[#{idx}]: '#{metric}'\n"
                     raise
                 end
@@ -825,7 +823,7 @@ module VMInsights
 
             begin
                 @@universal_validators.stop_sample
-            rescue Test::Unit::AssertionFailedError => afe
+            rescue Test::Unit::AssertionFailedError
                 print "\n#{File.basename(__FILE__)}(#{__LINE__}): #{label}: #{sample}\n"
                 raise
             end

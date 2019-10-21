@@ -64,8 +64,6 @@ module VMInsights
                 @saved_cpu_exception = SavedException.new
                 @cummulative_data = CummulativeData.new
                 super() {
-                    abort_on_exception = false
-
                     @cummulative_data.initialize_from_baseline @data_collector.baseline
                     MetricTuple.computer computer
                     begin
@@ -177,14 +175,12 @@ module VMInsights
                 uptime, idle = @cummulative_data.get_cpu_time_delta uptime, idle
                 raise IDataCollector::Unavailable.new "uptime delta is zero" if uptime.zero?
 
-                cpu_count_tag = { }
                 begin
                     cpus =  @data_collector.get_number_of_cpus
                     yield MetricTuple.factory "Processor", "UtilizationPercentage",
                                     100.0 * (1.0 - ((idle * 1.0) / (uptime * 1.0 * cpus))),
                                     { "#{MetricTuple::Origin}/totalCpus" => cpus }
                 rescue => ex
-                    now = Time.now
                     unless @saved_cpu_exception.same(ex)
                         @log.error ex.message
                         @log.debug_backtrace
