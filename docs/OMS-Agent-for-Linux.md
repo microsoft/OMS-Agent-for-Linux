@@ -17,7 +17,7 @@ The Log Analytics agent for Linux comprises multiple packages. The release file 
 
 **Package** | **Version** | **Description**
 ----------- | ----------- | --------------
-omsagent | 1.12.2 | The Operations Management Suite Agent for Linux
+omsagent | 1.12.7 | The Operations Management Suite Agent for Linux
 omsconfig | 1.1.1 | Configuration agent for the OMS Agent
 omi | 1.6.3 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
 scx | 1.6.3 | OMI CIM Providers for operating system performance metrics
@@ -36,7 +36,7 @@ After installing the Log Analytics agent for Linux packages, the following addit
  **Required package** 	| **Description** 	| **Minimum version**
 --------------------- | --------------------- | -------------------
 Glibc |	GNU C Library	| 2.5-12 
-Openssl	| OpenSSL Libraries | 1.0.x or 1.1.x
+Openssl	| OpenSSL Libraries | 1.0.1 or 1.1.x
 Curl | cURL web client | 7.15.5
 Python-ctypes | | 
 PAM | Pluggable Authentication Modules	 | 

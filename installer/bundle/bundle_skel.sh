@@ -1347,6 +1347,15 @@ case "$installMode" in
 
         disable_jemalloc_if_cylance_exist
 
+        # Hotfix TCP fix: seems during an upgrade configs will not be updated all the time
+        # this is hotfix to revert back TCP change introduced previously
+        echo "Applying Syslog conf hotfix..."
+        if [ -f /etc/opt/microsoft/omsagent/conf/omsagent.d/syslog.conf ]; then
+            sed -i "s/tcp/udp/g" /etc/opt/microsoft/omsagent/conf/omsagent.d/syslog.conf
+        else
+            echo "Syslog conf (/etc/opt/microsoft/omsagent/conf/omsagent.d/syslog.conf) not found, hotfix skipped."
+        fi
+
         # Update DSC
         shouldInstall_omsconfig
         pkg_upd $DSC_PKG omsconfig $?
@@ -1357,6 +1366,7 @@ case "$installMode" in
         fi
 
         # Hotfix DSC bug for nxOMSPlugin: removing 15 files that were not cleaned up by DSC
+        echo "Applying DSC nxOMSSyslog hotfix..."
         rm -f /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/in_sudo_tail.rb
         rm -f /opt/microsoft/omsconfig/modules/nxOMSSudoCustomLog/DSCResources/MSFT_nxOMSSudoCustomLogResource/CustomLog/Plugin/tailfilereader.rb
         rm -f /opt/microsoft/omsconfig/modules/nxOMSPlugin/DSCResources/MSFT_nxOMSPluginResource/Plugins/Common/plugin/agent_common.rb
