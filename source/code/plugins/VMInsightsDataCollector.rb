@@ -6,12 +6,13 @@ module VMInsights
     require_relative 'VMInsightsIDataCollector.rb'
 
     class DataCollector < IDataCollector
-        def initialize(root_directory_name="/")
+        def initialize(log, root_directory_name="/")
+            @log = log
             @root = root_directory_name
             @baseline_exception = RuntimeError.new "baseline has not been called"
             @cpu_count = nil
             @saved_net_data = nil
-            @saved_disk_data = DiskInventory.new(@root)
+            @saved_disk_data = DiskInventory.new(@log, @root)
         end
 
         def baseline
@@ -99,6 +100,7 @@ module VMInsights
                             result << Fs.new(a[0], a[6], a[2], a[4]) if a.size == 7
                         rescue ArgumentError => ex
                             # malformed input
+                            @log.debug() { "#{__method__}: #{ex}" }
                         end
                     end
                 end
@@ -154,7 +156,8 @@ module VMInsights
         end
 
         class DiskInventory
-            def initialize(root)
+            def initialize(log, root)
+                @log = log
                 @root = root
                 @sector_sizes = Hash.new() { |h, k| h[k] = get_sector_size(k) }
                 @saved_disk_data = { }
@@ -197,8 +200,8 @@ module VMInsights
                             end
                         end
                     }
-                rescue Errno::ENOENT => ex
-                    # telemetry
+                rescue => ex
+                    @log.debug() { "#{__method__}: #{ex}" }
                 end
                 result
             end
@@ -331,7 +334,7 @@ module VMInsights
                     end
                 }
             rescue => ex
-                # need to log
+                @log.debug() { "#{__method__}: #{ex}" }
             end
             result
         end
