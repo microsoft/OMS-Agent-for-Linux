@@ -72,40 +72,40 @@ private
 
         attr_accessor :ignore_range, :flunk_range
 
-        def trace(msg)
-            log_message TRACE, msg
+        def trace(*msg, &block)
+            log_message TRACE, msg, block
         end
 
         def trace_backtrace(bt=$!.backtrace)
             log_backtrace TRACE, bt
         end
 
-        def debug(msg)
-            log_message DEBUG, msg
+        def debug(*msg, &block)
+            log_message DEBUG, msg, block
         end
 
         def debug_backtrace(bt=$!.backtrace)
             log_backtrace DEBUG, bt
         end
 
-        def info(msg)
-            log_message INFO, msg
+        def info(*msg, &block)
+            log_message INFO, msg, block
         end
 
         def info_backtrace(bt=$!.backtrace)
             log_backtrace INFO, bt
         end
 
-        def warn(msg)
-            log_message WARN, msg
+        def warn(*msg, &block)
+            log_message WARN, msg, block
         end
 
         def warn_backtrace(bt=$!.backtrace)
             log_backtrace WARN, bt
         end
 
-        def error(msg)
-            log_message ERROR, msg
+        def error(*msg, &block)
+            log_message ERROR, msg, block
         end
 
         def error_backtrace(bt=$!.backtrace)
@@ -124,12 +124,13 @@ private
 
     private
 
-        def log_message(severity, msg)
+        def log_message(severity, msgs, block)
             return if ignore_range.cover? severity
+            msgs << block.call if block
             if (flunk_range.cover? severity)
-                @flunked_logs << "Unexpected log message: sev=#{severity} message='#{msg}'"
+                @flunked_logs << "Unexpected log message: sev=#{severity} message='#{msgs}'"
             else
-                handle_message severity, msg
+                handle_message severity, msgs
             end
         end
 
@@ -222,10 +223,10 @@ public
 
 private
 
-        def handle_message(severity, msg)
-            unless @message_handler_hook[severity, msg]
+        def handle_message(severity, msgs)
+            unless @message_handler_hook[severity, msgs]
                 @mutex.synchronize {
-                    @logs << { :severity => severity, :message => msg }
+                    @logs << { :severity => severity, :messages => msgs }
                 }
             end
         end
