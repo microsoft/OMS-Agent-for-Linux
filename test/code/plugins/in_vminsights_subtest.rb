@@ -16,26 +16,28 @@ module Fluent
         def initialize(*args)
             super(*args)
             @clean_up = []
-            Plugin.register_filter("mock_filter", MockFilter)
+            Plugin.register_output("mock_output", MockOutput)
         end
 
         def setup
+            @mock_log = ::VMInsights::MockLog.new ::VMInsights::MockLog::NONE
+            $log = @mock_log
+
             @object_under_test = VMInsights.new
             @mock_tag = String.new "ThE.TaG.NaMe" # to use as a filter match pattern, can't have spaces in it
-            @mock_log = ::VMInsights::MockLog.new
-            @mock_log.ignore_range = ::VMInsights::MockLog::NONE
             @mock_metric_engine = MockMetricsEngine.new
 
             @conf = {
                 "tag" => @mock_tag,
-                "log" => @mock_log,
                 :MockMetricsEngine => @mock_metric_engine,
             }
 
             mock_system_config_input = MockConf.new
             system_config = SystemConfig.create(mock_system_config_input)
             Engine.init system_config
-            Engine.root_agent.add_filter "mock_filter", @mock_tag, {}
+            Engine.root_agent.add_match "mock_output", @mock_tag, {}
+
+            @mock_log.clear     # remove any residue created by the test framework
 
         end
 
@@ -56,6 +58,7 @@ module Fluent
                 raise
             end
             @mock_log = nil
+            $log = nil
         end
 
         def test_default_configure
@@ -68,7 +71,7 @@ module Fluent
             assert_equal 60, @object_under_test.poll_interval
             router = @object_under_test.router
             assert_not_nil router
-            assert_equal [], MockFilter.instance.messages
+            assert_equal [], MockOutput.instance.messages
             logs = @mock_log.to_a
             assert logs.size == 0, Proc.new() { @mock_log.to_s }
         end
@@ -77,7 +80,6 @@ module Fluent
             @object_under_test.configure @conf
             logs = @mock_log.to_a
             assert logs.size == 0, Proc.new() { @mock_log.to_s }
-            @mock_log.ignore_range = ::VMInsights::MockLog::DEBUG_AND_BELOW
 
             begin
                 @object_under_test.start
@@ -86,17 +88,18 @@ module Fluent
                 @object_under_test.shutdown
             end
 
+            assert_logs
+
         end
 
         def test_metric_data_uploaded
-            assert_equal [], MockFilter.instance.messages
+            assert_equal [], MockOutput.instance.messages
 
             @conf["poll_interval"] = 1
             @object_under_test.configure @conf
             assert_equal 1, @object_under_test.poll_interval
             logs = @mock_log.to_a
             assert logs.size == 0, Proc.new() { @mock_log.to_s }
-            @mock_log.ignore_range = ::VMInsights::MockLog::DEBUG_AND_BELOW
 
             begin
                 expected_data = [ "mock data", "atad kcom" ]
@@ -105,15 +108,15 @@ module Fluent
 
                 assert @mock_metric_engine.running?
 
-                count_before = MockFilter.instance.messages.size
+                count_before = MockOutput.instance.messages.size
                 @mock_metric_engine.add_data [ expected_data ]
                 time_before = Engine.now
-                (1..3).each { |i| sleep(1) if MockFilter.instance.messages.size == count_before }
+                (1..3).each { |i| sleep(1) if MockOutput.instance.messages.size == count_before }
                 time_after = Engine.now
 
-                assert_equal (count_before + 1), MockFilter.instance.messages.size
+                assert_equal (count_before + 1), MockOutput.instance.messages.size
 
-                tag, time, wrapper = *(MockFilter.instance.messages[count_before])
+                tag, time, wrapper = *(MockOutput.instance.messages[count_before])
 
                 assert_equal @mock_tag, tag
 
@@ -132,8 +135,10 @@ module Fluent
                 assert_equal expected_data, array
 
             ensure
-                @mock_log.clear
                 @object_under_test.shutdown
+                assert_logs
+
+                @mock_log.clear
 
                 refute @mock_metric_engine.running?
 
@@ -171,6 +176,20 @@ module Fluent
             block = (Proc.new() { |v| v }) unless block
             assert min <= t, Proc.new() { "min=#{block[min]} actual=#{block[t]}" }
             assert t <= max, Proc.new() { "max=#{block[max]} actual=#{block[t]}" }
+        end
+
+        def assert_logs
+            logs = @mock_log.to_a
+            assert_equal 3, logs.size, logs.to_s
+            expected = [ "starting ...", "stopping ...", "... stopped" ]
+            expected.each_index { |i|
+                log = logs[i]
+                assert_equal ::VMInsights::MockLog::DEBUG, log[:severity]
+                messages = log[:messages]
+                assert_equal 2, messages.size, messages.inspect
+                assert_equal "VMInsights: ", messages[0]
+                assert_equal expected[i], messages[1]
+            }
         end
 
     end # class VMInsights_test
@@ -242,15 +261,16 @@ module Fluent
         end
     end
 
-    class MockFilter < Filter
+    class MockOutput < Output
         def initialize
             @@instance = self
             @messages = []
         end
 
-        def filter(tag, time, record)
-            @messages << [ tag, time, record ]
-            nil
+        def emit(tag, es, chain)
+            es.each { |time, record|
+                @messages << [ tag, time, record ]
+            }
         end
 
         def messages

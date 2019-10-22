@@ -205,7 +205,11 @@ module VMInsights
             index = 0
             @log.each { |l|
                 assert_equal MockLog::INFO, l[:severity], l.to_s
-                assert (message_patterns[index].match l[:message]), l.to_s
+                messages = l[:messages]
+                assert_kind_of Array, messages
+                assert_equal 1, messages.size
+                message = messages[0]
+                assert (message_patterns[index].match message), l.to_s
                 index = (index + 1) % message_patterns.size
             }
 
@@ -374,8 +378,12 @@ module VMInsights
             }
             assert 1 == @log.size, msg
             @log.each { |log|
-                    assert_equal MockLog::ERROR, log[:severity]
-                    assert_equal expected_exception.to_s, log[:message]
+                assert_equal MockLog::ERROR, log[:severity]
+                messages = log[:messages]
+                assert_kind_of Array, messages
+                assert_equal 1, messages.size
+                message = messages[0]
+                assert_equal expected_exception.to_s, message
             }
         end
 

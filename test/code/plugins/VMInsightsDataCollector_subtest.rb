@@ -16,8 +16,14 @@ module VMInsights
         include FileUtils
 
         def setup
+            @mock_log = ::VMInsights::MockLog.new ::VMInsights::MockLog::NONE
+            @mock_log.set_message_hook() { |sev, msgs|
+                (::VMInsights::MockLog::DEBUG == sev) &&
+                (msgs.size == 1) &&
+                (msgs[0].start_with?("get_up_net_devices: No such file or directory @ rb_sysopen "))
+            }
             @mock_root_dir = make_temp_directory
-            @object_under_test = DataCollector.new @mock_root_dir
+            @object_under_test = DataCollector.new @mock_log, @mock_root_dir
 
             mkdir_p @mock_root_dir, "usr", "bin"
             @lscpu = File.join(@mock_root_dir, LSCPU)
@@ -58,6 +64,15 @@ module VMInsights
             @object_under_test = nil
             recursive_delete @mock_root_dir
             @mock_root_dir = nil
+
+            begin
+                assert_equal 0, @mock_log.to_a.size
+                @mock_log.check
+            rescue Exception
+                STDERR.puts @mock_log.to_s
+                raise
+            end
+            @mock_log = nil
         end
 
         def test_methods_implemented
@@ -154,7 +169,7 @@ module VMInsights
             meminfo_path = "/proc/meminfo"
             omit_unless File.exist?(meminfo_path), "(Linux only)"
 
-            @object_under_test = DataCollector.new
+            @object_under_test = DataCollector.new @mock_log
             actual_available, actual_total = @object_under_test.get_available_memory_kb
             assert_operator actual_total, :>, 0, "Total memory should be > 0"
             assert_operator actual_available, :<, actual_total, "Available memory should be < Total memory"
@@ -255,7 +270,7 @@ module VMInsights
                 data = io.read
                 expected_count = data.to_i
             }
-            @object_under_test = DataCollector.new
+            @object_under_test = DataCollector.new @mock_log
             @object_under_test.baseline
             assert_equal expected_count, @object_under_test.get_number_of_cpus
         end
@@ -316,6 +331,23 @@ module VMInsights
             actual = @object_under_test.get_filesystems
             assert_fs expected, actual
             assert_df_exit
+
+            begin
+                @mock_log.each { |log|
+                    assert_equal ::VMInsights::MockLog::DEBUG, log[:severity]
+                    messages = log[:messages]
+                    assert_kind_of Array, messages
+                    assert_equal 1, messages.size
+                    msg = messages[0]
+                    assert msg.start_with?("get_filesystems: "), msg
+                }
+            rescue Exception
+                STDERR.puts @mock_log.to_s
+                raise
+            ensure
+                @mock_log.clear # no further checking required
+            end
+
         end
 
         def test_get_filesystems_live
@@ -379,6 +411,7 @@ module VMInsights
         end
 
         def test_get_net_stats_no_baseline
+            @mock_log.set_message_hook
             ex = assert_raises(RuntimeError) { ||
                 @object_under_test.get_net_stats
             }
@@ -427,10 +460,12 @@ module VMInsights
         end
 
         def test_get_net_stats
+            @mock_log.set_message_hook
             assert_get_net_stats randint % 1776, randint % 1492
         end
 
         def test_get_net_stats_interface_up
+            @mock_log.set_message_hook
             check_for_baseline_common
             make_virtual
             make_routes [ "mockb" ]
@@ -461,6 +496,7 @@ module VMInsights
         end
 
         def test_get_net_stats_interface_down
+            @mock_log.set_message_hook
             check_for_baseline_common
             make_virtual
             device_names = ["mocka", "mockb", "mockc"]
@@ -496,16 +532,19 @@ module VMInsights
         end
 
         def test_get_net_stats_rollover
+            @mock_log.set_message_hook
             make_mock_lscpu 1, false
             assert_get_net_stats (2 ** 64) - 1, (2 ** 32) - 1, (2 ** 64)
         end
 
         def test_get_net_stats_rollover32
+            @mock_log.set_message_hook
             make_mock_lscpu 1, true
             assert_get_net_stats (2 ** 16) - 1, (2 ** 32) - 1, (2 ** 32)
         end
 
         def test_get_net_stats_live
+            @mock_log.set_message_hook
             netdev_path = "/proc/net/dev"
             virtnet_path = "/sys/devices/virtual/net"
             netroute_path = "/proc/net/route"
@@ -554,7 +593,7 @@ module VMInsights
                 end
             }
 
-            @object_under_test = DataCollector.new
+            @object_under_test = DataCollector.new @mock_log
             live_disk_data_before = get_live_disk_data sector_size
             omit_unless sector_size.size == live_disk_data_before.size, "inconsistent disk data (before)"
             time_before_baseline = Time.now
@@ -675,6 +714,22 @@ module VMInsights
             assert_in_range (time_before_2nd_get - time_after_1st_get),
                             (time_after_2nd_get - time_before_1st_get),
                             actual.delta_time
+
+            begin
+                @mock_log.each { |log|
+                    assert_equal ::VMInsights::MockLog::DEBUG, log[:severity]
+                    messages = log[:messages]
+                    assert_kind_of Array, messages
+                    assert_equal 1, messages.size
+                    msg = messages[0]
+                    assert_equal "get_sector_sizes: No such file or directory - #{@mock_root_dir}/bin/lsblk", msg
+                }
+            rescue Exception
+                STDERR.puts @mock_log.to_s
+                raise
+            ensure
+                @mock_log.clear # no further checking required
+            end
         end
 
     private
