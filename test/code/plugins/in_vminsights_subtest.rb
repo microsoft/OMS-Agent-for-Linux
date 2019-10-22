@@ -22,8 +22,7 @@ module Fluent
         def setup
             @object_under_test = VMInsights.new
             @mock_tag = String.new "ThE.TaG.NaMe" # to use as a filter match pattern, can't have spaces in it
-            @mock_log = ::VMInsights::MockLog.new
-            @mock_log.ignore_range = ::VMInsights::MockLog::NONE
+            @mock_log = ::VMInsights::MockLog.new ::VMInsights::MockLog::NONE
             @mock_metric_engine = MockMetricsEngine.new
 
             @conf = {
@@ -77,7 +76,6 @@ module Fluent
             @object_under_test.configure @conf
             logs = @mock_log.to_a
             assert logs.size == 0, Proc.new() { @mock_log.to_s }
-            @mock_log.ignore_range = ::VMInsights::MockLog::DEBUG_AND_BELOW
 
             begin
                 @object_under_test.start
@@ -85,6 +83,8 @@ module Fluent
             ensure
                 @object_under_test.shutdown
             end
+
+            assert_logs
 
         end
 
@@ -96,7 +96,6 @@ module Fluent
             assert_equal 1, @object_under_test.poll_interval
             logs = @mock_log.to_a
             assert logs.size == 0, Proc.new() { @mock_log.to_s }
-            @mock_log.ignore_range = ::VMInsights::MockLog::DEBUG_AND_BELOW
 
             begin
                 expected_data = [ "mock data", "atad kcom" ]
@@ -132,8 +131,10 @@ module Fluent
                 assert_equal expected_data, array
 
             ensure
-                @mock_log.clear
                 @object_under_test.shutdown
+                assert_logs
+
+                @mock_log.clear
 
                 refute @mock_metric_engine.running?
 
@@ -171,6 +172,17 @@ module Fluent
             block = (Proc.new() { |v| v }) unless block
             assert min <= t, Proc.new() { "min=#{block[min]} actual=#{block[t]}" }
             assert t <= max, Proc.new() { "max=#{block[max]} actual=#{block[t]}" }
+        end
+
+        def assert_logs
+            logs = @mock_log.to_a
+            assert_equal 3, logs.size, logs.to_s
+            log = logs[0]
+            assert_equal ::VMInsights::MockLog::DEBUG, log[:severity]
+            messages = log[:messages]
+            assert_equal 2, messages.size, messages.inspect
+            assert_equal "VMInsights: ", messages[0]
+            assert_equal "Starting", messages[1]
         end
 
     end # class VMInsights_test

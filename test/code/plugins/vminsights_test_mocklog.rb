@@ -73,6 +73,7 @@ private
         attr_accessor :ignore_range, :flunk_range
 
         def trace(*msg, &block)
+puts __FILE__, __LINE__, msg, block
             log_message TRACE, msg, block
         end
 
@@ -81,6 +82,7 @@ private
         end
 
         def debug(*msg, &block)
+puts __FILE__, __LINE__, msg, block
             log_message DEBUG, msg, block
         end
 
@@ -89,6 +91,7 @@ private
         end
 
         def info(*msg, &block)
+puts __FILE__, __LINE__, msg, block
             log_message INFO, msg, block
         end
 
@@ -97,6 +100,7 @@ private
         end
 
         def warn(*msg, &block)
+puts __FILE__, __LINE__, msg, block
             log_message WARN, msg, block
         end
 
@@ -105,6 +109,7 @@ private
         end
 
         def error(*msg, &block)
+puts __FILE__, __LINE__, msg, block
             log_message ERROR, msg, block
         end
 
@@ -158,7 +163,7 @@ public
 
     class MockLog < MockLogBase
 
-        def initialize
+        def initialize(*args)
             super
             @logs = []
             @message_handler_hook = @backtrace_handler_hook = @@null_handler
