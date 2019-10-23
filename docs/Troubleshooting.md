@@ -288,7 +288,7 @@ Follow these steps to recover from a bad state, like changing/removing important
     * From Azure Portal, install OMS extension again, and you should be able to see the agent successfully installed.
 * Github Install:
     * Download from Github the same agent version that you have installed, and run upgrade command with `--force`:
-`sh omsagent*.sh --upgrade --force -w <WORKSPACE_ID> -s <SEKRET>`.
+`sh omsagent*.sh --upgrade --force -w <WORKSPACE_ID> -s <SECRET>`.
 ### My Nagios data is not showing up in the OMS Portal!
 #### Probable Causes
 * omsagent user does not have permissions to read from Nagios log file
