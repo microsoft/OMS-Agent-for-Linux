@@ -57,7 +57,7 @@ private
     LogPrefix = "VMInsights"
 
     def make_heartbeat_configuration
-        config = ::VMInsights::MetricsEngine::Configuration.new OMS::Common.get_hostname, @log, ::VMInsights::DataCollector.new
+        config = ::VMInsights::MetricsEngine::Configuration.new OMS::Common.get_hostname, @log, ::VMInsights::DataCollector.new(@log)
         config.poll_interval = @poll_interval
         config
     end
