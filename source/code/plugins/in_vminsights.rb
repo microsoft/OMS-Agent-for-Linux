@@ -15,18 +15,13 @@ class Fluent::VMInsights < Fluent::Input
     def initialize
         super
         @instance_id = self.class.name + "(" + Time.now.to_s + ")"
-puts "LOG", __FILE__, __LINE__, log
     end
 
     def configure(conf)
-puts "LOG", __FILE__, __LINE__, log
-puts "CONFIGURE", conf.inspect, "CONFIGURE END"
         super
-puts "LOG", __FILE__, __LINE__, log
 
         begin
-puts "MARKER START", __FILE__, __LINE__, @log, "MARKER END"
-            #@log = LogWrapper.new(LogPrefix, @log)# unless @log.kind_of? LockWrapper
+            @log = LogWrapper.new(LogPrefix, @log)# unless @log.kind_of? LockWrapper
             @heartbeat_uploader = conf[:MockMetricsEngine] || ::VMInsights::MetricsEngine.new
             @heartbeat_upload_configuration = make_heartbeat_configuration
         rescue Fluent::ConfigError

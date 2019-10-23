@@ -73,7 +73,6 @@ private
         attr_accessor :ignore_range, :flunk_range
 
         def trace(*msg, &block)
-puts __FILE__, __LINE__, msg, block
             log_message TRACE, msg, block
         end
 
@@ -82,7 +81,6 @@ puts __FILE__, __LINE__, msg, block
         end
 
         def debug(*msg, &block)
-puts __FILE__, __LINE__, msg, block
             log_message DEBUG, msg, block
         end
 
@@ -91,7 +89,6 @@ puts __FILE__, __LINE__, msg, block
         end
 
         def info(*msg, &block)
-puts __FILE__, __LINE__, msg, block
             log_message INFO, msg, block
         end
 
@@ -100,7 +97,6 @@ puts __FILE__, __LINE__, msg, block
         end
 
         def warn(*msg, &block)
-puts __FILE__, __LINE__, msg, block
             log_message WARN, msg, block
         end
 
@@ -109,7 +105,6 @@ puts __FILE__, __LINE__, msg, block
         end
 
         def error(*msg, &block)
-puts __FILE__, __LINE__, msg, block
             log_message ERROR, msg, block
         end
 
