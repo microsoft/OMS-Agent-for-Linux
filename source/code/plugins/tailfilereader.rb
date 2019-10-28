@@ -1,6 +1,5 @@
 require 'optparse'
 require 'logger'
-require 'sigdump/setup'
 
 module Tailscript
 
