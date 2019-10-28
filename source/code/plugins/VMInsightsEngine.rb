@@ -67,16 +67,26 @@ module VMInsights
                     @cummulative_data.initialize_from_baseline @data_collector.baseline
                     MetricTuple.computer computer
                     begin
-                            @log.info "Starting polling loop at #{interval} second interval"
-                            while @run do
-                                    @mutex.synchronize {
-                                            @condvar.wait(@mutex, interval) if @run
-                                    }
-                                    yield_metrics_message() if @run
+                        @log.info "Starting polling loop at #{interval} second interval"
+                        # try to keep as close to the polling interval, independent of
+                        # any delay waking up from the sleep, collecting data, or
+                        # emitting the message.
+                        expected_wakeup_time = Time.now
+                        while @run do
+                            expected_wakeup_time += interval
+                            now = Time.now
+                            if expected_wakeup_time <= now
+                                expected_wakeup_time = now
+                            else
+                                sleep_time = expected_wakeup_time - now
+                                @mutex.synchronize {
+                                    @condvar.wait(@mutex, sleep_time) if @run
+                                }
                             end
+                            yield_metrics_message() if @run
+                        end
                     ensure
-                            # protected_yield telemetry_message ConnectorStop
-                            @log.info "Stopping polling"
+                        @log.info "Stopping polling"
                     end
                 }
             end

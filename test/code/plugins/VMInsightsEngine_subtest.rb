@@ -754,6 +754,114 @@ module VMInsights
 
         end
 
+        def test_poll_interval_slow_message_processing
+            # minimize the data collected
+            mock_error = IDataCollector::Unavailable.new "mock memory error"
+            @dc.get_available_memory_exception = mock_error
+
+            polling_interval = 2
+            @configuration.poll_interval = polling_interval
+            processing_delay = 0
+            delay_increment = 0.5
+
+            metric_samples = Array.new
+
+            time_before_start = Time.now
+            @object_under_test.start(@configuration) { |m|
+                # capture the processing delay introduced in the previous message
+                metric_samples << { :delay => processing_delay, :time => Time.now, :message => m }
+                # delay "emitting" this message so that it affects how long to sleep before the next data collection
+                processing_delay += delay_increment
+                sleep processing_delay if processing_delay > 0
+            }
+            assert @object_under_test.running?
+
+            sleep_time = delay_increment / 2.0
+            sleep sleep_time while processing_delay < (2 * polling_interval)
+            delay_increment *= -1
+            sleep sleep_time while processing_delay >= 0
+
+            @object_under_test.stop
+            assert_false @object_under_test.running?
+
+
+            begin
+                problem_element = nil
+                last_time = time_before_start
+                metric_samples.each { |e|
+                    problem_element = e
+                    expected_time = last_time +
+                                    if e[:delay] < polling_interval
+                                        polling_interval
+                                    else
+                                        e[:delay]
+                                    end
+                    assert_in_delta expected_time, e[:time], 0.1
+                    last_time = e[:time]
+                }
+            rescue
+                STDERR.puts "", "time_before_start = #{time_before_start}[#{time_before_start.to_f}]"
+                metric_samples.each { |e|
+                    m = if problem_element.object_id == e.object_id then "> " else "" end
+                    STDERR.puts "#{m}time=#{e[:time]}[#{e[:time].to_f}] delay=#{e[:delay]}"
+                }
+                raise
+            end
+        end
+
+        def test_poll_interval_slow_data_collection
+            # minimize the data collected
+            mock_error = IDataCollector::Unavailable.new "mock memory error"
+            @dc.get_available_memory_exception = mock_error
+
+            polling_interval = 2
+            @configuration.poll_interval = polling_interval
+            sample_delay = 0
+            delay_increment = 0.5
+            @dc.set_sample_delay(sample_delay, delay_increment)
+
+            metric_samples = Array.new
+
+            time_before_start = Time.now
+            @object_under_test.start(@configuration) { |m|
+                metric_samples << { :time => Time.now, :message => m }
+            }
+            assert @object_under_test.running?
+
+            sleep_time = delay_increment / 2.0
+            sleep sleep_time while @dc.sample_delay < (2 * polling_interval)
+            @dc.set_sample_delay nil, -delay_increment
+            sleep sleep_time while @dc.sample_delay >= 0
+
+            @object_under_test.stop
+            assert_false @object_under_test.running?
+
+            begin
+                problem_element = nil
+                last_time = time_before_start
+                last_delay = 0
+                @dc.sample_intervals.each { |e|
+                    problem_element = e
+                    expected_time = last_time +
+                                    if last_delay < polling_interval
+                                        polling_interval
+                                    else
+                                        last_delay
+                                    end
+                    assert_in_delta expected_time, e.start_time, 0.1
+                    last_time = e.start_time
+                    last_delay = (e.stop_time - e.start_time)
+                }
+            rescue
+                STDERR.puts "", "time_before_start = #{time_before_start}[#{time_before_start.to_f}]"
+                @dc.sample_intervals.each { |e|
+                    m = if problem_element.equal?(e) then "> " else "" end
+                    STDERR.puts "#{m}start=#{e.start_time}[#{e.start_time.to_f}] stop=#{e.stop_time}[#{e.stop_time.to_f}]"
+                }
+                raise
+            end
+        end
+
     private
 
         def assert_sample(sample, sample_interval, label=nil, &block)
@@ -1245,6 +1353,9 @@ module VMInsights
 
             @sample_intervals = []
             @current_interval = nil
+
+            @sample_delay = 0
+            @sample_delay_increment = 0
         end
 
         def baseline
@@ -1258,6 +1369,8 @@ module VMInsights
             raise RuntimeError, "baseline not called" unless @baselined
             raise RuntimeError, "sampling in progress" unless @current_interval.nil?
             @current_interval = SampleInterval.new
+            sleep @sample_delay if @sample_delay >= 0
+            @sample_delay += @sample_delay_increment
         end
 
         def end_sample
@@ -1288,7 +1401,6 @@ module VMInsights
             raise @get_cpu_count_exception unless @get_cpu_count_exception.nil?
             @mock_cpu_count
         end
-
 
         def get_filesystems
             raise @get_filesystems_exception unless @get_filesystems_exception.nil?
@@ -1330,11 +1442,16 @@ module VMInsights
             data
         end
 
+        def set_sample_delay(delay=nil, delay_increment=0.0)
+           @sample_delay = delay.to_f unless delay.nil? # unchanged
+           @sample_delay_increment = delay_increment.to_f unless delay_increment.nil? # unchanged
+        end
+
         attr_writer :mock_free_mem_kb, :mock_total_mem_kb, :get_available_memory_exception, :mock_increment_mem_kb
         attr_writer :get_cpu_use_exception, :get_cpu_count_exception
         attr_writer :get_filesystems_exception, :mock_filesystems
         attr_writer :get_disk_stats_exception, :mock_disk_stats
-        attr_reader :sample_intervals, :mock_cpu_count
+        attr_reader :sample_intervals, :mock_cpu_count, :sample_delay
 
     private
 
