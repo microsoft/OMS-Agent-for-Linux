@@ -1245,6 +1245,8 @@ module VMInsights
 
             @sample_intervals = []
             @current_interval = nil
+
+            @sample_delay = 0
         end
 
         def baseline
@@ -1258,6 +1260,7 @@ module VMInsights
             raise RuntimeError, "baseline not called" unless @baselined
             raise RuntimeError, "sampling in progress" unless @current_interval.nil?
             @current_interval = SampleInterval.new
+            sleep @sample_delay
         end
 
         def end_sample
@@ -1288,7 +1291,6 @@ module VMInsights
             raise @get_cpu_count_exception unless @get_cpu_count_exception.nil?
             @mock_cpu_count
         end
-
 
         def get_filesystems
             raise @get_filesystems_exception unless @get_filesystems_exception.nil?
@@ -1328,6 +1330,13 @@ module VMInsights
             raise RuntimeError, dev if data.nil?
             raise data if data.kind_of?(Exception)
             data
+        end
+
+        def sample_delay=(delay=0.0)
+           delay = 0 if delay.nil?
+           delay = delay.to_f
+           raise ArgumentError, "delay must be non-negative" unless delay >= 0.0
+           @sample_delay = delay
         end
 
         attr_writer :mock_free_mem_kb, :mock_total_mem_kb, :get_available_memory_exception, :mock_increment_mem_kb
