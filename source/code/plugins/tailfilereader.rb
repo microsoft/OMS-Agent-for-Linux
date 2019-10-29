@@ -193,8 +193,8 @@ module Tailscript
         attr_reader :io
 
         def on_notify
+          @log.debug "Seeking to read file - #{@io.path} from #{@io.pos} position and file size is #{@io.stat.size}"
           begin
-            @log.debug "Seeking to read file - #{@io.path} from #{@io.pos} position and file size is #{@io.stat.size}"
             read_more = false
             if @lines.empty?
               begin
@@ -217,7 +217,6 @@ module Tailscript
               end
             end
 
-            @log.debug "Number of lines read from #{@io.path} : #{@lines.length}"
             unless @lines.empty?
               if @receive_lines.call(@lines)
                 @pe.update_pos(@io.pos - @buffer.bytesize)
