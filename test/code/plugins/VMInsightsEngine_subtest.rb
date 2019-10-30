@@ -784,8 +784,10 @@ module VMInsights
 
 
             begin
+                problem_element = nil
                 last_time = time_before_start
                 metric_samples.each { |e|
+                    problem_element = e
                     expected_time = last_time +
                                     if e[:delay] < polling_interval
                                         polling_interval
@@ -795,9 +797,12 @@ module VMInsights
                     assert_in_delta expected_time, e[:time], 0.01
                     last_time = e[:time]
                 }
-                assert false, "WIP(#{__LINE__})"
             rescue
-                metric_samples.each { |e| STDERR.puts e.inspect }
+                STDERR.puts "", "time_before_start = #{time_before_start}[#{time_before_start.to_f}]"
+                metric_samples.each { |e|
+                    m = if problem_element.object_id == e.object_id then "> " else "" end
+                    STDERR.puts "#{m}time=#{e[:time]}[#{e[:time].to_f}] delay=#{e[:delay]}"
+                }
                 raise
             end
         end
@@ -830,9 +835,27 @@ module VMInsights
             assert_false @object_under_test.running?
 
             begin
-                assert false, "WIP(#{__LINE__})"
+                problem_element = nil
+                last_time = time_before_start
+                last_delay = 0
+                @dc.sample_intervals.each { |e|
+                    problem_element = e
+                    expected_time = last_time +
+                                    if last_delay < polling_interval
+                                        polling_interval
+                                    else
+                                        last_delay
+                                    end
+                    assert_in_delta expected_time, e.start_time, 0.01
+                    last_time = e.start_time
+                    last_delay = (e.stop_time - e.start_time)
+                }
             rescue
-                metric_samples.each { |e| STDERR.puts e.inspect }
+                STDERR.puts "", "time_before_start = #{time_before_start}[#{time_before_start.to_f}]"
+                @dc.sample_intervals.each { |e|
+                    m = if problem_element.equal?(e) then "> " else "" end
+                    STDERR.puts "#{m}start=#{e.start_time}[#{e.start_time.to_f}] stop=#{e.stop_time}[#{e.stop_time.to_f}]"
+                }
                 raise
             end
         end
