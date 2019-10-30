@@ -124,13 +124,13 @@ module Fluent
     end
 
     def shutdown
-      if !@buffer_path.empty?
+      if (!@buffer_path.empty? && !(defined?(file_path)).nil? && !file_path.nil?)
          contentlocationfilepath = File.dirname(@buffer_path) + '/' + @@ContentLocationCacheFileName
          File.open(file_path, "w+", 0644) do |f| # Open file
               f.puts "#{@@ContentlocationUri}"
          end
-      end
       @log.debug "LastContentLocationUri written to : #{contentlocationfilepath}"
+	  end
       super
     end
 

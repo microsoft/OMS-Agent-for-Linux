@@ -59,4 +59,7 @@ omsagent ALL=(ALL) NOPASSWD: /usr/bin/pkill -u nxautomation *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/tail *
 omsagent ALL=(ALL) NOPASSWD: /bin/tail *
 
+# configuring omsconfig
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py *
+
 # End sudo configuration for omsagent

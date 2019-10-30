@@ -660,7 +660,14 @@ onboard()
             fi
 
             if [ "$USER_ID" -eq "0" ]; then
-                sudo -u $AGENT_USER $METACONFIG_PY > /dev/null || error=$?
+                su - $AGENT_USER -c $METACONFIG_PY > /dev/null || error=$?
+
+                if [ $error -ne 0 ]; then
+                    log_info "Retrying configuring omsconfig by calling '$METACONFIG_PY' with 'sudo'"
+                    error=0
+                    sudo -u $AGENT_USER $METACONFIG_PY > /dev/null || error=$?
+                fi
+                
             else
                 $METACONFIG_PY > /dev/null || error=$?
             fi
