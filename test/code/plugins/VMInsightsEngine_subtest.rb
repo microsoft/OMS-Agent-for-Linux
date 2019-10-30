@@ -768,9 +768,11 @@ module VMInsights
 
             time_before_start = Time.now
             @object_under_test.start(@configuration) { |m|
+                # capture the processing delay introduced in the previous message
                 metric_samples << { :delay => processing_delay, :time => Time.now, :message => m }
-                sleep processing_delay if processing_delay > 0
+                # delay "emitting" this message so that it affects how long to sleep before the next data collection
                 processing_delay += delay_increment
+                sleep processing_delay if processing_delay > 0
             }
             assert @object_under_test.running?
 
@@ -794,7 +796,7 @@ module VMInsights
                                     else
                                         e[:delay]
                                     end
-                    assert_in_delta expected_time, e[:time], 0.01
+                    assert_in_delta expected_time, e[:time], 0.1
                     last_time = e[:time]
                 }
             rescue
@@ -846,7 +848,7 @@ module VMInsights
                                     else
                                         last_delay
                                     end
-                    assert_in_delta expected_time, e.start_time, 0.01
+                    assert_in_delta expected_time, e.start_time, 0.1
                     last_time = e.start_time
                     last_delay = (e.stop_time - e.start_time)
                 }
