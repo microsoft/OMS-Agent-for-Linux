@@ -707,7 +707,8 @@ install_extra_package()
     fi
     which apt-get > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        install_cmd="apt-get install -y"
+        # Adding "--no-remove" flag to make APT fail when conflicting packages are detected.
+        install_cmd="apt-get install -y --no-remove"
     fi
 
     if [ -z "$install_cmd" ]; then
