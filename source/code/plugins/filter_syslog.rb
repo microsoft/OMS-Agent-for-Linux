@@ -55,7 +55,7 @@ module Fluent
       hostname = record["host"]
       tags = tag.split('.') # The tag should looks like this : oms.syslog.authpriv.notice
       new_record = {
-          'indent' => record['ident'],
+          'ident' => record['ident'],
           # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
           # The time may be slightly in the future from the ingestion time.
           'Timestamp' => OMS::Common::fast_utc_to_iso8601_format(Time.now.utc),
