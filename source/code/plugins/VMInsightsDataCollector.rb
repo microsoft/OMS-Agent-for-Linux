@@ -215,10 +215,10 @@ module VMInsights
                     RawDiskData.new(
                                     dev,
                                     Time.now,
-                                    data[1 - 1].to_i,
-                                    data[3 - 1].to_i,
-                                    data[5 - 1].to_i,
-                                    data[7 - 1].to_i,
+                                    data[0].to_i,
+                                    data[2].to_i,
+                                    data[4].to_i,
+                                    data[6].to_i,
                                     sector_size
                                     )
                 }
