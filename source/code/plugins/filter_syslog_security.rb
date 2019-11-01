@@ -40,7 +40,7 @@ module Fluent
       # The tag should looks like this : oms.security.local4.warn
       tags = tag.split('.')
       new_record = {
-          'indent' => ident,
+          'ident' => ident,
           # Use Time.now, because it is the only way to get subsecond precision in version 0.12.
           # The time may be slightly in the future from the ingestion time.
           'Timestamp' => OMS::Common::fast_utc_to_iso8601_format(Time.now.utc),
