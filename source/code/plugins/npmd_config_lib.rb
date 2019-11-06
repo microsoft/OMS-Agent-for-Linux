@@ -422,8 +422,8 @@ module NPMDConfig
                             _urls.push(_urlHash)
                         end
                         _msRule["URLs"] = _urls
+                        _ruleList.push(_msRule)
                     end
-                    _ruleList.push(_msRule)
                     _er[:"MSPeeringRules"] = _ruleList if !_ruleList.empty?
                 end
             end
