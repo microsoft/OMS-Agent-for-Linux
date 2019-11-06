@@ -21,7 +21,7 @@ class Fluent::VMInsights < Fluent::Input
         super
 
         begin
-            @log = LogWrapper.new(LogPrefix, @log)# unless @log.kind_of? LockWrapper
+            @log = LogWrapper.new(LogPrefix, @log) unless @log.kind_of? LogWrapper
             @heartbeat_uploader = conf[:MockMetricsEngine] || ::VMInsights::MetricsEngine.new
             @heartbeat_upload_configuration = make_heartbeat_configuration
         rescue Fluent::ConfigError

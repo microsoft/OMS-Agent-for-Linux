@@ -100,7 +100,7 @@ module VMInsights
                             result << Fs.new(a[0], a[6], a[2], a[4]) if a.size == 7
                         rescue ArgumentError => ex
                             # malformed input
-                            @log.debug() { "#{__method__}: #{ex}" }
+                            @log.debug() { "#{__method__}: #{ex}: '#{line}'" }
                         end
                     end
                 end
