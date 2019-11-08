@@ -258,6 +258,9 @@ apply_patch ${base_dir}/source/ext/patches/ruby/mjit_options.patch ${base_dir}/s
 # This patch reduce Ruby memory allocation by tweaking malloc
 apply_patch ${base_dir}/source/ext/patches/ruby/malloc_gc.patch ${base_dir}/source/ext/ruby/gc.c
 
+# This patch make sure Ruby disables THP
+apply_patch ${base_dir}/source/ext/patches/ruby/thp.patch ${base_dir}/source/ext/ruby/eval.c
+
 # Patching log.rb in order to support qos error reporting
 apply_patch ${base_dir}/source/ext/patches/fluentd/log.patch ${base_dir}/source/ext/fluentd/lib/fluent/log.rb
 
