@@ -1,0 +1,20 @@
+--- ../source/ext/ruby/eval.c	2019-11-07 19:37:45.649694296 -0800
++++ ../source/ext/ruby/eval.c.new	2019-11-07 19:37:20.009699911 -0800
+@@ -61,8 +61,16 @@
+      * Disable THP early before mallocs happen because we want this to
+      * affect as many future pages as possible for CoW-friendliness
+      */
++
++/* Centos5 has an old <linux/prctl.h> header file which does not set the PR_SET_THP_DISABLE flag */
++#if !defined(PR_SET_THP_DISABLE)
++# define PR_SET_THP_DISABLE	41
++#endif
++
+ #if defined(__linux__) && defined(PR_SET_THP_DISABLE)
+-    prctl(PR_SET_THP_DISABLE, 1, 0, 0, 0);
++    if (!getenv("RUBY_THP_ENABLE")) {
++        prctl(PR_SET_THP_DISABLE, 1, 0, 0, 0);
++    }
+ #endif
+     Init_BareVM();
+     Init_heap();
