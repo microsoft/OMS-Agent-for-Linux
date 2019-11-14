@@ -313,6 +313,7 @@ module NPMDConfig
                     _ruleHash["DiscoverPaths"] = _iRule.has_key?("DiscoverPaths") ? _iRule["DiscoverPaths"].to_s : "true"
                     _ruleHash["NetTests"] = (_iRule["NetworkThresholdLoss"].to_i >= -2 and _iRule["NetworkThresholdLatency"].to_i >= -2) ? "true" : "false"
                     _ruleHash["AppTests"] = (_iRule["AppThresholdLatency"].to_i >= -2) ? "true" : "false"
+                    _ruleHash["ValidStatusCodeRanges"] = _iRule.has_key?("ValidStatusCodeRanges") ? _iRule["ValidStatusCodeRanges"] : nil;
 
                     if (_ruleHash["NetTests"] == "true")
                         _ruleHash["NetworkThreshold"] = {"ChecksFailedPercent" => _iRule["NetworkThresholdLoss"].to_s, "RoundTripTimeMs" => _iRule["NetworkThresholdLatency"].to_s}
@@ -649,6 +650,7 @@ module NPMDConfig
                         _rule["AppThresholdLatency"] = _test["AppThreshold"].nil? ? "-3.0" : (_test["AppThreshold"].has_key?("Latency") ? _test["AppThreshold"]["Latency"] : "-2.0")
                         _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"].nil? ? "-3" : (_test["NetworkThreshold"].has_key?("Loss") ? _test["NetworkThreshold"]["Loss"] : "-2")
                         _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"].nil? ? "-3.0" : (_test["NetworkThreshold"].has_key?("Latency") ? _test["NetworkThreshold"]["Latency"] : "-2.0")
+                        _rule["ValidStatusCodeRanges"] = _test.has_key?["ValidStatusCodeRanges"] ? _test["ValidStatusCodeRanges"] : nil
 
                         _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"].to_s : String.new
 
