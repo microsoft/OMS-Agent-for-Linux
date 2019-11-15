@@ -17,9 +17,16 @@ import logging.handlers
 from datetime import datetime
 from logging.handlers import SysLogHandler
 
-import psutil
-import numpy as np
+try:
+    import psutil
+    import numpy as np
+except:
+    print("[optional] missing python libraries: psutil numpy [You can't use profiling without these packages]")
 PY3 = sys.version_info[0] == 3
+
+
+def average(lst): 
+    return sum(lst) / len(lst)
 
 def gethostname():
     try:
@@ -45,24 +52,27 @@ def get_ruby_version(path):
 
 
 def net_connections(protocol='udp'):
-    from psutil import _pslinux as _psplatform
     """Parse /proc/net/tcp* and /proc/net/udp* files."""
     BIGFILE_BUFFERING = -1 if PY3 else 8192
     filename = "/proc/net/%s" % protocol
     results = []
-    with open(filename, "rt", buffering=BIGFILE_BUFFERING) as f:
-        f.readline()  # skip the first line
-        for lineno, line in enumerate(f, 1):
-            # try:
-            items = line.split()
-            sl, laddr, raddr, status, tx_q, rx_q, tr, _, timeout, inode, ref, ptr = items[:12]
-            drops = int(items[-1]) if items[-1].isdigit() else 0
-            addr = _psplatform.Connections.decode_address(laddr, socket.AF_INET)
-            results.append({
-                'sl': sl, 'laddr': addr, 'drops': drops
-            })
-            # except ValueError:
-            #     raise RuntimeError("error while parsing %s; malformed line %s %r" % (filename, lineno, line))
+    try:
+        from psutil import _pslinux as _psplatform
+        with open(filename, "rt", buffering=BIGFILE_BUFFERING) as f:
+            f.readline()  # skip the first line
+            for lineno, line in enumerate(f, 1):
+                # try:
+                items = line.split()
+                sl, laddr, raddr, status, tx_q, rx_q, tr, _, timeout, inode, ref, ptr = items[:12]
+                drops = int(items[-1]) if items[-1].isdigit() else 0
+                addr = _psplatform.Connections.decode_address(laddr, socket.AF_INET)
+                results.append({
+                    'sl': sl, 'laddr': addr, 'drops': drops
+                })
+                # except ValueError:
+                #     raise RuntimeError("error while parsing %s; malformed line %s %r" % (filename, lineno, line))
+    except:
+        pass
     return results
 
 
@@ -614,7 +624,7 @@ DEFAULT_VARS = {
     'security_events_port': '25226',
     'syslog_path': '%s/in_syslog.socket' % TEST_DIR,
     'syslog_host': '0.0.0.0',
-    'syslog_protocol': 'tcp',
+    'syslog_protocol': 'udp',
     'fluent_port': '24224',
     'fluent_host': '0.0.0.0',
     'tail_path': '%s/in_tail.log' % TEST_DIR,
@@ -714,10 +724,9 @@ def main(argv):
         print("Waiting %d seconds after completion" % wait_time_after_completion)
         time.sleep(wait_time_after_completion)
 
-    dropped_events = ['%s:%d' % (w.get_protocol(), w.get_number_dropped_event()) for w in writers]
-
-    print("Response times: avg=%.2f s, max=%.2fs" % (np.mean(response_times), max(response_times)))
+    print("Response times: avg=%.2f s, max=%.2fs" % (average(response_times), max(response_times)))
     if do_profiling:
+        dropped_events = ['%s:%d' % (w.get_protocol(), w.get_number_dropped_event()) for w in writers]
         result = {
             "eps": eps,
             "sampling_rate": rate,
