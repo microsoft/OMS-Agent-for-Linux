@@ -1,0 +1,7 @@
+%Variables
+PERFORMING_UPGRADE_NOT: '[ "$1" != "upgrade" -a "$1" != "purge" ]'
+PACKAGE_TYPE: 'DPKG'
+
+%Dependencies
+omi (>= 1.3.0.2)
+scx (>= 1.6.3.212)

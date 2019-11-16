@@ -1,0 +1,50 @@
+%Variables
+PERFORMING_UPGRADE_NOT: '[ "$1" -ne 1 ]'
+PACKAGE_TYPE: 'RPM'
+SEPKG_DIR_OMSAGENT: '/usr/share/selinux/packages/omsagent-logrotate'
+
+%Dependencies
+omi >= 1.3.0-2
+scx >= 1.6.3-212
+
+%Files
+${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.fc;                       installer/selinux/omsagent-logrotate.fc;                                 644; root; root
+${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.te;                       installer/selinux/omsagent-logrotate.te;                                 644; root; root
+${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.el6.te;                   installer/selinux/omsagent-logrotate.el6.te;                             644; root; root
+${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.pp;                       intermediate/${{BUILD_CONFIGURATION}}/selinux/omsagent-logrotate.pp;     755; root; root
+${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.el6.pp;                   intermediate/${{BUILD_CONFIGURATION}}/selinux.el6/omsagent-logrotate.pp; 755; root; root
+
+%Directories
+/usr/share/selinux/packages;                                         755; root; root; sysdir
+/usr/share/selinux/packages/omsagent-logrotate;                      755; root; root
+
+%Postinstall_550
+if [ -e /usr/sbin/semodule ]; then
+    echo "System appears to have SELinux installed, attempting to install selinux policy module for logrotate"
+
+    SUCCESS=0
+    for POLICY_FILE in ${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.pp ${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.el6.pp; do
+        echo "  Trying ${POLICY_FILE} ..."
+        /usr/sbin/semodule -i ${POLICY_FILE} >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            SUCCESS=1
+            break
+        fi
+    done
+
+    if [ $SUCCESS -eq 0 ]; then
+        echo "ERROR: None of the available omsagent-logrotate selinux policy module versions could be installed"
+        exit 0
+    fi
+
+    # Labeling omsagent log files 
+    /sbin/restorecon -R /var/opt/microsoft/omsagent/*/log > /dev/null 2>&1
+fi
+
+%Postuninstall_5
+if [ -e /usr/sbin/semodule ]; then
+    if [ ! -z "$(/usr/sbin/semodule -l | grep omsagent-logrotate)" ]; then
+        echo "Removing selinux policy module for omsagent-logrotate ..."
+        /usr/sbin/semodule -r omsagent-logrotate
+    fi
+fi

@@ -1,0 +1,45 @@
+%Variables
+ETC_PATH:   '/etc/opt/microsoft/omsagent'
+VAR_PATH:   '/var/opt/microsoft/omsagent'
+
+%Files
+${{ETC_PATH}}/${{WORKSPACE_ID}}/certs/oms.crt;                          (origin);                                   640; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/certs/oms.key;                          (origin);                                   640; omsagent; omiusers
+
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsadmin.conf;                     (origin);                                   644; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.conf;                     installer/conf/omsagent.conf;               644; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.d/heartbeat.conf;         installer/conf/omsagent.d/heartbeat.conf;   644; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.d/monitor.conf;           installer/conf/omsagent.d/monitor.conf;     644; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.d/omi_mapping.json;       installer/conf/omi_mapping.json;            644; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.d/operation.conf;         installer/conf/omsagent.d/operation.conf;   644; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.d/syslog.conf;            installer/conf/omsagent.d/syslog.conf;      644; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.d/telemetry.conf;         installer/conf/omsagent.d/telemetry.conf;   644; omsagent; omiusers
+
+${{VAR_PATH}}/${{WORKSPACE_ID}}/log/ODSIngestion.status;                (origin);                                   666; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/log/omsagent.log;                       (origin);                                   644; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/run/omsagent.pid;                       (origin);                                   644; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/state/dsc_cache.yml;                    (origin);                                   644; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/state/omsconfig.log.auditd_plugin.pos;  (origin);                                   640; omsagent; omiusers
+
+
+%Links
+${{ETC_PATH}}/certs;    ${{ETC_PATH}}/${{WORKSPACE_ID}}/certs;  700; omsagent; omiusers
+${{ETC_PATH}}/conf;     ${{ETC_PATH}}/${{WORKSPACE_ID}}/conf;   750; omsagent; omiusers
+
+${{VAR_PATH}}/log;      ${{VAR_PATH}}/${{WORKSPACE_ID}}/log;    750; omsagent; omiusers
+${{VAR_PATH}}/run;      ${{VAR_PATH}}/${{WORKSPACE_ID}}/run;    750; omsagent; omiusers
+${{VAR_PATH}}/state;    ${{VAR_PATH}}/${{WORKSPACE_ID}}/state;  750; omsagent; omiusers
+${{VAR_PATH}}/tmp;      ${{VAR_PATH}}/${{WORKSPACE_ID}}/tmp;    750; omsagent; omiusers
+
+
+%Directories
+${{ETC_PATH}}/${{WORKSPACE_ID}};                    750; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/certs;              700; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf;               750; omsagent; omiusers
+${{ETC_PATH}}/${{WORKSPACE_ID}}/conf/omsagent.d;    750; omsagent; omiusers
+
+${{VAR_PATH}}/${{WORKSPACE_ID}};                    750; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/log;                750; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/run;                750; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/state;              750; omsagent; omiusers
+${{VAR_PATH}}/${{WORKSPACE_ID}}/tmp;                750; omsagent; omiusers

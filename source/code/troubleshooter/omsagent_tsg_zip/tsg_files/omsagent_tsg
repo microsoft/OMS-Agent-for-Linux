@@ -1,0 +1,44 @@
+#!/bin/bash
+
+tsg_start=/opt/microsoft/omsagent/plugin/troubleshooter/tsg_code/tsg_general.py
+
+py_26="Python 2.6"
+py_27="Python 2.7"
+py_3="Python 3"
+
+py_version=$((python --version) 2>&1)
+
+run_troubleshooter()
+{
+    if [ -f $tsg_start ]; then
+        echo "Running troubleshooting tool in $py_version..."
+        echo ""
+        python $tsg_start
+    else
+        echo "Troubleshooter not properly installed. Please run:"
+        echo ""
+        echo "$ ./install_tsg"
+        echo ""
+        echo "in order to install the troubleshooter."
+        exit 1
+    fi
+}
+
+# in case user runs with --help, and in case for future options
+if [ "$1" = "--help" ]; then 
+    echo "This script runs the OMS Agent troubleshooter."
+    echo "Note: Python 2.6 or newer is required to run successfully."
+    echo "Run this script without any options to run the troubleshooter on this machine."
+    exit 0
+fi
+
+# check what version of python the user has
+case $py_version in
+    $py_26* | $py_27* | $py_3* )
+        run_troubleshooter
+        ;;
+    * )
+        echo "No supported version of Python found on machine. OMS (and this troubleshooter) require Python 2.6 or newer, please install a supported version of Python and try again."
+        exit 1
+        ;;
+esac

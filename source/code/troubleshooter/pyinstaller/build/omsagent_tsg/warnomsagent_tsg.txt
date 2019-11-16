@@ -1,0 +1,252 @@
+missing module named sys.modules - imported by sys, dummy_threading
+missing module named sys.py3kwarning - imported by sys, httplib
+missing module named sys.getwindowsversion - imported by sys, platform
+missing module named codecs.mbcs_encode - imported by codecs, encodings.mbcs
+missing module named codecs.mbcs_decode - imported by codecs, encodings.mbcs
+missing module named binascii.a2b_uu - imported by binascii, encodings.uu_codec
+missing module named binascii.b2a_uu - imported by binascii, encodings.uu_codec
+missing module named binascii.b2a_base64 - imported by binascii, email.base64mime
+missing module named binascii.a2b_base64 - imported by binascii, email.base64mime
+missing module named binascii.b2a_qp - imported by binascii, quopri
+missing module named binascii.a2b_qp - imported by binascii, quopri
+missing module named binascii.hexlify - imported by binascii, random
+missing module named unicodedata.ucd_3_2_0 - imported by unicodedata, stringprep, encodings.idna
+missing module named _sre.MAXREPEAT - imported by _sre, sre_constants
+missing module named _warnings.warn_explicit - imported by _warnings, warnings
+missing module named _warnings.filters - imported by _warnings, warnings
+missing module named _warnings.once_registry - imported by _warnings, warnings
+missing module named _warnings.default_action - imported by _warnings, warnings
+missing module named _warnings.warn - imported by _warnings, warnings
+missing module named strop.whitespace - imported by strop, string
+missing module named strop.maketrans - imported by strop, string
+missing module named strop.lowercase - imported by strop, string
+missing module named strop.uppercase - imported by strop, string
+missing module named itertools.islice - imported by itertools, repr, heapq
+missing module named itertools.starmap - imported by itertools, collections
+missing module named itertools.repeat - imported by itertools, collections
+missing module named itertools.imap - imported by itertools, heapq, collections
+missing module named itertools.tee - imported by itertools, heapq
+missing module named itertools.izip - imported by itertools, heapq
+missing module named itertools.count - imported by itertools, heapq
+missing module named itertools.chain - imported by itertools, tokenize, heapq, collections
+missing module named org.PyStringMap - imported by org, copy
+missing module named org - imported by copy
+missing module named exceptions.ReferenceError - imported by exceptions, weakref
+missing module named _weakref.ref - imported by _weakref, _weakrefset, weakref
+missing module named _weakref.ReferenceType - imported by _weakref, weakref
+missing module named _weakref.proxy - imported by _weakref, weakref
+missing module named _weakref.getweakrefs - imported by _weakref, weakref
+missing module named _weakref.getweakrefcount - imported by _weakref, weakref
+missing module named _weakref.CallableProxyType - imported by _weakref, weakref
+missing module named _weakref.ProxyType - imported by _weakref, weakref
+missing module named copy.deepcopy - imported by copy, weakref
+missing module named array.array - imported by array, httplib
+missing module named re._compile - imported by re, sre
+missing module named re.__all__ - imported by re, sre
+missing module named errno.EINVAL - imported by errno, StringIO
+missing module named errno.ENOENT - imported by errno, gettext
+missing module named cStringIO.StringIO - imported by cStringIO, gettext, pprint, shlex, tempfile, pickle, plistlib, socket, quopri, httplib, email.parser, email.message, email.generator, email.iterators, urllib, urllib2, xml.sax, encodings.uu_codec, encodings.quopri_codec
+missing module named struct.calcsize - imported by struct, ctypes
+missing module named _struct.__doc__ - imported by _struct, struct
+missing module named _struct._clearcache - imported by _struct, struct
+missing module named _subprocess.STD_OUTPUT_HANDLE - imported by _subprocess, subprocess
+missing module named _subprocess.CREATE_NEW_PROCESS_GROUP - imported by _subprocess, subprocess
+missing module named _subprocess.STD_INPUT_HANDLE - imported by _subprocess, subprocess
+missing module named _subprocess.STARTF_USESHOWWINDOW - imported by _subprocess, subprocess
+missing module named _subprocess.CREATE_NEW_CONSOLE - imported by _subprocess, subprocess
+missing module named _subprocess.STD_ERROR_HANDLE - imported by _subprocess, subprocess
+missing module named _subprocess.STARTF_USESTDHANDLES - imported by _subprocess, subprocess
+missing module named _subprocess.SW_HIDE - imported by _subprocess, subprocess
+missing module named collections.namedtuple - imported by collections, inspect, unittest.util, difflib, doctest, urlparse
+missing module named cPickle.loads - imported by cPickle, collections
+missing module named cPickle.dumps - imported by cPickle, collections
+missing module named thread.get_ident - imported by thread, collections
+missing module named thread._local - imported by thread, threading
+missing module named thread.stack_size - imported by thread, threading
+missing module named thread.allocate_lock - imported by thread, _strptime
+missing module named collections.deque - imported by collections, shlex, threading
+missing module named collections.OrderedDict - imported by collections, unittest.util
+missing module named operator.itemgetter - imported by operator, collections, heapq
+missing module named operator.eq - imported by operator, collections
+missing module named operator.attrgetter - imported by operator, inspect
+missing module named _collections.deque - imported by _collections, collections
+missing module named _collections.defaultdict - imported by _collections, collections
+missing module named time.time - imported by time, threading
+missing module named time.sleep - imported by time, threading
+missing module named datetime.date - imported by datetime, _strptime
+missing module named _functools.partial - imported by _functools, functools
+missing module named _functools.reduce - imported by _functools, functools
+missing module named _hashlib.pbkdf2_hmac - imported by _hashlib, hashlib
+missing module named _sha512 - imported by hashlib
+missing module named _sha256 - imported by hashlib
+missing module named _md5 - imported by hashlib
+missing module named _sha - imported by hashlib
+missing module named os.urandom - imported by os, random
+missing module named math.sin - imported by math, random
+missing module named math.sqrt - imported by math, random
+missing module named math.cos - imported by math, random
+missing module named math.acos - imported by math, random
+missing module named math.ceil - imported by math, random
+missing module named math.exp - imported by math, random
+missing module named math.log - imported by math, random
+missing module named math.e - imported by math, random
+missing module named math.pi - imported by math, random
+missing module named _io.DEFAULT_BUFFER_SIZE - imported by _io, io
+missing module named _io.BytesIO - imported by _io, io
+missing module named _io.open - imported by _io, io
+missing module named _io.BufferedWriter - imported by _io, io
+missing module named _io.FileIO - imported by _io, io
+missing module named _io.BlockingIOError - imported by _io, io
+missing module named _io.IncrementalNewlineDecoder - imported by _io, io
+missing module named _io.BufferedReader - imported by _io, io
+missing module named _io.BufferedRandom - imported by _io, io
+missing module named _io.StringIO - imported by _io, io
+missing module named _io.BufferedRWPair - imported by _io, io
+missing module named _io.TextIOWrapper - imported by _io, io
+missing module named _io.UnsupportedOperation - imported by _io, io
+missing module named readline - imported by cmd, pdb
+missing module named 'org.python'.PyStringMap - imported by 'org.python', pickle
+missing module named 'org.python' - imported by pickle, xml.sax
+missing module named 'org.python'.imp - imported by 'org.python', xml.sax
+missing module named _subprocess - imported by subprocess
+missing module named msvcrt - imported by subprocess, getpass
+missing module named threading.RLock - imported by threading, _threading_local
+missing module named threading.current_thread - imported by threading, _threading_local
+missing module named _ssl.SSL_ERROR_EOF - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_WANT_READ - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_WANT_CONNECT - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_ZERO_RETURN - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_WANT_X509_LOOKUP - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_SSL - imported by _ssl, ssl, socket
+missing module named _ssl.RAND_status - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_INVALID_ERROR_CODE - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_WANT_WRITE - imported by _ssl, ssl, socket
+missing module named _ssl.RAND_add - imported by _ssl, ssl, socket
+missing module named _ssl.RAND_egd - imported by _ssl, ssl, socket
+missing module named _ssl.SSL_ERROR_SYSCALL - imported by _ssl, ssl, socket
+missing module named _ssl.SSLError - imported by _ssl, ssl, socket
+missing module named _ssl.PROTOCOL_SSLv2 - imported by _ssl, ssl
+missing module named _ssl.PROTOCOL_TLSv1 - imported by _ssl, ssl
+missing module named _ssl.PROTOCOL_SSLv23 - imported by _ssl, ssl
+missing module named _ssl.PROTOCOL_SSLv3 - imported by _ssl, ssl
+missing module named _ssl.CERT_REQUIRED - imported by _ssl, ssl
+missing module named _ssl.CERT_NONE - imported by _ssl, ssl
+missing module named _ssl.CERT_OPTIONAL - imported by _ssl, ssl
+missing module named _ssl.OPENSSL_VERSION_NUMBER - imported by _ssl, ssl
+missing module named _ssl.OPENSSL_VERSION_INFO - imported by _ssl, ssl
+missing module named _ssl.OPENSSL_VERSION - imported by _ssl, ssl
+missing module named socket.SOCK_STREAM - imported by socket, ssl
+missing module named socket.SO_TYPE - imported by socket, ssl
+missing module named socket.SOL_SOCKET - imported by socket, ssl
+missing module named socket.getnameinfo - imported by socket, ssl
+missing module named socket.error - imported by socket, ssl
+missing module named socket.socket - imported by socket, ssl
+missing module named socket._delegate_methods - imported by socket, ssl
+missing module named socket._fileobject - imported by socket, ssl
+missing module named SOCKS - imported by ftplib
+missing module named _winreg - imported by platform, mimetypes, urllib
+missing module named _winreg.OpenKeyEx - imported by _winreg, platform
+missing module named _winreg.HKEY_LOCAL_MACHINE - imported by _winreg, platform
+missing module named _winreg.QueryValueEx - imported by _winreg, platform
+missing module named _winreg.CloseKey - imported by _winreg, platform
+missing module named cookielib.join_header_words - imported by cookielib, _LWPCookieJar
+missing module named cookielib.time2isoz - imported by cookielib, _LWPCookieJar
+missing module named cookielib._warn_unhandled_exception - imported by cookielib, _LWPCookieJar, _MozillaCookieJar
+missing module named cookielib.Cookie - imported by cookielib, _LWPCookieJar, _MozillaCookieJar
+missing module named cookielib.split_header_words - imported by cookielib, _LWPCookieJar
+missing module named cookielib.LoadError - imported by cookielib, _LWPCookieJar, _MozillaCookieJar
+missing module named cookielib.MISSING_FILENAME_TEXT - imported by cookielib, _LWPCookieJar, _MozillaCookieJar
+missing module named cookielib.FileCookieJar - imported by cookielib, _LWPCookieJar, _MozillaCookieJar
+missing module named cookielib.iso2time - imported by cookielib, _LWPCookieJar
+missing module named _dummy_threading.__all__ - imported by _dummy_threading, dummy_threading
+missing module named _dummy_threading - imported by dummy_threading
+missing module named 'urllib.request'.urlopen - imported by 'urllib.request', install.tsg_checkoms
+missing module named 'urllib.request' - imported by install.tsg_checkoms
+missing module named _scproxy._get_proxy_settings - imported by _scproxy, urllib
+missing module named _scproxy._get_proxies - imported by _scproxy, urllib
+missing module named _scproxy - imported by urllib
+missing module named EasyDialogs.AskPassword - imported by EasyDialogs, getpass
+missing module named EasyDialogs - imported by getpass
+missing module named rourl2path.url2pathname - imported by rourl2path, urllib
+missing module named rourl2path.pathname2url - imported by rourl2path, urllib
+missing module named rourl2path - imported by urllib
+missing module named vms_lib - imported by platform
+missing module named 'java.lang' - imported by platform, xml.sax._exceptions
+missing module named 'java.lang'.Exception - imported by 'java.lang', xml.sax._exceptions
+missing module named java.System - imported by java, platform
+missing module named java - imported by platform
+missing module named xml.parsers.expat.ParserCreate - imported by xml.parsers.expat, plistlib
+missing module named _xmlplus - imported by xml
+missing module named 'Carbon.Files'.fsRdWrPerm - imported by 'Carbon.Files', plistlib
+missing module named 'Carbon.File'.FSGetResourceForkName - imported by 'Carbon.File', plistlib
+missing module named 'Carbon.File'.FSRef - imported by 'Carbon.File', plistlib
+missing module named 'Carbon.File' - imported by plistlib
+missing module named Carbon.Res - imported by Carbon, plistlib
+missing module named 'Carbon.Files'.fsRdPerm - imported by 'Carbon.Files', plistlib
+missing module named 'Carbon.Files' - imported by plistlib
+missing module named Carbon.FSGetResourceForkName - imported by Carbon, plistlib
+missing module named Carbon.FSRef - imported by Carbon, plistlib
+missing module named Carbon - imported by plistlib
+missing module named MacOS - imported by platform
+missing module named macresource - imported by MacOS
+missing module named gestalt.gestalt - imported by gestalt, platform
+missing module named gestalt - imported by platform
+missing module named winreg.OpenKeyEx - imported by winreg, platform
+missing module named winreg.HKEY_LOCAL_MACHINE - imported by winreg, platform
+missing module named winreg.QueryValueEx - imported by winreg, platform
+missing module named winreg.CloseKey - imported by winreg, platform
+missing module named winreg - imported by platform
+missing module named _ctypes._wstring_at_addr - imported by _ctypes, ctypes
+missing module named _ctypes._string_at_addr - imported by _ctypes, ctypes
+missing module named _ctypes._cast_addr - imported by _ctypes, ctypes
+missing module named _ctypes._memset_addr - imported by _ctypes, ctypes
+missing module named _ctypes._memmove_addr - imported by _ctypes, ctypes
+missing module named _ctypes.get_last_error - imported by _ctypes, ctypes
+missing module named _ctypes.set_last_error - imported by _ctypes, ctypes
+missing module named _ctypes._check_HRESULT - imported by _ctypes, ctypes
+missing module named _ctypes.set_conversion_mode - imported by _ctypes, ctypes
+missing module named _ctypes._pointer_type_cache - imported by _ctypes, ctypes
+missing module named _ctypes.POINTER - imported by _ctypes, ctypes
+missing module named _ctypes.pointer - imported by _ctypes, ctypes
+missing module named _ctypes._SimpleCData - imported by _ctypes, ctypes
+missing module named _ctypes.get_errno - imported by _ctypes, ctypes
+missing module named _ctypes.set_errno - imported by _ctypes, ctypes
+missing module named _ctypes.alignment - imported by _ctypes, ctypes
+missing module named _ctypes.addressof - imported by _ctypes, ctypes
+missing module named _ctypes.resize - imported by _ctypes, ctypes
+missing module named _ctypes.byref - imported by _ctypes, ctypes
+missing module named _ctypes.sizeof - imported by _ctypes, ctypes
+missing module named _ctypes.dlopen - imported by _ctypes, ctypes
+missing module named _ctypes.FUNCFLAG_STDCALL - imported by _ctypes, ctypes
+missing module named _ctypes.LoadLibrary - imported by _ctypes, ctypes
+missing module named _ctypes.FUNCFLAG_USE_ERRNO - imported by _ctypes, ctypes
+missing module named _ctypes.FUNCFLAG_USE_LASTERROR - imported by _ctypes, ctypes
+missing module named _ctypes.FUNCFLAG_PYTHONAPI - imported by _ctypes, ctypes
+missing module named _ctypes.FUNCFLAG_CDECL - imported by _ctypes, ctypes
+missing module named _ctypes.FormatError - imported by _ctypes, ctypes
+missing module named _ctypes.ArgumentError - imported by _ctypes, ctypes
+missing module named _ctypes.RTLD_LOCAL - imported by _ctypes, ctypes
+missing module named _ctypes.RTLD_GLOBAL - imported by _ctypes, ctypes
+missing module named _ctypes.__version__ - imported by _ctypes, ctypes
+missing module named _ctypes.CFuncPtr - imported by _ctypes, ctypes
+missing module named _ctypes._Pointer - imported by _ctypes, ctypes
+missing module named _ctypes.Structure - imported by _ctypes, ctypes
+missing module named _ctypes.Array - imported by _ctypes, ctypes
+missing module named _ctypes.Union - imported by _ctypes, ctypes
+missing module named win32pipe - imported by platform
+missing module named riscosenviron._Environ - imported by riscosenviron, os
+missing module named riscosenviron - imported by os
+missing module named riscospath - imported by os
+missing module named riscos._exit - imported by riscos, os
+missing module named riscos - imported by os
+missing module named ce._exit - imported by ce, os
+missing module named ce - imported by os
+missing module named _emx_link.link - imported by _emx_link, os
+missing module named _emx_link - imported by os
+missing module named os2._exit - imported by os2, os
+missing module named os2 - imported by os
+missing module named nt._isdir - imported by nt, ntpath
+missing module named nt._getfullpathname - imported by nt, ntpath
+missing module named nt._exit - imported by nt, os
+missing module named nt - imported by os, ntpath
+missing module named posix._exit - imported by posix, os

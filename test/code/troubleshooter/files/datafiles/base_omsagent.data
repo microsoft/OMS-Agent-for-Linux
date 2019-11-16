@@ -1,0 +1,271 @@
+%Variables
+SHELL_HEADER:            '#!/bin/sh'
+OMSHOME:                 '/opt/microsoft/omsagent'
+CONF_DIR:                '/etc/opt/microsoft/omsagent/conf'
+SYSCONF_DIR:             '/etc/opt/microsoft/omsagent/sysconf'
+SHORT_NAME:              'omsagent'
+SHORT_NAME_PREFIX:       'MSFT'
+LONG_NAME:               'Microsoft Operations Management Suite for UNIX/Linux agent'
+GROUP:                   'Applications/System'
+LICENSE:                 'none'
+VENDOR:                  'http://www.microsoft.com'
+PROVIDES:                'omsuploads'
+DESCRIPTION:             'Provides agent for the Microsoft Operations Management Suite.'
+MAINTAINER:              'Microsoft Corporation'
+
+%Defines
+
+%Files
+/etc/opt/microsoft/omsagent/sysconf/logrotate.conf;                     installer/conf/logrotate.conf;                         644; root; root
+
+/etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
+/etc/opt/microsoft/omsagent/sysconf/installinfo.txt;                    installer/conf/installinfo.txt;                        644; root; root; conffile
+/etc/opt/microsoft/omsagent/sysconf/omi_mapping.json;                   installer/conf/omi_mapping.json;                       644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking.conf;    installer/conf/omsagent.d/change_tracking.conf;        644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/change_tracking_inventory.mof;    installer/conf/omsagent.d/change_tracking_inventory.mof;    644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/monitor.conf;            installer/conf/omsagent.d/monitor.conf;                644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/heartbeat.conf;          installer/conf/omsagent.d/heartbeat.conf;              644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/telemetry.conf;          installer/conf/omsagent.d/telemetry.conf;              644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management.conf;      installer/conf/omsagent.d/patch_management.conf;          644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/patch_management_inventory.mof;  installer/conf/omsagent.d/patch_management_inventory.mof;        644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/update_management.conf;  installer/conf/omsagent.d/update_management.conf;          644; root; root
+
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/oms.conf;                installer/conf/oms.conf;                               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/syslog.conf;             installer/conf/omsagent.d/syslog.conf;                 644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/collectd.conf;           installer/conf/omsagent.d/collectd.conf;               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/statsd.conf;             installer/conf/omsagent.d/statsd.conf;                 644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/auditlog.conf;           installer/conf/omsagent.d/auditlog.conf;               644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql.conf;              installer/conf/omsagent.d/mysql.conf;                  644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_logs.conf;         installer/conf/omsagent.d/mysql_logs.conf;             644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf;        installer/conf/omsagent.d/apache_logs.conf;            644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/mongo.conf;              installer/conf/omsagent.d/mongo.conf;                  644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/vmware_esxi.conf;        installer/conf/omsagent.d/vmware_esxi.conf;            644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/operation.conf;          installer/conf/omsagent.d/operation.conf;              644; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d/postgresql_logs.conf;    installer/conf/omsagent.d/postgresql_logs.conf;        644; root; root
+
+/etc/opt/microsoft/omsagent/omsagent.env;                               installer/conf/omsagent.env;                           644; root; root
+
+/opt/microsoft/omsagent/LICENSE;                                        LICENSE;                                               444; root; root
+
+/opt/microsoft/omsagent/bin/auth_key.rb;                                installer/scripts/auth_key.rb;                         744; root; root
+/opt/microsoft/omsagent/bin/omsadmin.sh;                                installer/scripts/omsadmin.sh;                         755; root; root
+/opt/microsoft/omsagent/bin/service_control;                            installer/scripts/service_control;                     755; root; root
+/opt/microsoft/omsagent/bin/uninstall;                                  installer/scripts/uninstall.sh;                        755; root; root
+/opt/microsoft/omsagent/bin/configure_syslog.sh;                        installer/scripts/configure_syslog.sh;                 755; root; root
+/opt/microsoft/omsagent/bin/hdinsightmanifestreader.rb;                 installer/scripts/hdinsightmanifestreader.rb;          744; root; root
+/opt/microsoft/omsagent/bin/regenerate_scom_cert.sh;                    installer/scripts/regenerate_scom_cert.sh;             755; root; root
+
+/opt/microsoft/omsagent/plugin/filter_syslog.rb;                        source/code/plugins/filter_syslog.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/out_oms.rb;                              source/code/plugins/out_oms.rb;                        744; root; root
+/opt/microsoft/omsagent/plugin/in_omi.rb;                               source/code/plugins/in_omi.rb;                         744; root; root
+/opt/microsoft/omsagent/plugin/in_oms_omi.rb;                           source/code/plugins/in_oms_omi.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/oms_omi_lib.rb;                          source/code/plugins/oms_omi_lib.rb;                    744; root; root
+/opt/microsoft/omsagent/plugin/oms_common.rb;                           source/code/plugins/oms_common.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/blocklock.rb;                            source/code/plugins/blocklock.rb;                      744; root; root
+/opt/microsoft/omsagent/plugin/Libomi.so;                               intermediate/${{BUILD_CONFIGURATION}}/Libomi.so;       744; root; root
+/opt/microsoft/omsagent/plugin/filter_nagios_log.rb;                    source/code/plugins/filter_nagios_log.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/nagios_parser_lib.rb;                    source/code/plugins/nagios_parser_lib.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/filter_omi.rb;                           source/code/plugins/filter_omi.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/omi_lib.rb;                              source/code/plugins/omi_lib.rb;                        744; root; root
+/opt/microsoft/omsagent/plugin/omslog.rb;                               source/code/plugins/omslog.rb;                         744; root; root
+/opt/microsoft/omsagent/plugin/in_zabbix.rb;                            source/code/plugins/in_zabbix.rb;                      744; root; root
+/opt/microsoft/omsagent/plugin/zabbix_lib.rb;                           source/code/plugins/zabbix_lib.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/zabbix_client.rb;                        source/code/plugins/zabbix_client.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/zabbixapi.rb;                            source/code/plugins/zabbixapi.rb;                      744; root; root
+/opt/microsoft/omsagent/plugin/oms_configuration.rb;                    source/code/plugins/oms_configuration.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/out_oms_blob.rb;                         source/code/plugins/out_oms_blob.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/out_oms_api.rb;                          source/code/plugins/out_oms_api.rb;                    744; root; root
+/opt/microsoft/omsagent/plugin/in_sudo_tail.rb;                         source/code/plugins/in_sudo_tail.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/tailfilereader.rb;                       source/code/plugins/tailfilereader.rb;                 744; root; root
+/opt/microsoft/omsagent/plugin/filter_security_baseline.rb;             source/code/plugins/filter_security_baseline.rb;       744; root; root
+/opt/microsoft/omsagent/plugin/security_baseline_lib.rb;                source/code/plugins/security_baseline_lib.rb;          744; root; root
+/opt/microsoft/omsagent/plugin/oms_audits.xml;                          source/code/plugins/oms_audits.xml;                    644; root; root
+/opt/microsoft/omsagent/plugin/oms_docker_audits.xml;                       source/code/plugins/oms_docker_audits.xml;                 644; root; root
+/opt/microsoft/omsagent/plugin/omsbaseline;                             source/code/plugins/omsbaseline_${{PFARCH}};           755; root; root
+/opt/microsoft/omsagent/plugin/omsremediate;                            source/code/plugins/omsremediate_${{PFARCH}};          755; root; root
+/opt/microsoft/omsagent/plugin/out_oms_diag.rb;                         source/code/plugins/out_oms_diag.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/oms_diag_lib.rb;                         source/code/plugins/oms_diag_lib.rb;                   744; root; root
+
+/opt/microsoft/omsagent/plugin/in_auoms.rb;                             source/code/plugins/in_auoms.rb;                       744; root; root
+/opt/microsoft/omsagent/plugin/auditd_plugin_lib.rb;                    source/code/plugins/auditd_plugin_lib.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/filter_auditd_plugin.rb;                 source/code/plugins/filter_auditd_plugin.rb;           744; root; root
+
+/opt/microsoft/omsagent/plugin/security_lib.rb;                         source/code/plugins/security_lib.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/filter_syslog_security.rb;               source/code/plugins/filter_syslog_security.rb;         744; root; root
+/opt/microsoft/omsagent/plugin/filter_changetracking.rb;                source/code/plugins/filter_changetracking.rb;          744; root; root
+/opt/microsoft/omsagent/plugin/changetracking_lib.rb;                   source/code/plugins/changetracking_lib.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/filter_collectd.rb;                      source/code/plugins/filter_collectd.rb;                744; root; root
+/opt/microsoft/omsagent/plugin/collectd_lib.rb;                         source/code/plugins/collectd_lib.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/filter_operation.rb;                     source/code/plugins/filter_operation.rb;               744; root; root
+/opt/microsoft/omsagent/plugin/operation_lib.rb;                        source/code/plugins/operation_lib.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/in_oms_heartbeat.rb;                     source/code/plugins/in_oms_heartbeat.rb;               744; root; root
+/opt/microsoft/omsagent/plugin/heartbeat_lib.rb;                        source/code/plugins/heartbeat_lib.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/filter_patch_management.rb;              source/code/plugins/filter_patch_management.rb;        744; root; root
+/opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
+
+/opt/microsoft/omsagent/plugin/filter_flatten.rb;                       source/code/plugins/filter_flatten.rb;                 744; root; root
+/opt/microsoft/omsagent/plugin/flattenjson_lib.rb;                      source/code/plugins/flattenjson_lib.rb;                744; root; root
+/opt/microsoft/omsagent/plugin/statsd_lib.rb;                           source/code/plugins/statsd_lib.rb;                     744; root; root
+/opt/microsoft/omsagent/plugin/out_oms_statsd_aggregator.rb;            source/code/plugins/out_oms_statsd_aggregator.rb;      744; root; root
+/opt/microsoft/omsagent/plugin/auditlog_lib.rb;                         source/code/plugins/auditlog_lib.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/parser_auditlog.rb;                      source/code/plugins/parser_auditlog.rb;                744; root; root
+/opt/microsoft/omsagent/plugin/mongostat_lib.rb;                        source/code/plugins/mongostat_lib.rb;                  744; root; root
+/opt/microsoft/omsagent/plugin/in_mongostat.rb;                         source/code/plugins/in_mongostat.rb;                   744; root; root
+/opt/microsoft/omsagent/plugin/mysql_workload_lib.rb;                   source/code/plugins/mysql_workload_lib.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/in_mysql_workload.rb;                    source/code/plugins/in_mysql_workload.rb;              744; root; root
+/opt/microsoft/omsagent/plugin/parser_vmware_logs.rb;                   source/code/plugins/parser_vmware_logs.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/in_dsc_monitor.rb;                       source/code/plugins/in_dsc_monitor.rb;                 744; root; root
+/opt/microsoft/omsagent/plugin/agent_topology_request_script.rb;        source/code/plugins/agent_topology_request_script.rb;  744; root; root
+/opt/microsoft/omsagent/plugin/in_heartbeat_request.rb;                 source/code/plugins/in_heartbeat_request.rb;           744; root; root
+/opt/microsoft/omsagent/plugin/agent_maintenance_script.rb;             source/code/plugins/agent_maintenance_script.rb;       744; root; root
+/opt/microsoft/omsagent/plugin/in_agent_telemetry.rb;                   source/code/plugins/in_agent_telemetry.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/agent_telemetry_script.rb;               source/code/plugins/agent_telemetry_script.rb;         744; root; root
+/opt/microsoft/omsagent/plugin/fluent_log_patch.rb;                     source/code/plugins/fluent_log_patch.rb;               744; root; root
+/opt/microsoft/omsagent/plugin/agent_common.rb;                         source/code/plugins/agent_common.rb;                   744; root; root
+
+/opt/microsoft/omsagent/plugin/filter_hdinsight.rb;                     source/code/plugins/filter_hdinsight.rb;               744; root; root
+/opt/microsoft/omsagent/plugin/filter_scom_simple_match.rb;             source/code/plugins/filter_scom_simple_match.rb;       744; root; root
+/opt/microsoft/omsagent/plugin/filter_scom_excl_match.rb;               source/code/plugins/filter_scom_excl_match.rb;         744; root; root
+/opt/microsoft/omsagent/plugin/filter_scom_cor_match.rb;                source/code/plugins/filter_scom_cor_match.rb;          744; root; root
+/opt/microsoft/omsagent/plugin/filter_scom_repeated_cor.rb;             source/code/plugins/filter_scom_repeated_cor.rb;       744; root; root
+/opt/microsoft/omsagent/plugin/filter_scom_excl_correlation.rb;         source/code/plugins/filter_scom_excl_correlation.rb;   744; root; root
+/opt/microsoft/omsagent/plugin/filter_scom_converter.rb;                source/code/plugins/filter_scom_converter.rb;          744; root; root
+/opt/microsoft/omsagent/plugin/scom_common.rb;                          source/code/plugins/scom_common.rb;                    744; root; root
+/opt/microsoft/omsagent/plugin/scom_configuration.rb;                   source/code/plugins/scom_configuration.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/out_scom.rb;                             source/code/plugins/out_scom.rb;                       744; root; root
+
+%Links
+/opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
+
+%Directories
+/opt;                                                   755; root; root; sysdir
+/etc;                                                   755; root; root; sysdir
+/etc/logrotate.d;                                       755; root; root; sysdir
+/etc/opt;                                               755; root; root; sysdir
+/var;                                                   755; root; root; sysdir
+/var/opt;                                               755; root; root; sysdir
+
+/etc/opt/microsoft;                                     755; root; root; sysdir
+/etc/opt/microsoft/omsagent;                            755; root; root
+/etc/opt/microsoft/omsagent/sysconf;                    755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.d;         755; root; root
+
+/opt/microsoft;                                         755; root; root; sysdir
+/opt/microsoft/omsagent;                                755; root; root
+/opt/microsoft/omsagent/bin;                            755; root; root
+/opt/microsoft/omsagent/plugin;                         755; root; root
+
+/var/opt/microsoft;                                     755; root; root; sysdir
+
+%Dependencies
+
+%Postinstall_100
+WriteInstallInfo() {
+    echo "${{VERSION}}-${{RELEASE}} ${{VERSION_IDENT}}" > /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
+    date +%Y-%m-%dT%T.0Z >> /etc/opt/microsoft/omsagent/sysconf/installinfo.txt
+}
+WriteInstallInfo
+
+# Can't use normal mechanisms to create /var directories because they must be
+# owned by omsagent account. So create them as part of Postinstall, after the
+# service account is created.
+
+mkdir -m 755 /var/opt/microsoft/omsagent        2> /dev/null || true
+chown -R omsagent:omiusers /var/opt/microsoft/omsagent
+
+# Same for plugin directory:
+chown -R omsagent:root /opt/microsoft/omsagent/plugin
+
+%Postinstall_200
+# Migrate to multi-homing config and structure, as well as update omsagent config files
+/opt/microsoft/omsagent/bin/omsadmin.sh -U
+
+%Postinstall_300
+if [ -f /etc/omsagent-onboard.conf ]; then
+    /opt/microsoft/omsagent/bin/omsadmin.sh
+else
+    # Create a logrotate conf file for the Primary workspace if it does not already exist
+    # This is needed when upgrading from old omsagent to multi-homing enabled version
+    PRIMARY_WSID=`grep WORKSPACE_ID ${{CONF_DIR}}/omsadmin.conf | cut -d= -f2` > /dev/null 2>&1
+    if [ "$PRIMARY_WSID" -a ! -f /etc/logrotate.d/omsagent-$PRIMARY_WSID ]; then
+        cat ${{SYSCONF_DIR}}/logrotate.conf | sed "s/%WORKSPACE_ID%/$PRIMARY_WSID/g" > /etc/logrotate.d/omsagent-$PRIMARY_WSID
+    fi
+fi
+# Set up a cron job to logrotate all omsagent-$WORKSPACE_ID every 5 minutes
+if [ ! -f /etc/cron.d/omsagent ]; then
+    echo "*/5 * * * * root /usr/sbin/logrotate -s /var/lib/logrotate/omsagent-status /etc/logrotate.d/omsagent* >/dev/null 2>&1" > /etc/cron.d/omsagent
+fi
+
+%Postuninstall_10
+# Calling sequence for RPM pre/post scripts, during upgrade, is as follows:
+#   1. Run the %pre section of the RPM being installed.
+#   2. Install the files that the RPM provides.
+#   3. Run the %post section of the RPM.
+#   4. Run the %preun of the old package.
+#   5. Delete any old files not overwritten by the newer version.
+#      (This step deletes files that the new package does not require.)
+#   6. Run the %postun hook of the old package.
+#
+# Thus, if we're an upgrade, skip all of this cleanup
+ETC_DIR=/etc/opt/microsoft/omsagent
+VAR_DIR=/var/opt/microsoft/omsagent
+WORKSPACE_REGEX='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+if ${{PERFORMING_UPGRADE_NOT}}; then
+   # Clean up directory trees: /etc/opt, /var/opt, /opt
+   # If multi-workspace scenario
+   for ws_id in `ls -1 $ETC_DIR | grep -E $WORKSPACE_REGEX`
+    do
+        echo "Deleting certs and conf directories for workspace $ws_id if empty..."
+        rmdir $ETC_DIR/$ws_id/certs/ 2> /dev/null
+        rmdir $ETC_DIR/$ws_id/conf/ 2> /dev/null
+
+        rm /opt/microsoft/omsagent/bin/omsagent-$ws_id 2> /dev/null
+
+        rm -rf $VAR_DIR/$ws_id/tmp/ 2> /dev/null
+        rmdir $VAR_DIR/$ws_id/state/ 2> /dev/null
+        # /var/opt/microsoft/omsagent/<wkspc>/run/ and log/ should be left for later service start
+    done
+   
+   # Clean up installinfo.txt file (registered as "conf" file to pass rpmcheck)
+   rm -f $ETC_DIR/sysconf/installinfo.txt*
+   rmdir $ETC_DIR/sysconf 2> /dev/null
+
+   # Clean up symbolic links if multi-workspace scenario
+   rm $ETC_DIR/certs 2> /dev/null
+   rm $ETC_DIR/conf 2> /dev/null
+   rm $VAR_DIR/tmp 2> /dev/null
+   rm $VAR_DIR/state 2> /dev/null
+   rm $VAR_DIR/run 2> /dev/null
+   rm $VAR_DIR/log 2> /dev/null
+
+   # Clean up directory tree if agent installed or upgraded without onboarding. No symbolic links.
+   rmdir $ETC_DIR/certs/ 2> /dev/null
+   rmdir $ETC_DIR/conf/ 2> /dev/null
+   rmdir $VAR_DIR/tmp/ 2> /dev/null
+   rmdir $VAR_DIR/state/ 2> /dev/null
+   rmdir $VAR_DIR/run/ 2> /dev/null
+   rmdir $VAR_DIR/log/ 2> /dev/null
+
+   # Remove parent folders if they are empty
+   rmdir $ETC_DIR 2> /dev/null
+   rmdir /etc/opt/microsoft 2> /dev/null
+   rmdir /etc/opt 2> /dev/null
+   rmdir $VAR_DIR 2> /dev/null
+   rmdir /opt/microsoft/omsagent/bin/ 2> /dev/null
+   rmdir /opt/microsoft/omsagent/ 2> /dev/null
+
+   # Clean up logrotate
+   rm -f /etc/logrotate.d/omsagent*
+   rm -f /etc/cron.d/omsagent
+fi
+
+%Preinstall_0
+${{SHELL_HEADER}}
+%Postinstall_0
+${{SHELL_HEADER}}
+%Preuninstall_0
+${{SHELL_HEADER}}
+%Postuninstall_0
+${{SHELL_HEADER}}
+

@@ -1,0 +1,187 @@
+%Variables
+PF:               'Linux'
+OMI_SERVICE:      '/opt/omi/bin/service_control'
+OMS_SERVICE:      '/opt/microsoft/omsagent/bin/service_control'
+CONF_SYSLOG:      '/opt/microsoft/omsagent/bin/configure_syslog.sh'
+OMSADMIN_SCRIPT:  '/opt/microsoft/omsagent/bin/omsadmin.sh'
+
+%Directories
+/etc;                                                   755; root; root; sysdir
+/etc/init.d;                                            755; root; root; sysdir
+
+%Files
+/etc/opt/microsoft/omsagent/sysconf/rsyslog.conf;                       installer/conf/rsyslog.conf;                           644; root; root
+/etc/opt/microsoft/omsagent/sysconf/rsyslog-lad.conf;                   installer/conf/rsyslog-lad.conf;                       644; root; root
+/etc/opt/microsoft/omsagent/sysconf/syslog-ng.conf;                     installer/conf/syslog-ng.conf;                         644; root; root
+/etc/opt/microsoft/omsagent/sysconf/syslog-ng-lad.conf;                 installer/conf/syslog-ng-lad.conf;                     644; root; root
+
+/etc/opt/microsoft/omsagent/sysconf/omsagent.ulinux;                    installer/scripts/omsagent.ulinux;                     755; root; root
+/etc/opt/microsoft/omsagent/sysconf/omsagent.systemd;                   installer/scripts/omsagent.systemd;                    644; root; root
+
+/etc/opt/microsoft/omsagent/sysconf/sudoers;                            installer/conf/sudoers;                                664; root; root
+
+%Sudoer_Functions
+RemoveSudoersSupport() {
+    # Unconfigure sudo configuration
+    #
+    # Just unconfigure everything we could have done so things are left in clean state
+
+    if [ -f /etc/sudoers.d/omsagent ]; then
+        rm -f /etc/sudoers.d/omsagent
+    fi
+
+    grep -q '# Begin sudo configuration for omsagent' /etc/sudoers
+    if [ $? -eq 0 ]; then
+        cp /etc/sudoers /etc/sudoers.bak
+        sed '/^# Begin sudo configuration for omsagent/,/# End sudo configuration for omsagent$/ d' /etc/sudoers.bak > /etc/sudoers
+    fi
+}
+
+SudoSupportsIncludeDirective() {
+    # Algorithm:
+    #   If    #includedir exists in /etc/sudoers AND /etc/sudoers.d exists,
+    #   Then  Use /etc/sudoers.d
+    #   Else  Append to /etc/sudoers
+
+    INCLUDEDIR=0
+    egrep -q "^#includedir" /etc/sudoers && INCLUDEDIR=1
+
+    if [ $INCLUDEDIR -eq 1 -a -d /etc/sudoers.d ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+%Preinstall_1000
+
+# The OMS_SERVICE script will not be present on a fresh install
+[ -f ${{OMS_SERVICE}} ] && ${{OMS_SERVICE}} disable
+
+# Add the 'omsagent' group if it does not already exist
+# (Can't use useradd with -U since that doesn't exist on older systems)
+egrep -q "^omsagent:" /etc/group
+if [ $? -ne 0 ]; then
+    echo "Creating omsagent group ..."
+    groupadd -r omsagent
+fi
+
+# Add the 'omsagent' service account if it does not already exist
+egrep -q "^omsagent:" /etc/passwd
+if [ $? -ne 0 ]; then
+    echo "Creating omsagent service account ..."
+    useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -g omsagent -s /bin/bash omsagent
+fi
+
+# Ensure omsagent is in the omiusers group, but leave omsagent as a group
+/usr/sbin/usermod -g omiusers omsagent 1> /dev/null 2> /dev/null
+
+# Add the 'nxautomation' group if it does not already exist
+# (Can't use useradd with -U since that doesn't exist on older systems)
+egrep -q "^nxautomation:" /etc/group
+if [ $? -ne 0 ]; then
+    echo "Creating nxautomation group ..."
+    groupadd -r nxautomation
+fi
+
+# create the 'nxautomation' home directory directory if it does not already exist
+NXAUTOMATION_RUN_DIR=/home/nxautomation/run
+if [ ! -d "$NXAUTOMATION_RUN_DIR" ]; then
+    mkdir -p "$NXAUTOMATION_RUN_DIR"
+fi
+
+# Add the 'nxautomation' service account if it does not already exist
+egrep -q "^nxautomation:" /etc/passwd
+if [ $? -ne 0 ]; then
+    echo "Creating nxautomation service account ..."
+    useradd -r -c "nxOMSAutomation" -d $NXAUTOMATION_RUN_DIR -g nxautomation -s /bin/bash nxautomation
+fi
+
+# set appropriate permissions on the nxautomation home directory
+NXAUTOMATION_HOME_DIR=/home/nxautomation
+chown -R nxautomation:omiusers $NXAUTOMATION_HOME_DIR
+chmod -R 750 $NXAUTOMATION_HOME_DIR
+
+# Ensure nxautomation is in the nxautomation group (primary), omsagent group (secondary) and omiusers group (secondary)
+/usr/sbin/usermod -g nxautomation -a -G omsagent,omiusers nxautomation 1> /dev/null 2> /dev/null
+
+%Postinstall_500
+#include Sudoer_Functions
+
+${{OMI_SERVICE}} reload
+
+# Unconfigure sudo if it's already configured
+
+RemoveSudoersSupport
+
+# Configure sudo (either place in sudoers.d or append to sudoers configuration)
+
+SudoSupportsIncludeDirective
+if [ $? -eq 0 ]; then
+    cp /etc/opt/microsoft/omsagent/sysconf/sudoers /etc/sudoers.d/omsagent
+    chmod 440 /etc/sudoers.d/omsagent
+else
+    cat /etc/opt/microsoft/omsagent/sysconf/sudoers >> /etc/sudoers
+fi
+
+chmod 440 /etc/opt/microsoft/omsagent/sysconf/sudoers
+
+# Set group read permission on OMS cert and key files used by the primary workspace
+OMS_CERTS_DIR="/etc/opt/microsoft/omsagent/certs"
+if [ -d "$OMS_CERTS_DIR" ]; then
+    chmod -R 750 "$OMS_CERTS_DIR"
+fi
+
+%Postinstall_590
+# Remove NPM directory on purge
+NPM_STATE_DIR=/var/opt/microsoft/omsagent/npm_state
+if [ -d "$NPM_STATE_DIR" ]; then
+    rm -rf $NPM_STATE_DIR
+fi
+
+%Postinstall_600
+# Set up required states of all onboarded workspaces before starting their daemons
+${{OMSADMIN_SCRIPT}} -R
+# Start all workspace-specific omsagent daemons
+${{OMS_SERVICE}} start
+
+%Preuninstall_10
+# If we're called for upgrade, don't do anything
+if ${{PERFORMING_UPGRADE_NOT}}; then
+    ${{OMS_SERVICE}} disable
+    ${{CONF_SYSLOG}} purge
+fi
+
+
+%Postuninstall_1000
+#include Sudoer_Functions
+
+# If we're called for upgrade, don't do anything
+if ${{PERFORMING_UPGRADE_NOT}}; then
+    # Restart the OMI server in case an agent is running under service account
+    ${{OMI_SERVICE}} restart
+
+    # Unconfigure sudo if it's already configured
+    RemoveSudoersSupport
+
+    # Remove the service accounts
+    echo "Deleting nxautomation service account ..."
+    userdel nxautomation 2> /dev/null
+    echo "Deleting omsagent service account ..."
+    userdel omsagent 2> /dev/null
+
+    if [ $? -eq 0 ]; then
+        # Depending on system settings, the groups may not have been deleted
+        egrep -q "^nxautomation:" /etc/group
+        if [ $? -eq 0 ]; then
+            echo "Deleting nxautomation group ..."
+            groupdel nxautomation
+        fi
+        egrep -q "^omsagent:" /etc/group
+        if [ $? -eq 0 ]; then
+            echo "Deleting omsagent group ..."
+            groupdel omsagent
+        fi
+    fi
+fi

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# check if running as root
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root in order to install the troubleshooter, due to the permissions required for the destination directories."
+    echo "Please instead run:"
+    echo ""
+    echo "$ sudo ./install_tsg"
+    echo ""
+    echo "in order to install the troubleshooter."
+    exit 1
+fi
+
+bin_path="/opt/microsoft/omsagent/bin/"
+omsagent_tsg_path="${bin_path}/omsagent_tsg"
+plugin_tsg_path="/opt/microsoft/omsagent/plugin/troubleshooter"
+
+echo "Getting ready to install troubleshooter..."
+
+# set up machine
+
+if [ -d $plugin_tsg_path ]; then
+    # get rid of old files to update
+    echo "Removing older version of troubleshooter..."
+    rm -rf $plugin_tsg_path
+    rm -f $omsagent_tsg_path
+fi
+
+# copy over files
+echo "Installing troubleshooter on machine..."
+mkdir $plugin_tsg_path
+cp -r tsg_files/tsg_code $plugin_tsg_path
+cp -r tsg_files/tsg_tools $plugin_tsg_path
+cp tsg_files/omsagent_tsg $bin_path
+
+echo "You can now run the troubleshooter by going to $bin_path and running the below command:"
+echo ""
+echo "$ sudo ./omsagent_tsg"
+echo ""
