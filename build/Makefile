@@ -133,6 +133,8 @@ all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LI
 
 compile_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy
 
+compile_dsc_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR)
+
 sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp
 
 clean : clean-status

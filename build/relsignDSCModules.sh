@@ -204,6 +204,10 @@ do
     WorkingDir="./$DscModuleIntermediateDir/$ModuleName"
     
     (
+        # Remove existing sha256sums
+        echo "Remove existing sha256sum for module $ModuleName..."
+        rm -f $WorkingDir/$ModuleName.sha256sums
+
         #Generate Sha256sums
         echo "Generating sha256sum for module $ModuleName..."
         cd $WorkingDir
