@@ -1,4 +1,4 @@
-# Operations Management Suite Agent for Linux (2019-10)
+# Operations Management Suite Agent for Linux
 
 ## Overview
 Welcome to the Log Analytics agent for Linux! The agent for Linux enables rich and real-time analytics for operational data (Syslog, performance, alerts, inventory) from Linux servers, Docker containers and monitoring tools like Nagios, Zabbix and System Center.
