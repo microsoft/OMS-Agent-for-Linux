@@ -263,4 +263,12 @@ class NPMDConfigUT < Test::Unit::TestCase
         _res, _prob = NPMContract::IsValidDataitem(_validCmPathData, NPMContract::DATAITEM_CONNECTIONMONITOR_PATH)
         assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid CM Path data sent but validation returned invalid")
     end
+
+    def test_contract_10_agent_diagnostics_data
+        # Checking for valid cm path data case
+        _validAgentDiagnosticsDataStr = '{ "SubType": "NetworkAgentDiagnostics", "TimeGenerated": "2019-07-17T11:32:30.817Z", "NotificationCode": "0", "NotificationType": "5", "Computer": "vakarana.fareast.corp.microsoft.com" }'
+        _validAgentDiagnosticsData = JSON.parse(_validAgentDiagnosticsDataStr)
+        _res, _prob = NPMContract::IsValidDataitem(_validAgentDiagnosticsData, NPMContract::DATAITEM_AGENT_DIAGNOSTICS)
+        assert_equal(NPMContract::DATAITEM_VALID, _res, "Valid Agent Diagnostics data sent but validation returned invalid")
+    end
 end
