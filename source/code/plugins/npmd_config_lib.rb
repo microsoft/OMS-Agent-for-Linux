@@ -850,6 +850,7 @@ module NPMContract
     DATAITEM_EXROUTE_MONITORING       = "expressrouteMonitoringData"
     DATAITEM_CONNECTIONMONITOR_TEST   = "connectionMonitorTestResult"
     DATAITEM_CONNECTIONMONITOR_PATH   = "connectionMonitorPathData"
+    DATAITEM_AGENT_DIAGNOSTICS        = "agentDiagnostics"
 
 
     DATAITEM_VALID = 1
@@ -866,6 +867,12 @@ module NPMContract
                                 "TimeGenerated",
                                 "OSType",
                                 "NPMAgentEnvironment"]
+
+    CONTRACT_AGENT_DIAGNOSTICS_KEYS = ["SubType",
+                                       "TimeGenerated",
+                                       "NotificationCode",
+                                       "NotificationType",
+                                       "Computer"]
 
     CONTRACT_PATH_DATA_KEYS  = ["SourceNetwork",
                                 "SourceNetworkNodeInterface",
@@ -1091,6 +1098,8 @@ module NPMContract
             _contract = CONTRACT_CONNECTIONMONITOR_TEST_RESULT_KEYS
         elsif itemType == DATAITEM_CONNECTIONMONITOR_PATH
             _contract = CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS
+        elsif itemType == DATAITEM_AGENT_DIAGNOSTICS
+            _contract = CONTRACT_AGENT_DIAGNOSTICS_KEYS
         end
 
         return DATAITEM_ERR_INVALID_TYPE, nil if _contract.empty?
