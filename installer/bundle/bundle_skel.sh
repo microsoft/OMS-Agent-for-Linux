@@ -244,9 +244,9 @@ is_suse11_platform_with_openssl1(){
 }
 
 detect_cylance(){
-  if service --status-all 2>&1 | grep -Fq ' cylance'; then
-    return 0
-	fi
+  # Don't use 'service' to check the existance of a service
+  # because it will fail if there is no service available 
+  
   [ -f /etc/init.d/cylance ] && return 0
   [ -f /etc/init.d/cylancesvc ] && return 0
   [ -d /opt/cylance ] && return 0

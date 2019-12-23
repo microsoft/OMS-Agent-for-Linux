@@ -25,7 +25,7 @@ endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
 AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
-AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.0.1-19
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.0.2-20
 AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
@@ -132,6 +132,8 @@ all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LI
 	cd $(BASE_DIR)/source/ext/ruby; git clean -dfx; git reset --hard
 
 compile_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy
+
+compile_dsc_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR)
 
 sepolicy : $(SEPOLICY_DIR_EL6)/omsagent-logrotate.pp $(SEPOLICY_DIR)/omsagent-logrotate.pp
 

@@ -289,6 +289,10 @@ elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.40.gem
 # Ruby 2.6 has JIT disabled by default, let enable it when jit provide performance gain.
 # sed -i 's/bin\/ruby/bin\/ruby --jit/g' ${RUBY_DESTDIR}/bin/fluentd
 
+# This plugin will only work for x64 bundle (LAD context)
+echo "Installing Fluent plugin mdsd ..."
+elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/fluent-plugin-mdsd-0.1.9.pre.build.master.71-oms.amd64.gem
+
 echo "========================= Performing Stripping Binaries"
 sudo find ${RUBY_DESTDIR} -name \*.so -print -exec strip {} \;
 sudo strip ${RUBY_DESTDIR}/bin/ruby

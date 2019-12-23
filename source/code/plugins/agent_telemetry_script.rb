@@ -109,7 +109,7 @@ module OMS
           rescue => e
             log_error("Failed to kill process(es) for command '#{command}'. #{e}")
           end
-          OMS::Log.error_once("Telemetry failed with process timeout '#{command}'")
+          OMS::Log.warn_once("Telemetry failed with process timeout '#{command}'")
           @omicli_pgids.pop
           return ''
         else
@@ -437,7 +437,7 @@ module OMS
         log_error("Missing required field from configuration file: #{@omsadmin_conf_path}")
         return OMS::MISSING_CONFIG
       elsif !OMS::Common.file_exists_nonempty(@cert_path) or !OMS::Common.file_exists_nonempty(@key_path)
-        log_error("Certificates for topology request do not exist")
+        log_error("Certificates for telemetry request do not exist")
         return OMS::MISSING_CERTS
       end
 

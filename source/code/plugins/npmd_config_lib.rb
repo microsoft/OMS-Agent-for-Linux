@@ -313,6 +313,7 @@ module NPMDConfig
                     _ruleHash["DiscoverPaths"] = _iRule.has_key?("DiscoverPaths") ? _iRule["DiscoverPaths"].to_s : "true"
                     _ruleHash["NetTests"] = (_iRule["NetworkThresholdLoss"].to_i >= -2 and _iRule["NetworkThresholdLatency"].to_i >= -2) ? "true" : "false"
                     _ruleHash["AppTests"] = (_iRule["AppThresholdLatency"].to_i >= -2) ? "true" : "false"
+                    _ruleHash["ValidStatusCodeRanges"] = _iRule.has_key?("ValidStatusCodeRanges") ? _iRule["ValidStatusCodeRanges"] : nil;
 
                     if (_ruleHash["NetTests"] == "true")
                         _ruleHash["NetworkThreshold"] = {"ChecksFailedPercent" => _iRule["NetworkThresholdLoss"].to_s, "RoundTripTimeMs" => _iRule["NetworkThresholdLatency"].to_s}
@@ -649,6 +650,7 @@ module NPMDConfig
                         _rule["AppThresholdLatency"] = _test["AppThreshold"].nil? ? "-3.0" : (_test["AppThreshold"].has_key?("Latency") ? _test["AppThreshold"]["Latency"] : "-2.0")
                         _rule["NetworkThresholdLoss"] = _test["NetworkThreshold"].nil? ? "-3" : (_test["NetworkThreshold"].has_key?("Loss") ? _test["NetworkThreshold"]["Loss"] : "-2")
                         _rule["NetworkThresholdLatency"] = _test["NetworkThreshold"].nil? ? "-3.0" : (_test["NetworkThreshold"].has_key?("Latency") ? _test["NetworkThreshold"]["Latency"] : "-2.0")
+                        _rule["ValidStatusCodeRanges"] = _test.has_key?["ValidStatusCodeRanges"] ? _test["ValidStatusCodeRanges"] : nil
 
                         _connectionMonitorId = _test.has_key?("ConnectionMonitorId") ? _test["ConnectionMonitorId"].to_s : String.new
 
@@ -848,6 +850,7 @@ module NPMContract
     DATAITEM_EXROUTE_MONITORING       = "expressrouteMonitoringData"
     DATAITEM_CONNECTIONMONITOR_TEST   = "connectionMonitorTestResult"
     DATAITEM_CONNECTIONMONITOR_PATH   = "connectionMonitorPathData"
+    DATAITEM_AGENT_DIAGNOSTICS        = "agentDiagnostics"
 
 
     DATAITEM_VALID = 1
@@ -864,6 +867,12 @@ module NPMContract
                                 "TimeGenerated",
                                 "OSType",
                                 "NPMAgentEnvironment"]
+
+    CONTRACT_AGENT_DIAGNOSTICS_KEYS = ["SubType",
+                                       "TimeGenerated",
+                                       "NotificationCode",
+                                       "NotificationType",
+                                       "Computer"]
 
     CONTRACT_PATH_DATA_KEYS  = ["SourceNetwork",
                                 "SourceNetworkNodeInterface",
@@ -1089,6 +1098,8 @@ module NPMContract
             _contract = CONTRACT_CONNECTIONMONITOR_TEST_RESULT_KEYS
         elsif itemType == DATAITEM_CONNECTIONMONITOR_PATH
             _contract = CONTRACT_CONNECTIONMONITOR_PATH_DATA_KEYS
+        elsif itemType == DATAITEM_AGENT_DIAGNOSTICS
+            _contract = CONTRACT_AGENT_DIAGNOSTICS_KEYS
         end
 
         return DATAITEM_ERR_INVALID_TYPE, nil if _contract.empty?

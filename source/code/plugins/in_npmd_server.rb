@@ -301,7 +301,7 @@ module Fluent
                             _diagLogs   = _json["DataItems"].select {|x| x["SubType"] == NPM_DIAG}
                             _validUploadDataItems = Array.new
                             _batchTime = Time.now.utc.strftime("%Y-%m-%d %H:%M:%SZ")
-                            _subtypeList = ["EndpointHealth", "EndpointPath", "ExpressRoutePath", "EndpointDiagnostics", "ConnectionMonitorTestResult", "ConnectionMonitorPath"]
+                            _subtypeList = ["EndpointHealth", "EndpointPath", "ExpressRoutePath", "EndpointDiagnostics", "ConnectionMonitorTestResult", "ConnectionMonitorPath", "NetworkAgentDiagnostics"]
                             _uploadData.each do |item|
                                 item["TimeGenerated"] = _batchTime
                                 if item.key?("SubType")
@@ -362,6 +362,8 @@ module Fluent
                 _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_TEST
             elsif item["SubType"] == "ConnectionMonitorPath"
                 _itemType = NPMContract::DATAITEM_CONNECTIONMONITOR_PATH
+            elsif item["SubType"] == "NetworkAgentDiagnostics"
+                _itemType = NPMContract::DATAITEM_AGENT_DIAGNOSTICS
             end
 
             return false if _itemType.empty?
