@@ -189,6 +189,10 @@ module OMS
             azure_resource_id = imds_instance_json_compute['resourceID']
             
             return azure_resource_id
+          else
+            #config file containing HyrbidRP IMDS endpoint not found. 
+            raise "The config file #{@@HybridRPConfFile} containing the HybridRP IMDS Endpoint is not found."
+          end
         rescue
           # this may be a container instance or a non Hybrid Agent VM
           OMS::Log.warn_once("Could not fetch Azure Resource ID from IMDS, Reason: #{e}")
@@ -211,11 +215,13 @@ module OMS
                 if azure_resource_id.nil?
                   sleep (retries * 120)
                   retries += 1
-                  next                  
+                  next  
+                end                
               else
                 sleep (retries * 120)
                 retries += 1
                 next
+              end
             end
 
             @@AzureResourceId = azure_resource_id unless @@AzureResourceId == azure_resource_id
