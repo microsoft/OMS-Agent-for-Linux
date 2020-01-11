@@ -32,6 +32,9 @@ module OMS
     @@UUID = nil
     @@TopologyInterval = nil
     @@TelemetryInterval = nil
+    @@HybridRPConfFile = "/lib/systemd/system.conf.d/azcmagent.conf"
+    @@HyrbidRPIMDSPath = "/metadata/instance"
+    @@HybridRPAPIVersion = "2019-08-15"
 
     class << self
 
@@ -159,6 +162,40 @@ module OMS
           end
       end
 
+      def get_azure_resid_from_hybridagent()
+        begin
+          #check if the file containing hybrid imds endpoint exists?
+          if File.file?(@@HybridRPConfFile)
+            OMS::Log.info_once("Using The HybridRP IMDS_Endpoint to fetch resource id")
+            data = File.read(@@HybridRPConfFile)
+            azureHybridIMDSEndpoint = data.scan(/"IMDS_ENDPOINT=.*"?/)[0].split("=")[1][0..-2]
+            azureHybridIMDSEndpoint += @@HyrbidRPIMDSPath + "?api-version=" + @@HybridRPAPIVersion
+
+            uri = URI.parse(azureHybridIMDSEndpoint)
+            http_get_req = Net::HTTP::Get.new(uri, initheader = {'Metadata' => 'true'})
+            http_req = Net::HTTP.new(uri.host, uri.port)
+            http_req.open_timeout = 3
+            http_req.read_timeout = 2
+            res = http_req.start() do |http|
+              http.request(http_get_req)
+            end
+
+            imds_instance_json = JSON.parse(res.body)
+
+            return nil if !imds_instance_json.has_key?("compute") || imds_instance_json['compute'].empty? #classic vm
+            imds_instance_json_compute = imds_instance_json['compute']
+            
+            return nil if !imds_instance_json_compute.has_key?("resourceID") || imds_instance_json_compute['resourceID'].empty? 
+            azure_resource_id = imds_instance_json_compute['resourceID']
+            
+            return azure_resource_id
+        rescue
+          # this may be a container instance or a non Hybrid Agent VM
+          OMS::Log.warn_once("Could not fetch Azure Resource ID from IMDS, Reason: #{e}")
+          return nil
+        end
+      end
+
       def update_azure_resource_id()
           retries=1
           max_retries=3
@@ -167,9 +204,18 @@ module OMS
             break if retries > max_retries
             azure_resource_id = get_azure_resid_from_imds()
             if azure_resource_id.nil?
-              sleep (retries * 120)
-              retries += 1
-              next
+              #Check if this is a non azure Hybrid Agent VM
+              if system("azcmagent show >/dev/null")
+                OMS::Log.info_once("This is an Azure Arc VM")
+                azure_resource_id = get_azure_resid_from_hybridagent()
+                if azure_resource_id.nil?
+                  sleep (retries * 120)
+                  retries += 1
+                  next                  
+              else
+                sleep (retries * 120)
+                retries += 1
+                next
             end
 
             @@AzureResourceId = azure_resource_id unless @@AzureResourceId == azure_resource_id
