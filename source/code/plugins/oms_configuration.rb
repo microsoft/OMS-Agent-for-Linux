@@ -168,9 +168,13 @@ module OMS
           if File.file?(@@HybridRPConfFile)
             OMS::Log.info_once("Using The HybridRP IMDS_Endpoint to fetch resource id")
             data = File.read(@@HybridRPConfFile)
-            azureHybridIMDSEndpoint = data.scan(/"IMDS_ENDPOINT=.*"?/)[0].split("=")[1][0..-2]
+            azureHybridIMDSEndpoint = data.scan(/"IMDS_ENDPOINT=.*"?/)[0]
+            if azureHybridIMDSEndpoint.nil?
+              OMS::Log.warn_once("Failed to read the IMDS Endpoint from #{@@HybridRPConfFile}. Failed to fetch azure resource id")
+              return nil
+            end
+            azureHybridIMDSEndpoint = azureHybridIMDSEndpoint.split("=")[1][0..-2]
             azureHybridIMDSEndpoint += @@HyrbidRPIMDSPath + "?api-version=" + @@HybridRPAPIVersion
-
             uri = URI.parse(azureHybridIMDSEndpoint)
             http_get_req = Net::HTTP::Get.new(uri, initheader = {'Metadata' => 'true'})
             http_req = Net::HTTP.new(uri.host, uri.port)
@@ -191,7 +195,7 @@ module OMS
             return azure_resource_id
           else
             #config file containing HyrbidRP IMDS endpoint not found. 
-            OMS::Log.warn_once("The config file #{@@HybridRPConfFile} containing the HybridRP IMDS Endpoint is not found.")
+		        OMS::Log.warn_once("Could not find the config file #{@@HybridRPConfFile} containing the HybridRP IMDS Endpoint. Failed to fetch azure resource id.")
             return nil
           end
         rescue
