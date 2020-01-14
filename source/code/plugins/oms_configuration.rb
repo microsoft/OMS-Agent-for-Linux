@@ -191,11 +191,12 @@ module OMS
             return azure_resource_id
           else
             #config file containing HyrbidRP IMDS endpoint not found. 
-            raise "The config file #{@@HybridRPConfFile} containing the HybridRP IMDS Endpoint is not found."
+            OMS::Log.warn_once("The config file #{@@HybridRPConfFile} containing the HybridRP IMDS Endpoint is not found.")
+            return nil
           end
         rescue
           # this may be a container instance or a non Hybrid Agent VM
-          OMS::Log.warn_once("Could not fetch Azure Resource ID from IMDS, Reason: #{e}")
+          OMS::Log.warn_once("Could not fetch Azure Resource ID from HybridRP IMDS, Reason: #{e}")
           return nil
         end
       end
