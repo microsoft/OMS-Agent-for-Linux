@@ -126,7 +126,7 @@ def disable_dsc():
     """Disable DSC so that agent can be manually configured."""
     os.system('/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable')
     pending_mof = '/etc/opt/omi/conf/omsconfig/configuration/Pending.mof'
-    current_mof = '/etc/opt/omi/conf/omsconfig/configuration/Pending.mof'
+    current_mof = '/etc/opt/omi/conf/omsconfig/configuration/Current.mof'
     if os.path.isfile(pending_mof) or os.path.isfile(current_mof):
         os.remove(pending_mof)
         os.remove(current_mof)
