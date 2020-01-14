@@ -34,8 +34,8 @@ module OMS
           tag = message
         end
 
-        md5_digest = Digest::MD5.new
-        tag_hash = md5_digest.update(tag).base64digest
+        sha256_digest = Digest::SHA256.new
+        tag_hash = sha256_digest.update(tag).base64digest
         res = @@logged_hashes.add?(tag_hash)
 
         if res == nil
