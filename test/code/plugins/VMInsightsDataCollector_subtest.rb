@@ -824,8 +824,8 @@ module VMInsights
 
         def make_routes(devs)
             File.open(@mock_netroute, WriteASCII) { |f|
-                f.puts "iiii ddddddd ggggg fffff rc u m mk mtu w I" # header line
-                format = "%-7s %08X    %08X       1  0 0 0 abcdef01 0 0 1"
+                f.puts "iiii\tddddddd\tggggg\tfffff\trc\tu\tm\tmk\tmtu\tw\tI" # header line
+                format = "%s\t%08X\t%08X\t1\t0\t0\t0\tabcdef01\t0\t0\t1"
                 devs.each { |d|
                     f.puts format % [ d, randint | 0xffffffff, 0 ]
                     f.puts format % [ d, 0 , randint | 0xffffffff ]
