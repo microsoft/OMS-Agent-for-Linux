@@ -211,22 +211,17 @@ module OMS
 
           loop do
             break if retries > max_retries
-            azure_resource_id = get_azure_resid_from_imds()
+            #Check if this is a non azure Hybrid Agent VM
+            if system("azcmagent show >/dev/null")
+              OMS::Log.info_once("This is an Azure Arc VM")
+              azure_resource_id = get_azure_resid_from_hybridagent()
+            else
+              azure_resource_id = get_azure_resid_from_imds()
+            end
             if azure_resource_id.nil?
-              #Check if this is a non azure Hybrid Agent VM
-              if system("azcmagent show >/dev/null")
-                OMS::Log.info_once("This is an Azure Arc VM")
-                azure_resource_id = get_azure_resid_from_hybridagent()
-                if azure_resource_id.nil?
-                  sleep (retries * 120)
-                  retries += 1
-                  next  
-                end                
-              else
-                sleep (retries * 120)
-                retries += 1
-                next
-              end
+              sleep (retries * 120)
+              retries += 1
+              next
             end
 
             @@AzureResourceId = azure_resource_id unless @@AzureResourceId == azure_resource_id
