@@ -409,7 +409,7 @@ sudo service crond start
 * Check that the `omsconfig` agent can communicate with the OMS Portal Service
   * Run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/GetDscConfiguration.py'`
    * This command returns the Configuration that agent sees from the portal including Syslog settings, Linux Performance Counters, and Custom Logs
-   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration.
+   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py'`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration.
 
 
 **Background:** Instead of the OMS Agent for Linux user running as a privileged user, `root` - The OMS Agent for Linux runs as the `omsagent` user. In most cases explicit permission must be granted to this user in order for certain files to be read.
