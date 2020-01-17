@@ -17,6 +17,7 @@ MAINTAINER:              'Microsoft Corporation'
 
 %Files
 /etc/opt/microsoft/omsagent/sysconf/logrotate.conf;                     installer/conf/logrotate.conf;                         644; root; root
+/etc/opt/microsoft/omsagent/sysconf/lad-logrotate.conf;                 installer/conf/lad-logrotate.conf;                     644; root; root
 
 /etc/opt/microsoft/omsagent/sysconf/README;                             installer/conf/sysconf.readme;                         644; root; root
 /etc/opt/microsoft/omsagent/sysconf/omsagent.conf;                      installer/conf/omsagent.conf;                          644; root; root
