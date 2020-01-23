@@ -941,13 +941,31 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
         fi
 
         pkg_rm omsconfig
-        pkg_rm omsagent
 
-        # If MDSD is installed and we're just removing (not purging), leave SCX
-        MDSD_INSTALLED=1
-        check_if_program_exists_on_system azsec-mdsd
-        if [ $? -eq 0 -o -d /var/lib/waagent/Microsoft.OSTCExtensions.LinuxDiagnostic-*/mdsd ]; then
-            MDSD_INSTALLED=0
+        # If MDSD/LAD is installed and we're just removing (not purging), leave OMS, SCX and OMI
+        check_if_pkg_is_installed azsec-mdsd
+        azsec_mdsd_installed=$?
+        check_if_pkg_is_installed lad-mdsd
+        lad_mdsd_installed=$?
+
+        # if at least one of mdsd product is installed
+        MDSD_INSTALLED=$(( $azsec_mdsd_installed && $lad_mdsd_installed ))
+
+        # If LAD was installed don't remove omsagent, but proceed if purge mode was selected
+        if [ $lad_mdsd_installed -ne 0 -o "$installMode" = "P" ]; then
+            pkg_rm omsagent
+        else
+            echo "--- LAD detected; not removing OMS package ---"
+            ws_conf_dir="/etc/opt/microsoft/omsagent/conf"
+            primary_ws_id=''
+            if [ -f ${ws_conf_dir}/omsadmin.conf ]; then
+                primary_ws_id=`grep WORKSPACE_ID ${ws_conf_dir}/omsadmin.conf | cut -d= -f2`
+            fi
+
+            if [ "${primary_ws_id}" != "" -a "${primary_ws_id}" != "LAD" ]; then
+                echo "--- Unboarding the workspace ${primary_ws_id}... ---"
+                /opt/microsoft/omsagent/bin/omsadmin.sh -x ${primary_ws_id}
+            fi
         fi
 
         if [ $MDSD_INSTALLED -ne 0 -o "$installMode" = "P" ]; then
