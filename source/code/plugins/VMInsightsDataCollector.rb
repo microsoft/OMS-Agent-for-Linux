@@ -329,7 +329,7 @@ module VMInsights
                 File.open(File.join(@root, "proc", "net", "route")) { |f|
                     f.gets # skip the header
                     while (line = f.gets)
-                        dev = line.partition(" ")[0]
+                        dev = line.partition(/\t+/)[0]
                         result[dev] = true unless dev.empty?
                     end
                 }
