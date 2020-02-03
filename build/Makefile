@@ -330,6 +330,8 @@ $(TARGET_DIR)/dsc : $(DSC_TARGET_DIR)
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 	@echo "========================= Performing Building shell bundle"
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
+	@echo "========================= Generating SHA256SUM of shell bundle"
+	pushd; cd $(TARGET_DIR)/; sha256sum $(OUTPUT_PACKAGE_PREFIX).sh > $(OUTPUT_PACKAGE_PREFIX).sha256sums; popd
 
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar
