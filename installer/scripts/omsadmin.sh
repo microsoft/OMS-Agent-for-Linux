@@ -547,6 +547,8 @@ onboard()
         case "$ASSET_TAG" in
             77*) OMSCLOUD_ID=$ASSET_TAG ;;       # If the asset tag begins with a 77 this is the azure guid
         esac
+        PRODUCT_UUID=$(cat /sys/devices/virtual/dmi/id/product_uuid)
+        UUID=$(echo $PRODUCT_UUID | tr '[:upper:]' '[:lower:]')
     fi
 
     #This is a temporary fix for Systems with Curl versions using HTTP\2 as default
