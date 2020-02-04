@@ -1,0 +1,11 @@
+--- ../source/ext/fluentd/lib/fluent/plugin/filter_parser.rb	2019-09-09 11:51:09.485143653 -0700
++++ ../source/ext/fluentd/lib/fluent/plugin/filter_parser.rb.new	2020-02-04 14:40:45.848862819 -0800
+@@ -53,7 +53,7 @@
+             if @emit_invalid_record_to_error
+               router.emit_error_event(tag, time, record, ::Fluent::ParserError.new("pattern not match with data '#{raw_value}'"))
+             else
+-              log.warn "pattern not match with data '#{raw_value}'" unless @suppress_parse_error_log
++		    log.warn "pattern not match with data '#{raw_value.dump}'" unless @suppress_parse_error_log
+             end
+             if @reserve_data
+               t = time
