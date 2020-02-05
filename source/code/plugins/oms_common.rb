@@ -732,6 +732,11 @@ module OMS
           headers["Content-Encoding"] = "deflate"
         end
 
+        headers["User-Agent"] = "LinuxMonitoringAgent/#{OMS::Common.get_agent_version}"
+        headers[OMS::CaseSensitiveString.new("x-ms-app")] = "LinuxMonitoringAgent"
+        headers[OMS::CaseSensitiveString.new("x-ms-client-version")] = OMS::Common.get_agent_version
+        headers[OMS::CaseSensitiveString.new("x-ms-client-platform")] = "Linux"
+
         req = Net::HTTP::Post.new(path, headers)
         json_msg = serializer.call(record)
         if json_msg.nil?
