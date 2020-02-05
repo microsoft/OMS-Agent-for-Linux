@@ -17,6 +17,7 @@ module OMS
     require 'digest'
     require 'date'
     require 'securerandom'
+    require 'resolv-replace'
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
@@ -887,17 +888,11 @@ module OMS
     
     def get_ip_from_socket(hostname)
       begin
-        addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)
+        return Resolv.getaddress(hostname)
       rescue => error
         OMS::Log.error_once("Unable to resolve the IP of '#{hostname}': #{error}")
         return nil
       end
-
-      if addrinfos.size >= 1
-        return addrinfos[0][3]
-      end
-
-      return nil
     end
 
     def refresh_cache
