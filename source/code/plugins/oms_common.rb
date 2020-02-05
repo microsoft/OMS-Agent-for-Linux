@@ -514,13 +514,13 @@ module OMS
             end
           end
 
-          # calculate the md5 of /etc/locatime
-          md5sum = Digest::MD5.file(@@tzLocalTimePath).hexdigest
+          # calculate the hash of /etc/locatime
+          hashsum = Digest::SHA256.file(@@tzLocalTimePath).hexdigest
 
           # looks for a file in the /usr/share/zoneinfo/, which is identical to /etc/localtime. use the file name as the timezone
           Dir.glob("#{@@tzBaseFolder}**/*") { |filepath|
-            # find all the files whose md5 is the same as the /etc/localtime
-            if File.file? filepath and Digest::MD5.file(filepath).hexdigest == md5sum
+            # find all the files whose SHA256 is the same as the /etc/localtime
+            if File.file? filepath and Digest::SHA256.file(filepath).hexdigest == hashsum
               tzID = get_unified_timezoneid(filepath)
 
               # look for the entry in the timezone mapping
