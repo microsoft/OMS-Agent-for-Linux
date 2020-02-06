@@ -106,8 +106,9 @@ If none of these steps work for you the following channels for help are also ava
   buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms*.buffer
   buffer_queue_limit 10
   flush_interval 20s
-  retry_limit 10
+  retry_limit 6
   retry_wait 30s
+  max_retry_wait 30m
 </match>
  ```
 
@@ -136,8 +137,9 @@ Comment out the OMS output plugin by adding a `#` in front of each line
 #  buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms*.buffer
 #  buffer_queue_limit 10
 #  flush_interval 20s
-#  retry_limit 10
+#  retry_limit 6
 #  retry_wait 30s
+#  max_retry_wait 30m
 #</match>
 ```
 
