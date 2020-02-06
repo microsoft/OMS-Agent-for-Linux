@@ -58,7 +58,9 @@ module Fluent
     #   time_generated_field_name: string. name of the time generated field
     #   records: hash[]. an array of data
     def post_data(log_type, time_generated_field_name, records, request_id)
-      headers = {}
+      headers = {
+        OMS::CaseSensitiveString.new('x-ms-client-request-retry-count') => "#{@num_errors}"
+      }
       headers[OMS::CaseSensitiveString.new("Log-Type")] = log_type
       headers[OMS::CaseSensitiveString.new("x-ms-date")] = Time.now.utc.httpdate()
 
