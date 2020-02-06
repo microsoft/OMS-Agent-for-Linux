@@ -54,7 +54,10 @@ module Fluent
 
     def handle_record(key, record)
       @log.trace "Handling record : #{key}"
-      req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record, @compress)
+      extra_headers = {
+        OMS::CaseSensitiveString.new('x-ms-client-request-retry-count') => "#{@num_errors}"
+      }
+      req = OMS::Common.create_ods_request(OMS::Configuration.ods_endpoint.path, record, @compress, extra_headers)
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.ods_endpoint, @proxy_config)
         start = Time.now
