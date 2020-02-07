@@ -652,7 +652,8 @@ module OMS
             @@AgentVersion = agent_version
           end
         end
-        return @@AgentVersion
+
+        return '0.0.0-0' if @@AgentVersion.nil? : @@AgentVersion
       end
 
       def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
