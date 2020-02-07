@@ -356,7 +356,10 @@ module VMInsights
             IO.popen("#{DF} --type=ext2 --type=ext3 --type=ext4 --block-size=1 | awk '{print $1,$6,$2}' | tail -n +2", { :in => :close}) { |io|
                 data = io.readlines
                 data.each { |line|
-                    raise ArgumentError, line unless line.start_with?("/dev/")
+                    if !line.start_with?("/dev/")
+                        puts "Warning: Line doesn't start with #{line}, will be skiped"
+                        next
+                    end
                     s = line.split(" ")
                     key = s[0].sub(/^\/dev\//, '')
                     omit "#{key} is mounted multiple times. Running in a container" if expected.has_key? key

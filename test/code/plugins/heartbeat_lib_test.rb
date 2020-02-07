@@ -78,11 +78,11 @@ class HeartbeatLib_Test < Test::Unit::TestCase
     assert(heartbeat_data_item.has_key?("OSType"))
     assert(heartbeat_data_item.has_key?("Category"))
     assert(heartbeat_data_item.has_key?("SCAgentChannel"))
+    assert(heartbeat_data_item.has_key?("Version"))
     assert(!heartbeat_data_item.has_key?("OSName"))
     assert(!heartbeat_data_item.has_key?("OSMajorVersion"))
     assert(!heartbeat_data_item.has_key?("OSMinorVersion"))
     assert(!heartbeat_data_item.has_key?("InstalledDate"))
-    assert(!heartbeat_data_item.has_key?("Version"))
   end
 
   # wrapper to call get heartbeat
