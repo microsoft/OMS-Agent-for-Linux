@@ -237,7 +237,8 @@ module OMS
       fake_conf_path = @tmp_conf_file.path + '.fake'
       assert_equal(false, File.file?(fake_conf_path))
       agent_version = Common.get_agent_version(fake_conf_path)
-      assert_equal(nil, agent_version, "Should not find data in a non existing file")
+      assert_equal(nil, Common.AgentVersion, "Should not find data in a non existing file")
+      assert_equal('0.0.0-0', agent_version, "Should not find data in a non existing file")
 
       # Should retry the second time since it did not find anything before
       File.write(@tmp_conf_file.path, "1.1.0-124 20160412\n2016-05-24T00:27:55.0Z")
@@ -249,7 +250,8 @@ module OMS
       conf = "  "
       File.write(@tmp_conf_file.path, conf)
       agent_version = Common.get_agent_version(@tmp_conf_file.path)
-      assert_equal(nil, agent_version, "Should not find data when line is missing")
+      assert_equal(nil, Common.AgentVersion, "Should not find data when line is missing")
+      assert_equal('0.0.0-0', agent_version, "Should not find data when line is missing")
     end
 
     def test_get_installed_date()

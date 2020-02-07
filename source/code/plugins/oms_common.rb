@@ -653,7 +653,7 @@ module OMS
           end
         end
 
-        return '0.0.0-0' if @@AgentVersion.nil? : @@AgentVersion
+        return @@AgentVersion.nil? ? '0.0.0-0': @@AgentVersion
       end
 
       def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
