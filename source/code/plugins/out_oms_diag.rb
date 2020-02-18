@@ -24,6 +24,10 @@ module Fluent
     config_param :run_in_background, :bool, :default => false
 
     def configure(conf)
+      # override default run_in_background config
+      if !OMS::BackgroundJobs::enabled.nil?
+        conf['run_in_background'] = OMS::BackgroundJobs::enabled
+      end
       super
     end
 
