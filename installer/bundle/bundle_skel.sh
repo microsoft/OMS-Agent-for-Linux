@@ -923,6 +923,12 @@ cd $EXTRACT_DIR
 # Do we need to remove the package?
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
+    
+    check_if_pkg_is_installed azsec-mdsd
+    azsec_mdsd_installed=$?
+    check_if_pkg_is_installed lad-mdsd
+    lad_mdsd_installed=$?
+
     rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
     rm -f "$ONBOARD_FILE" > /dev/null 2>&1
     if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
@@ -942,12 +948,8 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
 
         pkg_rm omsconfig
 
+        
         # If MDSD/LAD is installed and we're just removing (not purging), leave OMS, SCX and OMI
-        check_if_pkg_is_installed azsec-mdsd
-        azsec_mdsd_installed=$?
-        check_if_pkg_is_installed lad-mdsd
-        lad_mdsd_installed=$?
-
         # if at least one of mdsd product is installed
         MDSD_INSTALLED=$(( $azsec_mdsd_installed && $lad_mdsd_installed ))
 
