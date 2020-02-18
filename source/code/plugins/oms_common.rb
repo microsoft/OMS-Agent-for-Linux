@@ -1016,7 +1016,7 @@ module OMS
     def self.enabled()
       is_enable = nil
       if !ENV[BACKGROUND_JOBS_ENV].nil?
-        is_enable = "#{ENV[BACKGROUND_JOBS_ENV]}".downcase == "true"
+        is_enable = "#{ENV[BACKGROUND_JOBS_ENV]}".downcase == "true" || "#{ENV[BACKGROUND_JOBS_ENV]}".downcase == "1"
       end
       return is_enable
     end
