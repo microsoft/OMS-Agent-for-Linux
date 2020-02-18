@@ -41,17 +41,11 @@ module Fluent
     def start
       super
       @proxy_config = OMS::Configuration.get_proxy_config(@proxy_conf_path)
-      
-      
-      $log.info "BackgroundJobs:enabled=#{OMS::BackgroundJobs::enabled}"
-      $log.info "run_in_background=#{run_in_background}"
     end
 
     def shutdown
       super
       OMS::BackgroundJobs.instance.cleanup
-      $log.info "BackgroundJobs:enabled=#{OMS::BackgroundJobs::enabled}"
-      $log.info "run_in_background=#{run_in_background}"
     end
 
     def write_status_file(success, message)
@@ -101,7 +95,6 @@ module Fluent
     # This method is called when an event reaches to Fluentd.
     # Convert the event to a raw string.
     def format(tag, time, record)
-      $log.info "run_in_background=#{run_in_background}"
       return -"" if record == {}
 
       return [tag, record].to_msgpack
