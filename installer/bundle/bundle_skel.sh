@@ -929,11 +929,13 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
     check_if_pkg_is_installed lad-mdsd
     lad_mdsd_installed=$?
 
-    # if we detect LAD or AzSec while purging
-    if [ $azsec_mdsd_installed -eq 0 -o $lad_mdsd_installed -eq 0 -o "$installMode" = "P" ]; then
+    # if we detect LAD or AzSec while purging show a warning
+    IS_MDSD_INSTALLED=$(( $azsec_mdsd_installed && $lad_mdsd_installed ))
+    if [ $IS_MDSD_INSTALLED -eq 0 -a "$installMode" = "P" ]; then
         echo "---------- PURGE WARNING: lad-mdsd or azsec-mdsd was detected ----------"
         echo "Purging OMS may not fully succeed, because either LAD or AZSEC package has a dependency on OMS, SCX, and OMI."
-        echo "To fix this issue you should remove LAD/AZSEC corresponding extension, check this documentation for more details about extension removal: https://docs.microsoft.com/en-us/cli/azure/vm/extension?view=azure-cli-latest#az-vm-extension-delete "
+        echo "To fix this issue you should remove LAD/AZSEC corresponding extension, check this documentation for more details"
+        echo "about extension removal: https://docs.microsoft.com/en-us/cli/azure/vm/extension?view=azure-cli-latest#az-vm-extension-delete "
         echo "---------- PURGE WARNING ----------"
     fi
 
