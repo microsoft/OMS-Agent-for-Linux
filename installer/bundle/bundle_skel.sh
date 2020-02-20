@@ -937,6 +937,8 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
         echo "To fix this issue you should remove LAD/AZSEC corresponding extension, check this documentation for more details"
         echo "about extension removal: https://docs.microsoft.com/en-us/cli/azure/vm/extension?view=azure-cli-latest#az-vm-extension-delete "
         echo "---------- PURGE WARNING ----------"
+        # Should we force purge to exit with failure ?
+        # cleanup_and_exit 1
     fi
 
     rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
