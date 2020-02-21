@@ -61,17 +61,17 @@ by choosing the right docker file under ./build/docker folder.
 Example using Dockerfile.centos6:
 
 ```
-docker build -t oms-centos6-x64 -f /home/$(whoami)/Build-OMS-Agent-for-Linux/omsagent/build/docker/Dockerfile.centos6 .
+docker build -t oms-centos5-x64 -f /home/$(whoami)/Build-OMS-Agent-for-Linux/omsagent/build/docker/Dockerfile.centos6 .
 ```
 
 You can instead pull the existing container image from Docker HUB repository, you should often pull this image to keep your local build up-to-date:
 ```
-docker pull abenbachir/oms-centos6-x64
+docker pull abenbachir/oms-centos5-x64
 ```
 
 Then you can start a build container instance:
 ```
-docker run --rm -itv /home/$(whoami)/:/home/scratch/OMS -w /home/scratch/OMS/Build-OMS-Agent-for-Linux/omsagent/build abenbachir/oms-centos6-x64:latest
+docker run --rm -itv /home/$(whoami)/:/home/scratch/OMS -w /home/scratch/OMS/Build-OMS-Agent-for-Linux/omsagent/build abenbachir/oms-centos5-x64:latest
 ```
 
 ### Building steps
