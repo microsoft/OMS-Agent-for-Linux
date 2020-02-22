@@ -931,7 +931,6 @@ module OMS
     include Singleton
     UNKOWN = "UNKOWN"
     LOG_ERROR = "LOG_ERROR"
-    BACKGROUND_JOBS_ENV = "BACKGROUND_JOBS"
 
     attr_reader :proc_cache
     def initialize
@@ -939,7 +938,6 @@ module OMS
       @proc_cache_lock = Mutex.new
       @master_process = Process.pid
       @log = $log
-      @enabled = false
 
       ObjectSpace.define_finalizer(self, self.class.method(:finalize).to_proc)
     end
@@ -1011,14 +1009,6 @@ module OMS
     def self.finalize(object_id)
       return if Process.ppid == 1 or Process.pid != self.instance.get_mpid
       self.instance.cleanup
-    end
-
-    def self.enabled()
-      is_enable = nil
-      if !ENV[BACKGROUND_JOBS_ENV].nil?
-        is_enable = "#{ENV[BACKGROUND_JOBS_ENV]}".downcase == "true"
-      end
-      return is_enable
     end
 
     def get_mpid
