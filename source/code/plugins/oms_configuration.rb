@@ -30,8 +30,8 @@ module OMS
     @@ProxyConfig = nil
     @@ProxyConfigFilePath = "/etc/opt/microsoft/omsagent/proxy.conf"
     @@UUID = nil
-    @@TopologyInterval = nil
-    @@TelemetryInterval = nil
+    @@TopologyInterval = 1200 # set default (20m)
+    @@TelemetryInterval = 300 # set default (5m)
     @@HybridRPConfFile = "/lib/systemd/system.conf.d/azcmagent.conf"
     @@HyrbidRPIMDSPath = "/metadata/instance"
     @@HybridRPAPIVersion = "2019-08-15"
