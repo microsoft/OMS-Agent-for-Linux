@@ -29,11 +29,6 @@ module Fluent
     def configure(conf)
       s = conf.add_element("secondary")
       s["type"] = ChunkErrorHandler::SecondaryName
-
-      # override default run_in_background config
-      if !OMS::BackgroundJobs::enabled.nil?
-        conf['run_in_background'] = OMS::BackgroundJobs::enabled
-      end
       super
     end
 
