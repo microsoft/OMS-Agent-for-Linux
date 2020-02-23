@@ -15,7 +15,7 @@ def main():
     if re.match('^([-/])*(build)', option):
         for i in images:
             print('\nBuilding image for {0}\n'.format(i))
-            os.system('docker build --rm {0} -t {0}'.format(i))
+            os.system('docker build --rm dockerfiles/{0} -t {0}'.format(i))
     elif re.match('^([-/])*(pull)', option):
         for i in images:
             print('\nPulling {0} Image\n'.format(i))
