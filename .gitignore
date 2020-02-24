@@ -8,4 +8,5 @@
 /build/x64
 /build/x86
 /test/docker-test/*[.html, .log, .pyc]
+/test/docker-test/results/*
 .vscode
