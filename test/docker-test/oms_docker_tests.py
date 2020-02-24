@@ -13,12 +13,12 @@ Test:
 Finish: compile HTML report and log file
 """
 
+import atexit
 import json
 import os
 import subprocess
 import re
 import shutil
-import signal
 import sys
 from collections import OrderedDict
 from datetime import datetime, timedelta
@@ -68,6 +68,12 @@ def append_file(src, dest):
     dest.write(f.read())
     f.close()
 
+def copy_append_remove(container, image, src, dest):
+    """Copy file from docker container, append it to the specified destination, and delete it"""
+    os.system("docker cp {0}:/home/temp/{1} results/{2}/".format(container, src, image))
+    append_file('results/{0}/{1}'.format(image, src), dest)
+    os.remove('results/{0}/{1}'.format(image, src))
+
 def write_log_command(cmd, log):
     """Print cmd to stdout and append it to log file."""
     print(cmd)
@@ -82,18 +88,20 @@ def get_time_diff(timevalue1, timevalue2):
     return minutes, seconds
 
 def setup_vars(image):
-    container = image + '-container'
-    log_path = 'results/' + image + 'result.log'
-    html_path = 'results/' + image + 'result.html'
-    omslog_path = 'results/' + image + '-omsagent.log'
-    tmp_path = 'results/' + image + 'tmp.log'
+    """Set up variables and open necessary log files for a generalized test operation."""
+    container = '{0}-container'.format(image)
+    log_path = 'results/{0}/result.log'.format(image)
+    html_path = 'results/{0}/result.html'.format(image)
+    omslog_path = 'results/{0}/omsagent.log'.format(image)
+    tmp_path = 'results/{0}/temp.log'.format(image)
     log_file = open(log_path, 'a+')
     html_file = open(html_path, 'a+')
     oms_file = open(omslog_path, 'a+')
     return container, log_path, html_path, omslog_path, tmp_path, log_file, html_file, oms_file
 
-# Remove intermediate log and html files
-os.system('rm -rf ./*.log ./*.html ./omsfiles/omsresults* 2> /dev/null')
+def close_files(*args):
+    for f in args:
+        f.close()
 
 result_html_file = open("results/finalresult.html", 'a+')
 result_log_file = open("results/finalresult.log", 'a+')
@@ -125,6 +133,11 @@ result_html_file.write(htmlstart)
 
 def main():
     """Orchestrate fundemental testing steps onlined in header docstring."""
+
+    # TODO this should be elsewhere/def'd
+    for image in images:
+        os.mkdir('results/{0}'.format(image))
+
     if is_instantupgrade:
         install_msg = install_agent(old_oms_bundle)
         verify_msg = verify_data()
@@ -163,7 +176,7 @@ def install_agent(oms_bundle):
     version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
     install_times.clear()
     for image in images:
-        container, _, _, _, tmp_path, log_file, html_file, _ = setup_vars(image)
+        container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
         write_log_command("Container: {0}".format(container), log_file)
         write_log_command("Install Logs: {0}".format(image), log_file)
         html_file.write("<h1 id='{0}'> Container: {0} <h1>".format(image))
@@ -183,14 +196,11 @@ def install_agent(oms_bundle):
         inject_logs(container)
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
         write_log_command("Create Container and Install OMS Agent v{0}".format(version), log_file)
-        append_file('omsfiles/omsresults.out', log_file)
-        os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
+        copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Install OMS Agent v{0} </h2>".format(version))
-        append_file('omsfiles/omsresults.html', html_file)
-        log_file.close()
-        html_file.close()
+        copy_append_remove(container, image, 'omsresults.html', html_file)
+        close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
             x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
             if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
@@ -206,7 +216,7 @@ def upgrade_agent(oms_bundle):
     version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
     install_times.clear()
     for image in images:
-        container, _, _, _, tmp_path, log_file, html_file, _ = setup_vars(image)
+        container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, tmp_path))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
@@ -214,14 +224,11 @@ def upgrade_agent(oms_bundle):
         inject_logs(container)
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
         write_log_command("Upgrade OMS Agent v{0}".format(version), log_file)
-        append_file('omsfiles/omsresults.out', log_file)
-        os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
+        copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Upgrade OMS Agent v{0} </h2>".format(version))
-        append_file('omsfiles/omsresults.html', html_file)
-        log_file.close()
-        html_file.close()
+        copy_append_remove(container, image, 'omsresults.html', html_file)
+        close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
             x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
             if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
@@ -239,12 +246,11 @@ def inject_logs(container):
         
 def verify_data():
     """Verify data end-to-end, returning HTML results."""
-
     message = ""
     for hostname in hostnames:
         image = hostname.split('-')[0]
-        log_path = 'results/' + image + 'result.log'
-        html_path = 'results/' + image + 'result.html'
+        log_path = 'results/{}/result.log'.format(image)
+        html_path = 'results/{}/result.html'.format(image)
         log_file = open(log_path, 'a+')
         html_file = open(html_path, 'a+')
         while datetime.now() < (install_times[image] + timedelta(minutes=E2E_DELAY)):
@@ -266,6 +272,7 @@ def verify_data():
         data = [OrderedDict([('Distro', image)] + results.items())]
         out = json2html.convert(data)
         html_file.write(out)
+        close_files(log_file, html_file)
 
         # write to summary table
         from verify_e2e import success_count
@@ -285,23 +292,17 @@ def remove_agent():
         container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
         write_log_command('\n OmsAgent Logs: Before Removing the agent\n', oms_file)
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -copyomslogs".format(container))
-        os.system("docker cp {0}:/home/temp/copyofomsagent.log omsfiles/".format(container))
-        append_file('omsfiles/copyofomsagent.log', oms_file)
-        os.remove('omsfiles/copyofomsagent.log')
+        copy_append_remove(container, image, 'copyofomsagent.log', oms_file)
         write_log_command("Remove Logs: {0}".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --remove | tee -a {2}".format(container, oms_bundle, tmp_path))
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
         write_log_command("Remove OMS Agent", log_file)
-        append_file('omsfiles/omsresults.out', log_file)
-        os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
+        copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Remove OMS Agent </h2>")
-        append_file('omsfiles/omsresults.html', html_file)
-        log_file.close()
-        html_file.close()
-        oms_file.close()
+        copy_append_remove(container, image, 'omsresults.html', html_file)
+        close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
             x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
             if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
@@ -316,7 +317,7 @@ def reinstall_agent():
     """Reinstall the OMS agent, returning HTML results."""
     message = ""
     for image in images:
-        container, _, _, _, tmp_path, log_file, html_file, _ = setup_vars(image)
+        container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
         write_log_command("Reinstall Logs: {0}".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade | tee -a {2}".format(container, oms_bundle, tmp_path))
         os.system("docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -w {1} -s {2} | tee -a {3}".format(container, workspace_id, workspace_key, tmp_path))
@@ -324,14 +325,11 @@ def reinstall_agent():
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
         write_log_command("Reinstall OMS Agent", log_file)
-        append_file('omsfiles/omsresults.out', log_file)
-        os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
+        copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Reinstall OMS Agent </h2>")
-        append_file('omsfiles/omsresults.html', html_file)
-        log_file.close()
-        html_file.close()
+        copy_append_remove(container, image, 'omsresults.html', html_file)
+        close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
             x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
             if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
@@ -346,16 +344,13 @@ def check_status():
     """Check agent status."""
     message = ""
     for image in images:
-        container, _, _, _, _, log_file, html_file, _ = setup_vars(image)
+        container, _, _, _, _, log_file, html_file, oms_file = setup_vars(image)
         write_log_command("Check Status: {0}".format(image), log_file)
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -status".format(container))
-        os.system("docker cp {0}:/home/temp/omsresults.out omsfiles/".format(container))
-        append_file('omsfiles/omsresults.out', log_file)
-        os.system("docker cp {0}:/home/temp/omsresults.html omsfiles/".format(container))
+        copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Check OMS Agent Status </h2>")
-        append_file('omsfiles/omsresults.html', html_file)
-        log_file.close()
-        html_file.close()
+        copy_append_remove(container, image, 'omsresults.html', html_file)
+        close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
             x_out = str(subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True))
             if 'Onboarded' in x_out:
@@ -373,19 +368,16 @@ def check_status():
 def purge_delete_agent():
     """Purge the OMS agent and delete container."""
     for image in images:
-        container, _, _, omslog_path, tmp_path, log_file, _, oms_file = setup_vars(image)
+        container, _, _, omslog_path, tmp_path, log_file, html_file, oms_file = setup_vars(image)
         write_log_command('\n OmsAgent Logs: Before Purging the agent\n', oms_file)
         os.system("docker exec {0} python -u /home/temp/omsfiles/oms_run_script.py -copyomslogs".format(container))
-        os.system("docker cp {0}:/home/temp/copyofomsagent.log omsfiles/".format(container))
-        append_file('omsfiles/copyofomsagent.log', oms_file)
-        os.remove('omsfiles/copyofomsagent.log')
+        copy_append_remove(container, image, 'copyofomsagent.log', oms_file)
         write_log_command("Purge Logs: {0}".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, tmp_path))
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        oms_file.close()
         append_file(omslog_path, log_file)
-        log_file.close()
+        close_files(log_file, html_file, oms_file)
         os.system("docker container stop {0}".format(container))
         os.system("docker container rm {0}".format(container))
 
@@ -467,8 +459,8 @@ def create_report(messages):
 
     # Create final html & log file
     for image in images:
-        append_file(image + "result.log", result_log_file)
-        append_file(image + "result.html", result_html_file)
+        append_file('results/{}/result.log'.format(image), result_log_file)
+        append_file('results/{}/result.html'.format(image), result_html_file)
     
     result_log_file.close()
     htmlend = """
@@ -479,15 +471,16 @@ def create_report(messages):
     result_html_file.close()
 
 def archive_results():
-    archive_path = 'results/' + datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    archive_path = 'results/' + datetime.now().strftime('%Y-%m-%d %H.%M.%S')
     os.mkdir(archive_path)
-    for f in [f for f in glob('results/*') if not os.path.isdir(f)]:
+    for f in [f for f in glob('results/*') if f.split('/')[1] in images or f.startswith('results/finalresult') ]:
         shutil.move(os.path.join(f), os.path.join(archive_path))
 
-def cleanup(signal_received, frame):
+def cleanup():
     archive_results()
+    sleep(1)
     sys.exit(0)
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGINT, cleanup)
+    atexit.register(cleanup)
     main()
