@@ -13,6 +13,7 @@ Test:
 Finish: compile HTML report and log file
 """
 
+import argparse
 import atexit
 import json
 import os
@@ -34,13 +35,17 @@ images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "
 hostnames = []
 install_times = {}
 
-if len(sys.argv) > 0:
-    options = sys.argv[1:]
-    images = [i for i in options if i in images] or images # if parsed images are empty, revert to full list
-    is_long = 'long' in options
-    is_instantupgrade = 'instantupgrade' in options
-else:
-    is_long = is_instantupgrade = False
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--parallel', action='store_true', help='test distros in parallel')
+parser.add_argument('-l', '--long', action='store_true', help='add a long wait (specified in minutes')
+parser.add_argument('-i', '--instantupgrade', action='store_true', help='test upgrade on top of old bundle')
+parser.add_argument('distros', nargs='*', default=images, help='list of distros to test (default: all)')
+args = parser.parse_args()
+images =  [i for i in args.distros if i in images]
+invalid = [i for i in args.distros if i not in images]
+
+if invalid:
+    print('invalid distro(s): {0}. continuing ...'.format(invalid))
 
 with open('{0}/parameters.json'.format(os.getcwd()), 'r') as f:
     parameters = f.read()
@@ -103,8 +108,15 @@ def close_files(*args):
     for f in args:
         f.close()
 
-result_html_file = open("results/finalresult.html", 'a+')
-result_log_file = open("results/finalresult.log", 'a+')
+# TODO this should be elsewhere/def'd
+for image in images:
+    path = 'results/{0}'.format(image)
+    if not os.path.isdir('results/{0}'.format(image)):
+        os.mkdir(path)
+
+subfolder = '{}/'.format(images[0]) if len(images) == 1 or args.parallel else ''
+result_html_file = open('results/{0}finalresult.html'.format(subfolder), 'a+')
+result_log_file = open('results/{0}finalresult.log'.format(subfolder), 'a+')
 
 htmlstart = """<!DOCTYPE html>
 <html>
@@ -134,41 +146,60 @@ result_html_file.write(htmlstart)
 def main():
     """Orchestrate fundemental testing steps onlined in header docstring."""
 
-    # TODO this should be elsewhere/def'd
-    for image in images:
-        os.mkdir('results/{0}'.format(image))
-
-    if is_instantupgrade:
-        install_msg = install_agent(old_oms_bundle)
-        verify_msg = verify_data()
-        instantupgrade_install_msg = upgrade_agent(oms_bundle)
-        instantupgrade_verify_msg = verify_data()
-    else:
-        install_msg = install_agent(oms_bundle)
-        verify_msg = verify_data()
-        instantupgrade_install_msg, instantupgrade_verify_msg = None, None
-
-    remove_msg = remove_agent()
-    reinstall_msg = reinstall_agent()
-    if is_long:
-        for i in reversed(range(1, LONG_DELAY + 1)):
-            sys.stdout.write('\rLong-term delay: T-{} minutes...'.format(i))
-            sys.stdout.flush()
-            sleep(60)
-        print('')
-        install_times.clear()
+    if args.parallel:
+        print('Running tests in parallel. Progress will be hidden. Final report will generated for each distro individually')
+        procs = {}
         for image in images:
-            install_times.update({image: datetime.now()})
-            container = image + '-container'
-            inject_logs(container)
-        long_verify_msg = verify_data()
-        long_status_msg = check_status()
+            flags = ' '.join([a for a in sys.argv if a.startswith('-') and a not in ['-p', '--parallel']])
+            cmd = 'python -u {0} {1} {2}'.format(sys.argv[0], flags, image).split()
+            print(cmd)
+            with open(os.devnull, 'wb') as devnull:
+                procs[image] = subprocess.Popen(cmd, stdout=devnull, stderr=devnull)
+        done = False
+        while not done:
+            print('Sleeping for 30s')
+            sleep(30)
+            print('Status:')
+            status = []
+            for p in procs.items():
+                status.append(p[1].poll())
+                print('{0}: {1}'.format(p[0], status[-1]))
+            done = True if None not in status else False
+        print('Finished ...')
+        atexit.register(cleanup)
     else:
-        long_verify_msg, long_status_msg = None, None
-    purge_delete_agent()
-    messages = (install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
-    create_report(messages)
-    archive_results()
+        if len(images) > 1:
+            atexit.register(cleanup)
+        if args.instantupgrade:
+            install_msg = install_agent(old_oms_bundle)
+            verify_msg = verify_data()
+            instantupgrade_install_msg = upgrade_agent(oms_bundle)
+            instantupgrade_verify_msg = verify_data()
+        else:
+            install_msg = install_agent(oms_bundle)
+            verify_msg = verify_data()
+            instantupgrade_install_msg, instantupgrade_verify_msg = None, None
+
+        remove_msg = remove_agent()
+        reinstall_msg = reinstall_agent()
+        if args.long:
+            for i in reversed(range(1, LONG_DELAY + 1)):
+                sys.stdout.write('\rLong-term delay: T-{} minutes...'.format(i))
+                sys.stdout.flush()
+                sleep(60)
+            print('')
+            install_times.clear()
+            for image in images:
+                install_times.update({image: datetime.now()})
+                container = image + '-container'
+                inject_logs(container)
+            long_verify_msg = verify_data()
+            long_status_msg = check_status()
+        else:
+            long_verify_msg, long_status_msg = None, None
+        purge_delete_agent()
+        messages = (install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
+        create_report(messages)
 
 def install_agent(oms_bundle):
     """Run container and install the OMS agent, returning HTML results."""
@@ -482,5 +513,4 @@ def cleanup():
     sys.exit(0)
 
 if __name__ == '__main__':
-    atexit.register(cleanup)
     main()
