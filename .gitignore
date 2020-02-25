@@ -7,5 +7,6 @@
 /test/config
 /build/x64
 /build/x86
-/test/docker-test/*[.html, .log, .pyc]
+/test/docker-test/*.pyc
+/test/docker-test/omsfiles/omsagent*.sh
 .vscode
