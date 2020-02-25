@@ -30,14 +30,21 @@ from json2html import *
 from verify_e2e import check_e2e
 
 E2E_DELAY = 10 # Delay (minutes) before checking for data
-LONG_DELAY = 250 # Delay (minutes) before rechecking agent
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7"]
 hostnames = []
 install_times = {}
+procs = {}
 
-parser = argparse.ArgumentParser()
+example_text = """examples:
+  $ python -u oms_docker_tests.py\t\t\tall images
+  $ python -u oms_docker_tests.py -i -p\t\t\tall images, in parallel, with instant upgrade
+  $ python -u oms_docker_tests.py -p -l 120\t\tall images, in parallel, long mode with length specified
+  $ python -u oms_docker_tests.py image1 image2 ...\tsubset of images
+"""
+
+parser = argparse.ArgumentParser(epilog=example_text, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('-p', '--parallel', action='store_true', help='test distros in parallel')
-parser.add_argument('-l', '--long', action='store_true', help='add a long wait (specified in minutes')
+parser.add_argument('-l', '--long', nargs='?', type=int, const=250, default=0, help='add a long wait in minutes followed by a second verification (default: 250)')
 parser.add_argument('-i', '--instantupgrade', action='store_true', help='test upgrade on top of old bundle')
 parser.add_argument('distros', nargs='*', default=images, help='list of distros to test (default: all)')
 args = parser.parse_args()
@@ -94,7 +101,7 @@ def get_time_diff(timevalue1, timevalue2):
 
 def setup_vars(image):
     """Set up variables and open necessary log files for a generalized test operation."""
-    container = '{0}-container'.format(image)
+    container = image + '-container'
     log_path = 'results/{0}/result.log'.format(image)
     html_path = 'results/{0}/result.html'.format(image)
     omslog_path = 'results/{0}/omsagent.log'.format(image)
@@ -148,29 +155,30 @@ def main():
 
     if args.parallel:
         print('Running tests in parallel. Progress will be hidden. Final report will generated for each distro individually')
-        procs = {}
         for image in images:
             flags = ' '.join([a for a in sys.argv if a.startswith('-') and a not in ['-p', '--parallel']])
             cmd = 'python -u {0} {1} {2}'.format(sys.argv[0], flags, image).split()
-            print(cmd)
             with open(os.devnull, 'wb') as devnull:
-                procs[image] = subprocess.Popen(cmd, stdout=devnull, stderr=devnull)
+                procs[image] = subprocess.Popen(cmd, stdout=devnull, stderr=devnull, env={'SUBPROCESS': 'true'})
         done = False
+        elapsed_time = 0
         while not done:
-            print('Sleeping for 30s')
-            sleep(30)
-            print('Status:')
             status = []
+            status_msg = '\rStatus after {0} minutes ['.format(elapsed_time)
             for p in procs.items():
                 status.append(p[1].poll())
-                print('{0}: {1}'.format(p[0], status[-1]))
+                status_msg += ' {0}: {1},'.format(p[0], 'running' if status[-1] is None else status[-1])
+            sys.stdout.write(status_msg[:-1] + ' ]')
+            sys.stdout.flush()
             done = True if None not in status else False
-        print('Finished ...')
-        atexit.register(cleanup)
+            sleep(60)
+            elapsed_time += 1
+        print('\nFinished!')
     else:
-        if len(images) > 1:
-            atexit.register(cleanup)
         if args.instantupgrade:
+            if not old_oms_bundle:
+                print('Instant upgrade specified but no old oms bundle provided. Check parameters.json and omsfiles directory for bundle file existence')
+                sys.exit(0)
             install_msg = install_agent(old_oms_bundle)
             verify_msg = verify_data()
             instantupgrade_install_msg = upgrade_agent(oms_bundle)
@@ -183,8 +191,8 @@ def main():
         remove_msg = remove_agent()
         reinstall_msg = reinstall_agent()
         if args.long:
-            for i in reversed(range(1, LONG_DELAY + 1)):
-                sys.stdout.write('\rLong-term delay: T-{} minutes...'.format(i))
+            for i in reversed(range(1, args.log + 1)):
+                sys.stdout.write('\rLong-term delay: T-{0} minutes...'.format(i))
                 sys.stdout.flush()
                 sleep(60)
             print('')
@@ -508,9 +516,19 @@ def archive_results():
         shutil.move(os.path.join(f), os.path.join(archive_path))
 
 def cleanup():
+    sys.stdout.write('Initiating cleanup\n')
+    sys.stdout.flush()
     archive_results()
+    for p in procs.items():
+        if p[1].poll() is None:
+            p[1].kill()
+    for image in images:
+        container = image + '-container'
+        os.system('docker kill {} 2> /dev/null'.format(container))
     sleep(1)
     sys.exit(0)
 
 if __name__ == '__main__':
+    if not os.environ.get('SUBPROCESS'):
+        atexit.register(cleanup)
     main()
