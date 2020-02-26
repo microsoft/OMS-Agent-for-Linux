@@ -923,6 +923,24 @@ cd $EXTRACT_DIR
 # Do we need to remove the package?
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
+    
+    check_if_pkg_is_installed azsec-mdsd
+    azsec_mdsd_installed=$?
+    check_if_pkg_is_installed lad-mdsd
+    lad_mdsd_installed=$?
+
+    # if we detect LAD or AzSec while purging show a warning
+    IS_MDSD_INSTALLED=$(( $azsec_mdsd_installed && $lad_mdsd_installed ))
+    if [ $IS_MDSD_INSTALLED -eq 0 -a "$installMode" = "P" ]; then
+        echo "---------- PURGE WARNING: lad-mdsd or azsec-mdsd was detected ----------"
+        echo "Purging OMS may not fully succeed, because either LAD or AZSEC package has a dependency on OMS, SCX, and OMI."
+        echo "To fix this issue you should remove LAD/AZSEC corresponding extension, check this documentation for more details"
+        echo "about extension removal: https://docs.microsoft.com/en-us/cli/azure/vm/extension?view=azure-cli-latest#az-vm-extension-delete "
+        echo "---------- PURGE WARNING ----------"
+        # Should we force purge to exit with failure ?
+        # cleanup_and_exit 1
+    fi
+
     rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
     rm -f "$ONBOARD_FILE" > /dev/null 2>&1
     if [ -f /opt/microsoft/omsagent/bin/uninstall ]; then
@@ -942,12 +960,8 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
 
         pkg_rm omsconfig
 
+        
         # If MDSD/LAD is installed and we're just removing (not purging), leave OMS, SCX and OMI
-        check_if_pkg_is_installed azsec-mdsd
-        azsec_mdsd_installed=$?
-        check_if_pkg_is_installed lad-mdsd
-        lad_mdsd_installed=$?
-
         # if at least one of mdsd product is installed
         MDSD_INSTALLED=$(( $azsec_mdsd_installed && $lad_mdsd_installed ))
 
