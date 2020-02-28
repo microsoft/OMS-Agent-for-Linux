@@ -74,7 +74,7 @@ def main():
 def replace_items(infile, old_word, new_word):
     """Replace old_word with new_world in file infile."""
     if not os.path.isfile(infile):
-        print("Error on replace_word, not a regular file: " + infile)
+        print("Failed to replace item, target is not a regular file: " + infile)
         sys.exit(1)
 
     f1 = open(infile, 'r').read()
