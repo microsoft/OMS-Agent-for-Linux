@@ -131,8 +131,8 @@ def install_additional_packages():
         os.system('apt-get -y update')
     elif INSTALLER == 'RPM':
         # newest version of systemd package have some issue with the service file https://access.redhat.com/solutions/4420581
-        hostname = hostname = os.popen('hostname').read().split('0')[0]
-        systemd_flag = '--exclude systemd,systemd-libs,systemd-sysv' if any(s in hostname for s in ['centos7, oracle7']) else ''
+        hostname = os.popen('hostname').read().split('-')[0]
+        systemd_flag = '--exclude systemd,systemd-libs,systemd-sysv' if any(s in hostname for s in ['centos7', 'oracle7']) else ''
         os.system('yum -y update {0}'.format(systemd_flag))
 
 def run_dsc():

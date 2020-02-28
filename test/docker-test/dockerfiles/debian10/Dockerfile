@@ -6,5 +6,5 @@ FROM debian:10
 RUN mkdir /home/temp \
     && apt-get update \
     && echo exit 0 > /usr/sbin/policy-rc.d \
-    && apt-get install -y --reinstall sudo gcc curl git net-tools python2 gnupg2 cron vim procps rsyslog dos2unix wget apache2 \
+    && apt-get install -y --reinstall sudo gcc curl git net-tools python2 gnupg2 cron vim procps rsyslog dos2unix systemd wget apache2 \
     && update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
