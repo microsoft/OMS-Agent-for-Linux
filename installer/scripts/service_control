@@ -339,13 +339,13 @@ stop_omsagent_process()
 
     echo -n "(Forced) "
     echo -n " Sending SIGTERM ..."
-    kill -sigterm `cat $PIDFILE`
+    kill -s sigterm `cat $PIDFILE`
     if [ $? -eq 0 ]; then
         wait_until_omsagent_stopped $STOP_SIGTERM_PROCESS_WAIT_MAX
     fi
     if [ $? -eq 1 ]; then
         echo -n " Timeout reached, process could not be stopped, Sending SIGKILL ... "
-        kill -sigkill `cat $PIDFILE`
+        kill -s sigkill `cat $PIDFILE`
         if [ $? -eq 0 ]; then
             wait_until_omsagent_stopped $STOP_SIGKILL_PROCESS_WAIT_MAX
         fi
