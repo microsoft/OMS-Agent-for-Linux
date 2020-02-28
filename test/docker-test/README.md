@@ -3,7 +3,7 @@
 
 ## Requirements
 
-* Docker - Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
+* Docker 18.09+ — Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
 * Python 2.7+ & [pip](https://pip.pypa.io/en/stable/installing/)
 * [Requests](http://docs.python-requests.org/en/master/), [ADAL](https://github.com/AzureAD/azure-activedirectory-library-for-python), [json2html](https://github.com/softvar/json2html)
 
@@ -47,6 +47,13 @@ $ python -u build_images.py -pull distro1 distro2 ...
 ```
 
 ### Using docker build
+
+Note that to build Red Hat containers, you must include your Red Hat subscription creds in a file `redhat_creds` in the `docker-test` directory. The format must be:
+
+```
+username
+password
+```
 
 #### Build all images using Dockerfiles
 

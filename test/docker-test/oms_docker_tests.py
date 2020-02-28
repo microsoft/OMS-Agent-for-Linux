@@ -30,7 +30,7 @@ from json2html import *
 from verify_e2e import check_e2e
 
 E2E_DELAY = 10 # Delay (minutes) before checking for data
-images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7"]
+images = ["ubuntu14", "ubuntu16", "ubuntu18", "debian8", "debian9", "centos6", "centos7", "oracle6", "oracle7", "redhat6", "redhat7"]
 hostnames = []
 install_times = {}
 procs = {}
@@ -525,8 +525,8 @@ def cleanup():
     for image in images:
         container = image + '-container'
         os.system('docker kill {} 2> /dev/null'.format(container))
+        os.system('docker rm --force {} 2> /dev/null'.format(container))
     sleep(1)
-    sys.exit(0)
 
 if __name__ == '__main__':
     if not os.environ.get('SUBPROCESS'):

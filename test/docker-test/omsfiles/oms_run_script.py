@@ -3,8 +3,8 @@
 import datetime
 import os
 import os.path
-import subprocess
 import re
+import subprocess
 import sys
 import time
 
@@ -88,6 +88,16 @@ def append_file(src, dest):
     dest.write(f.read())
     f.close()
 
+def run_service_command(service, operation):
+    """Run a service operation on the specified service using the available service manager."""
+    if os.system('which service > /dev/null 2>&1') == 0:
+        os.system('service {0} {1}'.format(service, operation))
+    elif os.system('which systemctl > /dev/null 2>&1') == 0:
+        os.system('systemctl {0} {1}'.format(operation, service))
+    else:
+        print('Cannot find service nor systemctl commands.')
+        sys.exit(1)
+
 def detect_workspace_id():
     """Detect the workspace id where the agent is onboarded."""
     global workspace_id
@@ -107,13 +117,13 @@ def set_hostname():
 
 def start_system_services():
     """Start rsyslog, cron and apache to enable log collection."""
-    os.system('service rsyslog start')
+    run_service_command('rsyslog', 'start')
     if INSTALLER == 'DPKG':
-        os.system('cron \
-                && service apache2 start')
+        os.system('cron')
+        run_service_command('apache2', 'start')
     elif INSTALLER == 'RPM':
-        os.system('service crond start \
-                && service httpd start')
+        run_service_command('crond', 'start')
+        run_service_command('httpd', 'start')
 
 def install_additional_packages():
     """Install additional packages as needed."""
@@ -199,8 +209,8 @@ def config_start_oms_services():
 def restart_services():
     """Restart rsyslog, OMI, and OMS."""
     time.sleep(10)
-    os.system('service rsyslog restart \
-            && /opt/omi/bin/service_control restart \
+    run_service_command('rsyslog', 'restart')
+    os.system('/opt/omi/bin/service_control restart \
             && /opt/microsoft/omsagent/bin/service_control restart')
 
 def exec_command(cmd, stderr=None, shell=True):
