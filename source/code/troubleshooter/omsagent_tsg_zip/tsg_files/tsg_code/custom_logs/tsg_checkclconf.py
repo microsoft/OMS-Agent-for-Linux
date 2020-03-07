@@ -1,11 +1,38 @@
 import os
 import subprocess
 
-from tsg_errors import tsg_error_info
+from tsg_errors import tsg_error_info, get_input
 
 clconf_path = "/etc/opt/microsoft/omsagent/conf/omsagent.d/customlog.conf"
+omsconflog_path = "/var/opt/microsoft/omsconfig/omsconfig.log"
+omsconflogdet_path = "/var/opt/microsoft/omsconfig/omsconfigdetailed.log"
 
 
+def check_logs_cl():
+    
+
+
+
+def no_clconf():
+    # check if enough time has passed for agent to pull config from OMS backend
+    print("--------------------------------------------------------------------------------")
+    print(" The troubleshooter cannot find the customlog.conf file. If the custom log \n"\
+          " configuration was just applied in portal, it takes up to 15 minutes for the \n"\
+          " agent to pick the new configuration.\n\n")
+    too_long = get_input("Has it been at least 15 minutes since applying the configuration to the\n OMS backend? (y/n)",\
+                            (lambda x : x in ['y','yes','n','no']),\
+                            "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
+
+    # >=15 minutes since last applying config
+    if (too_long.lower() in ['y','yes']):
+        # TODO: check the log files for an error in DSC
+        tsg_error_info.append((omsconflog_path, omsconflogdet_path))
+        return 153
+
+    # <15 minutes since last applying config
+    else:
+        print(" Please try waiting for the agent to pull the config from the OMS backend.")
+        return 0
 
 
 
@@ -52,8 +79,7 @@ def check_customlog(log_dict):
 def check_customlog_conf():
     # verify customlog.conf exists / not empty
     if (not os.path.isfile(clconf_path)):
-        tsg_error_info.append(('file',clconf_path))
-        return 114
+        return no_clconf()
     if (os.stat(clconf_path).st_size == 0):
         tsg_error_info.append((clconf_path,))
         return 118
