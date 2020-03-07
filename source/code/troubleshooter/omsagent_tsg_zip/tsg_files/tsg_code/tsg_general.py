@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from tsg_errors                    import is_error, get_input, print_errors, err_summary
 from install.tsg_install           import check_installation
@@ -7,6 +8,8 @@ from heartbeat.tsg_heartbeat       import check_heartbeat
 from high_cpu_mem.tsg_high_cpu_mem import check_high_cpu_memory
 from syslog1.tsg_syslog            import check_syslog
 from custom_logs.tsg_custom_logs   import check_custom_logs
+
+logcollect_sh_path = "log_collector/omslinux_agentlog.sh"
 
 # check to make sure the user is running as root
 def check_sudo():
@@ -78,6 +81,31 @@ def check_all():
 
 
 
+def collect_logs():
+    # get SR number / company name
+    print("Please input the SR number to collect OMS logs and (if applicable) the company\n"\
+        "name for reference. (Leave field empty to skip)")
+    sr_num = get_input("SR Number: ", (lambda x : True), "")
+    com_name = get_input("Company Name: ", (lambda x : True), "")
+
+    # create command to run
+    logcollect_cmd = ['sudo', 'sh', logcollect_sh_path]
+    if (sr_num != ''):
+        logcollect_cmd = logcollect_cmd + ['-s', sr_num]
+    if (com_name != ''):
+        logcollect_cmd = logcollect_cmd + ['-c', com_name]
+
+    # run command
+    print("Starting up log collector...")
+    log_collection = subprocess.call(logcollect_cmd)
+    if (log_collection != 0):
+        print("Log collector returned error code {0}. Please look through the above output to\n"\
+            "find the reason for the error.".format(log_collection))
+    return
+
+
+
+
 def run_tsg():
     # check if running as sudo
     if (not check_sudo()):
@@ -92,6 +120,7 @@ def run_tsg():
         "5: Syslog isn't working\n"\
         "6: Custom logs aren't working\n"\
         "A: Run through all troubleshooting scenarios in order\n"\
+        "L: Collect the logs for OMS Agent\n"\
         "Q: Quit troubleshooter\n"\
         "================================================================================")
     switcher = {
@@ -104,12 +133,20 @@ def run_tsg():
         'A': check_all
     }
     issue = get_input("Please select an option",\
-                      (lambda x : x in ['1','2','3','4','5','6','q','quit','a','all']),\
+                      (lambda x : x in ['1','2','3','4','5','6','q','quit','a','l']),\
                       "Please enter an integer corresponding with your issue (1-6) to\n"\
-                        "continue (or 'A' to run through all scenarios), or 'Q' to quit.")
+                        "continue (or 'A' to run through all scenarios), 'L' to run the log\n"\
+                        "collector, or 'Q' to quit.")
+    # quit troubleshooter
     if (issue.lower() in ['q','quit']):
         print("Exiting the troubleshooter...")
         return
+    # collect logs
+    if (issue.lower() == 'l'):
+        print("Running the OMS Log Collector...\n")
+        collect_logs()
+        return
+    # run troubleshooter
     section = switcher.get(issue.upper(), lambda: "Invalid input")
     print("================================================================================")
     success = section()
@@ -133,11 +170,8 @@ def run_tsg():
     else:
         print("Please review the errors found above.")
     # give information to user about next steps
-    print("If you still have an issue, please follow the link below in order to download\n"\
-        "the OMS Linux Agent Log Collector tool:\n"\
-        "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/tools/LogCollector/"\
-                    "OMS_Linux_Agent_Log_Collector.md\n\n"\
-        "And run the Log Collector in order to grab logs pertinent to debugging.\n"\
+    print("If you still have an issue, please run the troubleshooter again and collect the\n"\
+        "logs for OMS.\n"\
         "In addition, please include the following information:\n"\
         "  - Azure Subscription ID where the Log Analytics Workspace is located\n"\
         "  - Workspace ID the agent has been onboarded to\n"\
