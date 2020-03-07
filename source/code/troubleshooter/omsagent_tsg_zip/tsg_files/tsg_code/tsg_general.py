@@ -24,11 +24,6 @@ def check_sudo():
     else:
         return True
 
-# TODO: remove function when everything is implemented
-def unimplemented():
-    print("This part of the troubleshooter is unimplemented yet, please come back later for more updates!")
-    return 0
-
 
 
 # run through all troubleshooting scenarios
