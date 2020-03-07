@@ -6,7 +6,58 @@ py_26="Python 2.6"
 py_27="Python 2.7"
 py_3="Python 3"
 
-py_version=$((python --version) 2>&1)
+# check what version of python the user has
+python_prereq_check()
+{
+    # check python
+    echo "Checking for python install..."
+    which python 1> /dev/null 2> /dev/null
+    if [ $? -ne 0 ] then
+        echo "No version of python found."
+        return 1
+    fi
+
+    # check python version
+    py_version=$((python --version) 2>&1)
+    case $py_version in
+        $py_26* | $py_27* )
+            py_ver_num=2
+            run_troubleshooter
+            ;;
+        $py_3* )
+            py_ver_num=3
+            run_troubleshooter
+            ;;
+        * )
+            echo "No supported version of Python found on machine."\
+                    "OMS (and this troubleshooter) require Python 2.6 or newer,"\
+                    "please install a supported version of Python and try again."
+            return 1
+            ;;
+    esac
+
+    # check python packages
+    echo "Checking all necessary python modules are installed..."
+    success=0
+    temp_pkgs="copy errno os platform re socket ssl subprocess" # time"
+    if [ py_ver_num -eq 2 ]; then
+        pkgs="$temp_pkgs urllib2"
+        # add the urllib2 for 2
+    else
+        pkgs="$temp_pkgs urllib.request"
+        # add the urllib.request for 3
+    fi
+    
+    for pkg in $pkgs; do
+        python -c "import $pkg" 1> /dev/null 2> /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Python package $pkg not installed."
+            success=1
+        fi
+    done
+    
+    return success
+}
 
 run_troubleshooter()
 {
@@ -32,13 +83,11 @@ if [ "$1" = "--help" ]; then
     exit 0
 fi
 
-# check what version of python the user has
-case $py_version in
-    $py_26* | $py_27* | $py_3* )
-        run_troubleshooter
-        ;;
-    * )
-        echo "No supported version of Python found on machine. OMS (and this troubleshooter) require Python 2.6 or newer, please install a supported version of Python and try again."
-        exit 1
-        ;;
-esac
+# check python and run troubleshooter
+python_prereq_check
+if [ $? -ne 0 ]; then
+    echo "Please fix above issues before running troubleshooter."
+    exit 1
+else
+    run_troubleshooter
+fi
