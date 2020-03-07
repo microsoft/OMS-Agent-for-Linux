@@ -1,16 +1,10 @@
-import datetime
 import re
 import subprocess
-import time
 
 from tsg_errors import tsg_error_info
 
 # check log for heartbeats
 def check_log_heartbeat(workspace):
-    # # wait 3 minutes to be able to check last 3 heartbeats
-    # print("Waiting 3 minutes to collect last 3 heartbeats...")
-    # time.sleep(180)
-
     # get tail of logs
     log_path = "/var/opt/microsoft/omsagent/{0}/log/omsagent.log".format(workspace)
     log_tail_size = 50
@@ -36,16 +30,6 @@ def check_log_heartbeat(workspace):
                 parsed_log.append(line)
                 # [ date, time, zone, [logtype], log, unparsed log ]
                 parsed_log_lines.append(parsed_log)
-
-        # # filter logs to last 3 minutes
-        # endtime_str = ' '.join(parsed_log_lines[-1][0:2])
-        # endtime = datetime.strptime(endtime_str, '%y-%m-%d %H:%M:%S')
-        # starttime = endtime - datetime.timedelta(minutes=3)
-        # def in_last_3mins(log):
-        #     logtime_str = ' '.join(log[0:2])
-        #     logtime = datetime.strptime(logtime_str, '%y-%m-%d %H:%M:%S')
-        #     return (logtime > starttime)
-        # parsed_log_lines = list(filter(in_last_3mins, parsed_log_lines))
 
         # filter out errors
         parsed_log_errs = list(filter(lambda x : (x[3]) == '[error]', parsed_log_lines))
