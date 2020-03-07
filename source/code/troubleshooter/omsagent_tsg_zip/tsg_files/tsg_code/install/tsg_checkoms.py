@@ -32,13 +32,14 @@ def check_curr_oms_errs(updated_curr_oms_version, found_errs):
     if (found_errs[0] == "<urlopen error unknown url type: https>"):
         try:
             import ssl
-            tsg_error_info.append(found_errs[0])
+            tsg_error_info.append((found_errs[0],))
             return 120
-        except ImportError as e:
-            return 153
+        except ImportError:
+            tsg_error_info.append(('ssl',))
+            return 154
     # connection in general fine, connecting to current page not
     else:
-        tsg_error_info.append(found_errs[0])
+        tsg_error_info.append((found_errs[0],))
         return 120
 
 

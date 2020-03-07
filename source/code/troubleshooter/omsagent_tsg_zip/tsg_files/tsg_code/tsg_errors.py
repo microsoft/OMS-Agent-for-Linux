@@ -130,9 +130,15 @@ tsg_error_codes = {
           "been rotated at {2}. Please see {3} for more information.",
     151 : "File {0} has been modified {1} times in the last {2} seconds.",
     152 : "{0} isn't installed correctly.",
-    153 : "The SSL python package isn't installed in this version of Python. (You can check "\
-          "by opening up python and typing 'import ssl'.) Please install this package "\
-          "and run the troubleshooter again."
+    153 : "The agent is currently taking too long to pull the configuration from the backend. "\
+          "Please check the following log files for more information:\n"\
+          "    {0}\n"\
+          "    {1}\n"\
+          "Please also check out the below link (step 6) for more information:\n"\
+          "\n    https://supportability.visualstudio.com/AzureLogAnalytics/_wiki/wikis/"\
+                    "Azure-Log-Analytics.wiki/168967/Custom-Logs-Linux-Agent",
+    154 : "This version of Python is missing the {0} package. (You can check by opening up "\
+          "python and typing 'import {0}'.) Please install this package and run the troubleshooter again."
 
 }  # TODO: keep up to date with error codes onenote
 
