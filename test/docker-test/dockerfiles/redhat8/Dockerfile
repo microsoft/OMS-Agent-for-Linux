@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM registry.access.redhat.com/rhel7
+FROM registry.access.redhat.com/ubi8
 
 RUN --mount=type=secret,id=creds,required subscription-manager register --username=$(sed -n 1p /run/secrets/creds) --password=$(sed -n 2p /run/secrets/creds)
 

@@ -39,14 +39,14 @@ example_text = """examples:
   $ python -u oms_docker_tests.py\t\t\tall images
   $ python -u oms_docker_tests.py -i -p\t\t\tall images, in parallel, with instant upgrade
   $ python -u oms_docker_tests.py -p -l 120\t\tall images, in parallel, long mode with length specified
-  $ python -u oms_docker_tests.py image1 image2 ...\tsubset of images
+  $ python -u oms_docker_tests.py -d image1 image2 ...\tsubset of images
 """
 
 parser = argparse.ArgumentParser(epilog=example_text, formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument('-p', '--parallel', action='store_true', help='test distros in parallel')
-parser.add_argument('-l', '--long', nargs='?', type=int, const=250, default=0, help='add a long wait in minutes followed by a second verification (default: 250)')
 parser.add_argument('-i', '--instantupgrade', action='store_true', help='test upgrade on top of old bundle')
-parser.add_argument('distros', nargs='*', default=images, help='list of distros to test (default: all)')
+parser.add_argument('-l', '--long', nargs='?', type=int, const=250, default=0, help='add a long wait in minutes followed by a second verification (default: 250)')
+parser.add_argument('-d', '--distros', nargs='*', default=images, help='list of distros to test (default: all)')
 args = parser.parse_args()
 images =  [i for i in args.distros if i in images]
 invalid = [i for i in args.distros if i not in images]
@@ -156,8 +156,9 @@ def main():
     if args.parallel:
         print('Running tests in parallel. Progress will be hidden. Final report will generated for each distro individually')
         for image in images:
-            flags = ' '.join([a for a in sys.argv if a.startswith('-') and a not in ['-p', '--parallel']])
-            cmd = 'python -u {0} {1} {2}'.format(sys.argv[0], flags, image).split()
+            flags = ' '.join([a for a in sys.argv[1:] if a not in images and a not in ['-p', '--parallel']])
+            cmd = 'python -u {0} {1} -d {2}'.format(sys.argv[0], flags, image).split()
+            print(cmd)
             with open(os.devnull, 'wb') as devnull:
                 procs[image] = subprocess.Popen(cmd, stdout=devnull, stderr=devnull, env={'SUBPROCESS': 'true'})
         done = False
@@ -191,7 +192,7 @@ def main():
         remove_msg = remove_agent()
         reinstall_msg = reinstall_agent()
         if args.long:
-            for i in reversed(range(1, args.log + 1)):
+            for i in reversed(range(1, args.long + 1)):
                 sys.stdout.write('\rLong-term delay: T-{0} minutes...'.format(i))
                 sys.stdout.flush()
                 sleep(60)
