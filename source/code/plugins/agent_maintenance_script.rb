@@ -1,4 +1,5 @@
 require 'optparse'
+require 'open3'
 
 module MaintenanceModule
 
@@ -190,7 +191,42 @@ module MaintenanceModule
       # When apply_dsc_endpoint is called from onboarding, dsc_endpoint will be returned in file
       update_config("DSC_ENDPOINT", dsc_endpoint)
 
+      generate_dsc_metaconfig
+
       return dsc_endpoint
+    end
+
+    # Generate the DSC MetaConfig file. If the dsc endpoint is updated, DSC will
+    # not directly pick the endpoint from omsadmin.conf (instead, it is picked
+    # from MetaConfig.mof), so we must manually trigger metaconfig (re)generation.
+    def generate_dsc_metaconfig
+      # OMS_MetaConfigHelper.py will log to omsconfig.log by default,
+      command = "/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py"
+      timeout = 10
+      begin
+        Open3.popen2(command, :pgroup=>true) do |_, _, wait_thr|
+          pid = wait_thr.pid
+          pgid = Process.getpgid(pid)
+          deadline = Time.now + timeout
+          sleep 0.5 until Time.now > deadline or !wait_thr.status
+          if wait_thr.status # still hasn't completed
+            begin
+              `pkill -TERM -g #{pgid}`
+              sleep 1
+              if wait_thr.status
+                `pkill -KILL -g #{pgid}`
+              end
+            rescue => e
+              log_error("Failed to kill process(es) for command '#{command}'. #{e}")
+            end
+            OMS::Log.warn_once("DSC MetaConfig generation failed due to subprocess timeout")
+          elsif wait_thr.value.exitstatus != 0 # nonzero exit
+            OMS::Log.warn_once("DSC MetaConfig generation failed with nonzero exit code #{wait_thr.value.exitstatus}, check omsconfig.log for details")
+          end
+        end
+      rescue => e
+        OMS::Log.warn_once("DSC MetaConfig generation failed due to subprocess call failure: #{e}")
+      end
     end
 
     # Pass the server response from an XML file to apply_dsc_endpoint and apply_certificate_update_endpoint
