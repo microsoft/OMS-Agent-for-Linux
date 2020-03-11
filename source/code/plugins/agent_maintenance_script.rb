@@ -123,6 +123,7 @@ module MaintenanceModule
     # Update omsadmin.conf with the specified variable's value
     def update_config(var, val)
       if !File.exist?(@omsadmin_conf_path)
+        log_error("Missing configuration file: #{@omsadmin_conf_path}")
         return OMS::MISSING_CONFIG_FILE
       end
 
@@ -132,6 +133,10 @@ module MaintenanceModule
       File.open(@omsadmin_conf_path, "w") { |file|
         file.puts(new_text)
       }
+
+      if old_text != new_text
+        log_info("omsadmin.conf updated with #{var}=#{val}")
+      end
     end
 
     # Updates the CERTIFICATE_UPDATE_ENDPOINT variable and renews certificate if requested
@@ -233,6 +238,7 @@ module MaintenanceModule
     # Save DSC_ENDPOINT and CERTIFICATE_UPDATE_ENDPOINT variables in file to be read outside of this script
     def apply_endpoints_file(xml_file, output_file)
       if !OMS::Common.file_exists_nonempty(xml_file)
+        log_error("Missing configuration file: #{xml_file}")
         return OMS::MISSING_CONFIG_FILE
       end
 
