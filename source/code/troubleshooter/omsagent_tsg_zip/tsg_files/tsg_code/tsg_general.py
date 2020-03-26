@@ -9,7 +9,7 @@ from high_cpu_mem.tsg_high_cpu_mem import check_high_cpu_memory
 from syslog1.tsg_syslog            import check_syslog
 from custom_logs.tsg_custom_logs   import check_custom_logs
 
-logcollect_sh_path = "log_collector/omslinux_agentlog.sh"
+logcollect_sh_path = "/opt/microsoft/omsagent/plugin/troubleshooter/tsg_code/log_collector/omslinux_agentlog.sh"
 
 # check to make sure the user is running as root
 def check_sudo():
@@ -85,8 +85,8 @@ def collect_logs():
     # get SR number / company name
     print("Please input the SR number to collect OMS logs and (if applicable) the company\n"\
         "name for reference. (Leave field empty to skip)")
-    sr_num = get_input("SR Number: ", (lambda x : True), "")
-    com_name = get_input("Company Name: ", (lambda x : True), "")
+    sr_num = get_input("SR Number", (lambda x : True), "")
+    com_name = get_input("Company Name", (lambda x : True), "")
 
     # create command to run
     logcollect_cmd = ['sudo', 'sh', logcollect_sh_path]
@@ -97,8 +97,10 @@ def collect_logs():
 
     # run command
     print("Starting up log collector...")
+    print("--------------------------------------------------------------------------------")
     log_collection = subprocess.call(logcollect_cmd)
     if (log_collection != 0):
+        print("--------------------------------------------------------------------------------")
         print("Log collector returned error code {0}. Please look through the above output to\n"\
             "find the reason for the error.".format(log_collection))
     return
@@ -113,15 +115,16 @@ def run_tsg():
 
     print("Welcome to the OMS Agent for Linux Troubleshooter! What is your issue?\n"\
         "================================================================================\n"\
-        "1: Installation failure\n"\
-        "2: Agent doesn't start, can't connect to Log Analytic Services\n"\
-        "3: Agent is unhealthy, heartbeat data is missing\n"\
-        "4: Agent has high CPU / memory usage\n"\
-        "5: Syslog isn't working\n"\
-        "6: Custom logs aren't working\n"\
-        "A: Run through all troubleshooting scenarios in order\n"\
-        "L: Collect the logs for OMS Agent\n"\
-        "Q: Quit troubleshooter\n"\
+        "1: Agent is unhealthy or heartbeat data missing.\n"\
+        "2: Agent doesn't start, can't connect to Log Analytic Services.\n"\
+        "3: Agent syslog isn't working.\n"\
+        "4: Agent consuming high CPU/memory.\n"\
+        "5: Installation failures.\n"\
+        "6: Custom logs issue.\n"\
+        "================================================================================\n"\
+        "A: Run through all scenarios.\n"\
+        "L: Collect the logs for OMS Agent.\n"\
+        "Q: Press 'Q' to quit.\n"\
         "================================================================================")
     switcher = {
         '1': check_installation,
@@ -143,7 +146,8 @@ def run_tsg():
         return
     # collect logs
     if (issue.lower() == 'l'):
-        print("Running the OMS Log Collector...\n")
+        print("Running the OMS Log Collector...")
+        print("================================================================================")
         collect_logs()
         return
     # run troubleshooter
