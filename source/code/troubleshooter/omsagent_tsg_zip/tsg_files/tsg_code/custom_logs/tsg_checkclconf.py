@@ -8,10 +8,6 @@ omsconflog_path = "/var/opt/microsoft/omsconfig/omsconfig.log"
 omsconflogdet_path = "/var/opt/microsoft/omsconfig/omsconfigdetailed.log"
 
 
-def check_logs_cl():
-    
-
-
 
 def no_clconf():
     # check if enough time has passed for agent to pull config from OMS backend
