@@ -4,7 +4,7 @@ from tsg_errors import tsg_error_info
 
 def check_systemctl():
     try:
-        is_systemctl = subprocess.check_output(['which', 'dpkg'], \
+        is_systemctl = subprocess.check_output(['which', 'systemctl'], \
                         universal_newlines=True, stderr=subprocess.STDOUT)
         if (is_systemctl != 0):
             return 0
