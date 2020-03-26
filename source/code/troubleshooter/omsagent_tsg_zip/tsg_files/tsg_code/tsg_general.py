@@ -117,7 +117,7 @@ def run_tsg():
         "================================================================================\n"\
         "1: Agent is unhealthy or heartbeat data missing.\n"\
         "2: Agent doesn't start, can't connect to Log Analytic Services.\n"\
-        "3: Agent syslog isn't working.\n"\
+        "3: Syslog issue.\n"\
         "4: Agent consuming high CPU/memory.\n"\
         "5: Installation failures.\n"\
         "6: Custom logs issue.\n"\
@@ -127,11 +127,11 @@ def run_tsg():
         "Q: Press 'Q' to quit.\n"\
         "================================================================================")
     switcher = {
-        '1': check_installation,
+        '1': check_heartbeat,
         '2': check_connection,
-        '3': check_heartbeat,
+        '3': check_syslog,
         '4': check_high_cpu_memory,
-        '5': check_syslog,
+        '5': check_installation,
         '6': check_custom_logs,
         'A': check_all
     }
