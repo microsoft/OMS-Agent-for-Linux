@@ -469,6 +469,40 @@ onboard()
             fi
         fi
     fi
+
+    #check for workspaces alredy onboarded
+
+    local found_ws=0
+    local ws_conf_dir=$ETC_DIR/conf
+
+    if [ -h ${ws_conf_dir} ]; then
+        # symbolic link - multiple workspace folder structure
+        local primary_ws_id=''
+        if [ -f ${ws_conf_dir}/omsadmin.conf ]; then
+            primary_ws_id=`grep WORKSPACE_ID ${ws_conf_dir}/omsadmin.conf | cut -d= -f2`
+        fi
+
+        if [ "${primary_ws_id}" != "" ]; then
+            found_ws=1
+        else
+            for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+            do
+                found_ws=1
+            done
+        fi
+    else
+        # no default conf folder, check all the potential workspace folders
+        for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
+        do
+            found_ws=1
+        done
+    fi
+
+    if [ $found_ws -ne 0 ]; then
+        echo "Already Onboarded to a workspace, please un-onboard first before trying to onboard to a new workspace"
+        return 0
+    fi
+
     create_workspace_directories $WORKSPACE_ID
 
     # Guard against blank omsadmin.conf
