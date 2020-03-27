@@ -476,7 +476,6 @@ onboard()
     local ws_conf_dir=$ETC_DIR/conf
 
     if [ -h ${ws_conf_dir} ]; then
-        # symbolic link - multiple workspace folder structure
         local primary_ws_id=''
         if [ -f ${ws_conf_dir}/omsadmin.conf ]; then
             primary_ws_id=`grep WORKSPACE_ID ${ws_conf_dir}/omsadmin.conf | cut -d= -f2`
