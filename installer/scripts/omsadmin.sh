@@ -460,6 +460,10 @@ onboard()
     # If a test is not in progress then call service_control to check on the workspace status
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         $SERVICE_CONTROL is-running $WORKSPACE_ID > /dev/null 2>&1
+        #The service_control is-running method will always return 1 for workspaces that are not currently onboarded because the check method exits with error code 1 in that script
+        #But since we check for exit code 1 as success, it assumes the agent is running on that workspace and prevents onboarding. This can be fixed by using exit code 0 for 
+        #success, as is convention in Linux. But since Multihoming isn't currently supported, this actually acts as a prevention check for multihoming. After discussion, leaving it
+        #as it is for now. Can fix this in future when we want to support multihoming. 
         if [ $? -eq 1 ]; then
             echo "Workspace $WORKSPACE_ID already onboarded and agent is running."
             if [ -z "$MULTI_HOMING_MARKER" -a ! -h $DF_CONF_DIR ]; then
@@ -470,7 +474,7 @@ onboard()
         fi
     fi
 
-    #check for workspaces alredy onboarded
+    #check for workspaces already onboarded.
 
     local found_ws=0
     local ws_conf_dir=$ETC_DIR/conf
@@ -498,8 +502,9 @@ onboard()
     fi
 
     if [ $found_ws -ne 0 ]; then
-        echo "Already Onboarded to a workspace, please un-onboard first before trying to onboard to a new workspace"
-        return 0
+        echo "Already Onboarded to a workspace, please un-onboard first before trying to onboard to a new workspace."
+        echo "Please check the status of onboarded workspaces by running ./omsadmin.sh -l"
+        return 53
     fi
 
     create_workspace_directories $WORKSPACE_ID
