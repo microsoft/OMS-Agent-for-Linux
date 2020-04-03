@@ -460,11 +460,7 @@ onboard()
     # If a test is not in progress then call service_control to check on the workspace status
     if [ -z "$TEST_WORKSPACE_ID" -a -z "$TEST_SHARED_KEY" ]; then
         $SERVICE_CONTROL is-running $WORKSPACE_ID > /dev/null 2>&1
-        #The service_control is-running method will always return 1 for workspaces that are not currently onboarded because the check method exits with error code 1 in that script
-        #But since we check for exit code 1 as success, it assumes the agent is running on that workspace and prevents onboarding. This can be fixed by using exit code 0 for 
-        #success, as is convention in Linux. But since Multihoming isn't currently supported, this actually acts as a prevention check for multihoming. After discussion, leaving it
-        #as it is for now. Can fix this in future when we want to support multihoming. 
-        if [ $? -eq 1 ]; then
+        if [ $? -eq 0 ]; then
             echo "Workspace $WORKSPACE_ID already onboarded and agent is running."
             if [ -z "$MULTI_HOMING_MARKER" -a ! -h $DF_CONF_DIR ]; then
                 echo "Symbolic links have not been created; re-onboarding to create them"
@@ -791,9 +787,9 @@ show_workspace_status()
     local is_primary=$3
     local status='Unknown'
 
-    # 1 if omsagent-ws_id is running, 0 otherwise
+    # 0 if omsagent-ws_id is running, 1 otherwise
     $SERVICE_CONTROL is-running $ws_id
-    if [ $? -eq 1 ]; then
+    if [ $? -eq 0 ]; then
         status='Onboarded(OMSAgent Running)'
     elif [ -f ${ws_conf_dir}/.service_registered ]; then
         status='Warning(OMSAgent Registered, Not Running)'
