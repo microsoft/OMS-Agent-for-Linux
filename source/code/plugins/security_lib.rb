@@ -15,9 +15,9 @@ module OMS
 
     def self.get_ident(ident)
       # To allow a more flexible regex we accept any message containing 'CEF'
-      # or '%ASA' as a valid message and converting it into the correct identifier
       return 'CEF' if ident.include?('CEF')
-      return '%ASA' if ident.include?('%ASA')
+      # Cisco event ID is a part of the identifier 
+      return ident if ident.include?('%ASA')
       OMS::Log.warn_once("Failed to find ident: '#{ident}'")
       return nil
     end
