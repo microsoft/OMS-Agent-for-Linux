@@ -101,7 +101,7 @@ module Fluent
       req.body = msg
       return req
     rescue OMS::RetryRequestException => e
-        OMS::Log.error_once("HTTP error for Request-ID: #{request_id} Error: #{e}")
+        OMS::Log.error_once("HTTP error for URI #{uri.request_uri} for Request-ID: #{request_id} Error: #{e}")
         raise e.message, "Request-ID: #{request_id}"
     end # create_blob_put_request
 
@@ -138,6 +138,12 @@ module Fluent
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.get_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
 
+      req.each_header do |key, value|
+        if key == "X-Request-ID"
+            @log.debug "Sending request to ODS to grab blob json with #{key}: #{value}"
+        end
+      end
+        
       # remove the BOM (Byte Order Marker)
       clean_body = body.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => "")
       return JSON.parse(clean_body)
@@ -226,6 +232,8 @@ module Fluent
       put_block_req = create_blob_put_request(append_uri, msg, request_id, nil)
       http = OMS::Common.create_secure_http(append_uri, @proxy_config)
       OMS::Common.start_request(put_block_req, http)
+      @log.debug "Uploaded blob to Storage URI #{append_uri} with request id #{request_id}"
+
 
       return base64_blockid
     end # upload_block
@@ -249,6 +257,7 @@ module Fluent
       put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg, request_id, file_path)
       http = OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
       response = OMS::Common.start_request(put_blocklist_req, http, ignore404 = false, return_entire_response = true)
+      @log.debug "Commited blocks to Storage URI #{blocklist_uri} with request id #{request_id}"
 
       headers = response.to_hash
       if headers.has_key?("etag")
@@ -296,9 +305,14 @@ module Fluent
       }
 
       req = OMS::Common.create_ods_request(OMS::Configuration.notify_blob_ods_endpoint.path, data, compress=false)
-
+      req.each_header do |key, value|
+        if key == "X-Request-ID"
+            @log.debug "Notifying ODS about data upload at uri #{uri.to_s} with #{key}: #{value}"
+        end
+      end
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.notify_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
+      
     end # notify_blob_upload_complete
     
     def write_status_file(success, message)
@@ -373,7 +387,7 @@ module Fluent
       start = Time.now
       notify_blob_upload_complete(blob_uri, data_type, custom_data_type, blob_size, dataSize, etag)
       time = Time.now - start
-      @log.trace "Success notify the data to BLOB #{time.round(3)}s"
+      @log.debug "Success notify the data to BLOB #{time.round(3)}s"
       write_status_file("true","Sending success")
       return OMS::Telemetry.push_qos_event(OMS::SEND_BATCH, "true", "", tag, records, records.size, time)
     rescue OMS::RetryRequestException => e
