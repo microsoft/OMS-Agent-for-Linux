@@ -138,11 +138,7 @@ module Fluent
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.get_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
 
-      req.each_header do |key, value|
-        if key == "X-Request-ID"
-            @log.debug "Sending request to ODS to grab blob json with #{key}: #{value}"
-        end
-      end
+      @log.debug "Sending request to ODS to grab blob json with Request ID : #{req[OMS::CaseSensitiveString.new("X-Request-ID")]}"
         
       # remove the BOM (Byte Order Marker)
       clean_body = body.encode(Encoding::UTF_8, :invalid => :replace, :undef => :replace, :replace => "")
@@ -257,7 +253,7 @@ module Fluent
       put_blocklist_req = create_blob_put_request(blocklist_uri, commit_msg, request_id, file_path)
       http = OMS::Common.create_secure_http(blocklist_uri, @proxy_config)
       response = OMS::Common.start_request(put_blocklist_req, http, ignore404 = false, return_entire_response = true)
-      @log.debug "Commited blocks to Storage URI #{blocklist_uri} with request id #{request_id}"
+      @log.debug "Commited blocks to Storage with request id #{request_id}"
 
       headers = response.to_hash
       if headers.has_key?("etag")
@@ -305,11 +301,8 @@ module Fluent
       }
 
       req = OMS::Common.create_ods_request(OMS::Configuration.notify_blob_ods_endpoint.path, data, compress=false)
-      req.each_header do |key, value|
-        if key == "X-Request-ID"
-            @log.debug "Notifying ODS about data upload at uri #{uri.to_s} with #{key}: #{value}"
-        end
-      end
+      @log.debug "Notifying ODS about data upload with Request ID : #{req[OMS::CaseSensitiveString.new("X-Request-ID")]}"
+
       ods_http = OMS::Common.create_ods_http(OMS::Configuration.notify_blob_ods_endpoint, @proxy_config)
       body = OMS::Common.start_request(req, ods_http)
       
