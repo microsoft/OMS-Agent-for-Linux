@@ -1,0 +1,49 @@
+name: OMS CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: OMSAgent Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout OMS-Agent-For-Linux Repo
+      uses: actions/checkout@v2
+      with:
+        path: Main
+        submodules: true
+
+    - name: Checkout Build-OMS-Agent-for-Linux Repo
+      uses: actions/checkout@v2
+      with:
+        repository: Microsoft/Build-OMS-Agent-for-Linux
+        path: Build-OMS-Agent-for-Linux
+        submodules: true
+    
+    - name: Setup Repo
+      run: |
+        echo GITHUB_WORKSPACE=$GITHUB_WORKSPACE
+        ls -la
+        rm -rf Build-OMS-Agent-for-Linux/omsagent
+        mv $GITHUB_WORKSPACE/Main Build-OMS-Agent-for-Linux/omsagent
+        ls -la Build-OMS-Agent-for-Linux/
+
+    - name: Pull docker image
+      run: docker pull abenbachir/oms-centos6-x64:latest
+
+    - name: Tests
+      run: docker run --rm -t -v $GITHUB_WORKSPACE/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos6-x64:latest /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux; make unittest"
+
+    - name: Build
+      run: docker run --rm -t -v $GITHUB_WORKSPACE/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos6-x64:latest /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux; make"
+
+    - name: Publish Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Build_x64
+        path: ${{ github.workspace }}/Build-OMS-Agent-for-Linux/omsagent/target/Linux_ULINUX_1.0_x64_64_Release

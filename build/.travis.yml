@@ -1,3 +1,4 @@
+# Travis-CI was deprecated, we have switched to Github Action
 language: c
 dist: trusty   # Travis build machine is Ubuntu Trusty 14.04 x64
 sudo: required # A sudo enabled, full VM is used for building instead of a docker container
