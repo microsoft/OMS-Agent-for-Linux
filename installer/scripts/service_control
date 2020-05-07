@@ -248,16 +248,13 @@ this_omsagent_running()
 
 is_omsagent_running()
 {
-    # Returns 1 if 'omsagent' is running, 0 otherwise
-    #### Keeping return value on this as it originally was.  I deduce
-    #### that because this value is returned with the is-running qualifier
-    #### to service_control, that there are scripts in other languages
-    #### that use the more conventional values for booleans.  Meanwhile,
-    #### I recommend deprecation in all but the external interface.  XC
+    # Returns 0 if 'omsagent' is running, 1 otherwise
+    #### Changed the old behavior of returning 1 for true 0 for false
+    #### because the script would always wrongly return 1 for new ws-id
     if this_omsagent_running; then
-        return 1
-    else
         return 0
+    else
+        return 1
     fi
 } 
 
