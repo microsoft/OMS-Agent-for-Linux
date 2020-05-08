@@ -15,6 +15,7 @@ OMS_SERVICE=/opt/microsoft/omsagent/bin/service_control
 WORKSPACE_ID=
 SYSLOG_PORT=
 
+
 RestartService() {
     if [ -z "$1" ]; then
         echo "RestartService requires parameter (service name to restart)" 1>&2
@@ -141,15 +142,13 @@ ConfigureSyslog_ng() {
         fi
 
         cat ${SYSLOG_NG_TEMP} | sed "s/%SOURCE%/${source}/g" | sed "s/%WORKSPACE_ID%/${WORKSPACE_ID}/g" | sed "s/%SYSLOG_PORT%/${SYSLOG_PORT}/g" >> ${SYSLOG_NG_DEST}
-        RestartService syslog-ng
-        [ $? != 0 ] && RestartService syslog # sles11 has syslog instead of syslog-ng
+        RestartService syslog-ng || RestartService syslog # sles11 has syslog instead of syslog-ng
     else
         # there was a previous setup, is the port right?
         egrep -q "port\(${SYSLOG_PORT}" ${SYSLOG_NG_DEST}
         if [ $? -ne 0 ]; then            
             sed -i -r "s/port\([0-9]+/port\(${SYSLOG_PORT}/g" ${SYSLOG_NG_DEST}
-            RestartService syslog-ng
-            [ $? != 0 ] && RestartService syslog
+            RestartService syslog-ng || RestartService syslog # sles11 has syslog instead of syslog-ng
         fi
     fi
 }
@@ -162,8 +161,7 @@ UnconfigureSyslog_ng() {
         cp ${SYSLOG_NG_DEST} ${SYSLOG_NG_DEST}.bak
         egrep -v "${WORKSPACE_ID}_oms" ${SYSLOG_NG_DEST}.bak > ${SYSLOG_NG_DEST}
         rm -f ${SYSLOG_NG_DEST}.bak 1> /dev/null 2> /dev/null
-        RestartService syslog-ng
-        [ $? != 0 ] && RestartService syslog
+        RestartService syslog-ng || RestartService syslog # sles11 has syslog instead of syslog-ng
     fi
 }
 
@@ -175,8 +173,7 @@ PurgeSyslog_ng() {
         cp ${SYSLOG_NG_DEST} ${SYSLOG_NG_DEST}.bak
         egrep -v "_oms" ${SYSLOG_NG_DEST}.bak > ${SYSLOG_NG_DEST}
         rm -f ${SYSLOG_NG_DEST}.bak 1> /dev/null 2> /dev/null
-        RestartService syslog-ng
-        [ $? != 0 ] && RestartService syslog
+        RestartService syslog-ng || RestartService syslog # sles11 has syslog instead of syslog-ng
     fi
 }
 
@@ -225,8 +222,7 @@ RestartSyslog() {
     elif [ -f ${OLD_RSYSLOG_DEST} ]; then
         RestartService rsyslog
     elif [ -f ${SYSLOG_NG_DEST} ]; then
-        RestartService syslog-ng
-        [ $? != 0 ] && RestartService syslog
+        RestartService syslog-ng || RestartService syslog # sles11 has syslog instead of syslog-ng
     else
         echo "No supported syslog daemon found; unable to restart syslog monitoring."
         return 1
