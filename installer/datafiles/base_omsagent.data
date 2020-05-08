@@ -165,10 +165,6 @@ MAINTAINER:              'Microsoft Corporation'
 
 /var/opt/microsoft;                                     755; root; root; sysdir
 
-/opt/microsoft/omsagent/bin/troubleshooter;             755; root; root
-/opt/microsoft/omsagent/bin/troubleshooter/files;       755; root; root
-/opt/microsoft/omsagent/bin/troubleshooter/files/datafiles; 755; root; root
-
 %Dependencies
 
 %Postinstall_100
