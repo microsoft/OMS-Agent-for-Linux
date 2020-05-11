@@ -151,7 +151,11 @@ module OMS
       assert_equal(TEST_UUID, Configuration.uuid, "VM UUID should be loaded")
       assert_not_equal(nil, Configuration.cert, "Certificate should be loaded")
       assert_not_equal(nil, Configuration.key, "Key should be loaded")
-      assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
+      azure_region_from_imds = OMS::Configuration.get_azure_region_from_imds()
+      puts "azure_region_from_imds=#{azure_region_from_imds}"
+      if azure_region_from_imds.nil? || azure_region_from_imds.empty?
+        assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
+      end
       Configuration.set_request_intervals(TEST_TOPOLOGY_INTERVAL, TEST_TELEMETRY_INTERVAL)
       assert_equal(TEST_TOPOLOGY_INTERVAL, Configuration.topology_interval, "Incorrect topology interval parsed")
       assert_equal(TEST_TELEMETRY_INTERVAL, Configuration.telemetry_interval, "Incorrect telemetry interval parsed")
@@ -187,7 +191,11 @@ module OMS
       # Should retry the second time since it did not find anything before
       success = Configuration.load_configuration(@tmp_conf_file.path, @tmp_cert_file.path, @tmp_key_file.path)
       assert_equal(true, success, 'Configuration should be loaded')
-      assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
+      azure_region_from_imds = OMS::Configuration.get_azure_region_from_imds()
+      puts "azure_region_from_imds=#{azure_region_from_imds}"
+      if azure_region_from_imds.nil? || azure_region_from_imds.empty?
+        assert_equal(["Azure region value is not set. This must be onpremise machine"], $log.logs, "There was an error loading the configuration")
+      end
     end
 
     def test_parse_proxy_config()
