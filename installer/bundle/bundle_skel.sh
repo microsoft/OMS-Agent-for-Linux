@@ -293,21 +293,31 @@ ulinux_detect_installer()
 {
     INSTALLER=
 
-    # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    check_if_program_in_path dpkg
-    if [ $? -eq 0 ]; then
+    ID_LIKE=$(cat /etc/*-release | uniq -u | grep -i ID_LIKE)
+
+    if [[ $ID_LIKE == *"debian"* ]]; then 
         INSTALLER=DPKG
+    elif [[ $ID_LIKE == *"rhel"* || $ID_LIKE == *"fedora"* ]]
+	INSTALLER=RPM
     else
-      check_if_program_in_path rpm
-      if [ $? -eq 0 ]; then
-        INSTALLER=RPM
-      else
-        #Exit with code 51 if system is not deb or rpm
-        echo "Error: This system does not have supported package manager"
-        echo "Supported Sytems: 'DPKG' & 'RPM'"
-        cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
-      fi
+	# Falling back to blindly detecting package managers if we're unable to determine ID_LIKE from release file.
+        # If DPKG lives here, assume we use that. Otherwise we use RPM.
+        check_if_program_in_path dpkg
+        if [ $? -eq 0 ]; then
+            INSTALLER=DPKG
+        else
+          check_if_program_in_path rpm
+          if [ $? -eq 0 ]; then
+            INSTALLER=RPM
+          else
+            #Exit with code 51 if system is not deb or rpm
+            echo "Error: This system does not have supported package manager"
+            echo "Supported Sytems: 'DPKG' & 'RPM'"
+            cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
+          fi
+        fi
     fi
+
 }
 
 # $1 - The name of the package to check as to whether it's installed

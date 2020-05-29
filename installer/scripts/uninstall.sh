@@ -19,13 +19,23 @@ ulinux_detect_installer()
 {
     INSTALLER=
 
-    # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    which dpkg > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
+    ID_LIKE=$(cat /etc/*-release | uniq -u | grep -i ID_LIKE)
+
+    if [[ $ID_LIKE == *"debian"* ]]; then 
         INSTALLER=DPKG
+    elif [[ $ID_LIKE == *"rhel"* || $ID_LIKE == *"fedora"* ]]
+	INSTALLER=RPM
     else
-        INSTALLER=RPM
+	# Falling back to blindly detecting package managers if we're unable to determine ID_LIKE from release file.
+        # If DPKG lives here, assume we use that. Otherwise we use RPM.
+        which dpkg > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            INSTALLER=DPKG
+        else
+            INSTALLER=RPM
+        fi
     fi
+
 }
 
 # $1 - The package name of the package to be uninstalled
