@@ -470,12 +470,9 @@ onboard()
         fi
     fi
 
-    #check for workspaces already onboarded and stop multihoming. If the workspace getting onboarded is the same as the primary workspace already onboarded, 
-    #then continue with the onboarding as that is the default behavior of remove + install. Remove doesn't delete the etc directories, though this is something 
-    #which should be looked into for later releases.
+    #check for workspaces already onboarded.
 
     local found_ws=0
-    local found_ws_id=""
     local ws_conf_dir=$ETC_DIR/conf
 
     if [ -h ${ws_conf_dir} ]; then
@@ -485,36 +482,27 @@ onboard()
         fi
 
         if [ "${primary_ws_id}" != "" ]; then
-            if [ "${primary_ws_id}" != "${WORKSPACE_ID}" ]; then
-                found_ws=1
-                found_ws_id=$primary_ws_id
-            fi
+            found_ws=1
         else
             for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
             do
-                if [ "${ws_id}" != "${WORKSPACE_ID}" ]; then
-                    found_ws=1
-                    found_ws_id=$ws_id
-                fi
+                found_ws=1
             done
         fi
     else
         # no default conf folder, check all the potential workspace folders
         for ws_id in `ls -1 $ETC_DIR | grep -E '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'`
         do
-             if [ "${ws_id}" != "${WORKSPACE_ID}" ]; then
-                 found_ws=1
-                 found_ws_id=$ws_id
-             fi
+            found_ws=1
         done
     fi
 
     if [ $found_ws -ne 0 ]; then
-        echo "Already Onboarded to a workspace ${found_ws_id} , please un-onboard first before trying to onboard to a new workspace."
+        echo "Already Onboarded to a workspace, please un-onboard first before trying to onboard to a new workspace."
         echo "Please check the status of onboarded workspaces by running ./omsadmin.sh -l"
         return 53
     fi
-    
+
     create_workspace_directories $WORKSPACE_ID
 
     # Guard against blank omsadmin.conf
