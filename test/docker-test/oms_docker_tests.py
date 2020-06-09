@@ -156,7 +156,7 @@ def main():
     if args.parallel:
         print('Running tests in parallel. Progress will be hidden. Final report will generated for each distro individually')
         for image in images:
-            flags = ' '.join([a for a in sys.argv[1:] if a not in images and a not in ['-p', '--parallel']])
+            flags = ' '.join([a for a in sys.argv[1:] if a not in images and a not in ['-p', '--parallel', '-d', '--distros']])
             cmd = 'python -u {0} {1} -d {2}'.format(sys.argv[0], flags, image).split()
             print(cmd)
             with open(os.devnull, 'wb') as devnull:
