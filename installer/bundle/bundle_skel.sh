@@ -291,22 +291,33 @@ ulinux_detect_openssl_version()
 
 ulinux_detect_installer()
 {
-    INSTALLER=
+    INSTALLER=""
 
-    # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    check_if_program_in_path dpkg
-    if [ $? -eq 0 ]; then
-        INSTALLER=DPKG
-    else
-      check_if_program_in_path rpm
-      if [ $? -eq 0 ]; then
-        INSTALLER=RPM
-      else
-        #Exit with code 51 if system is not deb or rpm
-        echo "Error: This system does not have supported package manager"
-        echo "Supported Sytems: 'DPKG' & 'RPM'"
+    # Detect based on distribution
+    if [ -f "/etc/debian_version" ]; then # Ubuntu, Debian
+        INSTALLER="DPKG"
+    elif [ -f "/etc/redhat-release" ]; then # RHEL, CentOS, Oracle
+        INSTALLER="RPM"
+    elif [ -f "/etc/os-release" ]; then # Possibly SLES, openSUSE
+        grep PRETTY_NAME /etc/os-release | sed 's/PRETTY_NAME=//g' | tr -d '="' | grep -qi suse
+        if [ $? == 0 ]; then
+            INSTALLER="RPM"
+        fi
+    fi
+
+    # Fall back on detection via package manager availability
+    if [ INSTALLER == "" ]; then
+        if [ -x "$(command -v dpkg)" ]; then
+            INSTALLER="DPKG"
+        elif [ -x "$(command -v rpm)" ]; then
+            INSTALLER="RPM"
+        fi
+    fi
+
+    if [ INSTALLER == "" ]; then
+        echo "Error: This system does not have supported package manager" >&2
+        echo "Supported Sytems: 'DPKG' & 'RPM'" >&2
         cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
-      fi
     fi
 }
 
