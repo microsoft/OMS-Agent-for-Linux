@@ -6,7 +6,7 @@
 - Download the tool and copy to any directory of your choice:
 
    ```
-   wget https://github.com/Microsoft/OMS-Agent-for-Linux/raw/master/tools/LogCollector/download/v4/omslinux_agentlog.tgz
+   wget https://github.com/Microsoft/OMS-Agent-for-Linux/raw/master/tools/LogCollector/download/v5/omslinux_agentlog.tgz
    ```  
    Recommendation is to copy the tool to the user’s home directory (/home/user)
 - Untar the archive file to extract OMS Log Collector source files:
@@ -48,7 +48,7 @@ sudo sh omslinux_agentlog.sh -s SR1234567890
 ```
 
 **Note:**
-The tool can be run directly using the python script: (optional)
+The tool can be run directly using the python script: (optional) (you may need to use `python2` or `python3` if your python command is unaliased)
 ```
 sudo python omslinux_agentlog.py [-h] -s <SR Number> [-c <Company Name>]
 ```
