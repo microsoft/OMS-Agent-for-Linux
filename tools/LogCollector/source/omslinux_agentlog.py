@@ -661,6 +661,10 @@ Common logic to run any command and check/get its output for further use
 def execCommand(cmd):
     try:
         out = subprocess.check_output(cmd, shell=True)
+
+        if sys.version_info >= (3,):
+            out = out.decode()
+
         return out
     except subprocess.CalledProcessError as e:
         print(e.returncode)
