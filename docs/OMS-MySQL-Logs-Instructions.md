@@ -84,6 +84,8 @@ If `mysql_logs.conf` is not present in the above location, move it:
 
 If you want to know more about internal metrics of your MySQL instance you can take advantage of the OMS json output and configure it as:
 
+1. Open the file `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/mysql_logs.conf` and append the following configuration, don't foget to update with your workspace ID:
+
 
 ```
 # Custom info
@@ -125,9 +127,10 @@ If you want to know more about internal metrics of your MySQL instance you can t
 
 Here is a sample of mysql_info.py script:
 
-/usr/local/bin/mysql_info.py
+![mysql_info.py](code_sample/mysql_info.py)
 
-Ensure that the user `omsagent` has read and execute permissions on the script file:  
+
+2. Ensure that the user `omsagent` has read and execute permissions on the script file:  
 `chmod +x /usr/local/bin/mysql_info.py`  
 
 Output:
@@ -136,7 +139,13 @@ Output:
 ```
 
 
-Go to OMS Log Search and see whether you can find any results:
+3. Restart the OMS agent:
+`sudo /opt/microsoft/omsagent/bin/service_control restart`
+
+Check the logs for any outstanding error:
+`tail -f /var/opt/microsoft/omsagent/<workspace id>/log/omsagent.log`
+
+4. Go to OMS Log Search and see whether you can find any results:
 
 ```
 // MySQL active connections
