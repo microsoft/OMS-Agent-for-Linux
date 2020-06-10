@@ -3,6 +3,7 @@
 # Title - OMS Health Check Script for Update Management Linux VM
 # Version - 2.0
 
+from __future__ import print_function
 import sys
 import os
 import os.path
@@ -41,13 +42,13 @@ class RuleInfo:
 
 def main(output_path=None, return_json_output="False"):
     if os.geteuid() != 0:
-        print "Please run this script as root"
+        print("Please run this script as root")
         exit()
 
     # supported python version 2.4.x to 2.7.x
     if not ((sys.version_info[0] == 2) and ((sys.version_info[1]>=4) and (sys.version_info[1] < 8))):
         log_msg = "Unsupport python version:%s.%s. Supported python version (2.4 to 2.7)" % (sys.version_info[0], sys.version_info[1])
-        print log_msg
+        print(log_msg)
         exit()
 
     global workspace
@@ -66,10 +67,10 @@ def main(output_path=None, return_json_output="False"):
     check_log_analytics_endpoints()
 
     if return_json_output == "True":
-        print json.dumps([obj.__dict__ for obj in rule_info_list])
+        print(json.dumps([obj.__dict__ for obj in rule_info_list]))
     else:
         for line in output:
-            print line
+            print(line)
 
         if output_path is not None:
             try:
@@ -81,7 +82,7 @@ def main(output_path=None, return_json_output="False"):
             f = open(log_path, "w")
             f.write("".join(output))
             f.close()
-            print "Output is written to " + log_path
+            print("Output is written to " + log_path)
 
 def get_machine_info():
     FNULL = open(os.devnull, "w")
