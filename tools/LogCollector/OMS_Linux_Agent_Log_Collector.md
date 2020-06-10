@@ -47,10 +47,8 @@ sudo python omslinux_agentlog.py -s SR1234567890
 ```
 
 ## Log Collector Source File Manifest:
-- omslinux_agentlog.sh
-    A shell script to check pre-requisites are installed and call the python script to start collecting logs and command outputs
-- omslinux_agentlog.py
-    A python script to collect LOGS and COMMAND Line output for further troubleshooting
+- `omslinux_agentlog.sh`: A shell script to check pre-requisites are installed and call the python script to start collecting logs and command outputs
+- `omslinux_agentlog.py`: A python script to collect LOGS and COMMAND Line output for further troubleshooting
 
 ## Log Collector Output Files and Directories:
 - All logs are saved under `/tmp/omslogs/`
@@ -95,11 +93,10 @@ sudo python omslinux_agentlog.py -s SR1234567890
             * syslog
 
 ## References:
-- Connect your Linux Computers to Operations Management Suite (OMS): https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-agent-linux
-- Troubleshooting Guide for OMS Agent for Linux: https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting.md
-https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting.md#installation-error-codes
-- OmsAgentForLinux Azure VM extension documentation: https://docs.microsoft.com/en-us/azure/virtual-machines/linux/extensions-oms
-- Connect Azure virtual machines to Log Analytics with a Log Analytics agent: https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-azure-vm-extension
+- [Connect your Linux Computers to Operations Management Suite (OMS)](https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-agent-linux)
+- [Troubleshooting Guide for OMS Agent for Linux (including error codes)](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/agent-linux-troubleshoot)
+- [OMS Agent for Linux Azure VM extension documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/extensions-oms)
+- [Connect Azure virtual machines to Log Analytics with a Log Analytics agent](https://docs.microsoft.com/en-us/azure/log-analytics/log-analytics-azure-vm-extension)
 
 ## APPENDIX:
 ### How to publish new version of Log collector
