@@ -553,14 +553,14 @@ get_python_command()
     elif [ -x "$(command -v python3)" ]; then
         echo "python3"
     else
-        echo "none"
+        echo ""
     fi
 }
 
 python_installed()
 {
     PYTHON=$(get_python_command)
-    if [ $PYTHON != "none" ]; then
+    if [ "$PYTHON" != "" ]; then
         return 0
     else
         return 1
