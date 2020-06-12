@@ -17,10 +17,10 @@ The Log Analytics agent for Linux comprises multiple packages. The release file 
 
 **Package** | **Version** | **Description**
 ----------- | ----------- | --------------
-omsagent | 1.12.15 | The Operations Management Suite Agent for Linux
+omsagent | 1.13.7 | The Operations Management Suite Agent for Linux
 omsconfig | 1.1.1 | Configuration agent for the OMS Agent
-omi | 1.6.3 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
-scx | 1.6.3 | OMI CIM Providers for operating system performance metrics
+omi | 1.6.4 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
+scx | 1.6.4 | OMI CIM Providers for operating system performance metrics
 apache-cimprov | 1.0.1 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
 mysql-cimprov | 1.0.1 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
 docker-cimprov | 1.0.0 | Docker provider for OMI. Only installed if Docker is detected.
@@ -38,8 +38,9 @@ After installing the Log Analytics agent for Linux packages, the following addit
 Glibc |	GNU C Library	| 2.5-12 
 Openssl	| OpenSSL Libraries | 1.0.1 or 1.1.x
 Curl | cURL web client | 7.15.5
-Python-ctypes | | 
-PAM | Pluggable Authentication Modules	 | 
+Python 2 | | 2.6
+Python-ctypes | |
+PAM | Pluggable Authentication Modules |
 
 **Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog.
 
