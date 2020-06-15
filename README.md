@@ -48,13 +48,15 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 ### Supported Distro/Version strategy
 The Log Analytics agent for Linux is built to work with Azure Monitor logs, which has a limited scope of scenarios. Our strategy for supporting new distros and versions starting August 2018 is that we will:
 1. Only support server versions, no client OS versions.
-2. Focus support on any of the [Azure Linux Endorsed distros](../../virtual-machines/linux/endorsed-distros.md). Note that there may be some delay between a new distro/version being Azure Linux Endorsed and it being supported for the Log Analytics Linux agent.
+2. Focus support on any of the [Azure Linux Endorsed distros](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros). Note that there may be some delay between a new distro/version being Azure Linux Endorsed and it being supported for the Log Analytics Linux agent.
 3. Not support versions that have passed their manufacturer's end-of-support date.
 4. Always support the latest GA version of a supported distro.
 5. Not support new versions of AMI.
 6. Only support versions that run SSL 1.x by default.
 
 If you are using a distro or version that is not currently supported and doesn't fit our future support strategy, we recommend that you fork this repo, acknowledging that Microsoft support will not provide assistance with for forked agent versions.
+
+### [Python Requrements](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/log-analytics-agent#python-2-requirement)
 
 ### 64-bit
 * CentOS 6 and 7
