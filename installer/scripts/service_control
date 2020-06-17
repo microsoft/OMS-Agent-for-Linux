@@ -470,11 +470,9 @@ stop_omsagent()
 
 restart_omsagent()
 {
+    enable_omsagent_service
     remove_PIDfile_unless_omsagent_running
-    if this_omsagent_running; then
-        enable_omsagent_service
-    else
-        start_omsagent
+    if [ "$WS_STATUS" -ne "0" ]; then
         return $WS_STATUS
     fi
 
