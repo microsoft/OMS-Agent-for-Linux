@@ -6,10 +6,10 @@
 
 
 # Values to be updated upon each new release
+GITHUB_RELEASE_X64="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.13.7-0/"
 GITHUB_RELEASE_X86="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/"
-GITHUB_RELEASE_X64="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/"
 
-BUNDLE_X64="omsagent-1.12.15-0.universal.x64.sh"
+BUNDLE_X64="omsagent-1.13.7-0.universal.x64.sh"
 BUNDLE_X86="omsagent-1.12.15-0.universal.x86.sh"
 
 usage()
@@ -101,5 +101,7 @@ if [ $(uname -m) = 'x86_64' ]; then
     wget -O ${BUNDLE_X64} ${GITHUB_RELEASE_X64}${BUNDLE_X64} && $SUDO sh ./${BUNDLE_X64} ${bundleParameters}
 else
     # x86 architecture
+    echo "Note that there will be no further releases of the 32-bit OMS Linux agent."
+    echo "The final version with 32-bit support is 1.12.15-0, which will now be installed."
     wget -O ${BUNDLE_X86} ${GITHUB_RELEASE_X86}${BUNDLE_X86} && $SUDO sh ./${BUNDLE_X86} ${bundleParameters}
 fi

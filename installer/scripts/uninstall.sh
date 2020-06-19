@@ -17,14 +17,27 @@ fi
 
 ulinux_detect_installer()
 {
-    INSTALLER=
+    INSTALLER=""
 
-    # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    which dpkg > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        INSTALLER=DPKG
-    else
-        INSTALLER=RPM
+    # Detect based on distribution
+    if [ -f "/etc/debian_version" ]; then # Ubuntu, Debian
+        INSTALLER="DPKG"
+    elif [ -f "/etc/redhat-release" ]; then # RHEL, CentOS, Oracle
+        INSTALLER="RPM"
+    elif [ -f "/etc/os-release" ]; then # Possibly SLES, openSUSE
+        grep PRETTY_NAME /etc/os-release | sed 's/PRETTY_NAME=//g' | tr -d '="' | grep -qi suse
+        if [ $? == 0 ]; then
+            INSTALLER="RPM"
+        fi
+    fi
+
+    # Fall back on detection via package manager availability
+    if [ "$INSTALLER" == "" ]; then
+        if [ -x "$(command -v dpkg)" ]; then
+            INSTALLER="DPKG"
+        elif [ -x "$(command -v rpm)" ]; then
+            INSTALLER="RPM"
+        fi
     fi
 }
 

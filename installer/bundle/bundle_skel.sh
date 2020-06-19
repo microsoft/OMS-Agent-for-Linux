@@ -65,6 +65,7 @@ INTERNAL_ERROR=30
 # Package pre-requisites fail
 DEPENDENCY_MISSING=52 #https://github.com/Azure/azure-marketplace/wiki/Extension-Build-Notes-Best-Practices#error-codes-and-messages-output-to-stderr
 UNSUPPORTED_OPENSSL=55 #60, temporary as 55 excludes from SLA
+INSTALL_PYTHON=60
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
 INSTALL_SED=63
@@ -291,22 +292,33 @@ ulinux_detect_openssl_version()
 
 ulinux_detect_installer()
 {
-    INSTALLER=
+    INSTALLER=""
 
-    # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    check_if_program_in_path dpkg
-    if [ $? -eq 0 ]; then
-        INSTALLER=DPKG
-    else
-      check_if_program_in_path rpm
-      if [ $? -eq 0 ]; then
-        INSTALLER=RPM
-      else
-        #Exit with code 51 if system is not deb or rpm
-        echo "Error: This system does not have supported package manager"
-        echo "Supported Sytems: 'DPKG' & 'RPM'"
+    # Detect based on distribution
+    if [ -f "/etc/debian_version" ]; then # Ubuntu, Debian
+        INSTALLER="DPKG"
+    elif [ -f "/etc/redhat-release" ]; then # RHEL, CentOS, Oracle
+        INSTALLER="RPM"
+    elif [ -f "/etc/os-release" ]; then # Possibly SLES, openSUSE
+        grep PRETTY_NAME /etc/os-release | sed 's/PRETTY_NAME=//g' | tr -d '="' | grep -qi suse
+        if [ $? == 0 ]; then
+            INSTALLER="RPM"
+        fi
+    fi
+
+    # Fall back on detection via package manager availability
+    if [ "$INSTALLER" == "" ]; then
+        if [ -x "$(command -v dpkg)" ]; then
+            INSTALLER="DPKG"
+        elif [ -x "$(command -v rpm)" ]; then
+            INSTALLER="RPM"
+        fi
+    fi
+
+    if [ "$INSTALLER" == "" ]; then
+        echo "Error: This system does not have a supported package manager" >&2
+        echo "Supported Sytems: 'DPKG' & 'RPM'" >&2
         cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
-      fi
     fi
 }
 
@@ -508,7 +520,7 @@ get_arch()
 
 compare_arch()
 {
-    #check if the user is trying to install the correct bundle (x64 vs. x86)
+    # Check if the user is trying to install the correct bundle (x64 vs. x86)
     echo "Checking host architecture ..."
     HOST_ARCH=$(get_arch)
 
@@ -534,13 +546,40 @@ compare_install_type()
     fi
 }
 
+get_python_command()
+{
+    if [ -x "$(command -v python2)" ]; then
+        echo "python2"
+    elif [ -x "$(command -v python3)" ]; then
+        echo "python3"
+    else
+        echo ""
+    fi
+}
+
+python_installed()
+{
+    PYTHON=$(get_python_command)
+    if [ "$PYTHON" != "" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 python_ctypes_installed()
 {
     # Check for Python ctypes library (required for omsconfig)
     hasCtypes=1
 
+    # Can't have ctypes without python itself
+    python_installed
+    if [ $? -ne 0 ]; then
+        return $hasCtypes
+    fi
+
     # Attempt to run python with the single import command
-    python -c "import ctypes" > /dev/null 2>&1
+    $PYTHON -c "import ctypes" > /dev/null 2>&1
     [ $? -eq 0 ] && hasCtypes=0
 
     return $hasCtypes
@@ -582,14 +621,18 @@ shouldInstall_omsagent()
 
 shouldInstall_omsconfig()
 {
-    # Package omsconfig will never install without Python ctypes and curl ...
-    if python_ctypes_installed; then
-        if check_if_program_exists_on_system curl; then
-            local versionInstalled=`getInstalledVersion omsconfig`
-            [ "$versionInstalled" = "None" ] && return 0
-            local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
+    # Package omsconfig will never install without Python, Python ctypes, and curl ...
+    if python_installed; then
+        if python_ctypes_installed; then
+            if check_if_program_exists_on_system curl; then
+                local versionInstalled=`getInstalledVersion omsconfig`
+                [ "$versionInstalled" = "None" ] && return 0
+                local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
 
-            check_version_installable $versionInstalled $versionAvailable
+                check_version_installable $versionInstalled $versionAvailable
+            else
+                return 1
+            fi
         else
             return 1
         fi
@@ -1065,6 +1108,20 @@ fi
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     compare_install_type
     compare_arch
+
+    python_installed
+    if [ $? -ne 0 ]; then
+        if [ -z "${forceFlag}" ]; then
+            echo "Error: Python is not installed on this system, installation cannot continue." >&2
+            echo "Please install either the python2 or python3 package." >&2
+            echo "You can run this shell bundle with --force; in this case, we will install omsagent," >&2
+            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed." >&2
+            cleanup_and_exit $INSTALL_PYTHON
+        else
+            echo "Python is not installed on this system, please install either the python2 or python3 package and re-install omsconfig later."
+            echo "Installation will continue without installing omsconfig."
+        fi
+    fi
 
     python_ctypes_installed
     if [ $? -ne 0 ]; then

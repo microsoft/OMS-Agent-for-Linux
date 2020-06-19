@@ -18,6 +18,7 @@ PATH=/usr/bin:/usr/sbin:/bin:/sbin
 umask 022
 
 OMS_LOGCOLLECTOR=omslinux_agentlog.py
+PYTHON=""
 
 # Can't use something like 'readlink -e $0' because that doesn't work everywhere
 # And HP doesn't define $PWD in a sudo environment, so we define our own
@@ -50,29 +51,42 @@ python_prereqchk()
     # Check for Python ctypes library (required for omsconfig)
     prereqpass=0
     echo "Checking for python install ..."
-    which python 1> /dev/null 2> /dev/null
+    which python2 1> /dev/null 2> /dev/null
+    if [ $? -eq 0 ]; then
+        PYTHON="python2"
+        echo "Using $PYTHON"
+    else
+        which python3 1> /dev/null 2> /dev/null
+        if [ $? -eq 0 ]; then
+            PYTHON="python3"
+            echo "Using $PYTHON"
+        else
+            "No python2 or python3 executable found"
+            prereqpass=1
+            return $prereqpass
+        fi
+    fi
+
+    echo "Checking for required python modules ..."
+    $PYTHON -c "import ctypes" 1> /dev/null 2> /dev/null
     [ $? -ne 0 ] && prereqpass=1
 
-    echo "Checking for python module ..."
-    python -c "import ctypes" 1> /dev/null 2> /dev/null
+    $PYTHON -c "import os" 1> /dev/null 2> /dev/null
     [ $? -ne 0 ] && prereqpass=1
 
-    python -c "import os" 1> /dev/null 2> /dev/null
+    $PYTHON -c "import subprocess" 1> /dev/null 2> /dev/null
     [ $? -ne 0 ] && prereqpass=1
 
-    python -c "import subprocess" 1> /dev/null 2> /dev/null
+    $PYTHON -c "import logging" 1> /dev/null 2> /dev/null
     [ $? -ne 0 ] && prereqpass=1
 
-    python -c "import logging" 1> /dev/null 2> /dev/null
+    $PYTHON -c "import sys" 1> /dev/null 2> /dev/null
     [ $? -ne 0 ] && prereqpass=1
 
-    python -c "import sys" 1> /dev/null 2> /dev/null
+    $PYTHON -c "import getopt" 1> /dev/null 2> /dev/null
     [ $? -ne 0 ] && prereqpass=1
 
-    python -c "import getopt" 1> /dev/null 2> /dev/null
-    [ $? -ne 0 ] && prereqpass=1
-
-    python -c "import datetime" 1> /dev/null 2> /dev/null
+    $PYTHON -c "import datetime" 1> /dev/null 2> /dev/null
     [ $? -ne 0 ] && prereqpass=1
 
     return $prereqpass
@@ -118,7 +132,7 @@ done
 
 python_prereqchk
 if [ $? -ne 0 ]; then
-     echo "Required python pre-requisite modules not installed to collect OMS Logs..."
+     echo "Required OMS prerequisite python executable and python modules not installed ..."
      exit 1
 fi
 
@@ -132,9 +146,9 @@ echo "Calling Python script to collect OMS Logs...<START> $3"
 if [ -n $3 ] && [ "$3" = "-c" ]; then
      echo $3
      echo $4
-     sudo python $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" -c "$4"
+     sudo $PYTHON $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" -c "$4"
 else
-     sudo python $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" 
+     sudo $PYTHON $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2"
 fi
 echo "Calling Python script to collect OMS Logs...<END>"
 
