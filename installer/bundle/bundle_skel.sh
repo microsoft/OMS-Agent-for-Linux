@@ -307,7 +307,7 @@ ulinux_detect_installer()
     fi
 
     # Fall back on detection via package manager availability
-    if [ "$INSTALLER" == "" ]; then
+    if [ "$INSTALLER" = "" ]; then
         if [ -x "$(command -v dpkg)" ]; then
             INSTALLER="DPKG"
         elif [ -x "$(command -v rpm)" ]; then
@@ -315,7 +315,7 @@ ulinux_detect_installer()
         fi
     fi
 
-    if [ "$INSTALLER" == "" ]; then
+    if [ "$INSTALLER" = "" ]; then
         echo "Error: This system does not have a supported package manager" >&2
         echo "Supported Sytems: 'DPKG' & 'RPM'" >&2
         cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
