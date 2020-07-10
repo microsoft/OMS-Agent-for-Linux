@@ -11,29 +11,29 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-bin_path="/opt/microsoft/omsagent/bin/"
-omsagent_tsg_path="${bin_path}/omsagent_tsg"
-plugin_tsg_path="/opt/microsoft/omsagent/plugin/troubleshooter"
+BIN_PATH="/opt/microsoft/omsagent/bin/"
+OMSAGENT_TSG_PATH="${BIN_PATH}/omsagent_tsg"
+PLUGIN_TSG_PATH="/opt/microsoft/omsagent/plugin/troubleshooter"
 
 echo "Getting ready to install troubleshooter..."
 
 # set up machine
 
-if [ -d $plugin_tsg_path ]; then
+if [ -d $PLUGIN_TSG_PATH ]; then
     # get rid of old files to update
     echo "Removing older version of troubleshooter..."
-    rm -rf $plugin_tsg_path
-    rm -f $omsagent_tsg_path
+    rm -rf $PLUGIN_TSG_PATH
+    rm -f $OMSAGENT_TSG_PATH
 fi
 
 # copy over files
 echo "Installing troubleshooter on machine..."
-mkdir $plugin_tsg_path
-cp -r tsg_files/tsg_code $plugin_tsg_path
-cp -r tsg_files/tsg_tools $plugin_tsg_path
-cp tsg_files/omsagent_tsg $bin_path
+mkdir -p $PLUGIN_TSG_PATH
+cp -r tsg_files/tsg_code $PLUGIN_TSG_PATH
+cp -r tsg_files/tsg_tools $PLUGIN_TSG_PATH
+cp tsg_files/omsagent_tsg $BIN_PATH
 
-echo "You can now run the troubleshooter by going to $bin_path and running the below command:"
+echo "You can now run the troubleshooter by going to $BIN_PATH and running the below command:"
 echo ""
 echo "$ sudo ./omsagent_tsg"
 echo ""
