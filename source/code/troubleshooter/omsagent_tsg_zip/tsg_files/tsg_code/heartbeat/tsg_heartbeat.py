@@ -35,7 +35,8 @@ def check_omsagent_running_omsadmin(workspace):
         err_regx = "-e error	(\b+)\n"
         err_matches = re.match(err_regx, output)
         if (err_matches == None):
-            return 200  # TODO: fix err code here
+            tsg_error_info.append((omsadmin_sh_path, output))
+            return 125
         # matched to error
         err_info = err_matches.groups()[0]
         # check if permission error
@@ -51,7 +52,7 @@ def check_omsagent_running_omsadmin(workspace):
 
     # check correct workspace
     if (output_wkspc != workspace):
-        tsg_error_info.append(output_wkspc, workspace)
+        tsg_error_info.append((output_wkspc, workspace))
         return 121
 
     # check status
