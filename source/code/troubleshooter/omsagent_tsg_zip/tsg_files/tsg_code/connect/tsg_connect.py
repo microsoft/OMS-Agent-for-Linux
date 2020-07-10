@@ -1,32 +1,13 @@
 import os
 import subprocess
 
-from tsg_errors           import tsg_error_info, ask_onboarding_error_codes, is_error, \
+from tsg_errors           import ask_onboarding_error_codes, is_error, \
                                  print_errors
 from install.tsg_install  import check_installation
 from install.tsg_checkoms import get_oms_version
 from .tsg_checkendpts     import check_internet_connect, check_agent_service_endpt, \
                                  check_log_analytics_endpts
 from .tsg_checke2e        import check_e2e
-
-omsadmin_path = "/opt/microsoft/omsagent/bin/omsadmin.sh"
-
-
-
-# Verify omsadmin.conf exists / not empty
-def check_omsadmin(): 
-    # check if exists
-    if (not os.path.isfile(omsadmin_path)):
-        tsg_error_info.append(('file', omsadmin_path))
-        return 114
-    # check if not empty
-    if (os.stat(omsadmin_path).st_size == 0):
-        tsg_error_info.append((omsadmin_path,))
-        # TODO: copy contents into it upon asking?
-        return 118
-    # all good
-    return 0
-        
 
 
 
@@ -43,15 +24,6 @@ def check_connection(err_codes=True, prev_success=0):
     print("Checking if installed correctly...")
     if (get_oms_version() == None):
         print_errors(111)
-        print("Running the installation part of the troubleshooter in order to find the issue...")
-        print("================================================================================")
-        return check_installation(err_codes=False, prev_success=101)
-
-    # check omsadmin.conf
-    print("Checking if omsadmin.conf created correctly...")
-    checked_omsadmin = check_omsadmin()
-    if (is_error(checked_omsadmin)):
-        print_errors(checked_omsadmin)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
         return check_installation(err_codes=False, prev_success=101)
