@@ -14,7 +14,7 @@ def check_e2e():
     failures = []
 
     print("--------------------------------------------------------------------------------")
-    print(" Please go to https://ms.portal.azure.com and navigate to your workspace.\n"\
+    print(" Please go to https://portal.azure.com and navigate to your workspace.\n"\
           " Once there, please navigate to the 'Logs' blade, and input the queries that\n"\
           " will be printed below. If the query was successful, then you should see one\n"\
           " result; if not, then there will be no results.\n")
