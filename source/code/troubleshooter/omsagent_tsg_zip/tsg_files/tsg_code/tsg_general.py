@@ -182,7 +182,6 @@ def run_tsg():
         "  - Workspace Name\n"\
         "  - Region Workspace is located\n"\
         "  - Pricing Tier assigned to the Workspace\n"\
-        "(The above points can all be found in Azure Support Center.)\n"\
         "  - Linux Distribution on the VM\n"\
         "  - Log Analytics Agent Version")
     return
