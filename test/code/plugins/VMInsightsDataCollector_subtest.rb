@@ -356,7 +356,10 @@ module VMInsights
             IO.popen("#{DF} --type=ext2 --type=ext3 --type=ext4 --block-size=1 | awk '{print $1,$6,$2}' | tail -n +2", { :in => :close}) { |io|
                 data = io.readlines
                 data.each { |line|
-                    raise ArgumentError, line unless line.start_with?("/dev/")
+                    if !line.start_with?("/dev/")
+                        puts "Warning: Line doesn't start with #{line}, will be skiped"
+                        next
+                    end
                     s = line.split(" ")
                     key = s[0].sub(/^\/dev\//, '')
                     omit "#{key} is mounted multiple times. Running in a container" if expected.has_key? key
@@ -649,7 +652,7 @@ module VMInsights
             check_for_baseline_common
             @object_under_test.baseline
 
-            mock_lsblk "NAME LOG-SEC\nnew_disk 17"
+            mock_lsblk "new_disk 17"
             make_mock_disk_stats [
                                     { :name => "new_disk", :reads => 1, :read_sectors => 2, :writes => 3, :write_sectors => 4 }
                                  ]
@@ -660,6 +663,8 @@ module VMInsights
             }
             time_after_1st_get = Time.now
             assert ex.message.include?("no previous data for new_disk"), ex.inspect
+            # should have polled lsblk to get sector size
+            assert_lsblk_exit
 
             sleep 1
             make_mock_disk_stats [
@@ -668,8 +673,8 @@ module VMInsights
             time_before_2nd_get = Time.now
             actual = @object_under_test.get_disk_stats("new_disk")
             time_after_2nd_get = Time.now
-            # should have polled lsblk to get sector size
-            assert_lsblk_exit
+
+            assert_lsblk_not_run
 
             assert_equal "new_disk", actual.device
             assert_equal 10, actual.reads
@@ -778,7 +783,7 @@ module VMInsights
 
             }
 
-            mock_lsblk_devs = "NAME LOG-SEC\n"
+            mock_lsblk_devs = ""
             disks.each do |k, v|
                 mock_lsblk_devs += "#{k} "
                 mock_lsblk_devs += v[:sector_size].to_s
@@ -824,8 +829,8 @@ module VMInsights
 
         def make_routes(devs)
             File.open(@mock_netroute, WriteASCII) { |f|
-                f.puts "iiii ddddddd ggggg fffff rc u m mk mtu w I" # header line
-                format = "%-7s %08X    %08X       1  0 0 0 abcdef01 0 0 1"
+                f.puts "iiii\tddddddd\tggggg\tfffff\trc\tu\tm\tmk\tmtu\tw\tI" # header line
+                format = "%s\t%08X\t%08X\t1\t0\t0\t0\tabcdef01\t0\t0\t1"
                 devs.each { |d|
                     f.puts format % [ d, randint | 0xffffffff, 0 ]
                     f.puts format % [ d, 0 , randint | 0xffffffff ]
@@ -1106,6 +1111,12 @@ module VMInsights
             File.delete(@lsblk_result)
         end
 
+        def assert_lsblk_not_run
+            if File.exist?(@lsblk_result)
+                flunk IO.read @lsblk_result
+            end
+        end
+
         class Fs
             def initialize(dev, mp, size, free, type=(Random.rand(3) + 2))
                 @dev = dev
@@ -1181,14 +1192,16 @@ module VMInsights
             }
         end
 
-        def mock_lsblk(devs = "", expected_dev=nil)
+        def mock_lsblk(devs = nil)
             File.open(@lsblk, WriteASCII, 0755) { |f|
                 marker="__MARK#{randint}__"
                 f.puts "#!/bin/sh"
                 f.puts "if [ \"$1\" != '-sd' -o \"$2\" != '-oNAME,LOG-SEC' ]; then echo bad args: $* > #{@lsblk_result} ; exit 1; fi"
-                f.puts "if [ $# -ne 3 -o \"$3\" != '#{expected_dev}' ]; then echo bad args: $* > #{@lsblk_result} ; exit 1; fi" unless expected_dev.nil?
                 f.puts "cat <<#{marker}"
-                f.puts devs
+                f.puts "NAME LOG-SEC"
+                f.puts "junk-d1    17"
+                f.puts devs unless devs.nil?
+                f.puts "junk-d2    42"
                 f.puts "#{marker}"
                 f.puts "echo -n > #{@lsblk_result}"
                 f.puts "exit 0"

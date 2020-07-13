@@ -547,6 +547,8 @@ onboard()
         case "$ASSET_TAG" in
             77*) OMSCLOUD_ID=$ASSET_TAG ;;       # If the asset tag begins with a 77 this is the azure guid
         esac
+        PRODUCT_UUID=$(cat /sys/devices/virtual/dmi/id/product_uuid)
+        UUID=$(echo $PRODUCT_UUID | tr '[:upper:]' '[:lower:]')
     fi
 
     #This is a temporary fix for Systems with Curl versions using HTTP\2 as default
@@ -1141,7 +1143,10 @@ configure_logrotate()
 
     # create the logrotate file for omsagent if workspace is LAD
     if [ "$WORKSPACE_ID" = "LAD" ]; then
-        echo "/var/opt/microsoft/omsagent/LAD/log/omsagent.log {\n\trotate 10\n\tmissingok\n\tnotifempty\n\tcompress\n\tsize 100M\n\tcopytruncate\n}" > /etc/logrotate.d/omsagent-$WORKSPACE_ID
+        # create the logrotate file for the LAD if it doesn't exist
+    	if [ ! -f /etc/logrotate.d/omsagent-$WORKSPACE_ID ]; then
+            cp $SYSCONF_DIR/lad-logrotate.conf  /etc/logrotate.d/omsagent-$WORKSPACE_ID
+    	fi
     else
     	# create the logrotate file for the workspace if it doesn't exist
     	if [ ! -f /etc/logrotate.d/omsagent-$WORKSPACE_ID ]; then

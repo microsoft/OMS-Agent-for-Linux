@@ -17,6 +17,7 @@ module OMS
     require 'digest'
     require 'date'
     require 'securerandom'
+    require 'resolv-replace'
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
@@ -513,13 +514,13 @@ module OMS
             end
           end
 
-          # calculate the md5 of /etc/locatime
-          md5sum = Digest::MD5.file(@@tzLocalTimePath).hexdigest
+          # calculate the hash of /etc/locatime
+          hashsum = Digest::SHA256.file(@@tzLocalTimePath).hexdigest
 
           # looks for a file in the /usr/share/zoneinfo/, which is identical to /etc/localtime. use the file name as the timezone
           Dir.glob("#{@@tzBaseFolder}**/*") { |filepath|
-            # find all the files whose md5 is the same as the /etc/localtime
-            if File.file? filepath and Digest::MD5.file(filepath).hexdigest == md5sum
+            # find all the files whose SHA256 is the same as the /etc/localtime
+            if File.file? filepath and Digest::SHA256.file(filepath).hexdigest == hashsum
               tzID = get_unified_timezoneid(filepath)
 
               # look for the entry in the timezone mapping
@@ -651,7 +652,8 @@ module OMS
             @@AgentVersion = agent_version
           end
         end
-        return @@AgentVersion
+
+        return @@AgentVersion.nil? ? '0.0.0-0': @@AgentVersion
       end
 
       def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
@@ -730,6 +732,11 @@ module OMS
         if compress == true
           headers["Content-Encoding"] = "deflate"
         end
+
+        headers["User-Agent"] = "LinuxMonitoringAgent/#{OMS::Common.get_agent_version}"
+        headers[OMS::CaseSensitiveString.new("x-ms-app")] = "LinuxMonitoringAgent"
+        headers[OMS::CaseSensitiveString.new("x-ms-client-version")] = OMS::Common.get_agent_version
+        headers[OMS::CaseSensitiveString.new("x-ms-client-platform")] = "Linux"
 
         req = Net::HTTP::Post.new(path, headers)
         json_msg = serializer.call(record)
@@ -887,17 +894,11 @@ module OMS
     
     def get_ip_from_socket(hostname)
       begin
-        addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)
+        return Resolv.getaddress(hostname)
       rescue => error
         OMS::Log.error_once("Unable to resolve the IP of '#{hostname}': #{error}")
         return nil
       end
-
-      if addrinfos.size >= 1
-        return addrinfos[0][3]
-      end
-
-      return nil
     end
 
     def refresh_cache

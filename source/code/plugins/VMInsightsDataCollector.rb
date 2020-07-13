@@ -159,18 +159,25 @@ module VMInsights
             def initialize(log, root)
                 @log = log
                 @root = root
-                @sector_sizes = Hash.new() { |h, k| h[k] = get_sector_size(k) }
+                @sector_sizes = Hash.new { |h, k| h[k] = get_sector_size(k) }
                 @saved_disk_data = { }
             end
 
             def baseline
-                @sector_sizes.replace(get_sector_sizes)
+                @sector_sizes.clear()
+                @sector_sizes.merge!(get_sector_sizes)
                 @saved_disk_data = { }
-                @sector_sizes.each_pair { |d, s| @saved_disk_data[d] = get_disk_data(d, s) }
+                @sector_sizes.each_pair { |d, s|
+                    begin
+                        @saved_disk_data[d] = get_disk_data(d, s)
+                    rescue IDataCollector::Unavailable => ex
+                        # NOP
+                    end
+                }
             end
 
             def get_disk_stats(dev)
-                current = get_disk_data dev, get_sector_size(dev)
+                current = get_disk_data dev, @sector_sizes[dev]
                 raise IDataCollector::Unavailable, "no data for #{dev}" if current.nil?
                 previous = @saved_disk_data[dev]
                 @saved_disk_data[dev] = current
@@ -182,11 +189,11 @@ module VMInsights
 
             def get_sector_size(dev)
                 raise ArgumentError, "dev is nil" if dev.nil?
-                data = get_sector_sizes(dev)
+                data = get_sector_sizes
                 data[dev]
             end
 
-            def get_sector_sizes(*devices)
+            def get_sector_sizes()
                 cmd = [ File.join(@root, "bin", "lsblk"), "-sd", "-oNAME,LOG-SEC" ]
                 result = { }
                 begin
@@ -195,9 +202,7 @@ module VMInsights
                         while (line = io.gets)
                             s = line.split(" ")
                             next if s.length < 2
-                            if (devices.empty? || devices.include?(s[0]))
-                                result[s[0]] = s[1].to_i
-                            end
+                            result[s[0]] = s[1].to_i
                         end
                     }
                 rescue => ex
@@ -208,20 +213,24 @@ module VMInsights
 
             def get_disk_data(dev, sector_size)
                 path = File.join(@root, "sys", "class", "block", dev, "stat")
-                File.open(path, "rb") { |f|
-                    line = f.gets
-                    raise Unavailable, "#{path}: is empty" if line.nil?
-                    data = line.split(" ")
-                    RawDiskData.new(
-                                    dev,
-                                    Time.now,
-                                    data[0].to_i,
-                                    data[2].to_i,
-                                    data[4].to_i,
-                                    data[6].to_i,
-                                    sector_size
-                                    )
-                }
+                begin
+                    File.open(path, "rb") { |f|
+                        line = f.gets
+                        raise Unavailable, "#{path}: is empty" if line.nil?
+                        data = line.split(" ")
+                        RawDiskData.new(
+                                        dev,
+                                        Time.now,
+                                        data[0].to_i,
+                                        data[2].to_i,
+                                        data[4].to_i,
+                                        data[6].to_i,
+                                        sector_size
+                                        )
+                    }
+                rescue Errno::ENOENT => ex
+                    raise IDataCollector::Unavailable, "#{path}: #{ex}"
+                end
             end
 
             class DiskData
@@ -329,7 +338,7 @@ module VMInsights
                 File.open(File.join(@root, "proc", "net", "route")) { |f|
                     f.gets # skip the header
                     while (line = f.gets)
-                        dev = line.partition(" ")[0]
+                        dev = line.partition(/\t+/)[0]
                         result[dev] = true unless dev.empty?
                     end
                 }

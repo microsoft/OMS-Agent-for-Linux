@@ -31,9 +31,9 @@ If you are an Azure customer, we have an Azure VM extension that allows you to e
 
 ## [Full installation guide](https://docs.microsoft.com/azure/azure-monitor/platform/log-analytics-agent)
 
-## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/omsagent-1.12.15-0.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.13.7-0/omsagent-1.13.7-0.universal.x64.sh)
 
-## [Download Latest OMS Agent for Linux (32-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/omsagent-1.12.15-0.universal.x86.sh)
+## [Download Latest OMS Agent for Linux (Final 32-bit Release)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/omsagent-1.12.15-0.universal.x86.sh)
 
 ## Feedback
 
@@ -48,7 +48,7 @@ We love feedback!  Whether it be good, bad or indifferent, it really helps us bu
 ### Supported Distro/Version strategy
 The Log Analytics agent for Linux is built to work with Azure Monitor logs, which has a limited scope of scenarios. Our strategy for supporting new distros and versions starting August 2018 is that we will:
 1. Only support server versions, no client OS versions.
-2. Always support any new [Azure Linux Endorsed distros/versions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros).
+2. Focus support on any of the [Azure Linux Endorsed distros](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros). Note that there may be some delay between a new distro/version being Azure Linux Endorsed and it being supported for the Log Analytics Linux agent.
 3. Not support versions that have passed their manufacturer's end-of-support date.
 4. Always support the latest GA version of a supported distro.
 5. Not support new versions of AMI.
@@ -56,14 +56,16 @@ The Log Analytics agent for Linux is built to work with Azure Monitor logs, whic
 
 If you are using a distro or version that is not currently supported and doesn't fit our future support strategy, we recommend that you fork this repo, acknowledging that Microsoft support will not provide assistance with for forked agent versions.
 
+### [Python Requrements](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/log-analytics-agent#python-2-requirement)
+
 ### 64-bit
 * CentOS 6 and 7
 * Amazon Linux 2017.09
 * Oracle Linux 6 and 7
-* Red Hat Enterprise Linux Server 6 and 7
+* Red Hat Enterprise Linux Server 6, 7, and 8
 * Debian GNU/Linux 8 and 9
 * Ubuntu Linux 14.04 LTS, 16.04 LTS and 18.04 LTS
-* SUSE Linux Enterprise Server 12
+* SUSE Linux Enterprise Server 12 and 15
 ### 32-bit
 * CentOS 6
 * Oracle Linux 6
