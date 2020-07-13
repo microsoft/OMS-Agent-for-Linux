@@ -42,7 +42,7 @@ class TelemetryUnitTest < Test::Unit::TestCase
   OMS_PID = "2"
   PGREP_CMD = "pgrep -U omsagent dsc_host"
   SCX_CMD = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, \
-  PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '%s'\" | grep ="
+  PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle='%s'\" | grep ="
 
   def setup
     @omsadmin_conf_file = Tempfile.new("omsadmin_conf")
