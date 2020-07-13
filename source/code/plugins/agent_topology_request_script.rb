@@ -61,7 +61,7 @@ class AgentTopologyRequest < StrongTypedClass
       # If there is no PID file, the omsagent process has not started, so no telemetry
       if File.exist?(pid_file) and File.readable?(pid_file)
         pid = File.read(pid_file)
-        process_stats = `/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '#{pid}'\" | grep =`
+        process_stats = `/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle='#{pid}'\" | grep =`
       end
 
       process_stats.each_line do |line|
