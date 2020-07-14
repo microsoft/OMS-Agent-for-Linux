@@ -16,7 +16,7 @@ python_prereq_check()
         # check if Python 2.6 or newer
         PY_VERSION=$((python2 --version) 2>&1)
         case $PY_VERSION in
-            "Python 2.6" | "Python 2.7" )
+            "Python 2.6"* | "Python 2.7"* )
                 ;;
             * )
                 echo "Python version $PY_VERSION is not supported."\
@@ -42,7 +42,7 @@ python_prereq_check()
     echo "Checking all necessary python modules are installed..."
     success=0
     temp_pkgs="copy errno os platform re socket ssl subprocess"
-    if [ $PYTHON -eq "python2" ]; then
+    if [ $PYTHON = "python2" ]; then
         pkgs="$temp_pkgs urllib2"
         # add the urllib2 for 2
     else

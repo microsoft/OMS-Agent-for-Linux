@@ -24,7 +24,9 @@ def check_omsagent_running_sc():
         # don't have any extra info
         return 122
     else:
-        return 200  # TODO: fix error code
+        err_msg = "Command '{0} is-running' returned {1}".format(sc_path, is_running)
+        tsg_error_info.append((err_msg,))
+        return 122
 
 def check_omsagent_running_omsadmin(workspace):
     output = subprocess.check_output(['sh', omsadmin_sh_path, '-l'], universal_newlines=True)
