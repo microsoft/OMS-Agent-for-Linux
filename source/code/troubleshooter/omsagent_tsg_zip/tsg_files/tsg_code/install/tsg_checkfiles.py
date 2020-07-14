@@ -2,9 +2,10 @@ import os
 import re
 import subprocess
 
-from tsg_info      import tsginfo_lookup
-from tsg_errors    import tsg_error_info
-from .tsg_checkoms import comp_versions_ge
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info
+from tsg_info        import tsginfo_lookup
+from .tsg_checkoms   import comp_versions_ge
 
 dfs_path = "/opt/microsoft/omsagent/plugin/troubleshooter/tsg_tools/datafiles/"
 
@@ -137,27 +138,27 @@ def perm_symb_to_oct(p):
 # Check permissions are correct for each file
 # info: [permissions, user, group]
 def check_permissions(f, perm_info, corr_info, typ, perms_err):
-    success = 0
+    success = NO_ERROR
     # check user
     perm_user = perm_info[1]
     corr_user = corr_info[1]
     if ((perm_user != corr_user) and (perm_user != 'omsagent')):
         perms_err.append((typ, f, 'user', perm_user, corr_user))
-        success = 115
+        success = WARN_FILE_PERMS
     
     # check group
     perm_group = perm_info[2]
     corr_group = corr_info[2]
     if ((perm_group != corr_group) and (perm_group != 'omiusers')):
         perms_err.append((typ, f, 'group', perm_group, corr_group))
-        success = 115
+        success = WARN_FILE_PERMS
     
     # check permissions
     perms = (perm_info[0])[1:].rstrip('.')
     corr_perms = perm_oct_to_symb(corr_info[0])
     if (perms != corr_perms):
         perms_err.append((typ, f, 'permissions', perms, corr_perms))
-        success = 115
+        success = WARN_FILE_PERMS
     return success
     
 
@@ -171,7 +172,7 @@ def get_ll_dir(ll_output, d):
     return ll_line.split()
 
 def check_dirs(dirs, exist_err, perms_err):
-    success = 0
+    success = NO_ERROR
     missing_dirs = []
     for d in (dirs.keys()):
         if (any(d.startswith(md) for md in missing_dirs)):
@@ -181,10 +182,10 @@ def check_dirs(dirs, exist_err, perms_err):
         elif (not os.path.isdir(d)):
             missing_dirs += d
             exist_err.append(('directory', d))
-            success = 114
+            success = ERR_FILE_MISSING
             continue
         # check if permissions are correct
-        if (success != 114):
+        if (success != ERR_FILE_MISSING):
             # get permissions
             ll_output = subprocess.check_output(['ls', '-l', os.path.join(d, '..')],\
                             universal_newlines=True)
@@ -192,8 +193,8 @@ def check_dirs(dirs, exist_err, perms_err):
             ll_info = get_ll_dir(ll_output, d)
             perm_info = [ll_info[0]] + ll_info[2:4]
             corr_info = dirs[d]
-            if (check_permissions(d, perm_info, corr_info, "directory", perms_err) != 0):
-                success = 115
+            if (check_permissions(d, perm_info, corr_info, "directory", perms_err) != NO_ERROR):
+                success = WARN_FILE_PERMS
     return success
 
 
@@ -201,23 +202,23 @@ def check_dirs(dirs, exist_err, perms_err):
 # Check files exist
 
 def check_files(files, exist_err, perms_err):
-    success = 0
+    success = NO_ERROR
     for f in (files.keys()):
         # check if file exists
         if (not os.path.isfile(f)):
             exist_err.append(('file', f))
-            success = 114
+            success = ERR_FILE_MISSING
             continue
         # check if permissions are correct
-        if (success != 114):
+        if (success != ERR_FILE_MISSING):
             # get permissions
             ll_output = subprocess.check_output(['ls', '-l', f], universal_newlines=True)
             # ll_info: [perms, items, user, group, size, month mod, day mod, time mod, name]
             ll_info = ll_output.split()
             perm_info = [ll_info[0]] + ll_info[2:4]
             corr_info = files[f]
-            if (check_permissions(f, perm_info, corr_info, "file", perms_err) != 0):
-                success = 115
+            if (check_permissions(f, perm_info, corr_info, "file", perms_err) != NO_ERROR):
+                success = WARN_FILE_PERMS
     return success
 
             
@@ -232,10 +233,10 @@ def check_links(links, exist_err, perms_err):
         # check if link exists
         if (not os.path.islink(l)):
             exist_err.append(('link', l))
-            success = 114
+            success = ERR_FILE_MISSING
             continue
         # check if permissions are correct
-        if (success != 114):
+        if (success != ERR_FILE_MISSING):
             linked_file = links[l][-1]
             # in case a link points to a link
             while (os.path.islink(linked_file)):
@@ -252,8 +253,8 @@ def check_links(links, exist_err, perms_err):
             # ll_info: [perms, items, user, group, size, month mod, day mod, time mod, name]
             perm_info = [ll_info[0]] + ll_info[2:4]
             corr_info = links[l][:-1]
-            if (check_permissions(l, perm_info, corr_info, "link", perms_err) != 0):
-                success = 115
+            if (check_permissions(l, perm_info, corr_info, "link", perms_err) != NO_ERROR):
+                success = WARN_FILE_PERMS
     return success
 
 
@@ -263,7 +264,7 @@ def check_links(links, exist_err, perms_err):
 # Check everything
 
 def check_filesystem():
-    success = 0
+    success = NO_ERROR
 
     # create lists to track errors
     exist_err = []
@@ -294,17 +295,17 @@ def check_filesystem():
         checked_links = check_links(links, exist_err, perms_err)
 
         # some paths are missing
-        if (114 in [checked_dirs, checked_files, checked_links]):
-            success = 114
+        if (ERR_FILE_MISSING in [checked_dirs, checked_files, checked_links]):
+            success = ERR_FILE_MISSING
 
         # some paths have incorrect permissions
-        elif ((115 in [checked_dirs, checked_files, checked_links]) and (success != 114)):
-            success = 115
+        elif ((WARN_FILE_PERMS in [checked_dirs, checked_files, checked_links]) and (success != ERR_FILE_MISSING)):
+            success = WARN_FILE_PERMS
 
     # update errors
-    if (success == 114):
+    if (success == ERR_FILE_MISSING):
         tsg_error_info.extend(exist_err)
-    elif (success == 115):
+    elif (success == WARN_FILE_PERMS):
         tsg_error_info.extend(perms_err)
 
     return success

@@ -1,5 +1,6 @@
-from tsg_info                import tsginfo_lookup
+from tsg_error_codes         import *
 from tsg_errors              import is_error, get_input, print_errors
+from tsg_info                import tsginfo_lookup
 from install.tsg_checkoms    import get_oms_version
 from install.tsg_install     import check_installation
 from connect.tsg_checkendpts import check_log_analytics_endpts
@@ -7,7 +8,7 @@ from connect.tsg_connect     import check_connection
 from heartbeat.tsg_heartbeat import start_omsagent, check_omsagent_running, check_heartbeat
 from .tsg_checkclconf        import check_customlog_conf
 
-def check_custom_logs(prev_success=0):
+def check_custom_logs(prev_success=NO_ERROR):
     print(" To check if you are using custom logs, please go to https://ms.portal.azure.com\n"\
             " and navigate to your workspace. Once there, please navigate to the 'Advanced\n"\
             " settings' blade, and then go to 'Data' > 'Custom Logs'. There you should be\n"\
@@ -33,26 +34,26 @@ def check_custom_logs(prev_success=0):
     print("Checking if omsagent installed and running...")
     # check installation
     if (get_oms_version() == None):
-        print_errors(111)
+        print_errors(ERR_OMS_INSTALL)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_installation(err_codes=False, prev_success=101)
+        return check_installation(err_codes=False, prev_success=ERR_FOUND)
 
     # check connection
     checked_la_endpts = check_log_analytics_endpts()
-    if (checked_la_endpts != 0):
+    if (checked_la_endpts != NO_ERROR):
         print_errors(checked_la_endpts)
         print("Running the connection part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_connection(err_codes=False, prev_success=101)
+        return check_connection(err_codes=False, prev_success=ERR_FOUND)
 
     # check running
     checked_omsagent_running = check_omsagent_running(tsginfo_lookup('WORKSPACE_ID'))
-    if (checked_omsagent_running != 0):
+    if (checked_omsagent_running != NO_ERROR):
         print_errors(checked_omsagent_running)
         print("Running the general health part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_heartbeat(prev_success=101)
+        return check_heartbeat(prev_success=ERR_FOUND)
 
     # check customlog.conf
     print("Checking for custom log configuration files...")

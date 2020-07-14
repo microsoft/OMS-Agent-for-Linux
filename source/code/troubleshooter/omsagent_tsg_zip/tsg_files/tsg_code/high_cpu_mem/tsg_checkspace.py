@@ -2,7 +2,8 @@ import os
 import subprocess
 import time
 
-from tsg_errors import tsg_error_info, get_input
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info, get_input
 
 
 
@@ -59,12 +60,12 @@ def scan_top_files(num_files, tto):
         time.sleep(1)
 
     # go over each file's changes
-    result = 0
+    result = NO_ERROR
     for (fpath, finitsize, fsize, ftime, fchanges) in top_files:
         if (fsize > finitsize):
             tsg_error_info.append((fpath, len(fchanges), ftime))
             # TODO: add to file with more info or smth
-            result = 151
+            result = WARN_LARGE_FILES
     return result
         
 

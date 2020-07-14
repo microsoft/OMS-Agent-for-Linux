@@ -2,7 +2,8 @@ import errno
 import re
 import subprocess
 
-from tsg_errors import tsg_error_info
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info
 
 def get_omsagent_logs(log_path):
     log_tail_size = 50
@@ -48,11 +49,11 @@ def get_omsagent_logs(log_path):
         # file doesn't exist
         elif (e.errno == errno.ENOENT):
             tsg_error_info.append(("file", log_path))
-            return (None, 114)
+            return (None, ERR_FILE_MISSING)
         # some other error
         else:
             tsg_error_info.append((log_path, e))
-            return (None, 125)
+            return (None, ERR_FILE_ACCESS)
 
 
 
@@ -69,19 +70,19 @@ def check_log_heartbeat(workspace):
         log_err_lines = list(map(lambda x : x[-1], parsed_log_errs))
         log_errs = '\n  ' + ('\n  '.join(log_err_lines))
         tsg_error_info.append((log_path, log_errs))
-        return 126
+        return ERR_LOG
 
     # filter warnings
     parsed_log_warns = list(filter(lambda x : (x[3]) == '[warn]', parsed_log_lines))
     if (len(parsed_log_warns) > 0):
         hb_fail_logs = list(filter(lambda x : 'failed to flush the buffer' in x[4], parsed_log_warns))
         if (len(hb_fail_logs) > 0):
-            return 128
+            return ERR_HEARTBEAT
         else:
             log_warn_lines = list(map(lambda x : x[-1], parsed_log_warns))
             log_warns = '\n  ' + ('\n  '.join(log_warn_lines))
             tsg_error_info.append((log_path, log_warns))
-            return 127
+            return WARN_LOG
 
     # logs show no errors or warnings
-    return 0
+    return NO_ERROR

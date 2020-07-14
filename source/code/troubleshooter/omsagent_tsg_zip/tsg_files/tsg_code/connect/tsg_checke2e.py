@@ -2,7 +2,8 @@
 
 import subprocess
 
-from tsg_errors import tsg_error_info, get_input
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info, get_input
 
 def check_e2e():
     # get machine's hostname
@@ -63,9 +64,9 @@ def check_e2e():
         
         if (len(failures) > 0):
             tsg_error_info.append((', '.join(failures),))
-            return 131
+            return ERR_QUERIES
     
     print("Continuing on with troubleshooter...")
     print("--------------------------------------------------------------------------------")
-    return 0
+    return NO_ERROR
                     

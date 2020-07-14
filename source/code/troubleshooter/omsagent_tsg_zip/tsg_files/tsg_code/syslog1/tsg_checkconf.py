@@ -1,6 +1,7 @@
 import os
 import re
 
+from tsg_error_codes      import *
 from tsg_errors           import tsg_error_info
 from tsg_info             import tsginfo_lookup
 from install.tsg_checkoms import comp_versions_ge, get_oms_version
@@ -39,7 +40,7 @@ def parse_syslogconf():
 def check_port(port, sys_bind, sys_pt):
     oms_version = get_oms_version()
     if (oms_version == None):
-        return 111
+        return ERR_OMS_INSTALL
 
     # get number of '@'s in front of port
     corr_pt = None
@@ -53,27 +54,27 @@ def check_port(port, sys_bind, sys_pt):
     # verify protocol type is valid
     if (corr_pt == None):
         tsg_error_info.append(("protocol type",syslogconf_path))
-        return 119
+        return ERR_INFO_MISSING
 
     # 95-omsagent.conf is sending to right port
     corr_port = corr_pt + sys_bind
     if (port.startswith(corr_port)):
-        return 0
+        return NO_ERROR
     # wrong number of '@'s
     pt_count = port.count('@')
     corr_pt_count = corr_pt.count('@')
     if (pt_count != corr_pt_count):
         pt = port[:pt_count]
         tsg_error_info.append((sys_pt, corr_pt, pt, omsagent95_path))
-        return 133
+        return ERR_PT
     # wrong port
     curr_bind = (port[pt_count+1:]).split(':')[0]
     if (curr_bind != sys_bind):
         tsg_error_info.append((sys_bind, curr_bind, omsagent95_path))
-        return 134
+        return ERR_PORT_MISMATCH
     # some other error?
     tsg_error_info.append((syslogconf_path, omsagent95_path))
-    return 135
+    return ERR_PORT_SETUP
 
         
     
@@ -83,7 +84,7 @@ def check_omsagent95(sys_bind, sys_pt):
     workspace = tsginfo_lookup('WORKSPACE_ID')
     if (workspace == None):
         tsg_error_info.append(('Workspace ID', omsadmin_path))
-        return 119
+        return ERR_INFO_MISSING
 
     # set up regex lines
     comment_line = "# OMS Syslog collection for workspace (\S+)"
@@ -105,7 +106,7 @@ def check_omsagent95(sys_bind, sys_pt):
             syslog_wkspc = (match_comment.groups())[0]
             if (workspace != syslog_wkspc):
                 tsg_error_info.append((syslog_wkspc,workspace,syslogconf_path))
-                return 132
+                return ERR_SYSLOG_WKSPC
             else:
                 continue
 
@@ -114,7 +115,7 @@ def check_omsagent95(sys_bind, sys_pt):
             match_spec = re.match(spec_line, parsed_line[0])
             if (match_comment != None):
                 checked_port = check_port(parsed_line[1], sys_port, sys_bind)
-                if (checked_port != 0):
+                if (checked_port != NO_ERROR):
                     return checked_port
                 else:
                     continue
@@ -122,7 +123,7 @@ def check_omsagent95(sys_bind, sys_pt):
                 continue
             
     # all ports set up correctly
-    return 0
+    return NO_ERROR
             
 
 
@@ -131,23 +132,23 @@ def check_conf_files():
     # verify syslog.conf exists / not empty
     if (not os.path.isfile(syslogconf_path)):
         tsg_error_info.append(('file',syslogconf_path))
-        return 114
+        return ERR_FILE_MISSING
     if (os.stat(syslogconf_path).st_size == 0):
         tsg_error_info.append((syslogconf_path,))
-        return 118
+        return ERR_FILE_EMPTY
     # verify 95-omsagent.conf exists / not empty
     if (not os.path.isfile(omsagent95_path)):
         tsg_error_info.append(('file',omsagent95_path))
-        return 114
+        return ERR_FILE_MISSING
     if (os.stat(omsagent95_path).st_size == 0):
         tsg_error_info.append((omsagent95_path,))
-        return 118
+        return ERR_FILE_EMPTY
 
     # parse syslog.conf
     syslogconf_dict = parse_syslogconf()
     if (not syslogconf_dict):
         tsg_error_info.append(("syslog configuration info",syslogconf_path))
-        return 119
+        return ERR_INFO_MISSING
 
     # get info for checking 95-omsagent.conf
     try:
@@ -155,7 +156,7 @@ def check_conf_files():
         sys_pt = syslogconf_dict['protocol_type']
     except KeyError:
         tsg_error_info.append(("syslog configuration info",syslogconf_path))
-        return 119
+        return ERR_INFO_MISSING
 
     # check with 95-omsagent.conf
     return check_omsagent95(sys_bind, sys_pt)

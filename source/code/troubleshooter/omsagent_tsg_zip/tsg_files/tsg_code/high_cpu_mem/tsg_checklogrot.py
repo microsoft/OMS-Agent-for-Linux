@@ -3,8 +3,9 @@ import os
 import re
 import subprocess
 
-from tsg_errors import tsg_error_info
-from tsg_info   import tsginfo_lookup
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info
+from tsg_info        import tsginfo_lookup
 
 
 
@@ -37,31 +38,31 @@ def check_size_config(logrotate_configs, lr_config_path):
         size_limit = hr2bytes(size_config.split()[1])
         if (size_limit == None):
             tsg_error_info.append((k, lr_config_path))
-            return 149
+            return ERR_LOGROTATE_SIZE
 
         # get current size of file
         try:
             size_curr = os.path.getsize(k)
             if (size_curr > size_limit):
                 tsg_error_info.append((k, size_curr, size_limit, lr_config_path))
-                return 150
+                return ERR_LOGROTATE
             else:
-                return 0
+                return NO_ERROR
 
         # couldn't get current size of file
         except os.error as e:
             if (e.errno == errno.EACCES):
                 tsg_error_info.append((k,))
-                return 100
+                return ERR_SUDO_PERMS
             elif (e.errno == errno.ENOENT):
                 if ('missingok' in logrotate_configs[k]):
                     continue
                 else:
                     tsg_error_info.append(('log file', k))
-                    return 114
+                    return ERR_FILE_MISSING
             else:
                 tsg_error_info.append((k, e.strerror))
-                return 125
+                return ERR_FILE_ACCESS
 
 
 
@@ -73,7 +74,7 @@ def check_log_rotation():
     # check logrotate config file exists
     if (not os.path.isfile(lr_config_path)):
         tsg_error_info.append(('logrotate config file', lr_config_path))
-        return 114
+        return ERR_FILE_MISSING
     
     # go through logrotate config file
     logrotate_configs = dict()
@@ -100,7 +101,7 @@ def check_log_rotation():
 
     # check size rotation working
     checked_size_config = check_size_config(logrotate_configs, lr_config_path)
-    if (checked_size_config != 0):
+    if (checked_size_config != NO_ERROR):
         return checked_size_config
 
-    return 0
+    return NO_ERROR

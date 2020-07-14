@@ -1,3 +1,4 @@
+from tsg_error_codes         import *
 from tsg_errors              import is_error, print_errors
 from tsg_info                import tsginfo_lookup
 from install.tsg_checkoms    import get_oms_version
@@ -10,7 +11,7 @@ from .tsg_checklogrot        import check_log_rotation
 from .tsg_checkcpu           import check_omi_cpu
 from .tsg_slabmem            import check_slab_memory
 
-def check_high_cpu_memory(prev_success=0):
+def check_high_cpu_memory(prev_success=NO_ERROR):
     print("CHECKING FOR HIGH CPU / MEMORY USAGE...")
 
     success = prev_success
@@ -19,32 +20,32 @@ def check_high_cpu_memory(prev_success=0):
     print("Checking if omsagent installed and running...")
     # check installation
     if (get_oms_version() == None):
-        print_errors(111)
+        print_errors(ERR_OMS_INSTALL)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_installation(err_codes=False, prev_success=101)
+        return check_installation(err_codes=False, prev_success=ERR_FOUND)
 
     # check connection
     checked_la_endpts = check_log_analytics_endpts()
-    if (checked_la_endpts != 0):
+    if (checked_la_endpts != NO_ERROR):
         print_errors(checked_la_endpts)
         print("Running the connection part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_connection(err_codes=False, prev_success=101)
+        return check_connection(err_codes=False, prev_success=ERR_FOUND)
 
     # check running
     checked_omsagent_running = check_omsagent_running(tsginfo_lookup('WORKSPACE_ID'))
-    if (checked_omsagent_running != 0):
+    if (checked_omsagent_running != NO_ERROR):
         print_errors(checked_omsagent_running)
         print("Running the general health part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_heartbeat(prev_success=101)
+        return check_heartbeat(prev_success=ERR_FOUND)
 
     # TODO: decide if should keep this in or not
     # check disk space
     # print("Checking recent modifications to largest files...")
     # checked_disk_space = check_disk_space()
-    # if (checked_disk_space != 0):
+    # if (checked_disk_space != NO_ERROR):
     #     return print_errors(checked_disk_space)
 
     # check log rotation

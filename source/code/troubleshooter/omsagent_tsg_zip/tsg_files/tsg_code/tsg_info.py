@@ -3,7 +3,8 @@ import platform
 import ssl
 import subprocess
 
-from tsg_errors import tsg_error_info, print_errors
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info, print_errors
 
 # urlopen() in different packages in Python 2 vs 3
 try:
@@ -21,7 +22,7 @@ def tsginfo_lookup(key):
         val = tsg_info[key]
     except KeyError:
         updated_tsginfo = update_tsginfo_all()
-        if (updated_tsginfo != 0):
+        if (updated_tsginfo != NO_ERROR):
             print_errors(updated_tsginfo)
             return None
         val = tsg_info[key]
@@ -87,7 +88,7 @@ def update_pkg_manager():
                     universal_newlines=True, stderr=subprocess.STDOUT)
         if (is_dpkg != ''):
             tsg_info['PKG_MANAGER'] = 'dpkg'
-            return 0
+            return NO_ERROR
     except subprocess.CalledProcessError:
         pass
     # try rpm
@@ -96,11 +97,11 @@ def update_pkg_manager():
                     universal_newlines=True, stderr=subprocess.STDOUT)
         if (is_rpm != ''):
             tsg_info['PKG_MANAGER'] = 'rpm'
-            return 0
+            return NO_ERROR
     except subprocess.CalledProcessError:
         pass
     # neither
-    return 107
+    return ERR_PKG_MANAGER
 
 # Package Info
 def get_dpkg_pkg_version(pkg):
@@ -152,11 +153,11 @@ def update_curr_oms_version(found_errs):
             if line.startswith("omsagent | "):
                 parsed_line = line.split(' | ') # [package, version, description]
                 tsg_info['UPDATED_OMS_VERSION'] = parsed_line[1]
-                return 0
-        return 113
+                return NO_ERROR
+        return ERR_GETTING_OMS_VER
     except IOError as e:
         found_errs.append((omsagent_url, e))
-        return 120
+        return ERR_ENDPT
 
 # omsadmin.conf
 def update_omsadmin():
@@ -165,14 +166,14 @@ def update_omsadmin():
             for line in conf_file:
                 parsed_line = (line.rstrip('\n')).split('=')
                 tsg_info[parsed_line[0]] = '='.join(parsed_line[1:])
-        return 0
+        return NO_ERROR
     except IOError as e:
         if (e.errno == errno.EACCES):
             tsg_error_info.append((conf_path,))
-            return 100
+            return ERR_SUDO_PERMS
         elif (e.errno == errno.ENOENT):
             tsg_error_info.append(('file', conf_path))
-            return 114
+            return ERR_FILE_MISSING
         else:
             raise
 
@@ -183,38 +184,38 @@ def update_tsginfo_all():
     # cpu_bits
     bits = get_os_bits()
     if (bits not in ['32-bit', '64-bit']):
-        return 102
+        return ERR_BITS
     # os info
     os = get_os_version()
     if (os == None):
-        return 105
+        return ERR_FINDING_OS
     # package manager
     pkg = update_pkg_manager()
-    if (pkg != 0):
+    if (pkg != NO_ERROR):
         return pkg
     # dpkg packages
     if (tsg_info['PKG_MANAGER'] == 'dpkg'):
         if (get_dpkg_pkg_version('omsconfig') == None):
-            return 108
+            return ERR_OMSCONFIG
         if (get_dpkg_pkg_version('omi') == None):
-            return 109
+            return ERR_OMI
         if (get_dpkg_pkg_version('scx') == None):
-            return 110
+            return ERR_SCX
         if (get_dpkg_pkg_version('omsagent') == None):
-            return 111
+            return ERR_OMS_INSTALL
     # rpm packages
     elif (tsg_info['PKG_MANAGER'] == 'rpm'):
         if (get_rpm_pkg_version('omsconfig') == None):
-            return 108
+            return ERR_OMSCONFIG
         if (get_rpm_pkg_version('omi') == None):
-            return 109
+            return ERR_OMI
         if (get_rpm_pkg_version('scx') == None):
-            return 110
+            return ERR_SCX
         if (get_rpm_pkg_version('omsagent') == None):
-            return 111
+            return ERR_OMS_INSTALL
     # omsadmin info
     omsadmin = update_omsadmin()
-    if (omsadmin != 0):
+    if (omsadmin != NO_ERROR):
         return omsadmin
     # all successful
-    return 0
+    return NO_ERROR

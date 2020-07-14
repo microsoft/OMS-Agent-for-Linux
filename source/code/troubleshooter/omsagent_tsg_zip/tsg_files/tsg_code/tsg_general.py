@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+from tsg_error_codes               import *
 from tsg_errors                    import is_error, get_input, print_errors, err_summary
 from install.tsg_install           import check_installation
 from connect.tsg_connect           import check_connection
@@ -31,7 +32,7 @@ def check_sudo():
 
 # run through all troubleshooting scenarios
 def check_all():
-    all_success = 0
+    all_success = NO_ERROR
     # 1: Install
     checked_install = check_installation()
     if (is_error(checked_install)):
@@ -165,10 +166,10 @@ def run_tsg():
         print("--------------------------------------------------------------------------------")
         
     # no errors found
-    if (success == 0):
+    if (success == NO_ERROR):
         print("No errors were found.")
     # user requested to exit
-    elif (success == 1):
+    elif (success == USER_EXIT):
         return
     # error found
     else:

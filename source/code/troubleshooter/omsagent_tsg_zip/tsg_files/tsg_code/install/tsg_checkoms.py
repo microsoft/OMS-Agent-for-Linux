@@ -1,7 +1,8 @@
 import re
 
-from tsg_info                import tsginfo_lookup, update_curr_oms_version, update_omsadmin
+from tsg_error_codes         import *
 from tsg_errors              import tsg_error_info, is_error, get_input, print_errors
+from tsg_info                import tsginfo_lookup, update_curr_oms_version, update_omsadmin
 from connect.tsg_checkendpts import check_internet_connect
 from .tsg_checkpkgs          import get_package_version
 
@@ -20,8 +21,8 @@ def get_oms_version():
 # check errors if getting curr oms version errors out
 def check_curr_oms_errs(updated_curr_oms_version, found_errs):
     # error in page itself
-    if (updated_curr_oms_version == 113):
-        return 113
+    if (updated_curr_oms_version == ERR_GETTING_OMS_VER):
+        return ERR_GETTING_OMS_VER
 
     # error in connection, check connection
     checked_internet = check_internet_connect()
@@ -33,14 +34,14 @@ def check_curr_oms_errs(updated_curr_oms_version, found_errs):
         try:
             import ssl
             tsg_error_info.append((found_errs[0],))
-            return 120
+            return ERR_ENDPT
         except ImportError:
             tsg_error_info.append(('ssl',))
-            return 154
+            return ERR_PYTHON_PKG
     # connection in general fine, connecting to current page not
     else:
         tsg_error_info.append((found_errs[0],))
-        return 120
+        return ERR_ENDPT
 
 
 
@@ -88,24 +89,24 @@ def ask_update_old_version(oms_version, curr_oms_version):
         print("And follow the instructions given here:")
         print("\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/"\
                 "OMS-Agent-for-Linux.md#upgrade-from-a-previous-release\n")
-        return 1
+        return USER_EXIT
     # user doesn't want to update
     elif (answer.lower() in ['n', 'no']):
         print("Continuing on with troubleshooter...")
         print("--------------------------------------------------------------------------------")
-        return 0
+        return NO_ERROR
 
 
 
 def check_oms():
     oms_version = get_oms_version()
     if (oms_version == None):
-        return 111
+        return ERR_OMS_INSTALL
 
     # check if version is >= 1.11
     if (not comp_versions_ge(oms_version, '1.11')):
         tsg_error_info.append((oms_version, tsg_info['CPU_BITS']))
-        return 112
+        return ERR_OLD_OMS_VER
 
     # get most recent version
     found_errs = []
@@ -117,7 +118,7 @@ def check_oms():
 
     # if not most recent version, ask if want to update
     if (not comp_versions_ge(oms_version, curr_oms_version)):
-        if (ask_update_old_version(oms_version, curr_oms_version) == 1):
-            return 1
+        if (ask_update_old_version(oms_version, curr_oms_version) == USER_EXIT):
+            return USER_EXIT
 
     return update_omsadmin()

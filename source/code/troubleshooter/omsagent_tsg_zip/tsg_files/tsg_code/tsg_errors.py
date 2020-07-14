@@ -1,6 +1,8 @@
 import copy
 import subprocess
 
+from tsg_error_codes import *
+
 # backwards compatible input() function for Python 2 vs 3
 try:
     input = raw_input
@@ -18,35 +20,35 @@ err_summary = []
 
 
 # set of all errors which are actually warnings
-warnings = {115, 127, 151}
+warnings = {WARN_FILE_PERMS, WARN_LOG, WARN_LARGE_FILES}
 
 # dictionary correlating error codes to error messages
 tsg_error_codes = {
-    100 : "Couldn't access {0} due to inadequate permissions. Please run the troubleshooter "\
+    ERR_SUDO_PERMS : "Couldn't access {0} due to inadequate permissions. Please run the troubleshooter "\
           "as root in order to allow access.",
-    101 : "Please go through the output above to find the errors caught by the troubleshooter.",
-    102 : "Couldn't get if CPU is 32-bit or 64-bit.",
-    103 : "This version of {0} ({1}) is not supported. Please download {2}. To see all "\
+    ERR_FOUND : "Please go through the output above to find the errors caught by the troubleshooter.",
+    ERR_BITS : "Couldn't get if CPU is 32-bit or 64-bit.",
+    ERR_OS_VER : "This version of {0} ({1}) is not supported. Please download {2}. To see all "\
           "supported Operating Systems, please go to:\n"\
           "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/"\
           "log-analytics-agent#supported-linux-operating-systems\n",
-    104 : "{0} is not a supported Operating System. To see all supported Operating "\
+    ERR_OS : "{0} is not a supported Operating System. To see all supported Operating "\
           "Systems, please go to:\n"\
           "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/"\
           "log-analytics-agent#supported-linux-operating-systems\n",
-    105 : "Coudln't determine Operating System. To see all supported Operating "\
+    ERR_FINDING_OS : "Coudln't determine Operating System. To see all supported Operating "\
           "Systems, please go to:\n"\
           "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/"\
           "log-analytics-agent#supported-linux-operating-systems\n",
-    106 : "There isn't enough space in directory {0} to install OMS - there needs to be at least 500MB free, "\
+    ERR_FREE_SPACE : "There isn't enough space in directory {0} to install OMS - there needs to be at least 500MB free, "\
           "but {0} has {1}MB free. Please free up some space and try installing again.",
-    107 : "This system does not have a supported package manager. Please install 'dpkg' or 'rpm' "\
+    ERR_PKG_MANAGER : "This system does not have a supported package manager. Please install 'dpkg' or 'rpm' "\
           "and run this troubleshooter again.",
-    108 : "OMSConfig isn't installed correctly.",
-    109 : "OMI isn't installed correctly.",
-    110 : "SCX isn't installed correctly.",
-    111 : "OMS isn't installed correctly.",
-    112 : "You are currently running OMS Version {0}. This troubleshooter only "\
+    ERR_OMSCONFIG : "OMSConfig isn't installed correctly.",
+    ERR_OMI : "OMI isn't installed correctly.",
+    ERR_SCX : "SCX isn't installed correctly.",
+    ERR_OMS_INSTALL : "OMS isn't installed correctly.",
+    ERR_OLD_OMS_VER : "You are currently running OMS Version {0}. This troubleshooter only "\
           "supports versions 1.11 and newer. Please head to the Github link below "\
           "and click on 'Download Latest OMS Agent for Linux ({1})' in order to update "\
           "to the newest version:\n"\
@@ -54,50 +56,50 @@ tsg_error_codes = {
           "And follow the instructions given here:\n"\
           "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs"\
           "/OMS-Agent-for-Linux.md#upgrade-from-a-previous-release\n",
-    113 : "Couldn't get most current released version of OMS.",
-    114 : "{0} {1} doesn't exist.",
-    115 : "{0} {1} has {2} {3} instead of {2} {4}.",
-    116 : "Certificate is invalid, please check {0} for the issue.",
-    117 : "RSA key is invalid, please check {0} for the issue.",
-    118 : "File {0} is empty.",
-    119 : "Couldn't get {0}. Please check {1} for the issue.",
-    120 : "Machine couldn't connect to {0}: {1}",
-    121 : "The agent is configured to report to a different workspace - the GUID "\
+    ERR_GETTING_OMS_VER : "Couldn't get most current released version of OMS.",
+    ERR_FILE_MISSING : "{0} {1} doesn't exist.",
+    WARN_FILE_PERMS : "{0} {1} has {2} {3} instead of {2} {4}.",
+    ERR_CERT : "Certificate is invalid, please check {0} for the issue.",
+    ERR_RSA_KEY : "RSA key is invalid, please check {0} for the issue.",
+    ERR_FILE_EMPTY : "File {0} is empty.",
+    ERR_INFO_MISSING : "Couldn't get {0}. Please check {1} for the issue.",
+    ERR_ENDPT : "Machine couldn't connect to {0}: {1}",
+    ERR_GUID : "The agent is configured to report to a different workspace - the GUID "\
           "given is {0}, while the workspace is {1}.",
-    122 : "The agent isn't running / will not start. {0}",
-    123 : "The agent is currently stopped. Run the command below to start it:\n"\
+    ERR_OMS_WONT_RUN : "The agent isn't running / will not start. {0}",
+    ERR_OMS_STOPPED : "The agent is currently stopped. Run the command below to start it:\n"\
           "\n  $ /opt/microsoft/omsagent/bin/service_control start\n",
-    124 : "The agent is currently disabled. Run the command below to enable it:\n"\
+    ERR_OMS_DISABLED : "The agent is currently disabled. Run the command below to enable it:\n"\
           "\n  $ /opt/microsoft/bin/service_control enable\n\n"\
           "And run the command below to start it:\n"\
           "\n  $ /opt/microsoft/omsagent/bin/service_control start\n",
-    125 : "Couldn't access / run {0} due to the following reason: {1}.",
-    126 : "Found errors in log file {0}: {1}",
-    127 : "Found warnings in log file {0}: {1}",
-    128 : "Heartbeats are failing to send data to the workspace.",
-    129 : "Machine registered with more than one log analytics workspace. List of "\
+    ERR_FILE_ACCESS : "Couldn't access / run {0} due to the following reason: {1}.",
+    ERR_LOG : "Found errors in log file {0}: {1}",
+    WARN_LOG : "Found warnings in log file {0}: {1}",
+    ERR_HEARTBEAT : "Heartbeats are failing to send data to the workspace.",
+    ERR_MULTIHOMING : "Machine registered with more than one log analytics workspace. List of "\
           "workspaces: {0}",
-    130 : "Machine is not connected to the internet.",
-    131 : "The following queries failed: {0}.",
-    132 : "Syslog collection is set up for workspace {0}, but OMS is set up with "\
+    ERR_INTERNET : "Machine is not connected to the internet.",
+    ERR_QUERIES : "The following queries failed: {0}.",
+    ERR_SYSLOG_WKSPC : "Syslog collection is set up for workspace {0}, but OMS is set up with "\
           "workspace {1}. Please see {2} for the issue.",
-    133 : "With protocol type {0}, ports need to be preceded by '{1}', but currently "\
+    ERR_PT : "With protocol type {0}, ports need to be preceded by '{1}', but currently "\
           "are preceded by '{2}'. Please see {3} for the issue.",
-    134 : "Syslog is set up to bind to port {0}, but is currently sending to port {1}. "\
+    ERR_PORT_MISMATCH : "Syslog is set up to bind to port {0}, but is currently sending to port {1}. "\
           "Please see {2} for the issue.",
-    135 : "Issue with setting up ports for syslog. Please see {0} and {1} for the issue.",
-    136 : "Couldn't find 'systemctl' on machine. Please download 'systemctl' and try again.",
-    137 : "Couldn't find either 'rsyslog' or 'syslogng' on machine. Please download "\
+    ERR_PORT_SETUP : "Issue with setting up ports for syslog. Please see {0} and {1} for the issue.",
+    ERR_SYSTEMCTL : "Couldn't find 'systemctl' on machine. Please download 'systemctl' and try again.",
+    ERR_SYSLOG : "Couldn't find either 'rsyslog' or 'syslogng' on machine. Please download "\
           "one of the two services and try again.",
-    138 : "{0} current status is the following: '{1}'. Please run the command 'systemctl "\
+    ERR_SERVICE_STATUS : "{0} current status is the following: '{1}'. Please run the command 'systemctl "\
           "status {0}' for more information.",
-    139 : "Custom log pos file {0} contains a different path to the custom log than {1}."\
+    ERR_CL_FILEPATH : "Custom log pos file {0} contains a different path to the custom log than {1}."\
           "Please see {2} and {0} for more information.",
-    140 : "Custom log {0} has unique number '0x{1}', but pos file {2} has unique number "\
+    ERR_CL_UNIQUENUM : "Custom log {0} has unique number '0x{1}', but pos file {2} has unique number "\
           "'0x{3}'. Please see {4} and {2} for more information.",
-    141 : "Ran into the following error when trying to see if OMI has high CPU: \n  {0}",
-    142 : "OMI appears to be running itself at >80% CPU. Please check out {0} for more information.",
-    143 : "Your version of nss-pem is slightly out of date, causing OMI to run at 100% CPU. "\
+    ERR_OMICPU : "Ran into the following error when trying to see if OMI has high CPU: \n  {0}",
+    ERR_OMICPU_HOT : "OMI appears to be running itself at >80% CPU. Please check out {0} for more information.",
+    ERR_OMICPU_NSSPEM : "Your version of nss-pem is slightly out of date, causing OMI to run at 100% CPU. "\
           "Please run the below command to upgrade the nss-pem package:\n"\
           "\n  $ sudo yum upgrade upgrade nss-pem\n\n"\
           "If nss-pem is not available for upgrade, then please instead downgrade curl using this command:\n"\
@@ -107,37 +109,37 @@ tsg_error_codes = {
           "You can read more about how to fix this specific bug by going to:\n"\
           "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/"\
                     "Troubleshooting.md#i-see-omiagent-using-100-cpu",
-    144 : "There seems to be an issue similar to a common issue involving OMI agent using "\
+    ERR_OMICPU_NSSPEM_LIKE : "There seems to be an issue similar to a common issue involving OMI agent using "\
           "100% CPU. Please check the below link for more information:\n"\
           "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/"\
                     "Troubleshooting.md#i-see-omiagent-using-100-cpu",
-    145 : "Ran into the following error when trying to run slabtop: \n  {0}",
-    146 : "Your machine has an issue with the dentry cache becoming bloated. Please check the "\
+    ERR_SLAB : "Ran into the following error when trying to run slabtop: \n  {0}",
+    ERR_SLAB_BLOATED : "Your machine has an issue with the dentry cache becoming bloated. Please check the "\
           "top 10 caches below, sorted by cache size:\n{0}",
-    147 : "Your version of nss-softokn is slightly out of date, causing an issue with "\
+    ERR_SLAB_NSSSOFTOKN : "Your version of nss-softokn is slightly out of date, causing an issue with "\
           "bloating the dentry cache. Please upgrade your version to nss-softokn-3.14.3-12.el6 "\
           "or newer, and ensure that the NSS_SDB_USE_CACHE environment variable is set to 'yes'. "\
           "Please check the below link for more information:\n"\
           "\n    https://bugzilla.redhat.com/show_bug.cgi?format=multiple&id=1044666",
-    148 : "There appears to be an issue in NSS, which resulted in bloating the dentry cache. "\
+    ERR_SLAB_NSS : "There appears to be an issue in NSS, which resulted in bloating the dentry cache. "\
           "Please set the NSS_SDB_USE_CACHE environment variable to 'yes'. You can check the "\
           "below link for more information:\n"\
           "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/"\
                     "Troubleshooting.md#i-see-omiagent-using-100-cpu",
-    149 : "Logrotate size limit for log {0} has invalid formatting. Please see {1} for more "\
+    ERR_LOGROTATE_SIZE : "Logrotate size limit for log {0} has invalid formatting. Please see {1} for more "\
           "information.",
-    150 : "Logrotate isn't rotating log {0}: its current size is {1}, and it should have "\
+    ERR_LOGROTATE : "Logrotate isn't rotating log {0}: its current size is {1}, and it should have "\
           "been rotated at {2}. Please see {3} for more information.",
-    151 : "File {0} has been modified {1} times in the last {2} seconds.",
-    152 : "{0} isn't installed correctly.",
-    153 : "The agent is currently taking too long to pull the configuration from the backend. "\
+    WARN_LARGE_FILES : "File {0} has been modified {1} times in the last {2} seconds.",
+    ERR_PKG : "{0} isn't installed correctly.",
+    ERR_BACKEND_CONFIG : "The agent is currently taking too long to pull the configuration from the backend. "\
           "Please check the following log files for more information:\n"\
           "    {0}\n"\
           "    {1}\n"\
           "Please also check out the below link (step 6) for more information:\n"\
           "\n    https://supportability.visualstudio.com/AzureLogAnalytics/_wiki/wikis/"\
                     "Azure-Log-Analytics.wiki/168967/Custom-Logs-Linux-Agent",
-    154 : "This version of Python is missing the {0} package. (You can check by opening up "\
+    ERR_PYTHON_PKG : "This version of Python is missing the {0} package. (You can check by opening up "\
           "python and typing 'import {0}'.) Please install this package and run the troubleshooter again."
 
 }  # TODO: keep up to date with error codes onenote
@@ -147,7 +149,7 @@ tsg_error_codes = {
 # check if either has no error or is warning
 def is_error(err_code):
     not_errs = warnings.copy()
-    not_errs.add(0)
+    not_errs.add(NO_ERROR)
     return (err_code not in not_errs)
 
 # get error codes from Troubleshooting.md
@@ -204,10 +206,10 @@ def ask_error_codes(err_type, find_err, err_types):
             if (answer1.lower() in ['n','no']):
                 print("Exiting troubleshooter...")
                 print("================================================================================")
-                return 1
+                return USER_EXIT
     print("Continuing on with troubleshooter...")
     print("--------------------------------------------------------------------------------")
-    return 0
+    return NO_ERROR
 
 # make specific for installation versus onboarding
 def ask_install_error_codes():
@@ -246,12 +248,12 @@ def ask_reinstall():
         print("to uninstall, and then run the command:")
         print("\n    sudo sh ./omsagent-*.universal.x64.sh --install\n")
         print("to reinstall.")
-        return 1
+        return USER_EXIT
 
     elif (answer.lower() in ['n','no']):
         print("Continuing on with troubleshooter...")
         print("--------------------------------------------------------------------------------")
-        return 101
+        return ERR_FOUND
 
 def ask_restart_oms():
     answer = get_input("Would you like to restart OMS Agent? (y/n)",\
@@ -264,15 +266,15 @@ def ask_restart_oms():
         try:
             subprocess.check_output([sc_path, 'restart'], universal_newlines=True,\
                                     stderr=subprocess.STDOUT)
-            return 0
+            return NO_ERROR
         except subprocess.CalledProcessError:
             tsg_error_info.append(('executable shell script', sc_path))
-            return 114
+            return ERR_FILE_MISSING
 
     elif (answer.lower() in ['n','no']):
         print("Continuing on with troubleshooter...")
         print("--------------------------------------------------------------------------------")
-        return 101
+        return ERR_FOUND
 
 def ask_continue():
     answer = get_input("Would you like to continue with the troubleshooter? (y/n)",\
@@ -281,16 +283,16 @@ def ask_continue():
     if (answer.lower() in ['y','yes']):
         print("Continuing on with troubleshooter...")
         print("--------------------------------------------------------------------------------")
-        return 101
+        return ERR_FOUND
     elif (answer.lower() in ['n','no']):
         print("Exiting troubleshooter...")
         print("================================================================================")
-        return 1
+        return USER_EXIT
 
 
 
 def print_errors(err_code):
-    if (err_code in {0,1}):
+    if (err_code in {NO_ERROR, USER_EXIT}):
         return err_code
 
     warning = False
@@ -317,7 +319,7 @@ def print_errors(err_code):
 
     if (warning):
         print("WARNING(S) FOUND.")
-        return 0
+        return NO_ERROR
     else:
         print("ERROR(S) FOUND.")
-        return 101
+        return ERR_FOUND

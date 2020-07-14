@@ -2,7 +2,8 @@
 
 import os
 
-from tsg_errors import tsg_error_info
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info
 
 def check_multihoming(workspace):
     directories = []
@@ -20,19 +21,19 @@ def check_multihoming(workspace):
     # 2+ potential workspaces
     if len(potential_workspaces) > 1:
         tsg_error_info.append((workspace_id_list))
-        return 129
+        return ERR_MULTIHOMING
 
     # 0 potential workspaces
     if (len(potential_workspaces) == 0):
         missing_dir = "/var/opt/microsoft/omsagent/{0}".format(workspace)
         tsg_error_info.append(('Directory', missing_dir))
-        return 114
+        return ERR_FILE_MISSING
 
     # 1 incorrect workspace
     if (potential_workspaces[0] != workspace):
         tsg_error_info.append(potential_workspaces[0], workspace)
-        return 121
+        return ERR_GUID
 
     # 1 correct workspace
-    return 0
+    return NO_ERROR
         

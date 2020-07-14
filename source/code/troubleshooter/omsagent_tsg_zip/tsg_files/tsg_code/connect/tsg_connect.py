@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+from tsg_error_codes      import *
 from tsg_errors           import ask_onboarding_error_codes, is_error, \
                                  print_errors
 from install.tsg_install  import check_installation
@@ -11,22 +12,22 @@ from .tsg_checke2e        import check_e2e
 
 
 
-def check_connection(err_codes=True, prev_success=0):
+def check_connection(err_codes=True, prev_success=NO_ERROR):
     print("CHECKING CONNECTION...")
 
     success = prev_success
 
     if (err_codes):
-        if (ask_onboarding_error_codes() == 1):
-            return 1
+        if (ask_onboarding_error_codes() == USER_EXIT):
+            return USER_EXIT
 
     # check if installed correctly
     print("Checking if installed correctly...")
     if (get_oms_version() == None):
-        print_errors(111)
+        print_errors(ERR_OMS_INSTALL)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_installation(err_codes=False, prev_success=101)
+        return check_installation(err_codes=False, prev_success=ERR_FOUND)
 
     # check general internet connectivity
     print("Checking if machine is connected to the internet...")

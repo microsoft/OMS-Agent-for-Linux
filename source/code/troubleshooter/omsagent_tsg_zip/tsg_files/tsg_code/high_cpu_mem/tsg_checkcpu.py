@@ -1,8 +1,9 @@
 import os
 import subprocess
 
-from tsg_errors import tsg_error_info
-from tsg_info   import tsginfo_lookup
+from tsg_error_codes import *
+from tsg_errors      import tsg_error_info
+from tsg_info        import tsginfo_lookup
 
 script_dir = "/opt/microsoft/omsagent/plugin/troubleshooter/tsg_tools"
 script_file = os.path.join(script_dir, 'omiHighCPUDiagnosticsTSG.sh')
@@ -69,7 +70,7 @@ def check_output_file():
         lines = f.readlines()
         # no threads over 80% threshold
         if (lines[0] == "No threads with high CPU utilization.\n"):
-            return 0
+            return NO_ERROR
         # some threads over 80% threshold, check permissions
         else:
             all_root = True
@@ -81,17 +82,17 @@ def check_output_file():
                     nss_ver = get_pkg_ver('nss-pem')
                     if (nss_ver == None):
                         tsg_error_info.append(('nss-pem',))
-                        return 152
+                        return ERR_PKG
                     # check nss-pem version
                     if (nss_ver == '1.0.3-5.el7'):
-                        return 143
+                        return ERR_OMICPU_NSSPEM
                     else:
-                        return 144
+                        return ERR_OMICPU_NSSPEM_LIKE
 
             # OMI running itself too hot
             tsg_error_info.append((output_file,))
             # TODO: include profile #s, distro, oms/omi versions; in some file
-            return 142
+            return ERR_OMICPU_HOT
 
 
 
@@ -104,12 +105,12 @@ def check_omi_cpu():
         # ran into issue
         if (not script_output.startswith("Traces will be saved to this file: ")):
             tsg_error_info.append((script_output,))
-            return 141
+            return ERR_OMICPU
         # Parse output
         return check_output_file()
 
     except subprocess.CalledProcessError as e:
         tsg_error_info.append((e.output,))
-        return 141
+        return ERR_OMICPU
 
 

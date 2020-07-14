@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+from tsg_error_codes      import *
 from tsg_errors           import tsg_error_info
 from .tsg_checkcpu        import get_pkg_ver
 from install.tsg_checkoms import comp_versions_ge
@@ -21,20 +22,20 @@ def check_nss_var(slabtop_10_pretty):
         nss_var = subprocess.check_output(['printenv','NSS_SDB_USE_CACHE'], universal_newlines=True)
         if (nss_var == 'yes\n'):
             tsg_error_info.append((slabtop_10_pretty,))
-            return 146
+            return ERR_SLAB_BLOATED
         else:
-            return 148
+            return ERR_SLAB_NSS
 
     # no variable named NSS_SDB_USE_CACHE
     except subprocess.CalledProcessError:
-        return 148
+        return ERR_SLAB_NSS
                 
 
 
 def check_slab_memory():
     # no issues found
     if (check_strace()):
-        return 0
+        return NO_ERROR
 
     # >300 DNE error messages called
     try:
@@ -55,15 +56,15 @@ def check_slab_memory():
                     slabtop_10_pretty = slabtop_lines[6:17]
                     return check_nss_var(slabtop_10_pretty)
                 else:
-                    return 147
+                    return ERR_SLAB_NSSSOFTOKN
 
         # dentry not in top 10
-        return 146
+        return ERR_SLAB_BLOATED
 
     # errored in running slabtop
     except subprocess.CalledProcessError as e:
         if (e.output.endswith('Permission denied\n')):
-            return 100
+            return ERR_SUDO_PERMS
         else:
             tsg_error_info.append((e.output,))
-            return 145
+            return ERR_SLAB

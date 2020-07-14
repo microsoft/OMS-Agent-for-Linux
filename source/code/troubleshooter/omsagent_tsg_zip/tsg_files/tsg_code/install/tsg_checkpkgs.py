@@ -1,6 +1,7 @@
 import subprocess
 
-from tsg_info import tsginfo_lookup, get_dpkg_pkg_version, get_rpm_pkg_version
+from tsg_error_codes import *
+from tsg_info        import tsginfo_lookup, get_dpkg_pkg_version, get_rpm_pkg_version
 
 def get_package_version(pkg):
     pkg_mngr = tsginfo_lookup('PKG_MANAGER')
@@ -49,12 +50,12 @@ def get_scx_version():
 # check to make sure all necessary packages are installed
 def check_packages():
     if (get_omsconfig_version() == None):
-        return 108
+        return ERR_OMSCONFIG
 
     if (get_omi_version() == None):
-        return 109
+        return ERR_OMI
 
     if (get_scx_version() == None):
-        return 110
+        return ERR_SCX
     
-    return 0
+    return NO_ERROR
