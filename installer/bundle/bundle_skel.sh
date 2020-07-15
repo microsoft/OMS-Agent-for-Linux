@@ -32,6 +32,13 @@ OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
 OMS_ENV_FILE="/etc/opt/microsoft/omsagent/omsagent.env"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 OMI_SERVICE="/opt/omi/bin/service_control"
+BIN_PATH="/opt/microsoft/omsagent/bin/"
+TST_EXTRACT_DIR="`pwd -P`/tst_omsbundle.$$"
+TST_PATH="${BIN_PATH}/troubleshooter"
+TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
+
+TST_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/troubleshooter/source/code/troubleshooter/omsagent_tst.tar.gz"
+TST_DOCS="https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting-Tool.md"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -112,6 +119,23 @@ source_references()
     cat <<EOF
 -- Source code references --
 EOF
+}
+
+cleanup_tst()
+{
+    # $1: Return status
+    # $2: Non-blank (if we're not to delete bundle), otherwise empty
+
+    if [ -z "$2" -a -d "$TST_EXTRACT_DIR" ]; then
+        cd $TST_EXTRACT_DIR/..
+        rm -rf $TST_EXTRACT_DIR
+    fi
+
+    if [ -n "$1" ]; then
+        return $1
+    else
+        return 0
+    fi
 }
 
 cleanup_and_exit()
@@ -385,6 +409,55 @@ install_if_program_does_not_exist_on_system()
         check_if_program_exists_on_system $1
         return $?
     fi
+}
+
+install_troubleshooter()
+{
+    echo "----- Installing troubleshooter -----"
+
+    # create temp directory
+    mkdir -p $TST_EXTRACT_DIR
+    cd $TST_EXTRACT_DIR
+
+    # grab tst bundle
+    wget $TST_PKG > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Error downloading troubleshooter. To install it manually, please go to the below link:"
+        echo ""
+        echo $TST_DOCS
+        echo ""
+        return cleanup_tst $INTERNAL_ERROR
+    tar -xzvf omsagent_tst.tar.gz > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Error unzipping troubleshooter bundle. To install it manually, please go to the below link:"
+        echo ""
+        echo $TST_DOCS
+        echo ""
+        return cleanup_tst $INTERNAL_ERROR
+
+    # remove old tst files (if necessary)
+    if [ -d $TST_MODULES_PATH ]; then
+        echo "Removing old version of troubleshooter..."
+        rm -rf $TST_MODULES_PATH
+        rm -f $TST_PATH
+    fi
+
+    # copy over tst files
+    echo "Copying over troubleshooter files..."
+    mkdir -p $TST_MODULES_PATH
+    cp -r modules $TST_MODULES_PATH
+    mkdir -p $BIN_PATH
+    cp troubleshooter $BIN_PATH
+
+    # verify everything installed correctly
+    if [ ! -f $TST_PATH || ! -d "$TST_MODULES_PATH/modules" ]; then
+        echo "Error copying files over for troubleshooter. To install it manually, please go to the below link:"
+        echo ""
+        echo $TST_DOCS
+        echo ""
+        return cleanup_tst $INTERNAL_ERROR
+
+    return cleanup_tst 0
 }
 
 isDiskSpaceSufficient()
@@ -769,6 +842,8 @@ install_extra_package()
 
 ulinux_detect_installer
 set -e
+
+install_troubleshooter
 
 while [ $# -ne 0 ]
 do

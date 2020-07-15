@@ -142,6 +142,12 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/VMInsightsIDataCollector.rb;             source/code/plugins/VMInsightsIDataCollector.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/in_vminsights.rb;                        source/code/plugins/in_vminsights.rb;                  744; root; root
 
+/opt/microsoft/omsagent/tst/datafiles/linux.data;                       installer/datafiles/linux.data;                        644; root; root
+/opt/microsoft/omsagent/tst/datafiles/linux_dpkg.data;                  installer/datafiles/linux_dpkg.data;                   644; root; root
+/opt/microsoft/omsagent/tst/datafiles/linux_rpm.data;                   installer/datafiles/linux_rpm.data;                    644; root; root
+/opt/microsoft/omsagent/tst/datafiles/ruby.data;                        installer/datafiles/ruby.data;                         644; root; root
+/opt/microsoft/omsagent/tst/datafiles/base_omsagent.data;               installer/datafiles/base_omsagent.data;                644; root; root
+
 %Links
 /opt/microsoft/omsagent/bin/omsagent; /opt/microsoft/omsagent/ruby/bin/fluentd; 755; root; root
 
@@ -162,6 +168,8 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent;                                755; root; root
 /opt/microsoft/omsagent/bin;                            755; root; root
 /opt/microsoft/omsagent/plugin;                         755; root; root
+
+/opt/microsoft/omsagent/tst/datafiles;                  755; root; root
 
 /var/opt/microsoft;                                     755; root; root; sysdir
 
