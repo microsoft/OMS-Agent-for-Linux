@@ -113,90 +113,109 @@ def run_tsg():
     # check if running as sudo
     if (not check_sudo()):
         return
+    
+    # check if want to run again
+    run_again = True
 
-    print("Welcome to the OMS Agent for Linux Troubleshooter! What is your issue?\n"\
-        "================================================================================\n"\
-        "1: Agent is unhealthy or heartbeat data missing.\n"\
-        "2: Agent doesn't start, can't connect to Log Analytic Services.\n"\
-        "3: Syslog issue.\n"\
-        "4: Agent consuming high CPU/memory.\n"\
-        "5: Installation failures.\n"\
-        "6: Custom logs issue.\n"\
-        "================================================================================\n"\
-        "A: Run through all scenarios.\n"\
-        "L: Collect the logs for OMS Agent.\n"\
-        "Q: Press 'Q' to quit.\n"\
-        "================================================================================")
-    switcher = {
-        '1': check_heartbeat,
-        '2': check_connection,
-        '3': check_syslog,
-        '4': check_high_cpu_memory,
-        '5': check_installation,
-        '6': check_custom_logs,
-        'A': check_all
-    }
-    issue = get_input("Please select an option",\
-                      (lambda x : x in ['1','2','3','4','5','6','q','quit','a','l']),\
-                      "Please enter an integer corresponding with your issue (1-6) to\n"\
-                        "continue (or 'A' to run through all scenarios), 'L' to run the log\n"\
-                        "collector, or 'Q' to quit.")
+    print("Welcome to the OMS Agent for Linux Troubleshooter! What is your issue?\n")
+    while (run_again):
+        print("================================================================================\n"\
+              "1: Agent is unhealthy or heartbeat data missing.\n"\
+              "2: Agent doesn't start, can't connect to Log Analytic Services.\n"\
+              "3: Syslog issue.\n"\
+              "4: Agent consuming high CPU/memory.\n"\
+              "5: Installation failures.\n"\
+              "6: Custom logs issue.\n"\
+              "================================================================================\n"\
+              "A: Run through all scenarios.\n"\
+              "L: Collect the logs for OMS Agent.\n"\
+              "Q: Press 'Q' to quit.\n"\
+              "================================================================================")
+        switcher = {
+            '1': check_heartbeat,
+            '2': check_connection,
+            '3': check_syslog,
+            '4': check_high_cpu_memory,
+            '5': check_installation,
+            '6': check_custom_logs,
+            'A': check_all
+        }
+        issue = get_input("Please select an option",\
+                        (lambda x : x in ['1','2','3','4','5','6','q','quit','a','l']),\
+                        "Please enter an integer corresponding with your issue (1-6) to\n"\
+                            "continue (or 'A' to run through all scenarios), 'L' to run the log\n"\
+                            "collector, or 'Q' to quit.")
 
-    # quit troubleshooter
-    if (issue.lower() in ['q','quit']):
-        print("Exiting the troubleshooter...")
-        return
+        # quit troubleshooter
+        if (issue.lower() in ['q','quit']):
+            print("Exiting the troubleshooter...")
+            return
 
-    # collect logs
-    if (issue.lower() == 'l'):
-        print("Running the OMS Log Collector...")
-        print("================================================================================")
-        collect_logs()
-        return
+        # collect logs
+        if (issue.lower() == 'l'):
+            print("Running the OMS Log Collector...")
+            print("================================================================================")
+            collect_logs()
+            return
 
-    # silent vs interactive mode
-    print("--------------------------------------------------------------------------------")
-    print("The troubleshooter can be run in two different modes.\n"\
-          "  - Silent Mode runs through with no input required\n"\
-          "  - Interactive Mode includes extra checks that require input")
-    mode = get_input("Do you want to run the troubleshooter in silent (s) or interactive (i) mode?",\
-                     (lambda x : x in ['s','silent','i','interactive']),\
-                     "Please enter 's'/'silent' to run silent mode, 'i'/'interactive' to run \n\
-                        interactive mode, or 'q'/'quit' to quit.")
-    if (mode.lower() in ['q''quit']):
-        print("Exiting the troubleshooter...")
-        return
-    elif (mode.lower() in ['s','silent']):
-        print("Running troubleshooter in silent mode...")
-        interactive_mode = False
-    elif (mode.lower() in ['i','interactive']):
-        print("Running troubleshooter in interactive mode...")
-        interactive_mode = True
-
-    # run troubleshooter
-    section = switcher.get(issue.upper(), lambda: "Invalid input")
-    print("================================================================================")
-    success = section(interactive=interactive_mode)
-
-    print("================================================================================")
-    print("================================================================================")
-    # print out all errors/warnings
-    if (len(err_summary) > 0):
-        print("ALL ERRORS/WARNINGS ENCOUNTERED:")
-        for err in err_summary:
-            print("  {0}".format(err))
+        # silent vs interactive mode
         print("--------------------------------------------------------------------------------")
-        
-    # no errors found
-    if (success == NO_ERROR):
-        print("No errors were found.")
-    # user requested to exit
-    elif (success == USER_EXIT):
-        return
-    # error found
-    else:
-        print("Please review the errors found above.")
+        print("The troubleshooter can be run in two different modes.\n"\
+            "  - Silent Mode runs through with no input required\n"\
+            "  - Interactive Mode includes extra checks that require input")
+        mode = get_input("Do you want to run the troubleshooter in silent (s) or interactive (i) mode?",\
+                        (lambda x : x in ['s','silent','i','interactive']),\
+                        "Please enter 's'/'silent' to run silent mode, 'i'/'interactive' to run \n\
+                            interactive mode, or 'q'/'quit' to quit.")
+        if (mode.lower() in ['q''quit']):
+            print("Exiting the troubleshooter...")
+            return
+        elif (mode.lower() in ['s','silent']):
+            print("Running troubleshooter in silent mode...")
+            interactive_mode = False
+        elif (mode.lower() in ['i','interactive']):
+            print("Running troubleshooter in interactive mode...")
+            interactive_mode = True
+
+        # run troubleshooter
+        section = switcher.get(issue.upper(), lambda: "Invalid input")
+        print("================================================================================")
+        success = section(interactive=interactive_mode)
+
+        print("================================================================================")
+        print("================================================================================")
+        # print out all errors/warnings
+        if (len(err_summary) > 0):
+            print("ALL ERRORS/WARNINGS ENCOUNTERED:")
+            for err in err_summary:
+                print("  {0}".format(err))
+            print("--------------------------------------------------------------------------------")
+            
+        # no errors found
+        if (success == NO_ERROR):
+            print("No errors were found.")
+        # user requested to exit
+        elif (success == USER_EXIT):
+            return
+        # error found
+        else:
+            print("Please review the errors found above.")
+
+        # if user ran single scenario, ask if they want to run again
+        if (issue in ['1','2','3','4','5','6']):
+            run_again = get_input("Do you want to run another scenario? (y/n)",\
+                                  (lambda x : x in ['y','yes','n','no']),\
+                                  "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
+            
+            if (run_again.lower() in ['y', 'yes']):
+                print("Please select another scenario below:")
+            elif (run_again.lower() in ['n', 'no']):
+                run_again = False
+        else:
+            run_again = False
+    
     # give information to user about next steps
+    print("================================================================================")
     print("If you still have an issue, please run the troubleshooter again and collect the\n"\
         "logs for OMS.\n"\
         "In addition, please include the following information:\n"\
