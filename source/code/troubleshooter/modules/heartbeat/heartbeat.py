@@ -141,7 +141,7 @@ def start_omsagent(workspace, enabled=False):
     # check if successful
     if (result == 0):
         return check_omsagent_running(workspace)
-    elif (result == WARN_LOG):
+    elif (result == 127):
         # script doesn't exist
         error_info.append(('executable shell script', SC_PATH))
         return ERR_FILE_MISSING

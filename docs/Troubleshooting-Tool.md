@@ -122,8 +122,8 @@ Below is a list of the errors that can be caught by the troubleshooter:
 | ERR_OMS_STOPPED | 123 | OMSAgent stopped |
 | ERR_OMS_DISABLED | 124 | OMSAgent disabled |
 | ERR_FILE_ACCESS | 125 | Couldn't access file |
-| ERR_LOG | 126 | Error in logs |
-| WARN_LOG | 127 | Warning in logs |
+| WARN_LOG_ERRS | 126 | Error in logs |
+| WARN_LOG_WARNS | 127 | Warning in logs |
 | ERR_HEARTBEAT | 128 | Heartbeats failing to send data to workspace |
 | ERR_MULTIHOMING | 129 | Running multihoming |
 | ERR_INTERNET | 130 | Couldn't connect to internet |

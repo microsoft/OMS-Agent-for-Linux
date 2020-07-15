@@ -70,7 +70,7 @@ def check_log_heartbeat(workspace):
         log_err_lines = list(map(lambda x : x[-1], parsed_log_errs))
         log_errs = '\n  ' + ('\n  '.join(log_err_lines))
         error_info.append((LOG_PATH, log_errs))
-        return ERR_LOG
+        return WARN_LOG_ERRS
 
     # filter warnings
     parsed_log_warns = list(filter(lambda x : (x[3]) == '[warn]', parsed_log_lines))
@@ -82,7 +82,7 @@ def check_log_heartbeat(workspace):
             log_warn_lines = list(map(lambda x : x[-1], parsed_log_warns))
             log_warns = '\n  ' + ('\n  '.join(log_warn_lines))
             error_info.append((LOG_PATH, log_warns))
-            return WARN_LOG
+            return WARN_LOG_WARNS
 
     # logs show no errors or warnings
     return NO_ERROR

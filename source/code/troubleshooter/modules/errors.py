@@ -26,7 +26,7 @@ err_summary = []
 
 
 # set of all errors which are actually warnings
-warnings = {WARN_FILE_PERMS, WARN_LOG, WARN_LARGE_FILES}
+warnings = {WARN_FILE_PERMS, WARN_LOG_ERRS, WARN_LOG_WARNS, WARN_LARGE_FILES}
 
 # dictionary correlating error codes to error messages
 error_messages = {
@@ -80,8 +80,8 @@ error_messages = {
           "And run the command below to start it:\n"\
           "\n  $ /opt/microsoft/omsagent/bin/service_control start\n",
     ERR_FILE_ACCESS : "Couldn't access / run {0} due to the following reason: {1}.",
-    ERR_LOG : "Found errors in log file {0}: {1}",
-    WARN_LOG : "Found warnings in log file {0}: {1}",
+    WARN_LOG_ERRS : "Found errors in log file {0}: {1}",
+    WARN_LOG_WARNS : "Found warnings in log file {0}: {1}",
     ERR_HEARTBEAT : "Heartbeats are failing to send data to the workspace.",
     ERR_MULTIHOMING : "Machine registered with more than one log analytics workspace. List of "\
           "workspaces: {0}",
