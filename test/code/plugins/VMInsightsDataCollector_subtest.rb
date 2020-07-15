@@ -1130,7 +1130,7 @@ module VMInsights
             end
 
             def to_s
-                "%-10s %-15s %15d %15d %-10s" % [ @dev, @mp, @size, @free, @type ]
+                "%-10s %-15s %15d %15d" % [ @dev, @mp, @size, @free ]
             end
 
             def equivilent?(actual)
@@ -1160,7 +1160,7 @@ module VMInsights
                 ]
             end
 
-            attr_reader :dev, :mp, :size, :free, :type
+            attr_reader :dev, :mp, :size, :free
         end
 
         class DfGarbage < String
