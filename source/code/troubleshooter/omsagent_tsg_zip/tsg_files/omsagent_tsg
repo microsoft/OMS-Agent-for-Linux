@@ -53,7 +53,19 @@ python_prereq_check()
     for pkg in $pkgs; do
         $PYTHON -c "import $pkg" 1> /dev/null 2> /dev/null
         if [ $? -ne 0 ]; then
-            echo "Python package $pkg not installed."
+            echo "Python package '$pkg' not installed."
+            success=1
+        fi
+    done
+
+
+    # check other packages
+    echo "Checking all necessary programs are installed..."
+    programs="gdb"
+    for prog in $programs; do
+        which $prog 1> /dev/null 2> /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Program '$prog' not installed."
             success=1
         fi
     done
