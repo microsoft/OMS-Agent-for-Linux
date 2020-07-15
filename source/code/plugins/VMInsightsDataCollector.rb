@@ -369,9 +369,9 @@ module VMInsights
                 return r unless r.zero?
                 r = size_in_bytes <=> o.size_in_bytes
                 return r unless r.zero?
-                free_space_in_bytes <=> o.free_space_in_bytes
-                r = filesystem_format <=> o.filesystem_format
+                r = free_space_in_bytes <=> o.free_space_in_bytes
                 return r unless r.zero?
+                filesystem_format <=> o.filesystem_format
             end
 
             attr_reader :device_name, :mount_point, :size_in_bytes, :free_space_in_bytes, :filesystem_format
