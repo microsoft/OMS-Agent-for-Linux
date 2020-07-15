@@ -89,7 +89,6 @@ module VMInsights
         #       size_in_bytes
         #       free_space_in_bytes
         #       device_name
-        #       filesystem_format
         def get_filesystems
             result = []
             df = File.join(@root, "bin", "df")
@@ -98,7 +97,7 @@ module VMInsights
                     a = line.split(" ")
                     if (a[1] =~ /^(ext[234]|xfs)$/)
                         begin
-                            result << Fs.new(a[0], a[6], a[2], a[4], a[1]) if a.size == 7
+                            result << Fs.new(a[0], a[6], a[2], a[4]) if a.size == 7
                         rescue ArgumentError => ex
                             # malformed input
                             @log.debug() { "#{__method__}: #{ex}: '#{line}'" }
@@ -350,7 +349,7 @@ module VMInsights
         end
 
         class Fs
-            def initialize(device_name, mount_point, size_in_bytes, free_space_in_bytes, filesystem_format)
+            def initialize(device_name, mount_point, size_in_bytes, free_space_in_bytes)
                 raise ArgumentError, mount_point unless mount_point.start_with? "/"
                 raise ArgumentError, device_name unless device_name.start_with?("/dev/")
                 device_name = device_name.sub(/^\/dev\//, '')
@@ -359,7 +358,6 @@ module VMInsights
                 @size_in_bytes = Integer(size_in_bytes, 10)
                 raise ArgumentError, size_in_bytes if (@size_in_bytes == 0)
                 @free_space_in_bytes = Integer(free_space_in_bytes, 10)
-                @filesystem_format = filesystem_format
             end
 
             def <=>(o)
@@ -369,12 +367,10 @@ module VMInsights
                 return r unless r.zero?
                 r = size_in_bytes <=> o.size_in_bytes
                 return r unless r.zero?
-                r = free_space_in_bytes <=> o.free_space_in_bytes
-                return r unless r.zero?
-                filesystem_format <=> o.filesystem_format
+                free_space_in_bytes <=> o.free_space_in_bytes
             end
 
-            attr_reader :device_name, :mount_point, :size_in_bytes, :free_space_in_bytes, :filesystem_format
+            attr_reader :device_name, :mount_point, :size_in_bytes, :free_space_in_bytes
             alias_method :to_s, :inspect
         end
 

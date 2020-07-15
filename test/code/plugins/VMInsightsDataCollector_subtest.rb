@@ -1137,8 +1137,7 @@ module VMInsights
                 @dev == '/dev/' + actual.device_name &&
                 @mp == actual.mount_point &&
                 @size == actual.size_in_bytes &&
-                @free == actual.free_space_in_bytes &&
-                @type == actual.filesystem_format
+                @free == actual.free_space_in_bytes
             end
 
             def <=>(o)
@@ -1174,14 +1173,14 @@ module VMInsights
 
         def make_expected_disks(n)
             seed = Random.rand(26)
-            filesystems_formats = ["ext2", "ext3", "ext4", "xfs"]
+            filesystem_formats = ["ext2", "ext3", "ext4", "xfs"]
             Array.new(n) { |i|
                 i = (i + seed) % 26
                 dev = "/dev/harddisk%s" % ('a' ... 'z').to_a[i]
                 mount = "/xyzzy/mnt#{i}"
                 size = Random.rand(1024 * 1024 * 1024 * 1024)
                 free = Random.rand(size + 1)
-                type = filesystems_formats[Random.rand(filesystems_formats.length)]
+                type = filesystem_formats[Random.rand(filesystem_formats.length)]
                 Fs.new(dev, mount, size, free, type)
             }
         end
