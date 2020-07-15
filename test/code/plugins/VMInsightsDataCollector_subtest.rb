@@ -322,12 +322,12 @@ module VMInsights
                 DfGarbage.new("/dev/foo#{__LINE__} ext4b 42 42 17 4 /shazam"),
             ].concat(expected)
             # these look funky, but they should be interpreted as decimal numbers
-            stuff << DfGarbage.new("/dev/bar1 ext4 042 42 17 3 /shazam")
-            expected << Fs.new("/dev/bar1", "/shazam", 42, 17, "ext4")
-            stuff << DfGarbage.new("/dev/bar2 ext4 42 42 017 2 /shazam")
-            expected << Fs.new("/dev/bar2", "/shazam", 42, 17, "ext4")
-            stuff << DfGarbage.new("/dev/bar3 xfs 42 42 017 2 /shazam")
-            expected << Fs.new("/dev/bar3", "/shazam", 42, 17, "xfs")
+            stuff << DfGarbage.new("/dev/bar1 ext4 042 42 17 3 /shazam1")
+            expected << Fs.new("/dev/bar1", "/shazam1", 42, 17, "ext4")
+            stuff << DfGarbage.new("/dev/bar2 ext4 42 42 017 2 /shazam2")
+            expected << Fs.new("/dev/bar2", "/shazam2", 42, 17, "ext4")
+            stuff << DfGarbage.new("/dev/bar3 xfs 42 42 017 2 /shazam3")
+            expected << Fs.new("/dev/bar3", "/shazam3", 42, 17, "xfs")
 
             stuff.shuffle!
             mock_proc_df stuff
@@ -1138,15 +1138,15 @@ module VMInsights
                 @mp == actual.mount_point &&
                 @size == actual.size_in_bytes &&
                 @free == actual.free_space_in_bytes &&
-                @type == actual.filesystem
+                @type == actual.filesystem_format
             end
 
             def <=>(o)
                 r = @dev <=> o.dev; return r unless r.zero?
                 r = @mp <=> o.mp; return r unless r.zero?
                 r = @size <=> o.size; return r unless r.zero?
-                @free <=> o.dev
-                r = @type <=> o.type; return r unless r.zero?
+                r = @free <=> o.free; return r unless r.zero?
+                @type <=> o.type
             end
 
             def make_df
@@ -1174,14 +1174,14 @@ module VMInsights
 
         def make_expected_disks(n)
             seed = Random.rand(26)
-            filesystems = ["ext2", "ext3", "ext4", "xfs"]
+            filesystems_formats = ["ext2", "ext3", "ext4", "xfs"]
             Array.new(n) { |i|
                 i = (i + seed) % 26
                 dev = "/dev/harddisk%s" % ('a' ... 'z').to_a[i]
                 mount = "/xyzzy/mnt#{i}"
                 size = Random.rand(1024 * 1024 * 1024 * 1024)
                 free = Random.rand(size + 1)
-                type = filesystems[Random.rand(filesystems.length)]
+                type = filesystems_formats[Random.rand(filesystems_formats.length)]
                 Fs.new(dev, mount, size, free, type)
             }
         end

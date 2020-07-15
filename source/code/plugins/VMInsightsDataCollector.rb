@@ -89,7 +89,7 @@ module VMInsights
         #       size_in_bytes
         #       free_space_in_bytes
         #       device_name
-        #       filesystem
+        #       filesystem_format
         def get_filesystems
             result = []
             df = File.join(@root, "bin", "df")
@@ -350,7 +350,7 @@ module VMInsights
         end
 
         class Fs
-            def initialize(device_name, mount_point, size_in_bytes, free_space_in_bytes, filesystem)
+            def initialize(device_name, mount_point, size_in_bytes, free_space_in_bytes, filesystem_format)
                 raise ArgumentError, mount_point unless mount_point.start_with? "/"
                 raise ArgumentError, device_name unless device_name.start_with?("/dev/")
                 device_name = device_name.sub(/^\/dev\//, '')
@@ -359,7 +359,7 @@ module VMInsights
                 @size_in_bytes = Integer(size_in_bytes, 10)
                 raise ArgumentError, size_in_bytes if (@size_in_bytes == 0)
                 @free_space_in_bytes = Integer(free_space_in_bytes, 10)
-                @filesystem = filesystem
+                @filesystem_format = filesystem_format
             end
 
             def <=>(o)
@@ -370,11 +370,11 @@ module VMInsights
                 r = size_in_bytes <=> o.size_in_bytes
                 return r unless r.zero?
                 free_space_in_bytes <=> o.free_space_in_bytes
-                r = filesystem <=> o.filesystem
+                r = filesystem_format <=> o.filesystem_format
                 return r unless r.zero?
             end
 
-            attr_reader :device_name, :mount_point, :size_in_bytes, :free_space_in_bytes, :filesystem
+            attr_reader :device_name, :mount_point, :size_in_bytes, :free_space_in_bytes, :filesystem_format
             alias_method :to_s, :inspect
         end
 
