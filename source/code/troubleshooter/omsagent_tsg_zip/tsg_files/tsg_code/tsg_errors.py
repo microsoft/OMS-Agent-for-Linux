@@ -132,7 +132,9 @@ tsg_error_codes = {
           "been rotated at {2}. Please see {3} for more information.",
     WARN_LARGE_FILES : "File {0} has been modified {1} times in the last {2} seconds.",
     ERR_PKG : "{0} isn't installed correctly.",
-    ERR_BACKEND_CONFIG : "The agent is currently taking too long to pull the configuration from the backend. "\
+    ERR_BACKEND_CONFIG : "The agent is currently having issues with pulling the configuration from the backend. "\
+          "You can try manually pulling the config by running the below command:\n"\
+          "\n  $ sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py'\n\n"\
           "Please check the following log files for more information:\n"\
           "    {0}\n"\
           "    {1}\n"\

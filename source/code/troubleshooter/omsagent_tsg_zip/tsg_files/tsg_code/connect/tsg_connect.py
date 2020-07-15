@@ -12,12 +12,12 @@ from .tsg_checke2e        import check_e2e
 
 
 
-def check_connection(err_codes=True, prev_success=NO_ERROR):
+def check_connection(interactive, err_codes=True, prev_success=NO_ERROR):
     print("CHECKING CONNECTION...")
 
     success = prev_success
 
-    if (err_codes):
+    if (interactive and err_codes):
         if (ask_onboarding_error_codes() == USER_EXIT):
             return USER_EXIT
 
@@ -27,7 +27,7 @@ def check_connection(err_codes=True, prev_success=NO_ERROR):
         print_errors(ERR_OMS_INSTALL)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_installation(err_codes=False, prev_success=ERR_FOUND)
+        return check_installation(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # check general internet connectivity
     print("Checking if machine is connected to the internet...")
@@ -54,12 +54,13 @@ def check_connection(err_codes=True, prev_success=NO_ERROR):
         success = print_errors(checked_la_endpts)
 
     # check if queries are successful
-    print("Checking if queries are successful...")
-    checked_e2e = check_e2e()
-    if (is_error(checked_e2e)):
-        return print_errors(checked_e2e)
-    else:
-        success = print_errors(checked_e2e)
+    if (interactive):
+        print("Checking if queries are successful...")
+        checked_e2e = check_e2e()
+        if (is_error(checked_e2e)):
+            return print_errors(checked_e2e)
+        else:
+            success = print_errors(checked_e2e)
         
     return success
 

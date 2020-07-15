@@ -98,7 +98,7 @@ def ask_update_old_version(oms_version, curr_oms_version):
 
 
 
-def check_oms():
+def check_oms(interactive):
     oms_version = get_oms_version()
     if (oms_version == None):
         return ERR_OMS_INSTALL
@@ -117,7 +117,7 @@ def check_oms():
     curr_oms_version = tsginfo_lookup('UPDATED_OMS_VERSION')
 
     # if not most recent version, ask if want to update
-    if (not comp_versions_ge(oms_version, curr_oms_version)):
+    if (interactive and (not comp_versions_ge(oms_version, curr_oms_version))):
         if (ask_update_old_version(oms_version, curr_oms_version) == USER_EXIT):
             return USER_EXIT
 

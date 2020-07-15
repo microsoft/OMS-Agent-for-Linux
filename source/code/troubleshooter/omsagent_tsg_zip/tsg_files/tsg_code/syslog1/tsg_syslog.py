@@ -9,7 +9,7 @@ from heartbeat.tsg_heartbeat import start_omsagent, check_omsagent_running, chec
 from .tsg_checkconf          import check_conf_files
 from .tsg_checkrsysng        import check_services
 
-def check_syslog(prev_success=NO_ERROR):
+def check_syslog(interactive, prev_success=NO_ERROR):
     print("CHECKING FOR SYSLOG ISSUES...")
 
     success = prev_success
@@ -21,7 +21,7 @@ def check_syslog(prev_success=NO_ERROR):
         print_errors(ERR_OMS_INSTALL)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_installation(err_codes=False, prev_success=ERR_FOUND)
+        return check_installation(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # check connection
     checked_la_endpts = check_log_analytics_endpts()
@@ -29,7 +29,7 @@ def check_syslog(prev_success=NO_ERROR):
         print_errors(checked_la_endpts)
         print("Running the connection part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_connection(err_codes=False, prev_success=ERR_FOUND)
+        return check_connection(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # check running
     checked_omsagent_running = check_omsagent_running(tsginfo_lookup('WORKSPACE_ID'))
@@ -37,7 +37,7 @@ def check_syslog(prev_success=NO_ERROR):
         print_errors(checked_omsagent_running)
         print("Running the general health part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_heartbeat(prev_success=ERR_FOUND)
+        return check_heartbeat(interactive, prev_success=ERR_FOUND)
 
     # check for syslog.conf and 95-omsagent.conf
     print("Checking for syslog configuration files...")
@@ -47,7 +47,7 @@ def check_syslog(prev_success=NO_ERROR):
             print_errors(checked_conf_files)
             print("Running the installation part of the troubleshooter in order to find the issue...")
             print("================================================================================")
-            return check_installation(err_codes=False, prev_success=ERR_FOUND)
+            return check_installation(interactive, err_codes=False, prev_success=ERR_FOUND)
         else:
             return print_errors(checked_conf_files)
     else:

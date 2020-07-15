@@ -31,10 +31,10 @@ def check_sudo():
 
 
 # run through all troubleshooting scenarios
-def check_all():
+def check_all(interactive):
     all_success = NO_ERROR
     # 1: Install
-    checked_install = check_installation()
+    checked_install = check_installation(interactive)
     if (is_error(checked_install)):
         return checked_install
     else:
@@ -42,7 +42,7 @@ def check_all():
     
     print("================================================================================")
     # 2: Connection
-    checked_connection = check_connection()
+    checked_connection = check_connection(interactive)
     if (is_error(checked_connection)):
         return checked_connection
     else:
@@ -50,28 +50,28 @@ def check_all():
 
     print("================================================================================")
     # 3: Heartbeat
-    checked_hb = check_heartbeat()
+    checked_hb = check_heartbeat(interactive)
     if (is_error(checked_hb)):
         return checked_hb
     else:
         all_success = checked_hb
 
     print("================================================================================")
-    checked_highcpumem = check_high_cpu_memory()
+    checked_highcpumem = check_high_cpu_memory(interactive)
     if (is_error(checked_highcpumem)):
         return checked_highcpumem
     else:
         all_success = checked_highcpumem
 
     print("================================================================================")
-    checked_syslog = check_syslog()
+    checked_syslog = check_syslog(interactive)
     if (is_error(checked_syslog)):
         return checked_syslog
     else:
         all_success = checked_syslog
 
     print("================================================================================")
-    checked_cl = check_custom_logs()
+    checked_cl = check_custom_logs(interactive)
     if (is_error(checked_cl)):
         return checked_cl
     else:
@@ -141,20 +141,42 @@ def run_tsg():
                       "Please enter an integer corresponding with your issue (1-6) to\n"\
                         "continue (or 'A' to run through all scenarios), 'L' to run the log\n"\
                         "collector, or 'Q' to quit.")
+
     # quit troubleshooter
     if (issue.lower() in ['q','quit']):
         print("Exiting the troubleshooter...")
         return
+
     # collect logs
     if (issue.lower() == 'l'):
         print("Running the OMS Log Collector...")
         print("================================================================================")
         collect_logs()
         return
+
+    # silent vs interactive mode
+    print("--------------------------------------------------------------------------------")
+    print("The troubleshooter can be run in two different modes.\n"\
+          "  - Silent Mode runs through with no input required\n"\
+          "  - Interactive Mode includes extra checks that require input")
+    mode = get_input("Do you want to run the troubleshooter in silent (s) or interactive (i) mode?",\
+                     (lambda x : x in ['s','silent','i','interactive']),\
+                     "Please enter 's'/'silent' to run silent mode, 'i'/'interactive' to run \n\
+                        interactive mode, or 'q'/'quit' to quit.")
+    if (mode.lower() in ['q''quit']):
+        print("Exiting the troubleshooter...")
+        return
+    elif (mode.lower() in ['s','silent']):
+        print("Running troubleshooter in silent mode...")
+        interactive_mode = False
+    elif (mode.lower() in ['i','interactive']):
+        print("Running troubleshooter in interactive mode...")
+        interactive_mode = True
+
     # run troubleshooter
     section = switcher.get(issue.upper(), lambda: "Invalid input")
     print("================================================================================")
-    success = section()
+    success = section(interactive=interactive_mode)
 
     print("================================================================================")
     print("================================================================================")

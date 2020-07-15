@@ -94,12 +94,12 @@ def check_key():
 
 
 # check all packages are installed
-def check_installation(err_codes=True, prev_success=NO_ERROR):
+def check_installation(interactive, err_codes=True, prev_success=NO_ERROR):
     print("CHECKING INSTALLATION...")
     # keep track of if all tests have been successful
     success = prev_success
     
-    if (err_codes):
+    if (interactive and err_codes):
         if (ask_install_error_codes() == USER_EXIT):
             return USER_EXIT
 
@@ -137,7 +137,7 @@ def check_installation(err_codes=True, prev_success=NO_ERROR):
 
     # check OMS version
     print("Checking if running a supported version of OMS...")
-    checked_oms = check_oms()
+    checked_oms = check_oms(interactive)
     if (is_error(checked_oms)):
         return print_errors(checked_oms)
     else:

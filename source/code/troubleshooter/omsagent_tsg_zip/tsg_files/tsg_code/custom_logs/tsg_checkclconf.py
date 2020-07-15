@@ -10,26 +10,45 @@ omsconflogdet_path = "/var/opt/microsoft/omsconfig/omsconfigdetailed.log"
 
 
 
-def no_clconf():
+def no_clconf(interactive):
     # check if enough time has passed for agent to pull config from OMS backend
     print("--------------------------------------------------------------------------------")
     print(" The troubleshooter cannot find the customlog.conf file. If the custom log \n"\
           " configuration was just applied in portal, it takes up to 15 minutes for the \n"\
-          " agent to pick the new configuration.\n\n")
-    too_long = get_input("Has it been at least 15 minutes since applying the configuration to the\n OMS backend? (y/n)",\
-                            (lambda x : x in ['y','yes','n','no']),\
-                            "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
+          " agent to pick the new configuration.\n"\
+          " You can manually pull the config from the OMS backend by running this command:\n"\
+          "\n  $ sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py'\n")
 
-    # >=15 minutes since last applying config
-    if (too_long.lower() in ['y','yes']):
-        # TODO: check the log files for an error in DSC
+    # errors out here if not using custom logs (for silent mode)
+    if (not interactive):
+        print(" (NOTE: if you aren't using custom logs, please ignore this message.)")
         tsg_error_info.append((omsconflog_path, omsconflogdet_path))
         return ERR_BACKEND_CONFIG
 
-    # <15 minutes since last applying config
-    else:
-        print(" Please try waiting for the agent to pull the config from the OMS backend.")
-        return NO_ERROR
+    # ask if already tried pulling config from OMS backend
+    if (interactive):
+        manual_pull = get_input("Have you already tried pulling the config manually? (y/n)",\
+                             (lambda x : x in ['y','yes','n','no']),\
+                             "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
+
+        # tried pulling, see if that fixed it
+        if (manual_pull.lower() in ['y','yes']):
+            # config now exists
+            if (os.path.isfile(clconf_path)):
+                print("The config file has been pulled successfully.")
+                print("Continuing on with troubleshooter...")
+                print("--------------------------------------------------------------------------------")
+                return NO_ERROR
+            # config still doesn't exist
+            else:
+                # TODO: check the log files for an error in DSC
+                tsg_error_info.append((omsconflog_path, omsconflogdet_path))
+                return ERR_BACKEND_CONFIG
+
+        # haven't tried pulling yet
+        else:
+            print(" Please try running the above command to pull the config file.")
+            return ERR_FOUND
 
 
 
@@ -73,10 +92,12 @@ def check_customlog(log_dict):
 
     
 
-def check_customlog_conf():
+def check_customlog_conf(interactive):
     # verify customlog.conf exists / not empty
     if (not os.path.isfile(clconf_path)):
-        return no_clconf()
+        backend_grab = no_clconf(interactive)
+        if (backend_grab != NO_ERROR):
+            return backend_grab
     if (os.stat(clconf_path).st_size == 0):
         tsg_error_info.append((clconf_path,))
         return ERR_FILE_EMPTY

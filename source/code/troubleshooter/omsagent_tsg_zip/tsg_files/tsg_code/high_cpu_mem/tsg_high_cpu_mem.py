@@ -11,7 +11,7 @@ from .tsg_checklogrot        import check_log_rotation
 from .tsg_checkcpu           import check_omi_cpu
 from .tsg_slabmem            import check_slab_memory
 
-def check_high_cpu_memory(prev_success=NO_ERROR):
+def check_high_cpu_memory(interactive, prev_success=NO_ERROR):
     print("CHECKING FOR HIGH CPU / MEMORY USAGE...")
 
     success = prev_success
@@ -23,7 +23,7 @@ def check_high_cpu_memory(prev_success=NO_ERROR):
         print_errors(ERR_OMS_INSTALL)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_installation(err_codes=False, prev_success=ERR_FOUND)
+        return check_installation(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # check connection
     checked_la_endpts = check_log_analytics_endpts()
@@ -31,7 +31,7 @@ def check_high_cpu_memory(prev_success=NO_ERROR):
         print_errors(checked_la_endpts)
         print("Running the connection part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_connection(err_codes=False, prev_success=ERR_FOUND)
+        return check_connection(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # check running
     checked_omsagent_running = check_omsagent_running(tsginfo_lookup('WORKSPACE_ID'))
@@ -39,7 +39,7 @@ def check_high_cpu_memory(prev_success=NO_ERROR):
         print_errors(checked_omsagent_running)
         print("Running the general health part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_heartbeat(prev_success=ERR_FOUND)
+        return check_heartbeat(interactive, prev_success=ERR_FOUND)
 
     # TODO: decide if should keep this in or not
     # check disk space

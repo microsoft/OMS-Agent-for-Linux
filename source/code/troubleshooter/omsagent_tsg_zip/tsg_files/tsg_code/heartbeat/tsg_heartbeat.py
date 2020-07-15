@@ -148,7 +148,7 @@ def start_omsagent(workspace, enabled=False):
 
 
 
-def check_heartbeat(prev_success=NO_ERROR):
+def check_heartbeat(interactive, prev_success=NO_ERROR):
     print("CHECKING HEARTBEAT / HEALTH...")
 
     success = prev_success
@@ -161,7 +161,7 @@ def check_heartbeat(prev_success=NO_ERROR):
         print_errors(ERR_OMS_INSTALL)
         print("Running the installation part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_installation(err_codes=False, prev_success=ERR_FOUND)
+        return check_installation(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # get workspace ID
     workspace = tsginfo_lookup('WORKSPACE_ID')
@@ -170,7 +170,7 @@ def check_heartbeat(prev_success=NO_ERROR):
         print_errors(ERR_INFO_MISSING)
         print("Running the connection part of the troubleshooter in order to find the issue...")
         print("================================================================================")
-        return check_connection(err_codes=False, prev_success=ERR_FOUND)
+        return check_connection(interactive, err_codes=False, prev_success=ERR_FOUND)
     
     # check if running multi-homing
     print("Checking if omsagent is trying to run multihoming...")
