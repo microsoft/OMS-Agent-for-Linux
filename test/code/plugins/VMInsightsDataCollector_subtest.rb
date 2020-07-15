@@ -315,16 +315,19 @@ module VMInsights
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 17 3 shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 not_int 42 17 3 /shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 not_int 3 /shazam"),
+                DfGarbage.new("/dev/foo#{__LINE__} xfs 42 42 not_int 3 /shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 0x42 42 17 4 /shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} ext4 42 42 0x17 4 /shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} text4 42 42 17 4 /shazam"),
                 DfGarbage.new("/dev/foo#{__LINE__} ext4b 42 42 17 4 /shazam"),
             ].concat(expected)
             # these look funky, but they should be interpreted as decimal numbers
-            stuff << DfGarbage.new("/dev/bar1 ext4 042 42 17 3 /shazam")
-            expected << Fs.new("/dev/bar1", "/shazam", 42, 17, 4)
-            stuff << DfGarbage.new("/dev/bar2 ext4 42 42 017 2 /shazam")
-            expected << Fs.new("/dev/bar2", "/shazam", 42, 17, 4)
+            stuff << DfGarbage.new("/dev/bar1 ext4 042 42 17 3 /shazam1")
+            expected << Fs.new("/dev/bar1", "/shazam1", 42, 17, "ext4")
+            stuff << DfGarbage.new("/dev/bar2 ext4 42 42 017 2 /shazam2")
+            expected << Fs.new("/dev/bar2", "/shazam2", 42, 17, "ext4")
+            stuff << DfGarbage.new("/dev/bar3 xfs 42 42 017 2 /shazam3")
+            expected << Fs.new("/dev/bar3", "/shazam3", 42, 17, "xfs")
 
             stuff.shuffle!
             mock_proc_df stuff
@@ -353,7 +356,7 @@ module VMInsights
         def test_get_filesystems_live
             check_for_df
             expected = {}
-            IO.popen("#{DF} --type=ext2 --type=ext3 --type=ext4 --block-size=1 | awk '{print $1,$6,$2}' | tail -n +2", { :in => :close}) { |io|
+            IO.popen("#{DF} --type=ext2 --type=ext3 --type=ext4 --type=xfs --block-size=1 | awk '{print $1,$6,$2}' | tail -n +2", { :in => :close}) { |io|
                 data = io.readlines
                 data.each { |line|
                     if !line.start_with?("/dev/")
@@ -1118,7 +1121,7 @@ module VMInsights
         end
 
         class Fs
-            def initialize(dev, mp, size, free, type=(Random.rand(3) + 2))
+            def initialize(dev, mp, size, free, type)
                 @dev = dev
                 @mp = mp
                 @size = size
@@ -1141,13 +1144,13 @@ module VMInsights
                 r = @dev <=> o.dev; return r unless r.zero?
                 r = @mp <=> o.mp; return r unless r.zero?
                 r = @size <=> o.size; return r unless r.zero?
-                @free <=> o.dev
+                @free <=> o.free
             end
 
             def make_df
-                "%-*s ext%d %*d %*d %*d %*d %-*s" % [
+                "%-*s %-*s %*d %*d %*d %*d %-*s" % [
                     Random.rand(20), @dev,
-                    @type,
+                    Random.rand(20), @type,
                     Random.rand(20), @size,
                     Random.rand(20), 42,
                     Random.rand(20), @free,
@@ -1169,13 +1172,15 @@ module VMInsights
 
         def make_expected_disks(n)
             seed = Random.rand(26)
+            filesystem_formats = ["ext2", "ext3", "ext4", "xfs"]
             Array.new(n) { |i|
                 i = (i + seed) % 26
                 dev = "/dev/harddisk%s" % ('a' ... 'z').to_a[i]
                 mount = "/xyzzy/mnt#{i}"
                 size = Random.rand(1024 * 1024 * 1024 * 1024)
                 free = Random.rand(size + 1)
-                Fs.new(dev, mount, size, free)
+                type = filesystem_formats[Random.rand(filesystem_formats.length)]
+                Fs.new(dev, mount, size, free, type)
             }
         end
 

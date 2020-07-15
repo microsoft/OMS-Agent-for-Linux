@@ -95,7 +95,7 @@ module VMInsights
             IO.popen([df, "--block-size=1", "-T"], { :in => :close, :err => File::NULL }) { |io|
                 while (line = io.gets)
                     a = line.split(" ")
-                    if (a[1] =~ /^ext[234]$/)
+                    if (a[1] =~ /^(ext[234]|xfs)$/)
                         begin
                             result << Fs.new(a[0], a[6], a[2], a[4]) if a.size == 7
                         rescue ArgumentError => ex
