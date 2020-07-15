@@ -9,6 +9,8 @@ from .check_oms   import check_oms
 from .check_files import check_filesystem
 from .check_pkgs  import check_packages
 
+DFS_PATH = "/opt/microsoft/omsagent/tst/datafiles/"
+
 
 
 # check space in MB for each main directory
@@ -144,12 +146,16 @@ def check_installation(interactive, err_codes=True, prev_success=NO_ERROR):
         success = print_errors(checked_oms)
 
     # check all files
-    print("Checking if all files installed correctly (may take some time)...")
-    checked_files = check_filesystem()
-    if (is_error(checked_files)):
-        return print_errors(checked_files)
+    if (os.path.isdir(DFS_PATH)):
+        print("Checking if all files installed correctly (may take some time)...")
+        checked_files = check_filesystem(DFS_PATH)
+        if (is_error(checked_files)):
+            return print_errors(checked_files)
+        else:
+            success = print_errors(checked_files)
     else:
-        success = print_errors(checked_files)
+        print("WARNING (INTERNAL): Datafiles have not been successfully copied over.")
+        print("Skipping all files installed correctly check...")
 
     # check certs
     print("Checking certificate and RSA key are correct...")

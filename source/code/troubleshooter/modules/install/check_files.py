@@ -7,8 +7,6 @@ from errors      import error_info
 from helpers     import geninfo_lookup
 from .check_oms  import comp_versions_ge
 
-DFS_PATH = "/opt/microsoft/omsagent/tst/datafiles/"
-
 # get files/directories/links from data files
 
 def get_data(f, variables, files, links, dirs):
@@ -263,7 +261,7 @@ def check_links(links, exist_err, perms_err):
 
 # Check everything
 
-def check_filesystem():
+def check_filesystem(DFS_PATH):
     success = NO_ERROR
 
     # create lists to track errors
