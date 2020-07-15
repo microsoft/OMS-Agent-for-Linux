@@ -1144,8 +1144,7 @@ module VMInsights
                 r = @dev <=> o.dev; return r unless r.zero?
                 r = @mp <=> o.mp; return r unless r.zero?
                 r = @size <=> o.size; return r unless r.zero?
-                r = @free <=> o.free; return r unless r.zero?
-                @type <=> o.type
+                @free <=> o.free
             end
 
             def make_df
