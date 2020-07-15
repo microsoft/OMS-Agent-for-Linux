@@ -18,33 +18,6 @@ def get_oms_version():
 
 
 
-# check errors if getting curr oms version errors out
-def check_curr_oms_errs(updated_curr_oms_version, found_errs):
-    # error in page itself
-    if (updated_curr_oms_version == ERR_GETTING_OMS_VER):
-        return ERR_GETTING_OMS_VER
-
-    # error in connection, check connection
-    checked_internet = check_internet_connect()
-    if (is_error(checked_internet)):
-        return checked_internet
-
-    # ssl package not installed
-    if (found_errs[0] == "<urlopen error unknown url type: https>"):
-        try:
-            import ssl
-            error_info.append((found_errs[0],))
-            return ERR_ENDPT
-        except ImportError:
-            error_info.append(('ssl',))
-            return ERR_PYTHON_PKG
-    # connection in general fine, connecting to current page not
-    else:
-        error_info.append((found_errs[0],))
-        return ERR_ENDPT
-
-
-
 # compare two versions, see if the first is newer than / the same as the second
 def comp_versions_ge(v1, v2):
     # split on '.' and '-'
@@ -111,10 +84,9 @@ def check_oms(interactive):
         return ERR_OLD_OMS_VER
 
     # get most recent version
-    found_errs = []
-    updated_curr_oms_version = update_curr_oms_version(found_errs)
+    updated_curr_oms_version = update_curr_oms_version()
     if (is_error(updated_curr_oms_version)):
-        return check_curr_oms_errs(updated_curr_oms_version, found_errs)
+        return updated_curr_oms_version
 
     curr_oms_version = geninfo_lookup('UPDATED_OMS_VERSION')
 

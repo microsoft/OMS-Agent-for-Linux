@@ -4,7 +4,7 @@ import ssl
 import subprocess
 
 from error_codes import *
-from errors      import error_info, print_errors
+from errors      import error_info, check_urlopen_errs, print_errors
 
 # urlopen() in different packages in Python 2 vs 3
 try:
@@ -30,6 +30,8 @@ def geninfo_lookup(key):
         return None
     return val
 
+
+
 # All functions that update general_info
 
 # CPU Bits
@@ -49,6 +51,8 @@ dist_to_id = {'redhat' : 'rhel',
               'suse' : 'sles',
               'sles' : 'sles',
               'amzn' : 'amzn'}
+
+
 
 # OS Info
 def get_os_version():
@@ -80,6 +84,8 @@ def get_os_version():
             general_info['OS_READABLE_ID'] = dist_to_id[dist]
     return (vm_dist, vm_ver)
 
+
+
 # Package Manager
 def update_pkg_manager():
     # try dpkg
@@ -102,6 +108,8 @@ def update_pkg_manager():
         pass
     # neither
     return ERR_PKG_MANAGER
+
+
 
 # Package Info
 def get_dpkg_pkg_version(pkg):
@@ -145,7 +153,9 @@ def get_rpm_pkg_version(pkg):
     except subprocess.CalledProcessError:
         return None
 
-def update_curr_oms_version(found_errs):
+
+# Recent OMS Version
+def update_curr_oms_version():
     try:
         doc_file = urlopen(OMSAGENT_URL)
         for line in doc_file.readlines():
@@ -156,8 +166,9 @@ def update_curr_oms_version(found_errs):
                 return NO_ERROR
         return ERR_GETTING_OMS_VER
     except IOError as e:
-        found_errs.append((OMSAGENT_URL, e))
-        return ERR_ENDPT
+        return check_urlopen_errs(ERR_ENDPT, OMSAGENT_URL, e)
+
+
 
 # omsadmin.conf
 def update_omsadmin():

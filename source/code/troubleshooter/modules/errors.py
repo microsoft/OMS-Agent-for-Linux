@@ -9,7 +9,13 @@ try:
 except NameError:
     pass
 
-TST_DOC_PATH = "/opt/microsoft/omsagent/tst/files/Troubleshooting.md"
+# urlopen() in different packages in Python 2 vs 3
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+TSG_URL = "https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/docs/Troubleshooting.md"
 
 # error info edited when error occurs
 error_info = []
@@ -154,13 +160,16 @@ def is_error(err_code):
     not_errs.add(NO_ERROR)
     return (err_code not in not_errs)
 
+
+
 # get error codes from Troubleshooting.md
 def get_error_codes(err_type):
     err_codes = {0 : "No errors found"}
     section_name = "{0} Error Codes".format(err_type)
-    with open(TST_DOC_PATH, 'r') as ts_doc:
+    try:
+        ts_doc = urlopen(TSG_URL)
         section = None
-        for line in ts_doc:
+        for line in ts_doc.readlines():
             line = line.rstrip('\n')
             if (line == ''):
                 continue
@@ -175,7 +184,33 @@ def get_error_codes(err_type):
                 continue
             if (section==section_name and line.startswith('#')):
                 break
-    return err_codes
+        return (err_codes, None)
+    except IOError as e:
+        return (None, check_urlopen_errs(ERR_ENDPT, TSG_URL, e))
+
+# check errors involving urlopen function
+def check_urlopen_errs(err, url, err_msg):
+    # error in connection, check connection
+    checked_internet = check_internet_connect()
+    if (is_error(checked_internet)):
+        return checked_internet
+
+    # ssl package not installed
+    if (err_msg == "<urlopen error unknown url type: https>"):
+        try:
+            import ssl
+            error_info.append((url, err_msg))
+            return ERR_ENDPT
+        except ImportError:
+            error_info.append(('ssl',))
+            return ERR_PYTHON_PKG
+
+    # connection in general fine, connecting to current page not
+    else:
+        error_info.append((url, err_msg))
+        return ERR_ENDPT
+
+
 
 # ask user if they encountered error code
 def ask_error_codes(err_type, find_err, err_types):
@@ -187,7 +222,10 @@ def ask_error_codes(err_type, find_err, err_types):
                        "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
     if (answer.lower() in ['y','yes']):
         # get dict of all error codes
-        err_codes = get_error_codes(err_type)
+        (err_codes, tsg_error) = get_error_codes(err_type)
+        if (err_codes == None):
+            return tsg_error
+
         # ask user for error code
         poss_ans = lambda x : x.isdigit() or (x in ['NOT_DEFINED', 'none'])
         err_code = get_input("Please input the error code", poss_ans,\
