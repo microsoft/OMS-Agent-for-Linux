@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# check if running as root
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root in order to install the troubleshooter, due to the permissions required for the destination directories."
+    echo "Please instead run:"
+    echo ""
+    echo "$ sudo ./install_tst"
+    echo ""
+    echo "in order to install the troubleshooter."
+    exit 1
+fi
+
+BIN_PATH="/opt/microsoft/omsagent/bin/"
+TROUBLESHOOTER_PATH="${BIN_PATH}/troubleshooter"
+TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
+TST_FILES_PATH="${TST_MODULES_PATH}/datafiles"
+
+echo "Getting ready to install troubleshooter..."
+
+# set up machine
+
+if [ -d $TST_MODULES_PATH ]; then
+    # get rid of old files to update
+    echo "Removing older version of troubleshooter..."
+    rm -rf $TST_MODULES_PATH
+    rm -f $TROUBLESHOOTER_PATH
+fi
+
+# copy over files
+echo "Installing troubleshooter on machine..."
+mkdir -p $TST_MODULES_PATH
+cp -r modules $TST_MODULES_PATH
+cp troubleshooter $BIN_PATH
+
+echo "You can now run the troubleshooter by going to $BIN_PATH and running the below command:"
+echo ""
+echo "$ sudo ./troubleshooter"
+echo ""
