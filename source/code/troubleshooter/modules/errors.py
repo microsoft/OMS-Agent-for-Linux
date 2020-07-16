@@ -26,7 +26,7 @@ err_summary = []
 
 
 # set of all errors which are actually warnings
-warnings = {WARN_FILE_PERMS, WARN_LOG_ERRS, WARN_LOG_WARNS, WARN_LARGE_FILES}
+warnings = set([WARN_FILE_PERMS, WARN_LOG_ERRS, WARN_LOG_WARNS, WARN_LARGE_FILES])
 
 # dictionary correlating error codes to error messages
 error_messages = {
