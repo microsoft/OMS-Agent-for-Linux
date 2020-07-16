@@ -145,12 +145,18 @@ def get_rpm_pkg_version(pkg):
             return None
         rpm_lines = rpm_info.split('\n')
         for line in rpm_lines:
-            if (line.startswith('Name') and not line.endswith(pkg)):
-                # wrong package
-                return None
-            if (line.startswith('Version')):
-                parsed_line = line.replace(' ','').split(':')  # ['Version', version]
-                version = parsed_line[1]
+            # parse line
+            # note: parsing is weird bc rpm puts various information into two columns
+            parsed_line = line.split()
+            if (parsed_line[0] == 'Name'):
+                # ['Name', ':', name, 'Relocations', ':', relocations]
+                name = parsed_line[2]
+                if (name != pkg):
+                    # wrong package
+                    return None
+            if (parsed_line[0] == 'Version'):
+                # ['Version', ':', version, 'Vendor', ':', 'MSFT']
+                version = parsed_line[2]
                 general_info['{0}_VERSION'.format(pkg.upper())] = version
                 return version
         return None
