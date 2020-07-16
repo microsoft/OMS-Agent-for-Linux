@@ -1,4 +1,5 @@
 import errno
+import os
 import platform
 import ssl
 import subprocess
@@ -200,6 +201,39 @@ def update_omsadmin():
 
 
 
+# service controller
+def check_service_controller():
+    # check systemd
+    try:
+        is_systemctl = subprocess.check_output(['which', 'systemctl'], \
+                        universal_newlines=True, stderr=subprocess.STDOUT)
+        general_info['SERVICE_CONTROLLER'] = 'systemctl'
+        return NO_ERROR
+    except subprocess.CalledProcessError:
+        # systemd not on VM, try other service controllers
+        INVOKE_RC_PATH = "/usr/sbin/invoke-rc.d"
+        SERVICE_PATH = "/sbin/service"
+        SYSTEMCTL_PATH = "/bin/systemctl"
+        def is_exec(fp):
+            return (os.path.isfile(fp) and os.access(fp, os.X_OK))
+        # try invoke-rc.d
+        if (is_exec(INVOKE_RC_PATH)):
+            general_info['SERVICE_CONTROLLER'] = INVOKE_RC_PATH
+            return NO_ERROR
+        # try service
+        elif (is_exec(SERVICE_PATH)):
+            general_info['SERVICE_CONTROLLER'] = SERVICE_PATH
+            return NO_ERROR
+        # try systemctl (via direct path)
+        elif (is_exec(SYSTEMCTL_PATH)):
+            general_info['SERVICE_CONTROLLER'] = SYSTEMCTL_PATH
+            return NO_ERROR
+        # none worked
+        else:
+            return ERR_SERVICE_CONTROLLER
+
+
+
 # update all
 def update_geninfo_all():
     # cpu_bits
@@ -238,5 +272,9 @@ def update_geninfo_all():
     omsadmin = update_omsadmin()
     if (omsadmin != NO_ERROR):
         return omsadmin
+    # service controller
+    service_controller = check_service_controller()
+    if (service_controller != NO_ERROR):
+        return service_controller
     # all successful
     return NO_ERROR

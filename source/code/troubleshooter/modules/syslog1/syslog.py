@@ -1,6 +1,6 @@
 from error_codes          import *
 from errors               import is_error, print_errors
-from helpers              import geninfo_lookup
+from helpers              import geninfo_lookup, check_service_controller
 from install.check_oms    import get_oms_version
 from install.install      import check_installation
 from connect.check_endpts import check_log_analytics_endpts
@@ -45,6 +45,14 @@ def check_syslog(interactive, prev_success=NO_ERROR):
         print("================================================================================")
         return check_heartbeat(interactive, prev_success=ERR_FOUND)
 
+    # check for service controller
+    print("Checking if machine has a valid service controller...")
+    checked_sc = check_service_controller()
+    if (is_error(checked_sc)):
+        return checked_sc
+    else:
+        success = print_errors(checked_sc)
+    
     # check rsyslog / syslogng running
     print("Checking if machine has rsyslog or syslog-ng running...")
     checked_services = check_services()

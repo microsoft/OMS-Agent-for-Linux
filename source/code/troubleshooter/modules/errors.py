@@ -87,11 +87,11 @@ error_messages = {
     ERR_PORT_MISMATCH : "Syslog is set up to bind to port {0}, but is currently sending to port {1}. "\
           "Please see {2} for the issue.",
     ERR_PORT_SETUP : "Issue with setting up ports for syslog. Please see {0} and {1} for the issue.",
-    ERR_SYSTEMCTL : "Couldn't find 'systemctl' on machine. Please download 'systemctl' and try again.",
+    ERR_SERVICE_CONTROLLER : "Couldn't find 'systemctl' on machine. Please download 'systemctl' and try again.",
     ERR_SYSLOG : "Couldn't find either 'rsyslog' or 'syslogng' on machine. Please download "\
           "one of the two services and try again.",
-    ERR_SERVICE_STATUS : "{0} current status is the following: '{1}'. Please run the command 'systemctl "\
-          "status {0}' for more information.",
+    ERR_SERVICE_STATUS : "{0} current status is the following: '{1}'. Please check the status of {0} "\
+          "using {2} for more information.",
     ERR_CL_FILEPATH : "Custom log pos file {0} contains a different path to the custom log than {1}."\
           "Please see {2} and {0} for more information.",
     ERR_CL_UNIQUENUM : "Custom log {0} has unique number '0x{1}', but pos file {2} has unique number "\
@@ -321,7 +321,8 @@ def ask_continue():
 
 
 def print_errors(err_code):
-    if (err_code in {NO_ERROR, USER_EXIT}):
+    not_errors = set([NO_ERROR, USER_EXIT])
+    if (err_code in not_errors):
         return err_code
 
     warning = False

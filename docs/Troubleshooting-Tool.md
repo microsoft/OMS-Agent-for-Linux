@@ -132,7 +132,7 @@ Below is a list of the errors that can be caught by the troubleshooter:
 | ERR_PT | 133 | Wrong number of '@'s in omsagent95 paths |
 | ERR_PORT_MISMATCH | 134 | Ports don't match up |
 | ERR_PORT_SETUP | 135 | Error with ports |
-| ERR_SYSTEMCTL | 136 | No systemctl on machine |
+| ERR_SERVICE_CONTROLLER | 136 | No systemctl on machine |
 | ERR_SYSLOG | 137 | No rsyslog or syslog-ng on machine |
 | ERR_SERVICE_STATUS | 138 | Service erroring |
 | ERR_CL_FILEPATH | 139 | Custom log filepath mismatch |
