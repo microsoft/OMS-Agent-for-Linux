@@ -17,6 +17,10 @@ CONF_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
 
 general_info = dict()
 
+def add_geninfo(key, value):
+    general_info[key] = value
+    return
+
 def geninfo_lookup(key):
     try:
         val = general_info[key]

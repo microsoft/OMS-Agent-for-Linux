@@ -45,7 +45,15 @@ def check_syslog(interactive, prev_success=NO_ERROR):
         print("================================================================================")
         return check_heartbeat(interactive, prev_success=ERR_FOUND)
 
-    # check for syslog.conf and 95-omsagent.conf
+    # check rsyslog / syslogng running
+    print("Checking if machine has rsyslog or syslog-ng running...")
+    checked_services = check_services()
+    if (is_error(checked_services)):
+        return print_errors(checked_services)
+    else:
+        success = print_errors(checked_services)
+
+    # check for syslog.conf and syslog destination file
     print("Checking for syslog configuration files...")
     checked_conf_files = check_conf_files()
     if (is_error(checked_conf_files)):
@@ -58,14 +66,6 @@ def check_syslog(interactive, prev_success=NO_ERROR):
             return print_errors(checked_conf_files)
     else:
         success = print_errors(checked_conf_files)
-
-    # check rsyslog / syslogng running
-    print("Checking if machine has rsyslog or syslog-ng running...")
-    checked_services = check_services()
-    if (is_error(checked_services)):
-        return print_errors(checked_services)
-    else:
-        success = print_errors(checked_services)
 
     return success
         

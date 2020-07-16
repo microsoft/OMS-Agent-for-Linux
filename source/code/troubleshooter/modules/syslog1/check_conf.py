@@ -7,8 +7,8 @@ from helpers           import geninfo_lookup
 from install.check_oms import comp_versions_ge, get_oms_version
 
 OMSADMIN_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
-SYSLOGCONF_PATH = "/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/syslog.conf"
-OMSAGENT95_PATH = "/etc/rsyslog.d/95-omsagent.conf" # TODO: rsyslog vs syslogng
+SYSLOGCONF_PATH = "/etc/opt/microsoft/omsagent/conf/omsagent.d/syslog.conf"
+SYSLOGDEST_PATH = ""
 
 def parse_syslogconf():
     syslogconf_dict = dict()
@@ -57,7 +57,7 @@ def check_port(port, sys_bind, sys_pt):
         error_info.append(("protocol type",SYSLOGCONF_PATH))
         return ERR_INFO_MISSING
 
-    # 95-omsagent.conf is sending to right port
+    # syslog destination file is sending to right port
     corr_port = corr_pt + sys_bind
     if (port.startswith(corr_port)):
         return NO_ERROR
@@ -66,29 +66,35 @@ def check_port(port, sys_bind, sys_pt):
     corr_pt_count = corr_pt.count('@')
     if (pt_count != corr_pt_count):
         pt = port[:pt_count]
-        error_info.append((sys_pt, corr_pt, pt, OMSAGENT95_PATH))
+        error_info.append((sys_pt, corr_pt, pt, SYSLOGDEST_PATH))
         return ERR_PT
     # wrong port
     curr_bind = (port[pt_count+1:]).split(':')[0]
     if (curr_bind != sys_bind):
-        error_info.append((sys_bind, curr_bind, OMSAGENT95_PATH))
+        error_info.append((sys_bind, curr_bind, SYSLOGDEST_PATH))
         return ERR_PORT_MISMATCH
     # some other error?
-    error_info.append((SYSLOGCONF_PATH, OMSAGENT95_PATH))
+    error_info.append((SYSLOGCONF_PATH, SYSLOGDEST_PATH))
     return ERR_PORT_SETUP
 
         
     
 
-def check_omsagent95(sys_bind, sys_pt, workspace_id):
+def check_syslogdest(sys_bind, sys_pt):
+    # get workspace id
+    workspace_id = geninfo_lookup('WORKSPACE_ID')
+    if (workspace_id == None):
+        error_info.append(('Workspace ID', OMSADMIN_PATH))
+        return ERR_INFO_MISSING
+
     # set up regex lines
     comment_line = "# OMS Syslog collection for workspace (\S+)"
     spec_line = "(\w+).=alert;(\w+).=crit;(\w+).=debug;(\w+).=emerg;(\w+).=err;"\
                 "(\w+).=info;(\w+).=notice;(\w+).=warning"
 
     # open file
-    with open(OMSAGENT95_PATH, 'r') as omsagent95_file:
-        for line in omsagent95_file:
+    with open(SYSLOGDEST_PATH, 'r') as syslogdest_file:
+        for line in syslogdest_file:
             line = line.rstrip('\n')
             # skip empty lines
             if (line == ''):
@@ -124,15 +130,6 @@ def check_omsagent95(sys_bind, sys_pt, workspace_id):
 
 
 def check_conf_files():
-    # update files with WSID
-    workspace_id = geninfo_lookup('WORKSPACE_ID')
-    if (workspace_id == None):
-        error_info.append(('Workspace ID', OMSADMIN_PATH))
-        return ERR_INFO_MISSING
-        
-    global SYSLOGCONF_PATH
-    SYSLOGCONF_PATH = SYSLOGCONF_PATH.format(workspace_id)
-
     # verify syslog.conf exists / not empty
     if (not os.path.isfile(SYSLOGCONF_PATH)):
         error_info.append(('file',SYSLOGCONF_PATH))
@@ -140,12 +137,20 @@ def check_conf_files():
     if (os.stat(SYSLOGCONF_PATH).st_size == 0):
         error_info.append((SYSLOGCONF_PATH,))
         return ERR_FILE_EMPTY
-    # verify 95-omsagent.conf exists / not empty
-    if (not os.path.isfile(OMSAGENT95_PATH)):
-        error_info.append(('file',OMSAGENT95_PATH))
+
+    # update syslog destination path with correct location
+    syslog_dest = geninfo_lookup('SYSLOG_DEST')
+    if (syslog_dest == None):
+        return ERR_SYSLOG
+    global SYSLOGDEST_PATH
+    SYSLOGDEST_PATH = syslog_dest
+
+    # verify syslog destination exists / not empty
+    if (not os.path.isfile(SYSLOGDEST_PATH)):
+        error_info.append(('file',SYSLOGDEST_PATH))
         return ERR_FILE_MISSING
-    if (os.stat(OMSAGENT95_PATH).st_size == 0):
-        error_info.append((OMSAGENT95_PATH,))
+    if (os.stat(SYSLOGDEST_PATH).st_size == 0):
+        error_info.append((SYSLOGDEST_PATH,))
         return ERR_FILE_EMPTY
 
     # parse syslog.conf
@@ -154,7 +159,7 @@ def check_conf_files():
         error_info.append(("syslog configuration info",SYSLOGCONF_PATH))
         return ERR_INFO_MISSING
 
-    # get info for checking 95-omsagent.conf
+    # get info for checking syslog destination file
     try:
         sys_bind = syslogconf_dict['bind']
         sys_pt = syslogconf_dict['protocol_type']
@@ -162,5 +167,5 @@ def check_conf_files():
         error_info.append(("syslog configuration info",SYSLOGCONF_PATH))
         return ERR_INFO_MISSING
 
-    # check with 95-omsagent.conf
-    return check_omsagent95(sys_bind, sys_pt, workspace_id)
+    # check with syslog destination file
+    return check_syslogdest(sys_bind, sys_pt)
