@@ -36,16 +36,13 @@ error_messages = {
     ERR_BITS : "Couldn't get if CPU is 32-bit or 64-bit.",
     ERR_OS_VER : "This version of {0} ({1}) is not supported. Please download {2}. To see all "\
           "supported Operating Systems, please go to:\n"\
-          "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/"\
-          "log-analytics-agent#supported-linux-operating-systems\n",
+          "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/log-analytics-agent#supported-linux-operating-systems\n",
     ERR_OS : "{0} is not a supported Operating System. To see all supported Operating "\
           "Systems, please go to:\n"\
-          "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/"\
-          "log-analytics-agent#supported-linux-operating-systems\n",
+          "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/log-analytics-agent#supported-linux-operating-systems\n",
     ERR_FINDING_OS : "Coudln't determine Operating System. To see all supported Operating "\
           "Systems, please go to:\n"\
-          "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/"\
-          "log-analytics-agent#supported-linux-operating-systems\n",
+          "\n   https://docs.microsoft.com/en-us/azure/azure-monitor/platform/log-analytics-agent#supported-linux-operating-systems\n",
     ERR_FREE_SPACE : "There isn't enough space in directory {0} to install OMS - there needs to be at least 500MB free, "\
           "but {0} has {1}MB free. Please free up some space and try installing again.",
     ERR_PKG_MANAGER : "This system does not have a supported package manager. Please install 'dpkg' or 'rpm' "\
@@ -55,13 +52,9 @@ error_messages = {
     ERR_SCX : "SCX isn't installed correctly.",
     ERR_OMS_INSTALL : "OMS isn't installed correctly.",
     ERR_OLD_OMS_VER : "You are currently running OMS Version {0}. This troubleshooter only "\
-          "supports versions 1.11 and newer. Please head to the Github link below "\
-          "and click on 'Download Latest OMS Agent for Linux ({1})' in order to update "\
-          "to the newest version:\n"\
-          "\n    https://github.com/microsoft/OMS-Agent-for-Linux\n\n"\
-          "And follow the instructions given here:\n"\
-          "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs"\
-          "/OMS-Agent-for-Linux.md#upgrade-from-a-previous-release\n",
+          "supports versions 1.11 and newer. Please upgrade to the newest version. You can find "\
+          "more information at the link below:\n"\
+          "\n    https://docs.microsoft.com/en-us/azure/azure-monitor/platform/log-analytics-agent#installation-and-configuration\n",
     ERR_GETTING_OMS_VER : "Couldn't get most current released version of OMS.",
     ERR_FILE_MISSING : "{0} {1} doesn't exist.",
     WARN_FILE_PERMS : "{0} {1} has {2} {3} instead of {2} {4}.",
@@ -74,11 +67,11 @@ error_messages = {
           "given is {0}, while the workspace is {1}.",
     ERR_OMS_WONT_RUN : "The agent isn't running / will not start. {0}",
     ERR_OMS_STOPPED : "The agent is currently stopped. Run the command below to start it:\n"\
-          "\n  $ /opt/microsoft/omsagent/bin/service_control start\n",
+          "\n  $ sudo /opt/microsoft/omsagent/bin/service_control start\n",
     ERR_OMS_DISABLED : "The agent is currently disabled. Run the command below to enable it:\n"\
-          "\n  $ /opt/microsoft/bin/service_control enable\n\n"\
+          "\n  $ sudo /opt/microsoft/bin/service_control enable\n\n"\
           "And run the command below to start it:\n"\
-          "\n  $ /opt/microsoft/omsagent/bin/service_control start\n",
+          "\n  $ sudo /opt/microsoft/omsagent/bin/service_control start\n",
     ERR_FILE_ACCESS : "Couldn't access / run {0} due to the following reason: {1}.",
     WARN_LOG_ERRS : "Found errors in log file {0}: {1}",
     WARN_LOG_WARNS : "Found warnings in log file {0}: {1}",
@@ -113,12 +106,10 @@ error_messages = {
           "After either option, please restart OMI using this command:\n"\
           "\n  $ sudo scxadmin -restart\n\n"\
           "You can read more about how to fix this specific bug by going to:\n"\
-          "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/"\
-                    "Troubleshooting.md#i-see-omiagent-using-100-cpu",
+          "\n    https://docs.microsoft.com/en-us/azure/azure-monitor/platform/agent-linux-troubleshoot#issue-you-see-omiagent-using-100-cpu",
     ERR_OMICPU_NSSPEM_LIKE : "There seems to be an issue similar to a common issue involving OMI agent using "\
           "100% CPU. Please check the below link for more information:\n"\
-          "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/"\
-                    "Troubleshooting.md#i-see-omiagent-using-100-cpu",
+          "\n    https://docs.microsoft.com/en-us/azure/azure-monitor/platform/agent-linux-troubleshoot#issue-you-see-omiagent-using-100-cpu",
     ERR_SLAB : "Ran into the following error when trying to run slabtop: \n  {0}",
     ERR_SLAB_BLOATED : "Your machine has an issue with the dentry cache becoming bloated. Please check the "\
           "top 10 caches below, sorted by cache size:\n{0}",
@@ -130,8 +121,7 @@ error_messages = {
     ERR_SLAB_NSS : "There appears to be an issue in NSS, which resulted in bloating the dentry cache. "\
           "Please set the NSS_SDB_USE_CACHE environment variable to 'yes'. You can check the "\
           "below link for more information:\n"\
-          "\n    https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/"\
-                    "Troubleshooting.md#i-see-omiagent-using-100-cpu",
+          "\n    https://docs.microsoft.com/en-us/azure/azure-monitor/platform/agent-linux-troubleshoot#issue-you-see-omiagent-using-100-cpu",
     ERR_LOGROTATE_SIZE : "Logrotate size limit for log {0} has invalid formatting. Please see {1} for more "\
           "information.",
     ERR_LOGROTATE : "Logrotate isn't rotating log {0}: its current size is {1}, and it should have "\
@@ -144,9 +134,8 @@ error_messages = {
           "Please check the following log files for more information:\n"\
           "    {0}\n"\
           "    {1}\n"\
-          "Please also check out the below link (step 6) for more information:\n"\
-          "\n    https://supportability.visualstudio.com/AzureLogAnalytics/_wiki/wikis/"\
-                    "Azure-Log-Analytics.wiki/168967/Custom-Logs-Linux-Agent",
+          "Please also check out the below link for more information:\n"\
+          "\n    https://docs.microsoft.com/en-us/azure/azure-monitor/platform/agent-linux-troubleshoot#issue-you-are-not-seeing-any-custom-log-data",
     ERR_PYTHON_PKG : "This version of Python is missing the {0} package. (You can check by opening up "\
           "python and typing 'import {0}'.) Please install this package and run the troubleshooter again."
 

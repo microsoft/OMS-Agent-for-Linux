@@ -189,7 +189,7 @@ def run_troubleshooter():
             print("ALL ERRORS/WARNINGS ENCOUNTERED:")
             for err in err_summary:
                 print("  {0}".format(err))
-            print("--------------------------------------------------------------------------------")
+                print("--------------------------------------------------------------------------------")
             
         # no errors found
         if (success == NO_ERROR):
