@@ -56,8 +56,8 @@ def check_log_analytics_endpts():
         return ERR_INFO_MISSING
 
     # get workspace ID
-    workspace = geninfo_lookup('WORKSPACE_ID')
-    if (workspace == None):
+    workspace_id = geninfo_lookup('WORKSPACE_ID')
+    if (workspace_id == None):
         error_info.append(('Workspace ID', OMSADMIN_PATH))
         return ERR_INFO_MISSING
 
@@ -73,7 +73,7 @@ def check_log_analytics_endpts():
     for endpt in log_analytics_endpts:
         # replace '*' with workspace ID
         if ('*' in endpt):
-            endpt = endpt.replace('*', workspace)
+            endpt = endpt.replace('*', workspace_id)
 
         # ping endpoint
         if (not check_endpt(endpt)):

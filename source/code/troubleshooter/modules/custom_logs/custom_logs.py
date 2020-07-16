@@ -8,6 +8,8 @@ from connect.connect      import check_connection
 from heartbeat.heartbeat  import start_omsagent, check_omsagent_running, check_heartbeat
 from .check_clconf        import check_customlog_conf
 
+OMSADMIN_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+
 def check_custom_logs(interactive, prev_success=NO_ERROR):
     if (interactive):
         print(" To check if you are using custom logs, please go to https://ms.portal.azure.com\n"\
@@ -49,7 +51,11 @@ def check_custom_logs(interactive, prev_success=NO_ERROR):
         return check_connection(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # check running
-    checked_omsagent_running = check_omsagent_running(geninfo_lookup('WORKSPACE_ID'))
+    workspace_id = geninfo_lookup('WORKSPACE_ID')
+    if (workspace_id == None):
+        error_info.append(('Workspace ID', OMSADMIN_PATH))
+        return ERR_INFO_MISSING
+    checked_omsagent_running = check_omsagent_running(workspace_id)
     if (checked_omsagent_running != NO_ERROR):
         print_errors(checked_omsagent_running)
         print("Running the general health part of the troubleshooter in order to find the issue...")

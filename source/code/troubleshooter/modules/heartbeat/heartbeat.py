@@ -164,8 +164,8 @@ def check_heartbeat(interactive, prev_success=NO_ERROR):
         return check_installation(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # get workspace ID
-    workspace = geninfo_lookup('WORKSPACE_ID')
-    if (workspace == None):
+    workspace_id = geninfo_lookup('WORKSPACE_ID')
+    if (workspace_id == None):
         error_info.append(('Workspace ID', OMSADMIN_CONF_PATH))
         print_errors(ERR_INFO_MISSING)
         print("Running the connection part of the troubleshooter in order to find the issue...")
@@ -174,7 +174,7 @@ def check_heartbeat(interactive, prev_success=NO_ERROR):
     
     # check if running multi-homing
     print("Checking if omsagent is trying to run multihoming...")
-    checked_multihoming = check_multihoming(workspace)
+    checked_multihoming = check_multihoming(workspace_id)
     if (is_error(checked_multihoming)):
         return print_errors(checked_multihoming)
     else:
@@ -185,11 +185,11 @@ def check_heartbeat(interactive, prev_success=NO_ERROR):
 
     # check if omsagent is running
     print("Checking if omsagent is running...")
-    checked_omsagent_running = check_omsagent_running(workspace)
+    checked_omsagent_running = check_omsagent_running(workspace_id)
     if (checked_omsagent_running == ERR_OMS_WONT_RUN):
         # try starting omsagent
         # TODO: find better way of doing this, check to see if agent is stopped / grab results
-        checked_omsagent_running = start_omsagent(workspace)
+        checked_omsagent_running = start_omsagent(workspace_id)
     if (is_error(checked_omsagent_running)):
         return print_errors(checked_omsagent_running)
     else:
@@ -197,7 +197,7 @@ def check_heartbeat(interactive, prev_success=NO_ERROR):
 
     # check if omsagent.log finds any heartbeat errors
     print("Checking for errors in omsagent.log...")
-    checked_log_hb = check_log_heartbeat(workspace)
+    checked_log_hb = check_log_heartbeat(workspace_id)
     if (is_error(checked_log_hb)):
         # connection issue
         if (checked_log_hb == ERR_HEARTBEAT):

@@ -7,6 +7,9 @@ from error_codes import *
 from errors      import error_info
 from helpers     import geninfo_lookup
 
+LR_CONFIG_PATH = "/etc/logrotate.d/omsagent-{0}"
+OMSADMIN_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+
 def hr2bytes(hr_size):
     if (hr_size.isdigit()):
         return int(hr_size)
@@ -27,7 +30,7 @@ def hr2bytes(hr_size):
 
 
 
-def check_size_config(logrotate_configs, LR_CONFIG_PATH):
+def check_size_config(logrotate_configs):
     for k in list(logrotate_configs.keys()):
         # grab size limit if exists
         size_config = next((x for x in logrotate_configs[k] if x.startswith('size ')), None)
@@ -66,8 +69,14 @@ def check_size_config(logrotate_configs, LR_CONFIG_PATH):
 
 
 def check_log_rotation():
+    # update logrotate config path with wsid
     workspace_id = geninfo_lookup('WORKSPACE_ID')
-    LR_CONFIG_PATH = "/etc/logrotate.d/omsagent-{0}".format(workspace_id)
+    if (workspace_id == None):
+        error_info.append(('Workspace ID', OMSADMIN_PATH))
+        return ERR_INFO_MISSING
+        
+    global LR_CONFIG_PATH
+    LR_CONFIG_PATH = LR_CONFIG_PATH.format(workspace_id)
 
     # check logrotate config file exists
     if (not os.path.isfile(LR_CONFIG_PATH)):
@@ -98,7 +107,7 @@ def check_log_rotation():
                 continue
 
     # check size rotation working
-    checked_size_config = check_size_config(logrotate_configs, LR_CONFIG_PATH)
+    checked_size_config = check_size_config(logrotate_configs)
     if (checked_size_config != NO_ERROR):
         return checked_size_config
 

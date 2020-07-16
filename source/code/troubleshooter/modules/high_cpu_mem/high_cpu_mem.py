@@ -11,6 +11,8 @@ from .check_logrot        import check_log_rotation
 from .check_cpu           import check_omi_cpu
 from .check_slabmem       import check_slab_memory
 
+OMSADMIN_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+
 def check_high_cpu_memory(interactive, prev_success=NO_ERROR):
     print("CHECKING FOR HIGH CPU / MEMORY USAGE...")
 
@@ -34,7 +36,11 @@ def check_high_cpu_memory(interactive, prev_success=NO_ERROR):
         return check_connection(interactive, err_codes=False, prev_success=ERR_FOUND)
 
     # check running
-    checked_omsagent_running = check_omsagent_running(geninfo_lookup('WORKSPACE_ID'))
+    workspace_id = geninfo_lookup('WORKSPACE_ID')
+    if (workspace_id == None):
+        error_info.append(('Workspace ID', OMSADMIN_PATH))
+        return ERR_INFO_MISSING
+    checked_omsagent_running = check_omsagent_running(workspace_id)
     if (checked_omsagent_running != NO_ERROR):
         print_errors(checked_omsagent_running)
         print("Running the general health part of the troubleshooter in order to find the issue...")

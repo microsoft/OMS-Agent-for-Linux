@@ -6,7 +6,8 @@ from errors            import error_info
 from helpers           import geninfo_lookup
 from install.check_oms import comp_versions_ge, get_oms_version
 
-SYSLOGCONF_PATH = "/etc/opt/microsoft/omsagent/sysconf/omsagent.d/syslog.conf"
+OMSADMIN_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+SYSLOGCONF_PATH = "/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/syslog.conf"
 OMSAGENT95_PATH = "/etc/rsyslog.d/95-omsagent.conf" # TODO: rsyslog vs syslogng
 
 def parse_syslogconf():
@@ -79,13 +80,7 @@ def check_port(port, sys_bind, sys_pt):
         
     
 
-def check_omsagent95(sys_bind, sys_pt):
-    # grab workspace
-    workspace = geninfo_lookup('WORKSPACE_ID')
-    if (workspace == None):
-        error_info.append(('Workspace ID', omsadmin_path))
-        return ERR_INFO_MISSING
-
+def check_omsagent95(sys_bind, sys_pt, workspace_id):
     # set up regex lines
     comment_line = "# OMS Syslog collection for workspace (\S+)"
     spec_line = "(\w+).=alert;(\w+).=crit;(\w+).=debug;(\w+).=emerg;(\w+).=err;"\
@@ -104,8 +99,8 @@ def check_omsagent95(sys_bind, sys_pt):
             if (match_comment == None):
                 continue
             syslog_wkspc = (match_comment.groups())[0]
-            if (workspace != syslog_wkspc):
-                error_info.append((syslog_wkspc,workspace,SYSLOGCONF_PATH))
+            if (workspace_id != syslog_wkspc):
+                error_info.append((syslog_wkspc, workspace_id, SYSLOGCONF_PATH))
                 return ERR_SYSLOG_WKSPC
             else:
                 continue
@@ -129,6 +124,15 @@ def check_omsagent95(sys_bind, sys_pt):
 
 
 def check_conf_files():
+    # update files with WSID
+    workspace_id = geninfo_lookup('WORKSPACE_ID')
+    if (workspace_id == None):
+        error_info.append(('Workspace ID', OMSADMIN_PATH))
+        return ERR_INFO_MISSING
+        
+    global SYSLOGCONF_PATH
+    SYSLOGCONF_PATH = SYSLOGCONF_PATH.format(workspace_id)
+
     # verify syslog.conf exists / not empty
     if (not os.path.isfile(SYSLOGCONF_PATH)):
         error_info.append(('file',SYSLOGCONF_PATH))
@@ -159,4 +163,4 @@ def check_conf_files():
         return ERR_INFO_MISSING
 
     # check with 95-omsagent.conf
-    return check_omsagent95(sys_bind, sys_pt)
+    return check_omsagent95(sys_bind, sys_pt, workspace_id)
