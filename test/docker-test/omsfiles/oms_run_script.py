@@ -29,8 +29,6 @@ if "check_output" not in dir(subprocess): # duck punch it in!
 
     subprocess.check_output = check_output
 
-operation = None
-
 outFile = '/home/temp/omsresults.out'
 openFile = open(outFile, 'w+')
 
@@ -44,32 +42,34 @@ def linux_detect_installer():
         INSTALLER = "RPM"
 
 def main():
-    """Determine the operation to executed, and execute it."""
+    """Determine the operation to execute, and execute it."""
     linux_detect_installer()
 
-    global operation
+    operation = None
     try:
-        option = sys.argv[1]
-        if re.match('^([-/]*)(preinstall)', option):
+        operation = sys.argv[1]
+        if re.match('^([-/]*)(preinstall)', operation):
             set_hostname()
             start_system_services()
             install_additional_packages()
-        elif re.match('^([-/]*)(postinstall)', option):
+        elif re.match('^([-/]*)(postinstall)', operation):
             detect_workspace_id()
             config_start_oms_services()
             restart_services()
-        elif re.match('^([-/]*)(status)', option):
+        elif re.match('^([-/]*)(status)', operation):
             result_commands()
             service_control_commands()
             write_html()
-        elif re.match('^([-/]*)(copyomslogs)', option):
+        elif re.match('^([-/]*)(copyomslogs)', operation):
             detect_workspace_id()
             copy_oms_logs()
-        elif re.match('^([-/]*)(injectlogs)', option):
+        elif re.match('^([-/]*)(injectlogs)', operation):
             inject_logs()
-    except:
-        if operation is None:
-            print("No operation specified. run with 'preinstall', 'postinstall', 'status', or 'injectlogs'")
+    except Exception as e:
+        print("Encountered {0} in oms_run_script: {1}".format(type(e).__name__, e))
+
+    if operation is None:
+        print("No operation specified. run with 'preinstall', 'postinstall', 'status', 'copyomslogs', or 'injectlogs'")
 
 def replace_items(infile, old_word, new_word):
     """Replace old_word with new_world in file infile."""
@@ -102,6 +102,8 @@ def detect_workspace_id():
     """Detect the workspace id where the agent is onboarded."""
     global workspace_id
     x = subprocess.check_output('/opt/microsoft/omsagent/bin/omsadmin.sh -l', shell=True)
+    if sys.version_info >= (3,):
+        x = x.decode()
     try:
         workspace_id = re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x).group(0)
     except AttributeError:
@@ -132,7 +134,7 @@ def install_additional_packages():
     elif INSTALLER == 'RPM':
         # newest version of systemd package have some issue with the service file https://access.redhat.com/solutions/4420581
         hostname = os.popen('hostname').read().split('-')[0]
-        systemd_flag = '--exclude systemd,systemd-libs,systemd-sysv' if any(s in hostname for s in ['centos7', 'oracle7']) else ''
+        systemd_flag = '--exclude systemd,systemd-libs,systemd-sysv' if any(s in hostname for s in ['centos7', 'oracle7', 'redhat8', 'redhat8py3']) else ''
         os.system('yum -y update {0}'.format(systemd_flag))
 
 def run_dsc():

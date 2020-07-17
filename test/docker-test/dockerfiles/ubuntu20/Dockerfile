@@ -1,10 +1,11 @@
-FROM debian:10
+FROM ubuntu:20.04
 
-# Debian 10 Container image does not come with any python. Here we will mimic the Azure VM image and install python2 as python.
 # Due to difficulty in finding the right MySQL package to trigger the mysql-cimprov package install,
 # this step is skipped (though MySQL logs are still configured and collected, since they are simply custom logs).
+# TODO when python2/3 coexistence is complete, remove alternatives command
+ARG DEBIAN_FRONTEND=noninteractive
 RUN mkdir /home/temp \
-    && apt-get update \
     && echo exit 0 > /usr/sbin/policy-rc.d \
-    && apt-get install -y --reinstall sudo gcc curl git net-tools python2 gnupg2 cron vim procps rsyslog dos2unix systemd wget apache2 \
+    && apt-get update \
+    && apt-get install -y sudo gcc curl git net-tools python2 gnupg2 cron rsyslog vim dos2unix wget apache2 systemd tzdata \
     && update-alternatives --install /usr/bin/python python /usr/bin/python2 1
