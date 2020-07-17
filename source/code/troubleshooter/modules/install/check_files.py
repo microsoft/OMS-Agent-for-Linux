@@ -46,11 +46,6 @@ def get_data(f, variables, files, links, dirs):
                 variables[parsed_line[0]] = (parsed_line[1]).strip("'")
                 continue
 
-            # dependencies line
-            elif (curr_section == "Dependencies"):
-                pass
-                # TODO: go through dependencies, make sure that currently running the version that works with it
-
             # file line
             elif (curr_section == "Files"):
                 # parsed_line: [filepath, install filepath, permissions, user, group]

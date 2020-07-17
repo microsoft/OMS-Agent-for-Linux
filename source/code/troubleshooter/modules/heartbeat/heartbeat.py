@@ -180,8 +180,7 @@ def check_heartbeat(interactive, prev_success=NO_ERROR):
     else:
         success = print_errors(checked_multihoming)
 
-    # check if other agents are sending heartbeats
-    # TODO
+    # TODO: check if other agents are sending heartbeats
 
     # check if omsagent is running
     print("Checking if omsagent is running...")

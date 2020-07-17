@@ -43,7 +43,6 @@ def check_slab_memory():
                             universal_newlines=True, stderr=subprocess.STDOUT)
         slabtop_lines = slabtop_output.split('\n')
 
-        # TODO: check if using Redhat
         # get top 10 objects based on cache size
         # [ objs, active, use (%), obj size (K), slabs, obj/slab, cache size (K), name ]
         slabtop_10 = list(map((lambda x : x.split()), (slabtop_lines[7:17])))

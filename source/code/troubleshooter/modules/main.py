@@ -43,7 +43,6 @@ def check_sudo():
         print("  - getting workspace ID and other relevant information to debugging")
         print("  - checking files in folders with strict permissions")
         print("  - checking certifications exist / are correct")
-        # TODO: add more reasons as troubleshooter changes
         print("NOTE: it will not add, modify, or delete any files without express permission.")
         print("Please try running the troubleshooter again with 'sudo'. Thank you!")
         return False

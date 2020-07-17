@@ -74,7 +74,7 @@ def check_customlog(log_dict):
         if (parsed_lines[0] != log_path):
             error_info.append((log_pos_file, log_path, CLCONF_PATH))
             return ERR_CL_FILEPATH
-        #TODO: check size custom log
+        #TODO: check size of custom log
         pos_size = parsed_lines[1]
 
         # check unique number with custom log
