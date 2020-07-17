@@ -102,13 +102,15 @@ def check_omi_cpu():
     try:
         script_output = subprocess.check_output(['bash',SCRIPT_FILE,'--runtime-in-min','1',\
                             '--cpu-threshold','80'], universal_newlines=True, stderr=subprocess.STDOUT)
-        # ran into issue
-        if (not script_output.startswith("Traces will be saved to this file: ")):
-            error_info.append((script_output,))
-            return ERR_OMICPU
-        # Parse output
-        return check_output_file()
-
+        script_lines = script_output.split('\n')
+        for script_line in script_lines:
+            if (script_line.startswith("Traces will be saved to this file: ")):
+                # started running successfully
+                return check_output_file()
+        # script didn't start running successfully
+        error_info.append((script_output,))
+        return ERR_OMICPU
+    # process errored out
     except subprocess.CalledProcessError as e:
         error_info.append((e.output,))
         return ERR_OMICPU
