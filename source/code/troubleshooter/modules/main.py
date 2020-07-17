@@ -163,7 +163,7 @@ def run_troubleshooter():
             'A': check_all
         }
         issue = get_input("Please select an option",\
-                        (lambda x : x in ['1','2','3','4','5','6','q','quit','a','l']),\
+                        (lambda x : x.lower() in ['1','2','3','4','5','6','q','quit','a','l']),\
                         "Please enter an integer corresponding with your issue (1-6) to\n"\
                             "continue (or 'A' to run through all scenarios), 'L' to run the log\n"\
                             "collector, or 'Q' to quit.")
@@ -186,7 +186,7 @@ def run_troubleshooter():
             "  - Silent Mode runs through with no input required\n"\
             "  - Interactive Mode includes extra checks that require input")
         mode = get_input("Do you want to run the troubleshooter in silent (s) or interactive (i) mode?",\
-                        (lambda x : x in ['s','silent','i','interactive']),\
+                        (lambda x : x.lower() in ['s','silent','i','interactive']),\
                         "Please enter 's'/'silent' to run silent mode, 'i'/'interactive' to run \n\
                             interactive mode, or 'q'/'quit' to quit.")
         if (mode.lower() in ['q''quit']):
@@ -226,7 +226,7 @@ def run_troubleshooter():
         # if user ran single scenario, ask if they want to run again
         if (issue in ['1','2','3','4','5','6']):
             run_again = get_input("Do you want to run another scenario? (y/n)",\
-                                  (lambda x : x in ['y','yes','n','no']),\
+                                  (lambda x : x.lower() in ['y','yes','n','no']),\
                                   "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
             
             if (run_again.lower() in ['y', 'yes']):

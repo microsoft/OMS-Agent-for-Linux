@@ -17,7 +17,7 @@ def check_custom_logs(interactive, prev_success=NO_ERROR):
             " settings' blade, and then go to 'Data' > 'Custom Logs'. There you should be\n"\
             " to see any custom logs you may have.\n")
         using_cl = get_input("Are you currently using custom logs? (y/n)",\
-                            (lambda x : x in ['y','yes','n','no']),\
+                            (lambda x : x.lower() in ['y','yes','n','no']),\
                             "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
         # not using custom logs
         if (using_cl in ['n','no']):

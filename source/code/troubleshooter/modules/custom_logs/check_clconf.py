@@ -28,7 +28,7 @@ def no_clconf(interactive):
     # ask if already tried pulling config from OMS backend
     if (interactive):
         manual_pull = get_input("Have you already tried pulling the config manually? (y/n)",\
-                             (lambda x : x in ['y','yes','n','no']),\
+                             (lambda x : x.lower() in ['y','yes','n','no']),\
                              "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
 
         # tried pulling, see if that fixed it

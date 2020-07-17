@@ -51,7 +51,7 @@ def ask_update_old_version(oms_version, curr_oms_version, cpu_bits):
     print("--------------------------------------------------------------------------------")
     print("You are currently running OMS Verion {0}. There is a newer version\n"\
           "available which may fix your issue (version {1}).".format(oms_version, curr_oms_version))
-    answer = get_input("Do you want to update? (y/n)", (lambda x : x in ['y','yes','n','no']),\
+    answer = get_input("Do you want to update? (y/n)", (lambda x : x.lower() in ['y','yes','n','no']),\
                        "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
     # user does want to update
     if (answer.lower() in ['y', 'yes']):

@@ -139,7 +139,7 @@ error_messages = {
     ERR_PYTHON_PKG : "This version of Python is missing the {0} package. (You can check by opening up "\
           "python and typing 'import {0}'.) Please install this package and run the troubleshooter again."
 
-}  # TODO: keep up to date with error codes onenote
+}
 
 
 
@@ -151,8 +151,25 @@ def is_error(err_code):
 
 
 
+# TODO: grab these directly from https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/oms-linux#error-codes-and-their-meanings
+extension_err_codes_dict = {
+    '9'  : "Enable called prematurely, try updating the Azure Linux Agent to the latest available version",
+    '10' : "VM is already connected to a Log Analytics workspace",
+    '11' : "Invalid config provided to the extension",
+    '17' : "Log Analytics package installation failure",
+    '19' : "OMI package installation failure",
+    '20' : "SCX package installation failure",
+    '51' : "This extension is not supported on the VM's operation system",
+    '55' : "Cannot connect to the Azure Monitor service, or required packages missing, or dpkg package manager is locked"
+}
+
 # get error codes from Troubleshooting.md
 def get_error_codes(err_type):
+    # extension
+    if (err_type == 'Extension'):
+        return (extension_err_codes_dict, None)
+
+    # shell bundle or onboarding
     err_codes = {0 : "No errors found"}
     section_name = "{0} Error Codes".format(err_type)
     try:
@@ -176,6 +193,8 @@ def get_error_codes(err_type):
         return (err_codes, None)
     except IOError as e:
         return (None, check_urlopen_errs(ERR_ENDPT, TSG_URL, e))
+
+
 
 # check errors involving urlopen function
 def check_urlopen_errs(err, url, err_msg):
@@ -202,12 +221,10 @@ def check_urlopen_errs(err, url, err_msg):
 
 
 # ask user if they encountered error code
-def ask_error_codes(err_type, find_err, err_types):
-    print("--------------------------------------------------------------------------------")
-    print(find_err)
+def ask_error_codes(err_type, err_types):
     # ask if user has error code
     answer = get_input("Do you have an {0} error code? (y/n)".format(err_type.lower()),\
-                       (lambda x : x in ['y','yes','n','no']),\
+                       (lambda x : x.lower() in ['y','yes','n','no']),\
                        "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
     if (answer.lower() in ['y','yes']):
         # get dict of all error codes
@@ -230,7 +247,7 @@ def ask_error_codes(err_type, find_err, err_types):
         if (err_code != 'none'):
             print("\nError {0}: {1}\n".format(err_code, err_codes[err_code]))
             answer1 = get_input("Would you like to continue with the troubleshooter? (y/n)",\
-                                (lambda x : x in ['y','yes','n','no']),
+                                (lambda x : x.lower() in ['y','yes','n','no']),
                                 "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
             if (answer1.lower() in ['n','no']):
                 print("Exiting troubleshooter...")
@@ -240,19 +257,49 @@ def ask_error_codes(err_type, find_err, err_types):
     print("--------------------------------------------------------------------------------")
     return NO_ERROR
 
+
+
 # make specific for installation versus onboarding
 def ask_install_error_codes():
-    find_inst_err = "Installation error codes can be found by going through the command output in \n"\
-                    "the terminal after running the `omsagent-*.universal.x64.sh` script to find \n"\
-                    "a line that matches:\n"\
-                    "\n    Shell bundle exiting with code <err>\n"
-    return ask_error_codes('Installation', find_inst_err, "either an integer or 'NOT_DEFINED'")
+    print("--------------------------------------------------------------------------------")
+    print("Installation error codes can be found for either shell bundle or extension\n"\
+          "installation, and can help give a quick idea of what went wrong (separate \n"\
+          "from the troubleshooter's tests).")
+    do_install_tests = get_input("Do you have an installation code from either installing via shell bundle (b) or\n"\
+                                    "via extension (e)? (Type 's' to skip)",\
+                                 (lambda x : x.lower() in ['b','bundle','e','extension','s','skip']),\
+                                 "Please enter 'bundle'/'b' for a shell bundle code, 'extension'/'e' for an\n"\
+                                    "extension code, or 's'/'skip' to skip.")
+    
+    # shell bundle error code
+    if (do_install_tests.lower() in ['b','bundle']):
+        print("--------------------------------------------------------------------------------")
+        print("Shell bundle error codes can be found by going through the command output in \n"\
+              "the terminal after running the `omsagent-*.universal.x64.sh` script to find \n"\
+              "a line that matches:\n"\
+              "\n    Shell bundle exiting with code <err>\n")
+        return ask_error_codes('Installation', "either an integer or 'NOT_DEFINED'")
+
+    # extension error code
+    elif (do_install_tests.lower() in ['e','extension']):
+        print("--------------------------------------------------------------------------------")
+        print("Data about the state of extension deployments can be retrieved from the Azure \n"\
+              "portal, and by using the Azure CLI.")
+        return ask_error_codes('Extension', "an integer")
+
+    # requested to skip
+    else:
+        print("Continuing on with troubleshooter...")
+        print("--------------------------------------------------------------------------------")
 
 def ask_onboarding_error_codes():
-    find_onbd_err = "Onboarding error codes can be found by running the command:\n"\
-                    "\n    echo $?\n\n"\
-                    "directly after running the `/opt/microsoft/omsagent/bin/omsadmin.sh` tool."
-    return ask_error_codes('Onboarding', find_onbd_err, "an integer")
+    print("--------------------------------------------------------------------------------")
+    print("Onboarding error codes can help give a quick idea of what went wrong (separate \n"\
+          "from the troubleshooter's tests).")
+    print("Onboarding error codes can be found by running the command:\n"\
+          "\n    echo $?\n\n"\
+          "directly after running the `/opt/microsoft/omsagent/bin/omsadmin.sh` tool.")
+    return ask_error_codes('Onboarding', "an integer")
 
 
 
@@ -269,7 +316,7 @@ def get_input(question, check_ans, no_fit):
 # ask user if they want to reinstall OMS Agent
 def ask_reinstall():
     answer = get_input("Would you like to uninstall and reinstall OMS Agent? (y/n)",\
-                       (lambda x : x in ['y','yes','n','no']),\
+                       (lambda x : x.lower() in ['y','yes','n','no']),\
                        "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
     if (answer.lower() in ['y','yes']):
         print("Please run the command:")
@@ -286,7 +333,7 @@ def ask_reinstall():
 
 def ask_restart_oms():
     answer = get_input("Would you like to restart OMS Agent? (y/n)",\
-                       (lambda x : x in ['y','yes','n','no']),\
+                       (lambda x : x.lower() in ['y','yes','n','no']),\
                        "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
 
     if (answer.lower() in ['y','yes']):
@@ -307,7 +354,7 @@ def ask_restart_oms():
 
 def ask_continue():
     answer = get_input("Would you like to continue with the troubleshooter? (y/n)",\
-                       (lambda x : x in ['y','yes','n','no']),\
+                       (lambda x : x.lower() in ['y','yes','n','no']),\
                        "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
     if (answer.lower() in ['y','yes']):
         print("Continuing on with troubleshooter...")

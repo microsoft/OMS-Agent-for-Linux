@@ -21,7 +21,7 @@ def check_e2e():
           " result; if not, then there will be no results.\n")
     # ask if user wants to skip entire query section
     no_skip_all = get_input("Do you want to continue with this section (all queries)? (y/n)",\
-                            (lambda x : x in ['y','yes','n','no']),\
+                            (lambda x : x.lower() in ['y','yes','n','no']),\
                             "Please type either 'y'/'yes' or 'n'/'no' to proceed.")
 
     if (no_skip_all.lower() in ['y','yes']):
@@ -34,7 +34,7 @@ def check_e2e():
 
             # ask if query was successful
             q_result = get_input("Was the query successful? (y/n/skip)",\
-                                 (lambda x : x in ['y','yes','n','no','s','skip']),\
+                                 (lambda x : x.lower() in ['y','yes','n','no','s','skip']),\
                                  "Please type either 'y'/'yes' or 'n'/'no' to proceed, or\n"\
                                     "'s'/'skip' to skip the {0} query.".format(source))
 
