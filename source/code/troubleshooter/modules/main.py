@@ -10,7 +10,7 @@ from high_cpu_mem.high_cpu_mem import check_high_cpu_memory
 from syslog1.syslog            import check_syslog
 from custom_logs.custom_logs   import check_custom_logs
 
-LOGCOLLECT_SH_PATH = "/opt/microsoft/omsagent/tst/modules/log_collector/omslinux_agentlog.sh"
+LOGCOLLECT_PATH = "/opt/microsoft/omsagent/tst/modules/log_collector/"
 
 # add check_output if running Python 2.6 - taken from OMS Log Collector
 if "check_output" not in dir( subprocess ):
@@ -107,20 +107,20 @@ def collect_logs():
     # get SR number / company name
     print("Please input the SR number to collect OMS logs and (if applicable) the company\n"\
         "name for reference. (Leave field empty to skip)")
-    sr_num = get_input("SR Number", (lambda x : True), "")
+    sr_num = get_input("SR Number", (lambda x : (x=="" or x.isalnum())), 
+                       "Please enter the SR number (without any spaces or special \n"\
+                           "characters) to continue.")
     com_name = get_input("Company Name", (lambda x : True), "")
 
     # create command to run
-    logcollect_cmd = ['sudo', 'sh', LOGCOLLECT_SH_PATH]
-    if (sr_num != ''):
-        logcollect_cmd = logcollect_cmd + ['-s', sr_num]
+    logcollect_cmd = "cd {0}; sudo sh ./omslinux_agentlog.sh -s {1}".format(LOGCOLLECT_PATH, sr_num)
     if (com_name != ''):
-        logcollect_cmd = logcollect_cmd + ['-c', com_name]
+        logcollect_cmd = logcollect_cmd + ("-c {0}".format(com_name))
 
     # run command
     print("Starting up log collector...")
     print("--------------------------------------------------------------------------------")
-    log_collection = subprocess.call(logcollect_cmd)
+    log_collection = subprocess.call(logcollect_cmd, shell=True)
     if (log_collection != 0):
         print("--------------------------------------------------------------------------------")
         print("Log collector returned error code {0}. Please look through the above output to\n"\
