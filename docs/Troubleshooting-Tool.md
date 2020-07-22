@@ -93,7 +93,7 @@ The OMS Troubleshooter requires Python 2.6+ installed on the machine, but will w
 Below is a list of the errors that can be caught by the troubleshooter:
 
 | Error | Error Code | Meaning |
-| --- | --- |
+| --- | --- | --- |
 | NO_ERROR | 0 | No errors found |
 | USER_EXIT | 1 | User requested to exit |
 | ERR_SUDO_PERMS | 100 | Not running as root |
