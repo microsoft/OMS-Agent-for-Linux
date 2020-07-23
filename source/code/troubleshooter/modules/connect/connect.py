@@ -2,8 +2,8 @@ import os
 import subprocess
 
 from error_codes       import *
-from errors            import ask_onboarding_error_codes, is_error, \
-                              print_errors
+from errors            import is_error, print_errors
+from errors_tsg        import ask_onboarding_error_codes
 from install.install   import check_installation
 from install.check_oms import get_oms_version
 from .check_endpts     import check_internet_connect, check_agent_service_endpt, \

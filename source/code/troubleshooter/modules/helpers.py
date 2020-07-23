@@ -5,7 +5,7 @@ import ssl
 import subprocess
 
 from error_codes import *
-from errors      import error_info, check_urlopen_errs, print_errors
+from errors      import error_info, print_errors
 
 # urlopen() in different packages in Python 2 vs 3
 try:
@@ -13,7 +13,6 @@ try:
 except ImportError:
     from urllib2 import urlopen
 
-OMSAGENT_URL = "https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/docs/OMS-Agent-for-Linux.md"
 CONF_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
 
 general_info = dict()
@@ -166,7 +165,7 @@ def get_rpm_pkg_version(pkg):
 
 
 # Recent OMS Version
-def update_curr_oms_version():
+def get_curr_oms_version(OMSAGENT_URL):
     try:
         doc_file = urlopen(OMSAGENT_URL)
         for line in doc_file.readlines():
@@ -174,10 +173,11 @@ def update_curr_oms_version():
             if line.startswith("omsagent | "):
                 parsed_line = line.split(' | ') # [package, version, description]
                 general_info['UPDATED_OMS_VERSION'] = parsed_line[1]
-                return NO_ERROR
-        return ERR_GETTING_OMS_VER
-    except IOError as e:
-        return check_urlopen_errs(ERR_ENDPT, OMSAGENT_URL, e)
+                return (parsed_line[1], NO_ERROR)
+        return (None, None)
+
+    except Exception as e:
+        return (None, e)
 
 
 

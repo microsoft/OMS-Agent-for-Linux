@@ -2,7 +2,8 @@ import os
 import subprocess
 
 from error_codes  import *
-from errors       import error_info, is_error, ask_install_error_codes, print_errors
+from errors       import error_info, is_error, print_errors
+from errors_tsg   import ask_install_error_codes
 from helpers      import update_pkg_manager
 from .check_os    import check_os
 from .check_oms   import check_oms

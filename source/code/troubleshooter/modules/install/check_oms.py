@@ -2,9 +2,11 @@ import re
 
 from error_codes          import *
 from errors               import error_info, is_error, get_input, print_errors
-from helpers              import geninfo_lookup, update_curr_oms_version, update_omsadmin
-from connect.check_endpts import check_internet_connect
+from errors_tsg           import check_urlopen_errs
+from helpers              import geninfo_lookup, get_curr_oms_version, update_omsadmin
 from .check_pkgs          import get_package_version
+
+OMSAGENT_URL = "https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/docs/OMS-Agent-for-Linux.md"
 
 
 
@@ -84,15 +86,30 @@ def check_oms(interactive):
         return ERR_OLD_OMS_VER
 
     # get most recent version
-    updated_curr_oms_version = update_curr_oms_version()
-    if (is_error(updated_curr_oms_version)):
-        return updated_curr_oms_version
+    (curr_oms_version, e) = get_curr_oms_version(OMSAGENT_URL)
 
-    curr_oms_version = geninfo_lookup('UPDATED_OMS_VERSION')
+    # getting current version failed
+    if (curr_oms_version == None):
+        # could connect, just formatting issue
+        if (e == None):
+            return ERR_GETTING_OMS_VER
+        # couldn't connect
+        else:
+            checked_urlopen = check_urlopen_errs(e)
+            # issue with connecting to Github specifically
+            if (checked_urlopen == ERR_ENDPT):
+                print("WARNING: can't connect to {0}: {1}\n Skipping this check...".format(OMSAGENT_URL, e))
+                print("--------------------------------------------------------------------------------")
+            # issue with general internet connectivity / ssl package
+            else:
+                error_info.append((OMSAGENT_URL, e))
+                return checked_urlopen
 
-    # if not most recent version, ask if want to update
-    if (interactive and (not comp_versions_ge(oms_version, curr_oms_version))):
-        if (ask_update_old_version(oms_version, curr_oms_version, cpu_bits) == USER_EXIT):
-            return USER_EXIT
+    # got current version
+    else:
+        # if not most recent version, ask if want to update
+        if (interactive and (not comp_versions_ge(oms_version, curr_oms_version))):
+            if (ask_update_old_version(oms_version, curr_oms_version, cpu_bits) == USER_EXIT):
+                return USER_EXIT
 
     return update_omsadmin()
