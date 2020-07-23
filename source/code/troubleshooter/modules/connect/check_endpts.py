@@ -8,7 +8,7 @@ from helpers     import geninfo_lookup
 
 OMSADMIN_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
 
-# ping specific endpoint
+# socket connect to specific endpoint
 def check_endpt(endpoint):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:

@@ -186,9 +186,9 @@ def run_troubleshooter():
             "  - Interactive Mode includes extra checks that require input")
         mode = get_input("Do you want to run the troubleshooter in silent (s) or interactive (i) mode?",\
                         (lambda x : x.lower() in ['s','silent','i','interactive']),\
-                        "Please enter 's'/'silent' to run silent mode, 'i'/'interactive' to run \n\
-                            interactive mode, or 'q'/'quit' to quit.")
-        if (mode.lower() in ['q''quit']):
+                        "Please enter 's'/'silent' to run silent mode, 'i'/'interactive' to run \n"\
+                            "interactive mode, or 'q'/'quit' to quit.")
+        if (mode.lower() in ['q','quit']):
             print("Exiting the troubleshooter...")
             return
         elif (mode.lower() in ['s','silent']):
