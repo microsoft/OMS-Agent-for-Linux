@@ -422,14 +422,16 @@ install_troubleshooter()
     # grab tst bundle
     wget $TST_PKG > /dev/null 2>&1
     if [ $? -ne 0 ]; then
-        echo "Error downloading troubleshooter. To install it manually, please go to the below link:"
+        echo "Error downloading troubleshooter. Will attempt to install troubleshooter through OMS installation."
+        echo "To install it manually, please go to the below link:"
         echo ""
         echo $TST_DOCS
         echo ""
         return cleanup_tst $INTERNAL_ERROR
     tar -xzvf omsagent_tst.tar.gz > /dev/null 2>&1
     if [ $? -ne 0 ]; then
-        echo "Error unzipping troubleshooter bundle. To install it manually, please go to the below link:"
+        echo "Error unzipping troubleshooter bundle. Will attempt to install troubleshooter through OMS installation."
+        echo "To install it manually, please go to the below link:"
         echo ""
         echo $TST_DOCS
         echo ""
@@ -451,7 +453,8 @@ install_troubleshooter()
 
     # verify everything installed correctly
     if [ ! -f $TST_PATH || ! -d "$TST_MODULES_PATH/modules" ]; then
-        echo "Error copying files over for troubleshooter. To install it manually, please go to the below link:"
+        echo "Error copying files over for troubleshooter. Will attempt to install troubleshooter through OMS installation."
+        echo "To install it manually, please go to the below link:"
         echo ""
         echo $TST_DOCS
         echo ""
@@ -841,9 +844,9 @@ install_extra_package()
 #
 
 ulinux_detect_installer
-set -e
-
 install_troubleshooter
+
+set -e
 
 while [ $# -ne 0 ]
 do
