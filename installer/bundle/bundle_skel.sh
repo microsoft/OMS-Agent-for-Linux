@@ -121,27 +121,17 @@ source_references()
 EOF
 }
 
-cleanup_tst()
-{
-    # $1: Return status
-    # $2: Non-blank (if we're not to delete bundle), otherwise empty
-
-    if [ -z "$2" -a -d "$TST_EXTRACT_DIR" ]; then
-        cd $TST_EXTRACT_DIR/..
-        rm -rf $TST_EXTRACT_DIR
-    fi
-
-    if [ -n "$1" ]; then
-        return $1
-    else
-        return 0
-    fi
-}
-
 cleanup_and_exit()
 {
     # $1: Exit status
     # $2: Non-blank (if we're not to delete bundles), otherwise empty
+
+    # check if troubleshooter should be installed
+    if [ ! -z "$install_tst" ]; then
+        set +e
+        install_troubleshooter
+        set -e
+    fi
 
     if [ -z "$2" -a -d "$EXTRACT_DIR" ]; then
         cd $EXTRACT_DIR/..
@@ -413,54 +403,69 @@ install_if_program_does_not_exist_on_system()
 
 install_troubleshooter()
 {
-    echo "----- Installing troubleshooter -----"
+    # check if troubleshooter installed successfully
+    if [ ! -f "$TST_PATH" -o ! -d "$TST_MODULES_PATH" ]; then
+        # install troubleshooter if not successfully installed upon OMS install
+        echo "----- Installing troubleshooter -----"
 
-    # create temp directory
-    mkdir -p $TST_EXTRACT_DIR
-    cd $TST_EXTRACT_DIR
+        # create temp directory
+        mkdir -p $TST_EXTRACT_DIR
+        cd $TST_EXTRACT_DIR
 
-    # grab tst bundle
-    wget $TST_PKG > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo "Error downloading troubleshooter. Will attempt to install troubleshooter through OMS installation."
-        echo "To install it manually, please go to the below link:"
-        echo ""
-        echo $TST_DOCS
-        echo ""
-        return cleanup_tst $INTERNAL_ERROR
-    tar -xzvf omsagent_tst.tar.gz > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo "Error unzipping troubleshooter bundle. Will attempt to install troubleshooter through OMS installation."
-        echo "To install it manually, please go to the below link:"
-        echo ""
-        echo $TST_DOCS
-        echo ""
-        return cleanup_tst $INTERNAL_ERROR
+        # grab tst bundle
+        echo "Grabbing troubleshooter bundle from Github..."
+        wget $TST_PKG > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Error downloading troubleshooter. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
 
-    # remove old tst files (if necessary)
-    if [ -d $TST_MODULES_PATH ]; then
-        echo "Removing old version of troubleshooter..."
-        rm -rf $TST_MODULES_PATH
-        rm -f $TST_PATH
+        echo "Unzipping troubleshooter bundle..."
+        tar -xzf omsagent_tst.tar.gz > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Error unzipping troubleshooter bundle. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        # copy over tst files
+        echo "Copying over troubleshooter files..."
+        mkdir -p $TST_MODULES_PATH
+        cp -r modules $TST_MODULES_PATH
+        mkdir -p $BIN_PATH
+        cp troubleshooter $BIN_PATH
+
+        # verify everything installed correctly
+        if [ ! -f "$TST_PATH" -o ! -d "${TST_MODULES_PATH}/modules" ]; then
+            echo "Error copying files over for troubleshooter. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        cd ${TST_EXTRACT_DIR}/..
+        rm -rf $TST_EXTRACT_DIR
     fi
 
-    # copy over tst files
-    echo "Copying over troubleshooter files..."
-    mkdir -p $TST_MODULES_PATH
-    cp -r modules $TST_MODULES_PATH
-    mkdir -p $BIN_PATH
-    cp troubleshooter $BIN_PATH
-
-    # verify everything installed correctly
-    if [ ! -f $TST_PATH || ! -d "$TST_MODULES_PATH/modules" ]; then
-        echo "Error copying files over for troubleshooter. Will attempt to install troubleshooter through OMS installation."
-        echo "To install it manually, please go to the below link:"
-        echo ""
-        echo $TST_DOCS
-        echo ""
-        return cleanup_tst $INTERNAL_ERROR
-
-    return cleanup_tst 0
+    echo "OMS Troubleshooter is installed."
+    echo "You can run the Troubleshooter with the following command:"
+    echo ""
+    echo "  $ sudo /opt/microsoft/omsagent/bin/troubleshooter"
+    echo ""
+        
+    return 0
 }
 
 isDiskSpaceSufficient()
@@ -844,8 +849,6 @@ install_extra_package()
 #
 
 ulinux_detect_installer
-install_troubleshooter
-
 set -e
 
 while [ $# -ne 0 ]
@@ -1329,6 +1332,8 @@ case "$installMode" in
         ;;
 
     I)
+        install_tst="yes" # set variable to install tst upon exit
+
         check_if_pkg_is_installed scx
         scx_installed=$?
         check_if_pkg_is_installed omi
@@ -1458,14 +1463,16 @@ case "$installMode" in
         ;;
 
     U)
+        install_tst="yes" # set variable to install tst upon exit
+
         # Install OMI
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
         OMI_EXIT_STATUS=$?
-	${OMI_SERVICE} reload
-	temp_status=$?
+	    ${OMI_SERVICE} reload
+	    temp_status=$?
 
-	if [ $temp_status -ne 0 ]; then
+	    if [ $temp_status -ne 0 ]; then
             if [ $temp_status -eq 2 ]; then
                 ErrStr="System Issue with daemon control tool "
                 ErrCode=$DEPENDENCY_MISSING
