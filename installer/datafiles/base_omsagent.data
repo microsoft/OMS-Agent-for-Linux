@@ -190,6 +190,7 @@ MAINTAINER:              'Microsoft Corporation'
 
 /opt/microsoft/omsagent/tst/modules/error_codes.py;                             source/code/troubleshooter/modules/error_codes.py;                              644; root; root
 /opt/microsoft/omsagent/tst/modules/errors.py;                                  source/code/troubleshooter/modules/errors.py;                                   644; root; root
+/opt/microsoft/omsagent/tst/modules/errors_tsg.py;                              source/code/troubleshooter/modules/errors_tsg.py;                               644; root; root
 /opt/microsoft/omsagent/tst/modules/helpers.py;                                 source/code/troubleshooter/modules/helpers.py;                                  644; root; root
 /opt/microsoft/omsagent/tst/modules/main.py;                                    source/code/troubleshooter/modules/main.py;                                     644; root; root
 
