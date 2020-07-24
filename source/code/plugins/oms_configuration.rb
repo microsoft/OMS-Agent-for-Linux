@@ -173,8 +173,11 @@ module OMS
               OMS::Log.warn_once("Failed to read the IMDS Endpoint from #{@@HybridRPConfFile}. Failed to fetch azure resource id")
               return nil
             end
-            azureHybridIMDSEndpoint = azureHybridIMDSEndpoint.split("=")[1][0..-2]
+
+            #Subbing localhost with 127.0.0.1 because Ruby's resolv-replace module (imported in oms_common.rb fails to correctly resolve localhost)
+            azureHybridIMDSEndpoint = azureHybridIMDSEndpoint.split("=")[1][0..-2].sub("localhost","127.0.0.1")
             azureHybridIMDSEndpoint += @@HyrbidRPIMDSPath + "?api-version=" + @@HybridRPAPIVersion
+
             uri = URI.parse(azureHybridIMDSEndpoint)
             http_get_req = Net::HTTP::Get.new(uri, initheader = {'Metadata' => 'true'})
             http_req = Net::HTTP.new(uri.host, uri.port)
@@ -198,7 +201,7 @@ module OMS
             OMS::Log.warn_once("Could not find the config file #{@@HybridRPConfFile} containing the HybridRP IMDS Endpoint. Failed to fetch azure resource id.")
             return nil
           end
-        rescue
+        rescue => e
           # this may be a container instance or a non Hybrid Agent VM
           OMS::Log.warn_once("Could not fetch Azure Resource ID from HybridRP IMDS, Reason: #{e}")
           return nil
@@ -212,7 +215,7 @@ module OMS
           loop do
             break if retries > max_retries
             #Check if this is a non azure Hybrid Agent VM
-            if system("azcmagent show >/dev/null")
+            if system("systemctl status himdsd 1>/dev/null 2>&1")
               OMS::Log.info_once("This is an Azure Arc VM")
               azure_resource_id = get_azure_resid_from_hybridagent()
             else
