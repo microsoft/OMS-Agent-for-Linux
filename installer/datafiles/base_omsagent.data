@@ -173,10 +173,10 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/tst/modules/high_cpu_mem/omiHighCPUDiagnosticsTST.sh;   source/code/troubleshooter/modules/high_cpu_mem/omiHighCPUDiagnosticsTST.sh;    644; root; root
 /opt/microsoft/omsagent/tst/modules/high_cpu_mem/__init__.py;                   source/code/troubleshooter/modules/high_cpu_mem/__init__.py;                    644; root; root
 
-/opt/microsoft/omsagent/tst/modules/syslog1/check_conf.py;                      source/code/troubleshooter/modules/syslog1/check_conf.py;                       644; root; root
-/opt/microsoft/omsagent/tst/modules/syslog1/check_rsysng.py;                    source/code/troubleshooter/modules/syslog1/check_rsysng.py;                     644; root; root
-/opt/microsoft/omsagent/tst/modules/syslog1/syslog.py;                          source/code/troubleshooter/modules/syslog1/syslog.py;                           644; root; root
-/opt/microsoft/omsagent/tst/modules/syslog1/__init__.py;                        source/code/troubleshooter/modules/syslog1/__init__.py;                         644; root; root
+/opt/microsoft/omsagent/tst/modules/syslog_tst/check_conf.py;                      source/code/troubleshooter/modules/syslog_tst/check_conf.py;                       644; root; root
+/opt/microsoft/omsagent/tst/modules/syslog_tst/check_rsysng.py;                    source/code/troubleshooter/modules/syslog_tst/check_rsysng.py;                     644; root; root
+/opt/microsoft/omsagent/tst/modules/syslog_tst/syslog.py;                          source/code/troubleshooter/modules/syslog_tst/syslog.py;                           644; root; root
+/opt/microsoft/omsagent/tst/modules/syslog_tst/__init__.py;                        source/code/troubleshooter/modules/syslog_tst/__init__.py;                         644; root; root
 
 /opt/microsoft/omsagent/tst/modules/custom_logs/check_clconf.py;                source/code/troubleshooter/modules/custom_logs/check_clconf.py;                 644; root; root
 /opt/microsoft/omsagent/tst/modules/custom_logs/custom_logs.py;                 source/code/troubleshooter/modules/custom_logs/custom_logs.py;                  644; root; root
@@ -226,7 +226,7 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/tst/modules/high_cpu_mem;       755; root; root
 /opt/microsoft/omsagent/tst/modules/install;            755; root; root
 /opt/microsoft/omsagent/tst/modules/log_collector;      755; root; root
-/opt/microsoft/omsagent/tst/modules/syslog1;            755; root; root
+/opt/microsoft/omsagent/tst/modules/syslog_tst;            755; root; root
 
 /var/opt/microsoft;                                     755; root; root; sysdir
 
