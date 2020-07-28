@@ -140,7 +140,10 @@ def install_additional_packages():
 def run_dsc():
     """Run DSC to pull the workspace configuration."""
     print('Pulling configuration from DSC ...')
-    cmd = 'sudo su omsagent -c "python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py"'
+    if sys.version_info < (3,):
+        cmd = 'sudo su omsagent -c "python2 /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py"'
+    else:
+        cmd = 'sudo su omsagent -c "python3 /opt/microsoft/omsconfig/Scripts/python3/PerformRequiredConfigurationChecks.py"'
     output = exec_command(cmd, stderr=subprocess.STDOUT)
     write_log_command(cmd)
     write_log_output(output)
