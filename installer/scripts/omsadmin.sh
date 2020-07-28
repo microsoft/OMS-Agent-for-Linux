@@ -53,7 +53,16 @@ AGENT_MAINTENANCE_MISSING_CONFIG_FILE=4
 AGENT_MAINTENANCE_MISSING_CONFIG=5
 AGENT_MAINTENANCE_ERROR_WRITING_TO_FILE=12
 
-METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
+# DSC MetaConfig generation script
+if [ -x "$(command -v python2)" ]; then
+    METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
+elif [ -x "$(command -v python3)" ]; then
+    METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/python3/OMS_MetaConfigHelper.py
+else
+    # Failure to find python/the correct script path will only break onboarding (just one
+    # of omsadmin's numerous functions); exit with failure in the onboard() function instead
+    METACONFIG_PY=""
+fi
 
 # Certs
 FILE_KEY=$CERT_DIR/oms.key
@@ -113,6 +122,8 @@ RUBY_ERROR_GENERATING_GUID=31
 ERROR_GENERATING_CERTS=32
 ERROR_GENERATING_METACONFIG=33
 ERROR_METACONFIG_PY_NOT_PRESENT=34
+# Dependency-related:
+INSTALL_PYTHON=60
 
 # curl error codes:
 CURL_PROXY_RESOLVE_ERROR=5
@@ -422,6 +433,12 @@ onboard_lad()
 
 onboard()
 {
+    if [ "$METACONFIG_PY" = "" ]; then
+        echo "Error: Python is not installed on this system, onboarding cannot continue." >&2
+        echo "Please install either the python2 or python3 package." >&2
+        clean_exit $INSTALL_PYTHON
+    fi
+
     if [ $VERBOSE -eq 1 ]; then
         # Mask the shared key
         local shared_key_trunc=`echo "$SHARED_KEY" | cut -c 1-4 2> /dev/null`
