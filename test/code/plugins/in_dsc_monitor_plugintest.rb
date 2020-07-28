@@ -9,6 +9,8 @@ class DscMonitorTest < Test::Unit::TestCase
   CHECK_IF_DPKG = "which dpkg > /dev/null 2>&1; echo $?" 
   CHECK_DSC_INSTALL = "dpkg --list omsconfig > /dev/null 2>&1; echo $?"
   CHECK_DSC_STATUS = "/opt/microsoft/omsconfig/Scripts/TestDscConfiguration.py"
+  CHECK_DSC_STATUS_PYTHON_3 = "/opt/microsoft/omsconfig/Scripts/python3/TestDscConfiguration.py"
+  CHECK_PYTHON = "which python2"
 
   def setup
     Fluent::Test.setup
@@ -62,6 +64,8 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
       instance.should_receive(:`).with(CHECK_IF_DPKG).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_INSTALL).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_STATUS).and_return("Mock DSC config check")
+      instance.should_receive(:`).with(CHECK_DSC_STATUS_PYTHON_3).and_return("Mock DSC config check")
+      instance.should_receive(:`).with(CHECK_PYTHON).and_return("/usr/bin/python2") # as if python2 is installed
     end
 
     d = create_driver
@@ -83,11 +87,13 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
 	InDesiredState=true
 	ResourceId={}
 	}"
- 
+
     flexmock(Fluent::DscMonitoringInput).new_instances do |instance|
       instance.should_receive(:`).with(CHECK_IF_DPKG).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_INSTALL).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_STATUS).and_return(result)
+      instance.should_receive(:`).with(CHECK_DSC_STATUS_PYTHON_3).and_return(result)
+      instance.should_receive(:`).with(CHECK_PYTHON).and_return("/usr/bin/python2") # as if python2 is installed
     end
 
     d = create_driver
