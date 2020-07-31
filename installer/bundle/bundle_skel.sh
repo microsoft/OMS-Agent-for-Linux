@@ -127,7 +127,7 @@ cleanup_and_exit()
     # $2: Non-blank (if we're not to delete bundles), otherwise empty
 
     # check if troubleshooter should be installed
-    if [ ! -z "$install_tst" ]; then
+    if [ ! -z "$INSTALL_TST" ]; then
         set +e
         install_troubleshooter
         set -e
@@ -403,9 +403,10 @@ install_if_program_does_not_exist_on_system()
 
 install_troubleshooter()
 {
-    # check if troubleshooter installed successfully
+    # check if troubleshooter installed successfully via shell bundle
     if [ ! -f "$TST_PATH" -o ! -d "$TST_MODULES_PATH" ]; then
-        # install troubleshooter if not successfully installed upon OMS install
+        # install troubleshooter if not successfully installed using shell bundle
+        echo "OMS Troubleshooter not installed using shell bundle, will try to install using wget."
         echo "----- Installing troubleshooter -----"
 
         # create temp directory
@@ -1332,7 +1333,7 @@ case "$installMode" in
         ;;
 
     I)
-        install_tst="yes" # set variable to install tst upon exit
+        INSTALL_TST="yes" # set variable to install tst upon exit
 
         check_if_pkg_is_installed scx
         scx_installed=$?
@@ -1463,16 +1464,16 @@ case "$installMode" in
         ;;
 
     U)
-        install_tst="yes" # set variable to install tst upon exit
+        INSTALL_TST="yes" # set variable to install tst upon exit
 
         # Install OMI
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
         OMI_EXIT_STATUS=$?
-	    ${OMI_SERVICE} reload
-	    temp_status=$?
+        ${OMI_SERVICE} reload
+        temp_status=$?
 
-	    if [ $temp_status -ne 0 ]; then
+        if [ $temp_status -ne 0 ]; then
             if [ $temp_status -eq 2 ]; then
                 ErrStr="System Issue with daemon control tool "
                 ErrCode=$DEPENDENCY_MISSING

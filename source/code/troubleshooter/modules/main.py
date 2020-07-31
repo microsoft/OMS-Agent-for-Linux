@@ -7,7 +7,7 @@ from install.install           import check_installation
 from connect.connect           import check_connection
 from heartbeat.heartbeat       import check_heartbeat
 from high_cpu_mem.high_cpu_mem import check_high_cpu_memory
-from syslog_tst.syslog            import check_syslog
+from syslog_tst.syslog         import check_syslog
 from custom_logs.custom_logs   import check_custom_logs
 
 LOGCOLLECT_PATH = "/opt/microsoft/omsagent/tst/modules/log_collector/"
