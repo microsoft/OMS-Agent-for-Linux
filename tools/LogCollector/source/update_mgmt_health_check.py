@@ -325,6 +325,9 @@ def get_jrds_endpoint(workspace):
 
 def get_agent_endpoint():
     line = find_line_in_file("agentservice", oms_admin_conf_path)
+    # try checking under different name
+    if line is None:
+        line = find_line_in_file("DSC_ENDPOINT", oms_admin_conf_path)
     # Fetch the text after https://
     if line is not None:
         return line.split("=")[1].split("/")[2].strip()

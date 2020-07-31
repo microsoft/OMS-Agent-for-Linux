@@ -91,7 +91,6 @@ usage()
     echo "  --force                    Force upgrade (override version checks)."
     echo "  --install                  Install the package from the system."
     echo "  --purge                    Uninstall the package and remove all related data."
-    echo "  --remove                   Uninstall the package from the system."
     echo "  --restart-deps             Reconfigure and restart dependent service(s)."
     echo "  --source-references        Show source code reference hashes."
     echo "  --upgrade                  Upgrade the package in the system."
