@@ -226,19 +226,19 @@ clean_exit()
 log_info()
 {
     echo -e "info\t$1"
-    logger -i -p "$LOG_FACILITY".info -t omsagent "$1"
+    logger -i -p "$LOG_FACILITY".info -t omsagent "[INFO] $1"
 }
 
 log_warning()
 {
     echo -e "warning\t$1"
-    logger -i -p "$LOG_FACILITY".warning -t omsagent "$1"
+    logger -i -p "$LOG_FACILITY".warning -t omsagent "[WARNING] $1"
 }
 
 log_error()
 {
     echo -e "error\t$1"
-    logger -i -p "$LOG_FACILITY".err -t omsagent "$1"
+    logger -i -p "$LOG_FACILITY".err -t omsagent "[ERROR] $1"
 }
 
 parse_args()
