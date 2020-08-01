@@ -9,6 +9,7 @@ except ImportError:
     from urllib2 import urlopen
 
 TSG_URL = "https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/docs/Troubleshooting.md"
+TSG_DOC_PATH = "/opt/microsoft/omsagent/tst/files/Troubleshooting.md"
 
 # TODO: grab these directly from https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/oms-linux#error-codes-and-their-meanings
 extension_err_codes_dict = {
@@ -25,6 +26,28 @@ extension_err_codes_dict = {
 
 
 
+# parse through error codes to get dictionary
+def parse_error_codes(ts_doc, err_codes, section_name):
+    section = None
+    for line in ts_doc:
+        line = line.decode('utf8').rstrip('\n')
+        if (line == ''):
+            continue
+        if (line.startswith('##')):
+            section = line[3:]
+            continue
+        if (section == section_name):
+            parsed_line = list(map(lambda x : x.strip(' '), line.split('|')))[1:-1]
+            if (parsed_line[0] in ['Error Code', '---']):
+                continue
+            err_codes[parsed_line[0]] = parsed_line[1]
+            continue
+        if (section==section_name and line.startswith('#')):
+            break
+    return (err_codes, None)
+
+
+
 # get error codes from Troubleshooting.md
 def get_error_codes(err_type):
     # extension
@@ -34,27 +57,19 @@ def get_error_codes(err_type):
     # shell bundle or onboarding
     err_codes = {0 : "No errors found"}
     section_name = "{0} Error Codes".format(err_type)
+
+    # try getting it via `wget` link
     try:
         ts_doc = urlopen(TSG_URL)
-        section = None
-        for line in ts_doc.readlines():
-            line = line.decode('utf8').rstrip('\n')
-            if (line == ''):
-                continue
-            if (line.startswith('##')):
-                section = line[3:]
-                continue
-            if (section == section_name):
-                parsed_line = list(map(lambda x : x.strip(' '), line.split('|')))[1:-1]
-                if (parsed_line[0] in ['Error Code', '---']):
-                    continue
-                err_codes[parsed_line[0]] = parsed_line[1]
-                continue
-            if (section==section_name and line.startswith('#')):
-                break
-        return (err_codes, None)
+        return parse_error_codes(ts_doc.readlines(), err_codes, section_name)
 
     except Exception as e:
+        # try getting it via file
+        try:
+            with open(TSG_DOC_PATH) as ts_doc:
+                return parse_error_codes(ts_doc, err_codes, section_name)
+
+        # opening via file errored
         checked_urlopen = check_urlopen_errs(e)
 
         # issue with connecting to Github specifically

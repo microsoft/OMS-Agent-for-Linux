@@ -10,7 +10,7 @@ from .check_oms   import check_oms
 from .check_files import check_filesystem
 from .check_pkgs  import check_packages
 
-DFS_PATH = "/opt/microsoft/omsagent/tst/datafiles/"
+DFS_PATH = "/opt/microsoft/omsagent/tst/files/datafiles/"
 
 
 

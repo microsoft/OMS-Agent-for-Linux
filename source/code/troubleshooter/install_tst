@@ -14,7 +14,6 @@ fi
 BIN_PATH="/opt/microsoft/omsagent/bin/"
 TROUBLESHOOTER_PATH="${BIN_PATH}/troubleshooter"
 TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
-TST_FILES_PATH="${TST_MODULES_PATH}/datafiles"
 
 echo "Getting ready to install troubleshooter..."
 
