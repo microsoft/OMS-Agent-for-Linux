@@ -27,24 +27,34 @@ extension_err_codes_dict = {
 
 
 # parse through error codes to get dictionary
-def parse_error_codes(ts_doc, err_codes, section_name):
-    section = None
-    for line in ts_doc:
-        line = line.decode('utf8').rstrip('\n')
-        if (line == ''):
-            continue
-        if (line.startswith('##')):
-            section = line[3:]
-            continue
-        if (section == section_name):
-            parsed_line = list(map(lambda x : x.strip(' '), line.split('|')))[1:-1]
-            if (parsed_line[0] in ['Error Code', '---']):
+def parse_error_codes(ts_doc, section_name):
+    try:
+        err_codes = {0 : "No errors found"}
+        section = None
+        for line in ts_doc:
+            line = line.decode('utf8').rstrip('\n')
+            if (line == ''):
                 continue
-            err_codes[parsed_line[0]] = parsed_line[1]
-            continue
-        if (section==section_name and line.startswith('#')):
-            break
-    return (err_codes, None)
+            if (line.startswith('##')):
+                section = line[3:]
+                continue
+            if (section == section_name):
+                parsed_line = list(map(lambda x : x.strip(' '), line.split('|')))[1:-1]
+                if (parsed_line[0] in ['Error Code', '---']):
+                    continue
+                err_codes[parsed_line[0]] = parsed_line[1]
+                continue
+            if (section==section_name and line.startswith('#')):
+                break
+        # parsing error occurred
+        if (err_codes == {0 : "No errors found"}):
+            return (None, "Couldn't parse Troubleshooting.md")
+        # everything worked correctly
+        return (err_codes, None)
+
+    # some other error occurred
+    except Exception as e:
+        return (None, "Issue parsing Troubleshooting.md: {0}".format(e))
 
 
 
@@ -55,32 +65,23 @@ def get_error_codes(err_type):
         return (extension_err_codes_dict, None)
 
     # shell bundle or onboarding
-    err_codes = {0 : "No errors found"}
     section_name = "{0} Error Codes".format(err_type)
 
-    # try getting it via `wget` link
+    # try getting it via file
     try:
-        ts_doc = urlopen(TSG_URL)
-        return parse_error_codes(ts_doc.readlines(), err_codes, section_name)
+        with open(TSG_DOC_PATH) as ts_doc:
+            return parse_error_codes(ts_doc, section_name)
 
     except Exception as e:
-        # try getting it via file
+        # try getting it via 'wget'
         try:
-            with open(TSG_DOC_PATH) as ts_doc:
-                return parse_error_codes(ts_doc, err_codes, section_name)
+            ts_doc = urlopen(TSG_URL)
+            return parse_error_codes(ts_doc.readlines(), section_name)
 
-        # opening via file errored
-        checked_urlopen = check_urlopen_errs(e)
-
-        # issue with connecting to Github specifically
-        if (checked_urlopen == ERR_ENDPT):
-            print("WARNING: can't connect to {0}: {1}\n Skipping this check...".format(TSG_URL, e))
-            print("--------------------------------------------------------------------------------")
-            return (None, 0)
-
-        # issue with general internet connectivity / ssl package
-        error_info.append((TSG_URL, e))
-        return (None, checked_urlopen)
+        except:
+            # opening via file errored
+            checked_urlopen = check_urlopen_errs(e)
+            return (None, checked_urlopen)
 
 
 
@@ -89,18 +90,17 @@ def check_urlopen_errs(err_msg):
     # error in connection, check connection
     checked_internet = check_internet_connect()
     if (is_error(checked_internet)):
-        return checked_internet
+        return "Machine is not connected to the internet"
 
     # ssl package not installed
     if (err_msg == "<urlopen error unknown url type: https>"):
         try:
             import ssl
         except ImportError:
-            error_info.append(('ssl',))
-            return ERR_PYTHON_PKG
+            return "This version of Python is missing the ssl package"
 
     # connection in general fine, connecting to current page not
-    return ERR_ENDPT
+    return "Can't connect to {0}: {1}".format(TSG_URL, err_msg)
 
 
 
@@ -114,7 +114,9 @@ def ask_error_codes(err_type, err_types):
         # get dict of all error codes
         (err_codes, tsg_error) = get_error_codes(err_type)
         if (err_codes == None):
-            return tsg_error
+            print("WARNING (INTERNAL): {0}\n Skipping this check...".format(tsg_error))
+            print("--------------------------------------------------------------------------------")
+            return NO_ERROR
 
         # ask user for error code
         poss_ans = lambda x : x.isdigit() or (x in ['NOT_DEFINED', 'none'])
