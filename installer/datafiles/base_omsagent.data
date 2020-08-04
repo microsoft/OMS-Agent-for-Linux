@@ -142,11 +142,13 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/VMInsightsIDataCollector.rb;             source/code/plugins/VMInsightsIDataCollector.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/in_vminsights.rb;                        source/code/plugins/in_vminsights.rb;                  744; root; root
 
-/opt/microsoft/omsagent/tst/datafiles/linux.data;                               installer/datafiles/linux.data;                                                 644; root; root
-/opt/microsoft/omsagent/tst/datafiles/linux_dpkg.data;                          installer/datafiles/linux_dpkg.data;                                            644; root; root
-/opt/microsoft/omsagent/tst/datafiles/linux_rpm.data;                           installer/datafiles/linux_rpm.data;                                             644; root; root
-/opt/microsoft/omsagent/tst/datafiles/ruby.data;                                installer/datafiles/ruby.data;                                                  644; root; root
-/opt/microsoft/omsagent/tst/datafiles/base_omsagent.data;                       installer/datafiles/base_omsagent.data;                                         644; root; root
+/opt/microsoft/omsagent/tst/files/datafiles/linux.data;                         installer/datafiles/linux.data;                                                 644; root; root
+/opt/microsoft/omsagent/tst/files/datafiles/linux_dpkg.data;                    installer/datafiles/linux_dpkg.data;                                            644; root; root
+/opt/microsoft/omsagent/tst/files/datafiles/linux_rpm.data;                     installer/datafiles/linux_rpm.data;                                             644; root; root
+/opt/microsoft/omsagent/tst/files/datafiles/ruby.data;                          installer/datafiles/ruby.data;                                                  644; root; root
+/opt/microsoft/omsagent/tst/files/datafiles/base_omsagent.data;                 installer/datafiles/base_omsagent.data;                                         644; root; root
+
+/opt/microsoft/omsagent/tst/files/Troubleshooting.md;                           docs/Troubleshooting.md;                                                        644; root; root
 
 /opt/microsoft/omsagent/tst/modules/install/check_files.py;                     source/code/troubleshooter/modules/install/check_files.py;                      644; root; root
 /opt/microsoft/omsagent/tst/modules/install/check_oms.py;                       source/code/troubleshooter/modules/install/check_oms.py;                        644; root; root

@@ -13,23 +13,24 @@ fi
 
 BIN_PATH="/opt/microsoft/omsagent/bin/"
 TROUBLESHOOTER_PATH="${BIN_PATH}/troubleshooter"
-TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
+TST_PATH="/opt/microsoft/omsagent/tst"
 
 echo "Getting ready to install troubleshooter..."
 
 # set up machine
 
-if [ -d $TST_MODULES_PATH ]; then
+if [ -d $TST_PATH ]; then
     # get rid of old files to update
     echo "Removing older version of troubleshooter..."
-    rm -rf $TST_MODULES_PATH
+    rm -rf $TST_PATH
     rm -f $TROUBLESHOOTER_PATH
 fi
 
 # copy over files
 echo "Installing troubleshooter on machine..."
-mkdir -p $TST_MODULES_PATH
-cp -r modules $TST_MODULES_PATH
+mkdir -p $TST_PATH
+cp -r modules $TST_PATH
+cp -r files $TST_PATH
 cp troubleshooter $BIN_PATH
 
 echo "You can now run the troubleshooter by going to $BIN_PATH and running the below command:"
