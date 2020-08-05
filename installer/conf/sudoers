@@ -53,6 +53,10 @@ Defaults:nxautomation lecture = never
 nxautomation ALL=(ALL) NOPASSWD: ALL
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/python /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/main.py *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/python /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/omsutil.py *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/python2 /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/main.py *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/python2 /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/worker/omsutil.py *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/python3 /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/3.x/worker/main.py *
+omsagent ALL=(ALL) NOPASSWD: /usr/bin/python3 /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/3.x/worker/omsutil.py *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/pkill -u nxautomation *
 
 #run update management commands
