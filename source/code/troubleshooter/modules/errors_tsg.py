@@ -27,12 +27,14 @@ extension_err_codes_dict = {
 
 
 # parse through error codes to get dictionary
-def parse_error_codes(ts_doc, section_name):
+def parse_error_codes(ts_doc, section_name, source_url):
     try:
         err_codes = {0 : "No errors found"}
         section = None
         for line in ts_doc:
-            line = line.decode('utf8').rstrip('\n')
+            if (source_url):
+                line = line.decode('utf8')
+            line = line.rstrip('\n')
             if (line == ''):
                 continue
             if (line.startswith('##')):
@@ -70,13 +72,13 @@ def get_error_codes(err_type):
     # try getting it via file
     try:
         with open(TSG_DOC_PATH) as ts_doc:
-            return parse_error_codes(ts_doc, section_name)
+            return parse_error_codes(ts_doc, section_name, False)
 
     except Exception as e:
         # try getting it via 'wget'
         try:
             ts_doc = urlopen(TSG_URL)
-            return parse_error_codes(ts_doc.readlines(), section_name)
+            return parse_error_codes(ts_doc.readlines(), section_name, True)
 
         except:
             # opening via file errored
