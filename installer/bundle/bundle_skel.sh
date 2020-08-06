@@ -32,6 +32,13 @@ OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
 OMS_ENV_FILE="/etc/opt/microsoft/omsagent/omsagent.env"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 OMI_SERVICE="/opt/omi/bin/service_control"
+BIN_PATH="/opt/microsoft/omsagent/bin/"
+TST_EXTRACT_DIR="`pwd -P`/tst_omsbundle.$$"
+TST_PATH="${BIN_PATH}/troubleshooter"
+TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
+
+TST_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/troubleshooter/source/code/troubleshooter/omsagent_tst.tar.gz"
+TST_DOCS="https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting-Tool.md"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -118,6 +125,13 @@ cleanup_and_exit()
 {
     # $1: Exit status
     # $2: Non-blank (if we're not to delete bundles), otherwise empty
+
+    # check if troubleshooter should be installed
+    if [ ! -z "$INSTALL_TST" ]; then
+        set +e
+        install_troubleshooter
+        set -e
+    fi
 
     if [ -z "$2" -a -d "$EXTRACT_DIR" ]; then
         cd $EXTRACT_DIR/..
@@ -385,6 +399,74 @@ install_if_program_does_not_exist_on_system()
         check_if_program_exists_on_system $1
         return $?
     fi
+}
+
+install_troubleshooter()
+{
+    # check if troubleshooter installed successfully via shell bundle
+    if [ ! -f "$TST_PATH" -o ! -d "$TST_MODULES_PATH" ]; then
+        # install troubleshooter if not successfully installed using shell bundle
+        echo "OMS Troubleshooter not installed using shell bundle, will try to install using wget."
+        echo "----- Installing troubleshooter -----"
+
+        # create temp directory
+        mkdir -p $TST_EXTRACT_DIR
+        cd $TST_EXTRACT_DIR
+
+        # grab tst bundle
+        echo "Grabbing troubleshooter bundle from Github..."
+        wget $TST_PKG > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Error downloading troubleshooter. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        echo "Unzipping troubleshooter bundle..."
+        tar -xzf omsagent_tst.tar.gz > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Error unzipping troubleshooter bundle. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        # copy over tst files
+        echo "Copying over troubleshooter files..."
+        mkdir -p $TST_MODULES_PATH
+        cp -r modules $TST_MODULES_PATH
+        mkdir -p $BIN_PATH
+        cp troubleshooter $BIN_PATH
+
+        # verify everything installed correctly
+        if [ ! -f "$TST_PATH" -o ! -d "${TST_MODULES_PATH}/modules" ]; then
+            echo "Error copying files over for troubleshooter. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        cd ${TST_EXTRACT_DIR}/..
+        rm -rf $TST_EXTRACT_DIR
+    fi
+
+    echo "OMS Troubleshooter is installed."
+    echo "You can run the Troubleshooter with the following command:"
+    echo ""
+    echo "  $ sudo /opt/microsoft/omsagent/bin/troubleshooter"
+    echo ""
+        
+    return 0
 }
 
 isDiskSpaceSufficient()
@@ -1251,6 +1333,8 @@ case "$installMode" in
         ;;
 
     I)
+        INSTALL_TST="yes" # set variable to install tst upon exit
+
         check_if_pkg_is_installed scx
         scx_installed=$?
         check_if_pkg_is_installed omi
@@ -1380,14 +1464,16 @@ case "$installMode" in
         ;;
 
     U)
+        INSTALL_TST="yes" # set variable to install tst upon exit
+
         # Install OMI
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
         OMI_EXIT_STATUS=$?
-	${OMI_SERVICE} reload
-	temp_status=$?
+        ${OMI_SERVICE} reload
+        temp_status=$?
 
-	if [ $temp_status -ne 0 ]; then
+        if [ $temp_status -ne 0 ]; then
             if [ $temp_status -eq 2 ]; then
                 ErrStr="System Issue with daemon control tool "
                 ErrCode=$DEPENDENCY_MISSING
