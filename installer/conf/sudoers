@@ -65,5 +65,6 @@ omsagent ALL=(ALL) NOPASSWD: /bin/tail *
 
 # configuring omsconfig
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py *
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/python3/OMS_MetaConfigHelper.py *
 
 # End sudo configuration for omsagent
