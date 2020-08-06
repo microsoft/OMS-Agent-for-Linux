@@ -103,7 +103,7 @@ def detect_workspace_id():
     global workspace_id
     x = subprocess.check_output('/opt/microsoft/omsagent/bin/omsadmin.sh -l', shell=True)
     if sys.version_info >= (3,):
-        x = x.decode()
+        x = x.decode('utf-8')
     try:
         workspace_id = re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x).group(0)
     except AttributeError:
@@ -139,6 +139,25 @@ def install_additional_packages():
 
 def run_dsc():
     """Run DSC to pull the workspace configuration."""
+    # print('Remove cron job')
+    # cmd = 'rm /etc/cron.d/OMSConsistencyInvoker'
+    # output = exec_command(cmd, stderr=subprocess.STDOUT)
+    # write_log_command(cmd)
+    # write_log_output(output)
+
+    # print('Install DSC Modules ...')
+    # module_names = ["nx_99.99.zip", "nxFileInventory_99.99.zip", "nxOMSAgentNPMConfig_99.99.zip", "nxOMSAuditdPlugin_99.99.zip", "nxOMSAutomationWorker_99.99.zip",
+    #                 "nxOMSContainers_99.99.zip", "nxOMSCustomLog_99.99.zip", "nxOMSGenerateInventoryMof_99.99.zip", "nxOMSKeyMgmt_99.99.zip", "nxOMSPerfCounter_99.99.zip",
+    #                 "nxOMSPlugin_99.99.zip", "nxOMSSudoCustomLog_99.99.zip", "nxOMSSyslog_99.99.zip", "nxOMSWLI_99.99.zip"]
+    # for module in module_names:
+    #     if sys.version_info < (3,):
+    #         cmd = 'sudo su - omsagent -c "python2 /opt/microsoft/omsconfig/Scripts/InstallModule.py /home/temp/omsfiles/modules/{0} 1"'.format(module)
+    #     else:
+    #         cmd = 'sudo su - omsagent -c "python3 /opt/microsoft/omsconfig/Scripts/python3/InstallModule.py /home/temp/omsfiles/modules/{0} 1"'.format(module)
+    #     output = exec_command(cmd, stderr=subprocess.STDOUT)
+    #     write_log_command(cmd)
+    #     write_log_output(output)
+
     print('Pulling configuration from DSC ...')
     if sys.version_info < (3,):
         cmd = 'sudo su omsagent -c "python2 /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py"'
@@ -146,7 +165,7 @@ def run_dsc():
         cmd = 'sudo su omsagent -c "python3 /opt/microsoft/omsconfig/Scripts/python3/PerformRequiredConfigurationChecks.py"'
     output = exec_command(cmd, stderr=subprocess.STDOUT)
     write_log_command(cmd)
-    write_log_output(output)
+    write_log_output(output, True)
 
 def copy_config_files():
     """Convert, copy, and set permissions for agent configuration files."""
@@ -225,15 +244,19 @@ def exec_command(cmd, stderr=None, shell=True):
     """Run the provided command, check, and return its output."""
     try:
         out = subprocess.check_output(cmd, stderr=stderr, shell=shell)
-        return out
+        if sys.version_info < (3,):
+            return out
+        else:
+            return out.decode('utf-8')
     except subprocess.CalledProcessError as e:
         print('exec_command cmd="{0}" failed with code={1}, msg="{2}"'.format(cmd, e.returncode, e.output))
         return e.returncode
 
-def write_log_output(out):
+def write_log_output(out, print_log=False):
     """Save command output to the log file."""
     if(type(out) != str):
         out = str(out)
+    print(out)
     openFile.write(out + '\n')
     openFile.write('-' * 80)
     openFile.write('\n')

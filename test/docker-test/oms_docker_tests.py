@@ -30,9 +30,9 @@ from json2html import *
 from verify_e2e import check_e2e
 
 E2E_DELAY = 10 # Delay (minutes) before checking for data
-images = ["ubuntu14", "ubuntu16", "ubuntu18", "ubuntu20py3", "debian8", "debian9", "debian10", "centos6", "centos7", "oracle6", "oracle7", "redhat6", "redhat7", "redhat8py3"]
+images = ["ubuntu14", "ubuntu16", "ubuntu18", "ubuntu20py3", "debian8", "debian9", "debian10", "centos6", "centos7", "centos8py3", "oracle6", "oracle7", "redhat6", "redhat7", "redhat8py3"]
 # images = ["ubuntu14", "ubuntu16", "ubuntu18", "ubuntu20", "debian8", "debian9", "debian10", "centos6", "centos7", "centos8", "oracle6", "oracle7", "redhat6", "redhat7", "redhat8"]
-python3_images = ["ubuntu20py3", "redhat8py3"]
+python3_images = ["ubuntu20py3", "redhat8py3", "centos8py3"]
 hostnames = []
 install_times = {}
 procs = {}

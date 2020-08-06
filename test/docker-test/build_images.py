@@ -4,8 +4,8 @@ import os
 import sys
 import re
 
-IMAGES = ['ubuntu14', 'ubuntu16', 'ubuntu18', 'ubuntu20py3', 'debian8', 'debian9', 'debian10', 'centos6', 'centos7', 'centos8', 'oracle6', 'oracle7', 'redhat6', 'redhat7', 'redhat8py3']
-# IMAGES = ['ubuntu14', 'ubuntu16', 'ubuntu18', 'ubuntu20', 'ubuntu20py3', 'debian8', 'debian9', 'debian10', 'centos6', 'centos7', 'centos8', 'oracle6', 'oracle7', 'redhat6', 'redhat7', 'redhat8', 'redhat8py3']
+IMAGES = ['ubuntu14', 'ubuntu16', 'ubuntu18', 'ubuntu20py3', 'debian8', 'debian9', 'debian10', 'centos6', 'centos7', 'centos8py3', 'oracle6', 'oracle7', 'redhat6', 'redhat7', 'redhat8py3']
+# IMAGES = ['ubuntu14', 'ubuntu16', 'ubuntu18', 'ubuntu20', 'ubuntu20py3', 'debian8', 'debian9', 'debian10', 'centos6', 'centos7', 'centos8', 'centos8py3', 'oracle6', 'oracle7', 'redhat6', 'redhat7', 'redhat8', 'redhat8py3']
 
 def main():
     """Build images."""
