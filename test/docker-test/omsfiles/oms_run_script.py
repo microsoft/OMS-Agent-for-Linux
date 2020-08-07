@@ -165,12 +165,18 @@ def run_dsc():
         cmd = 'sudo su omsagent -c "python3 /opt/microsoft/omsconfig/Scripts/python3/PerformRequiredConfigurationChecks.py"'
     output = exec_command(cmd, stderr=subprocess.STDOUT)
     write_log_command(cmd)
-    write_log_output(output, True)
+    write_log_output(output)
 
 def copy_config_files():
     """Convert, copy, and set permissions for agent configuration files."""
     os.system('cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/apache_logs.conf \
             && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/mysql_logs.conf'.format(workspace_id))
+
+def cron_conf():
+    """Create a cron job to append to custom.log every minute."""
+    cronjob = '* * * * * root cat /home/temp/omsfiles/custom.log >> /var/log/custom.log'
+    os.system('echo "{0}" > /etc/cron.d/customlog'.format(cronjob))
+    run_service_command('cron', 'restart')
 
 def apache_mysql_conf():
     """Configure Apache and MySQL, set up empty log files, and add permissions."""
@@ -231,6 +237,7 @@ def config_start_oms_services():
     os.system('/opt/omi/bin/omiserver -d')
     run_dsc()
     copy_config_files()
+    cron_conf()
     apache_mysql_conf()
 
 def restart_services():
@@ -256,7 +263,8 @@ def write_log_output(out, print_log=False):
     """Save command output to the log file."""
     if(type(out) != str):
         out = str(out)
-    print(out)
+    if print_log:
+        print(out)
     openFile.write(out + '\n')
     openFile.write('-' * 80)
     openFile.write('\n')

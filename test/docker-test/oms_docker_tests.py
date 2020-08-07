@@ -209,7 +209,7 @@ def main():
             for image in images:
                 install_times.update({image: datetime.now()})
                 container = image + '-container'
-                inject_logs(container)
+                inject_logs(container, image)
             long_verify_msg = verify_data()
             long_status_msg = check_status()
         else:
@@ -221,12 +221,11 @@ def main():
 def install_agent(oms_bundle):
     """Run container and install the OMS agent, returning HTML results."""
     message = ""
-    version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
+    version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)[:-1]
     install_times.clear()
     for image in images:
         container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
-        write_log_command("Container: {0}".format(container), log_file)
-        write_log_command("Install Logs: {0}".format(image), log_file)
+        write_log_command("\n[{0}] Install OMS Agent {1} ...".format(image, version), log_file)
         html_file.write("<h1 id='{0}'> Container: {0} <h1>".format(image))
         os.system("docker container stop {0} 2> /dev/null".format(container))
         os.system("docker container rm {0} 2> /dev/null".format(container))
@@ -241,12 +240,12 @@ def install_agent(oms_bundle):
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container, get_versioned_python(image)))
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -status".format(container, get_versioned_python(image)))
         install_times.update({image: datetime.now()})
-        inject_logs(container)
+        write_log_command("\n[{0}] Inject logs ...".format(image), log_file)
+        inject_logs(container, image)
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        write_log_command("Create Container and Install OMS Agent v{0}".format(version), log_file)
         copy_append_remove(container, image, 'omsresults.out', log_file)
-        html_file.write("<h2> Install OMS Agent v{0} </h2>".format(version))
+        html_file.write("<h2> Install OMS Agent {0} </h2>".format(version))
         copy_append_remove(container, image, 'omsresults.html', html_file)
         close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
@@ -261,20 +260,20 @@ def install_agent(oms_bundle):
 
 def upgrade_agent(oms_bundle):
     message = ""
-    version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)
+    version = re.search(r'omsagent-\s*([\d.\d-]+)', oms_bundle).group(1)[:-1]
     install_times.clear()
     for image in images:
         container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
+        write_log_command("\n[{0}] Upgrade OMS Agent {1} ...".format(image, version), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade -w {2} -s {3} | tee -a {4}".format(container, oms_bundle, workspace_id, workspace_key, tmp_path))
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container, get_versioned_python(image)))
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -status".format(container, get_versioned_python(image)))
         install_times.update({image: datetime.now()})
-        inject_logs(container)
+        inject_logs(container, image)
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        write_log_command("Upgrade OMS Agent v{0}".format(version), log_file)
         copy_append_remove(container, image, 'omsresults.out', log_file)
-        html_file.write("<h2> Upgrade OMS Agent v{0} </h2>".format(version))
+        html_file.write("<h2> Upgrade OMS Agent {0} </h2>".format(version))
         copy_append_remove(container, image, 'omsresults.html', html_file)
         close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
@@ -287,8 +286,9 @@ def upgrade_agent(oms_bundle):
             message += """<td><span style='background-color: red; color: white'>Install Failed</span></td>"""
     return message
 
-def inject_logs(container):
+def inject_logs(container, image):
     """Inject logs."""
+    # os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container, get_versioned_python(image)))
     sleep(60)
     os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -injectlogs".format(container, get_versioned_python(image)))
         
@@ -297,10 +297,8 @@ def verify_data():
     message = ""
     for hostname in hostnames:
         image = hostname.split('-')[0]
-        log_path = 'results/{}/result.log'.format(image)
-        html_path = 'results/{}/result.html'.format(image)
-        log_file = open(log_path, 'a+')
-        html_file = open(html_path, 'a+')
+        _, _, _, _, _, log_file, html_file, _ = setup_vars(image)
+        write_log_command('\n[{0}] Verify E2E Data Results'.format(image), log_file)
         while datetime.now() < (install_times[image] + timedelta(minutes=E2E_DELAY)):
             mins, secs = get_time_diff(datetime.now(), install_times[image] + timedelta(minutes=E2E_DELAY))
             sys.stdout.write('\rE2E propagation delay for {0}: {1} minutes {2} seconds...'.format(image, mins, secs))
@@ -313,7 +311,6 @@ def verify_data():
 
         # write detailed table for image
         html_file.write("<h2> Verify Data from OMS workspace </h2>")
-        write_log_command('Status After Verifying Data', log_file)
         results = data[image][0]
         log_file.write(image + ':\n' + json.dumps(results, indent=4, separators=(',', ': ')) + '\n')
         # prepend distro column to results row before generating the table
@@ -338,15 +335,13 @@ def remove_agent():
     message = ""
     for image in images:
         container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
-        write_log_command('\n OmsAgent Logs: Before Removing the agent\n', oms_file)
+        write_log_command('\n[{0}] Remove OMS Agent ...'.format(image), log_file)
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -copyomslogs".format(container, get_versioned_python(image)))
         copy_append_remove(container, image, 'copyofomsagent.log', oms_file)
-        write_log_command("Remove Logs: {0}".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --remove | tee -a {2}".format(container, oms_bundle, tmp_path))
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -status".format(container, get_versioned_python(image)))
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        write_log_command("Remove OMS Agent", log_file)
         copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Remove OMS Agent </h2>")
         copy_append_remove(container, image, 'omsresults.html', html_file)
@@ -366,14 +361,13 @@ def reinstall_agent():
     message = ""
     for image in images:
         container, _, _, _, tmp_path, log_file, html_file, oms_file = setup_vars(image)
-        write_log_command("Reinstall Logs: {0}".format(image), log_file)
+        write_log_command("\n[{0}] Reinstall OMS Agent ...".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --upgrade | tee -a {2}".format(container, oms_bundle, tmp_path))
         os.system("docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -w {1} -s {2} | tee -a {3}".format(container, workspace_id, workspace_key, tmp_path))
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container, get_versioned_python(image)))
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -status".format(container, get_versioned_python(image)))
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
-        write_log_command("Reinstall OMS Agent", log_file)
         copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Reinstall OMS Agent </h2>")
         copy_append_remove(container, image, 'omsresults.html', html_file)
@@ -393,7 +387,7 @@ def check_status():
     message = ""
     for image in images:
         container, _, _, _, _, log_file, html_file, oms_file = setup_vars(image)
-        write_log_command("Check Status: {0}".format(image), log_file)
+        write_log_command("\n[{0}] Check Status ...".format(image), log_file)
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -status".format(container, get_versioned_python(image)))
         copy_append_remove(container, image, 'omsresults.out', log_file)
         html_file.write("<h2> Check OMS Agent Status </h2>")
@@ -417,10 +411,9 @@ def purge_delete_agent():
     """Purge the OMS agent and delete container."""
     for image in images:
         container, _, _, omslog_path, tmp_path, log_file, html_file, oms_file = setup_vars(image)
-        write_log_command('\n OmsAgent Logs: Before Purging the agent\n', oms_file)
+        write_log_command('\n[{0}] Purge OMS Agent ...'.format(image), oms_file)
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -copyomslogs".format(container, get_versioned_python(image)))
         copy_append_remove(container, image, 'copyofomsagent.log', oms_file)
-        write_log_command("Purge Logs: {0}".format(image), log_file)
         os.system("docker exec {0} sh /home/temp/omsfiles/{1} --purge | tee -a {2}".format(container, oms_bundle, tmp_path))
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
