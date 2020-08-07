@@ -60,12 +60,19 @@ dist_to_id = {'redhat' : 'rhel',
 
 # OS Info
 def get_os_version():
+    vm_dist, vm_ver = '', ''
+
     # get vm info
     try:
         (vm_dist, vm_ver, vm_id) = platform.linux_distribution()
     except AttributeError:
-        (vm_dist, vm_ver, vm_id) = platform.dist()
-    # if above didn't work, get vm info through os_release
+        try:
+            (vm_dist, vm_ver, vm_id) = platform.dist()
+            except AttributeError:
+                pass
+
+    # if above didn't work, get vm info through /etc/os-release
+    # (on newer distros, linux_distribution() and dist() are unreliable)
     if (not vm_dist and not vm_ver):
         try:
             with open('/etc/os-release', 'r') as os_file:
@@ -80,13 +87,16 @@ def get_os_version():
         except:
             return None
 
-    # update general_info
-    general_info['OS_ID'] = vm_dist
-    general_info['OS_VERSION_ID'] = vm_ver
-    for dist in dist_to_id.keys():
-        if (vm_dist.lower().startswith(dist)):
-            general_info['OS_READABLE_ID'] = dist_to_id[dist]
-    return (vm_dist, vm_ver)
+    # update general_info if was successful
+    if (vm_dist and vm_ver):
+        general_info['OS_ID'] = vm_dist
+        general_info['OS_VERSION_ID'] = vm_ver
+        for dist in dist_to_id.keys():
+            if (vm_dist.lower().startswith(dist)):
+                general_info['OS_READABLE_ID'] = dist_to_id[dist]
+        return (vm_dist, vm_ver)
+    else:
+        return None
 
 
 
