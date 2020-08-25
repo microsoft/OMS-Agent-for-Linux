@@ -143,6 +143,7 @@ module Fluent
             start_npmd() if File.exist?(@location_agent_binary)
         end
 
+
         def shutdown
             Logger::logInfo "Received shutdown notification"
             @is_shutdown = true
