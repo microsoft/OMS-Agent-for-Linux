@@ -139,17 +139,19 @@ def install_additional_packages():
 
 def run_dsc():
     """Run DSC to pull the workspace configuration."""
+
+    # Optional step to disable DSC config management by deleting the cron job
     # print('Remove cron job')
     # cmd = 'rm /etc/cron.d/OMSConsistencyInvoker'
     # output = exec_command(cmd, stderr=subprocess.STDOUT)
     # write_log_command(cmd)
     # write_log_output(output)
 
+    # Oprional step to manually install DSC modules placed in omsfiles/modules
     # print('Install DSC Modules ...')
     # module_names = ["nx_99.99.zip", "nxFileInventory_99.99.zip", "nxOMSAgentNPMConfig_99.99.zip", "nxOMSAuditdPlugin_99.99.zip", "nxOMSAutomationWorker_99.99.zip",
                     # "nxOMSContainers_99.99.zip", "nxOMSCustomLog_99.99.zip", "nxOMSGenerateInventoryMof_99.99.zip", "nxOMSKeyMgmt_99.99.zip", "nxOMSPerfCounter_99.99.zip",
                     # "nxOMSPlugin_99.99.zip", "nxOMSSudoCustomLog_99.99.zip", "nxOMSSyslog_99.99.zip", "nxOMSWLI_99.99.zip"]
-    # module_names = ["nxOMSPlugin_3.46.zip"]
     # for module in module_names:
     #     if sys.version_info < (3,):
     #         cmd = 'sudo su - omsagent -c "python2 /opt/microsoft/omsconfig/Scripts/InstallModule.py /home/temp/omsfiles/modules/{0} 1"'.format(module)

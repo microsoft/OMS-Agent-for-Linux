@@ -376,14 +376,6 @@ def deonboard_reonboard():
                 message += FAILURE_TEMPLATE.format("De-onboarding Success; Re-onboarding Failure")
         except subprocess.CalledProcessError as e:
             message += FAILURE_TEMPLATE.format("De-onboarding Failure")
-
-        # if os.system('set -o pipefail && docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -X | tee -a {1}'.format(container, tmp_path)) == 0:
-        #     if os.system("set -o pipefail && docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -w {1} -s {2} | tee -a {3}".format(container, workspace_id, workspace_key, tmp_path)) == 0:
-        #         message += SUCCESS_TEMPLATE.format("De-onboarding and Re-onboarding Success")
-        #     else:
-        #         message += FAILURE_TEMPLATE.format("De-onboarding Success; Re-onboarding Failure")
-        # else:
-        #     message += FAILURE_TEMPLATE.format("De-onboarding Failure")
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
         close_files(log_file, html_file)
