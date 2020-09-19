@@ -32,6 +32,13 @@ OMS_RUBY_DIR="/opt/microsoft/omsagent/ruby/bin"
 OMS_ENV_FILE="/etc/opt/microsoft/omsagent/omsagent.env"
 OMS_CONSISTENCY_INVOKER="/etc/cron.d/OMSConsistencyInvoker"
 OMI_SERVICE="/opt/omi/bin/service_control"
+BIN_PATH="/opt/microsoft/omsagent/bin/"
+TST_EXTRACT_DIR="`pwd -P`/tst_omsbundle.$$"
+TST_PATH="${BIN_PATH}/troubleshooter"
+TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
+
+TST_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/troubleshooter/source/code/troubleshooter/omsagent_tst.tar.gz"
+TST_DOCS="https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting-Tool.md"
 
 # These symbols will get replaced during the bundle creation process.
 
@@ -65,6 +72,7 @@ INTERNAL_ERROR=30
 # Package pre-requisites fail
 DEPENDENCY_MISSING=52 #https://github.com/Azure/azure-marketplace/wiki/Extension-Build-Notes-Best-Practices#error-codes-and-messages-output-to-stderr
 UNSUPPORTED_OPENSSL=55 #60, temporary as 55 excludes from SLA
+INSTALL_PYTHON=60
 INSTALL_PYTHON_CTYPES=61
 INSTALL_TAR=62
 INSTALL_SED=63
@@ -83,7 +91,6 @@ usage()
     echo "  --force                    Force upgrade (override version checks)."
     echo "  --install                  Install the package from the system."
     echo "  --purge                    Uninstall the package and remove all related data."
-    echo "  --remove                   Uninstall the package from the system."
     echo "  --restart-deps             Reconfigure and restart dependent service(s)."
     echo "  --source-references        Show source code reference hashes."
     echo "  --upgrade                  Upgrade the package in the system."
@@ -117,6 +124,13 @@ cleanup_and_exit()
 {
     # $1: Exit status
     # $2: Non-blank (if we're not to delete bundles), otherwise empty
+
+    # check if troubleshooter should be installed
+    if [ ! -z "$INSTALL_TST" ]; then
+        set +e
+        install_troubleshooter
+        set -e
+    fi
 
     if [ -z "$2" -a -d "$EXTRACT_DIR" ]; then
         cd $EXTRACT_DIR/..
@@ -291,22 +305,33 @@ ulinux_detect_openssl_version()
 
 ulinux_detect_installer()
 {
-    INSTALLER=
+    INSTALLER=""
 
-    # If DPKG lives here, assume we use that. Otherwise we use RPM.
-    check_if_program_in_path dpkg
-    if [ $? -eq 0 ]; then
-        INSTALLER=DPKG
-    else
-      check_if_program_in_path rpm
-      if [ $? -eq 0 ]; then
-        INSTALLER=RPM
-      else
-        #Exit with code 51 if system is not deb or rpm
-        echo "Error: This system does not have supported package manager"
-        echo "Supported Sytems: 'DPKG' & 'RPM'"
+    # Detect based on distribution
+    if [ -f "/etc/debian_version" ]; then # Ubuntu, Debian
+        INSTALLER="DPKG"
+    elif [ -f "/etc/redhat-release" ]; then # RHEL, CentOS, Oracle
+        INSTALLER="RPM"
+    elif [ -f "/etc/os-release" ]; then # Possibly SLES, openSUSE
+        grep PRETTY_NAME /etc/os-release | sed 's/PRETTY_NAME=//g' | tr -d '="' | grep -qi suse
+        if [ $? == 0 ]; then
+            INSTALLER="RPM"
+        fi
+    fi
+
+    # Fall back on detection via package manager availability
+    if [ "$INSTALLER" = "" ]; then
+        if [ -x "$(command -v dpkg)" ]; then
+            INSTALLER="DPKG"
+        elif [ -x "$(command -v rpm)" ]; then
+            INSTALLER="RPM"
+        fi
+    fi
+
+    if [ "$INSTALLER" = "" ]; then
+        echo "Error: This system does not have a supported package manager" >&2
+        echo "Supported Sytems: 'DPKG' & 'RPM'" >&2
         cleanup_and_exit $UNSUPPORTED_PKG_INSTALLER
-      fi
     fi
 }
 
@@ -373,6 +398,74 @@ install_if_program_does_not_exist_on_system()
         check_if_program_exists_on_system $1
         return $?
     fi
+}
+
+install_troubleshooter()
+{
+    # check if troubleshooter installed successfully via shell bundle
+    if [ ! -f "$TST_PATH" -o ! -d "$TST_MODULES_PATH" ]; then
+        # install troubleshooter if not successfully installed using shell bundle
+        echo "OMS Troubleshooter not installed using shell bundle, will try to install using wget."
+        echo "----- Installing troubleshooter -----"
+
+        # create temp directory
+        mkdir -p $TST_EXTRACT_DIR
+        cd $TST_EXTRACT_DIR
+
+        # grab tst bundle
+        echo "Grabbing troubleshooter bundle from Github..."
+        wget $TST_PKG > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Error downloading troubleshooter. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        echo "Unzipping troubleshooter bundle..."
+        tar -xzf omsagent_tst.tar.gz > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Error unzipping troubleshooter bundle. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        # copy over tst files
+        echo "Copying over troubleshooter files..."
+        mkdir -p $TST_MODULES_PATH
+        cp -r modules $TST_MODULES_PATH
+        mkdir -p $BIN_PATH
+        cp troubleshooter $BIN_PATH
+
+        # verify everything installed correctly
+        if [ ! -f "$TST_PATH" -o ! -d "${TST_MODULES_PATH}/modules" ]; then
+            echo "Error copying files over for troubleshooter. To install it manually, please go to the below link:"
+            echo ""
+            echo $TST_DOCS
+            echo ""
+            cd ${TST_EXTRACT_DIR}/..
+            rm -rf $TST_EXTRACT_DIR
+            return 0
+        fi
+
+        cd ${TST_EXTRACT_DIR}/..
+        rm -rf $TST_EXTRACT_DIR
+    fi
+
+    echo "OMS Troubleshooter is installed."
+    echo "You can run the Troubleshooter with the following command:"
+    echo ""
+    echo "  $ sudo /opt/microsoft/omsagent/bin/troubleshooter"
+    echo ""
+        
+    return 0
 }
 
 isDiskSpaceSufficient()
@@ -508,7 +601,7 @@ get_arch()
 
 compare_arch()
 {
-    #check if the user is trying to install the correct bundle (x64 vs. x86)
+    # Check if the user is trying to install the correct bundle (x64 vs. x86)
     echo "Checking host architecture ..."
     HOST_ARCH=$(get_arch)
 
@@ -534,13 +627,40 @@ compare_install_type()
     fi
 }
 
+get_python_command()
+{
+    if [ -x "$(command -v python2)" ]; then
+        echo "python2"
+    elif [ -x "$(command -v python3)" ]; then
+        echo "python3"
+    else
+        echo ""
+    fi
+}
+
+python_installed()
+{
+    PYTHON=$(get_python_command)
+    if [ "$PYTHON" != "" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 python_ctypes_installed()
 {
     # Check for Python ctypes library (required for omsconfig)
     hasCtypes=1
 
+    # Can't have ctypes without python itself
+    python_installed
+    if [ $? -ne 0 ]; then
+        return $hasCtypes
+    fi
+
     # Attempt to run python with the single import command
-    python -c "import ctypes" > /dev/null 2>&1
+    $PYTHON -c "import ctypes" > /dev/null 2>&1
     [ $? -eq 0 ] && hasCtypes=0
 
     return $hasCtypes
@@ -582,14 +702,18 @@ shouldInstall_omsagent()
 
 shouldInstall_omsconfig()
 {
-    # Package omsconfig will never install without Python ctypes and curl ...
-    if python_ctypes_installed; then
-        if check_if_program_exists_on_system curl; then
-            local versionInstalled=`getInstalledVersion omsconfig`
-            [ "$versionInstalled" = "None" ] && return 0
-            local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
+    # Package omsconfig will never install without Python, Python ctypes, and curl ...
+    if python_installed; then
+        if python_ctypes_installed; then
+            if check_if_program_exists_on_system curl; then
+                local versionInstalled=`getInstalledVersion omsconfig`
+                [ "$versionInstalled" = "None" ] && return 0
+                local versionAvailable=`getVersionNumber $DSC_PKG omsconfig-`
 
-            check_version_installable $versionInstalled $versionAvailable
+                check_version_installable $versionInstalled $versionAvailable
+            else
+                return 1
+            fi
         else
             return 1
         fi
@@ -1066,6 +1190,20 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     compare_install_type
     compare_arch
 
+    python_installed
+    if [ $? -ne 0 ]; then
+        if [ -z "${forceFlag}" ]; then
+            echo "Error: Python is not installed on this system, installation cannot continue." >&2
+            echo "Please install either the python2 or python3 package." >&2
+            echo "You can run this shell bundle with --force; in this case, we will install omsagent," >&2
+            echo "but omsconfig (DSC configuration) will not be available and will need to be re-installed." >&2
+            cleanup_and_exit $INSTALL_PYTHON
+        else
+            echo "Python is not installed on this system, please install either the python2 or python3 package and re-install omsconfig later."
+            echo "Installation will continue without installing omsconfig."
+        fi
+    fi
+
     python_ctypes_installed
     if [ $? -ne 0 ]; then
         if [ -z "${forceFlag}" ]; then
@@ -1194,6 +1332,8 @@ case "$installMode" in
         ;;
 
     I)
+        INSTALL_TST="yes" # set variable to install tst upon exit
+
         check_if_pkg_is_installed scx
         scx_installed=$?
         check_if_pkg_is_installed omi
@@ -1323,14 +1463,16 @@ case "$installMode" in
         ;;
 
     U)
+        INSTALL_TST="yes" # set variable to install tst upon exit
+
         # Install OMI
         shouldInstall_omi
         pkg_upd ${OMI_PKG} omi $?
         OMI_EXIT_STATUS=$?
-	${OMI_SERVICE} reload
-	temp_status=$?
+        ${OMI_SERVICE} reload
+        temp_status=$?
 
-	if [ $temp_status -ne 0 ]; then
+        if [ $temp_status -ne 0 ]; then
             if [ $temp_status -eq 2 ]; then
                 ErrStr="System Issue with daemon control tool "
                 ErrCode=$DEPENDENCY_MISSING

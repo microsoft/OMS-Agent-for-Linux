@@ -17,10 +17,10 @@ The Log Analytics agent for Linux comprises multiple packages. The release file 
 
 **Package** | **Version** | **Description**
 ----------- | ----------- | --------------
-omsagent | 1.12.15 | The Operations Management Suite Agent for Linux
+omsagent | 1.13.9 | The Operations Management Suite Agent for Linux
 omsconfig | 1.1.1 | Configuration agent for the OMS Agent
-omi | 1.6.3 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
-scx | 1.6.3 | OMI CIM Providers for operating system performance metrics
+omi | 1.6.4 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
+scx | 1.6.4 | OMI CIM Providers for operating system performance metrics
 apache-cimprov | 1.0.1 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
 mysql-cimprov | 1.0.1 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
 docker-cimprov | 1.0.0 | Docker provider for OMI. Only installed if Docker is detected.
@@ -38,8 +38,9 @@ After installing the Log Analytics agent for Linux packages, the following addit
 Glibc |	GNU C Library	| 2.5-12 
 Openssl	| OpenSSL Libraries | 1.0.1 or 1.1.x
 Curl | cURL web client | 7.15.5
-Python-ctypes | | 
-PAM | Pluggable Authentication Modules	 | 
+Python 2 | | 2.6
+Python-ctypes | |
+PAM | Pluggable Authentication Modules |
 
 **Note**: Either rsyslog or syslog-ng are required to collect syslog messages. The default syslog daemon on version 5 of Red Hat Enterprise Linux, CentOS, and Oracle Linux version (sysklog) is not supported for syslog event collection. To collect syslog data from this version of these distributions, the rsyslog daemon should be installed and configured to replace sysklog.
 
@@ -92,7 +93,6 @@ Options:
   --force                Force upgrade (override version checks).
   --install              Install the package from the system.
   --purge                Uninstall the package and remove all related data.
-  --remove               Uninstall the package from the system.
   --restart-deps         Reconfigure and restart dependent service
   --source-references    Show source code reference hashes.
   --upgrade              Upgrade the package in the system.
@@ -122,16 +122,13 @@ The proxy configuration value has the following syntax:
 Property|Description
 -|-
 Protocol|http or https
-user|username for proxy authentication
-password|password for proxy authentication
+user|(optional) username for proxy authentication
+password|(optional) password for proxy authentication
 proxyhost|Address or FQDN of the proxy server
 port|Optional port number for the proxy server
 
 For example:
 http://user01:password@proxy01.contoso.com:8080
-
-*Note: Although you do not have any user/password set for the proxy, you will still need to add a psuedo user/password. This can be any username or password.    
-(This will be enhanced in future so that these psuedo user/password will not be necessary)*
 
 The Log Analytics agent only creates secure connection over http. Even if you specify the protocol as http, please note that http requests are created using SSL/TLS secure connection so the proxy must support SSL/TLS. The proxy server can be specified during installation or directly in a file (at any point). 
 

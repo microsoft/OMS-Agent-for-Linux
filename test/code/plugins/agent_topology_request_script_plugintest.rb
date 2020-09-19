@@ -40,7 +40,7 @@ class AgentTopologyRequestTest < Test::Unit::TestCase
   PID_FILE = "#{TMP_DIR}/omsagent_pid"
   CONSTANT_PID = "1"
   PROCESS_STATS = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, \
-PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '#{CONSTANT_PID}'\" | grep ="
+PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle='#{CONSTANT_PID}'\" | grep ="
 
   def setup
     FileUtils.mkdir_p(TMP_DIR)

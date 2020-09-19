@@ -280,7 +280,7 @@ module OMS
     def poll_resource_usage
       get_pids
       command = "/opt/omi/bin/omicli wql root/scx \"SELECT PercentUserTime, PercentPrivilegedTime, UsedMemory, "\
-                "PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle like '%s'\" | grep ="
+                "PercentUsedMemory FROM SCX_UnixProcessStatisticalInformation where Handle='%s'\" | grep ="
       begin
         if ENV['TEST_WORKSPACE_ID'].nil? && ENV['TEST_SHARED_KEY'].nil? && File.exist?(@omsadmin_conf_path)
           @pids.each do |key, value|

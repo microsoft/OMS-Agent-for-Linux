@@ -8,7 +8,7 @@ Collection of the following 3rd party security log types is supported:
 
 ## Configuration summary
 1. Install and onboard the OMS Agent for Linux
-2. Configure Syslog forwarding to send the required logs to the agent on UDP port 25226
+2. Configure Syslog forwarding to send the required logs to the agent on TCP port 25226
 3. Place the agent configuration [file][1] on the agent machine in ```/etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.d/```
 4. Restart the syslog daemon and the OMS agent
 
@@ -25,7 +25,7 @@ Collection of the following 3rd party security log types is supported:
         1. Configure the logging product/machine to forward the required events to the syslog daemon (e.g. rsyslog or syslog-ng) on the agent machine.
         2. Enable the syslog daemon on the agent machine to receive messages from a remote system.
 	    
-    * On the agent machine, the events need to be sent from the syslog daemon to a local UDP port. Use [this guide](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#syslog-troubleshooting) to check for available ports; in this example, we use UDP port 25226.
+    * On the agent machine, the events need to be sent from the syslog daemon to a local TCP port. Use [this guide](https://github.com/Microsoft/OMS-Agent-for-Linux/blob/master/docs/OMS-Agent-for-Linux.md#syslog-troubleshooting) to check for available ports; in this example, we use TCP port 25226.
         *The following is an example configuration for sending all events from the local4 facility to the agent. You can modify the configuration to fit your local settings.* 
 	
         **If the agent machine has an rsyslog daemon:**  
@@ -33,7 +33,7 @@ Collection of the following 3rd party security log types is supported:
 
         ```
         #OMS_facility = local4
-        local4.debug       @127.0.0.1:25226
+        local4.debug       @@127.0.0.1:25226
         ```
 	
         **If the agent machine has a syslog-ng daemon:**  
@@ -42,7 +42,7 @@ Collection of the following 3rd party security log types is supported:
         ```
         #OMS_facility = local4  
         filter f_local4_oms { facility(local4); };  
-        destination security_oms { udp("127.0.0.1" port(25226)); };  
+        destination security_oms { tcp("127.0.0.1" port(25226)); };  
         log { source(src); filter(f_local4_oms); destination(security_oms); };  
         ```
 
