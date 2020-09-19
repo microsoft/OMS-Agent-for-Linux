@@ -147,8 +147,9 @@ def run_dsc():
 
     # print('Install DSC Modules ...')
     # module_names = ["nx_99.99.zip", "nxFileInventory_99.99.zip", "nxOMSAgentNPMConfig_99.99.zip", "nxOMSAuditdPlugin_99.99.zip", "nxOMSAutomationWorker_99.99.zip",
-    #                 "nxOMSContainers_99.99.zip", "nxOMSCustomLog_99.99.zip", "nxOMSGenerateInventoryMof_99.99.zip", "nxOMSKeyMgmt_99.99.zip", "nxOMSPerfCounter_99.99.zip",
-    #                 "nxOMSPlugin_99.99.zip", "nxOMSSudoCustomLog_99.99.zip", "nxOMSSyslog_99.99.zip", "nxOMSWLI_99.99.zip"]
+                    # "nxOMSContainers_99.99.zip", "nxOMSCustomLog_99.99.zip", "nxOMSGenerateInventoryMof_99.99.zip", "nxOMSKeyMgmt_99.99.zip", "nxOMSPerfCounter_99.99.zip",
+                    # "nxOMSPlugin_99.99.zip", "nxOMSSudoCustomLog_99.99.zip", "nxOMSSyslog_99.99.zip", "nxOMSWLI_99.99.zip"]
+    # module_names = ["nxOMSPlugin_3.46.zip"]
     # for module in module_names:
     #     if sys.version_info < (3,):
     #         cmd = 'sudo su - omsagent -c "python2 /opt/microsoft/omsconfig/Scripts/InstallModule.py /home/temp/omsfiles/modules/{0} 1"'.format(module)

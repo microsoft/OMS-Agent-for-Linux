@@ -11,6 +11,6 @@ RUN mkdir /home/temp \
     && subscription-manager attach --auto \
     && yum update -y \
     && yum upgrade -y \
-    && yum install -y sudo gcc git net-tools cronie openssl dos2unix wget httpd rsyslog python3 initscripts hostname
+    && yum install -y sudo gcc git net-tools cronie openssl dos2unix wget httpd rsyslog python3 initscripts hostname iproute
 
 ENTRYPOINT ["/usr/sbin/init"]

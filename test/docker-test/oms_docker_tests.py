@@ -15,6 +15,7 @@ Finish: compile HTML report and log file
 
 import argparse
 import atexit
+import enum
 import json
 import os
 import subprocess
@@ -30,6 +31,19 @@ from json2html import *
 from verify_e2e import check_e2e
 
 E2E_DELAY = 10 # Delay (minutes) before checking for data
+SUCCESS_TEMPLATE = "<td><span style='background-color: #66ff99'>{0}</span></td>"
+FAILURE_TEMPLATE = "<td><span style='background-color: red; color: white'>{0}</span></td>"
+
+class WorkspaceStatus(enum.Enum):
+    ONBOARDED = 1
+    NOT_ONBOARDED = 2
+    ERROR = 3
+
+class Color:
+    BOLD = '\033[1m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+
 images = ["ubuntu14", "ubuntu16", "ubuntu18", "ubuntu20py3", "debian8", "debian9", "debian10", "centos6", "centos7", "centos8py3", "oracle6", "oracle7", "redhat6", "redhat7", "redhat8py3"]
 # images = ["ubuntu14", "ubuntu16", "ubuntu18", "ubuntu20", "debian8", "debian9", "debian10", "centos6", "centos7", "centos8", "oracle6", "oracle7", "redhat6", "redhat7", "redhat8"]
 python3_images = ["ubuntu20py3", "redhat8py3", "centos8py3"]
@@ -90,7 +104,7 @@ def copy_append_remove(container, image, src, dest):
 
 def write_log_command(cmd, log):
     """Print cmd to stdout and append it to log file."""
-    print(cmd)
+    print(Color.BOLD + cmd + Color.ENDC)
     log.write(cmd + '\n')
     log.write('-' * 40)
     log.write('\n')
@@ -122,6 +136,20 @@ def get_versioned_python(image):
         return "python3"
     else:
         return "python2"
+
+def check_workspace_status(container):
+    """Check the onboarding status of the agent using omsadmin.sh."""
+    try:
+        out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
+    except subprocess.CalledProcessError as e:
+        return WorkspaceStatus.ERROR
+
+    if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', out).group(0) == workspace_id:
+        return WorkspaceStatus.ONBOARDED
+    elif out.rstrip() == "No Workspace":
+        return WorkspaceStatus.NOT_ONBOARDED
+    else:
+        return WorkspaceStatus.ERROR
 
 # TODO this should be elsewhere/def'd
 for image in images:
@@ -176,7 +204,8 @@ def main():
             status_msg = '\rStatus after {0} minutes ['.format(elapsed_time)
             for p in procs.items():
                 status.append(p[1].poll())
-                status_msg += ' {0}: {1},'.format(p[0], 'running' if status[-1] is None else status[-1])
+                status_code = 'running' if status[-1] is None else (Color.FAIL + status[-1] + Color.ENDC if status[-1] else 'done')
+                status_msg += ' {0}: {1},'.format(p[0], status_code)
             sys.stdout.write(status_msg[:-1] + ' ]')
             sys.stdout.flush()
             done = True if None not in status else False
@@ -192,9 +221,11 @@ def main():
             verify_msg = verify_data()
             instantupgrade_install_msg = upgrade_agent(oms_bundle)
             instantupgrade_verify_msg = verify_data()
+            deonboard_reonboard_msg = deonboard_reonboard()
         else:
             install_msg = install_agent(oms_bundle)
             verify_msg = verify_data()
+            deonboard_reonboard_msg = deonboard_reonboard()
             instantupgrade_install_msg, instantupgrade_verify_msg = None, None
 
         remove_msg = remove_agent()
@@ -215,7 +246,7 @@ def main():
         else:
             long_verify_msg, long_status_msg = None, None
         purge_delete_agent()
-        messages = (install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
+        messages = (install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, deonboard_reonboard_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg)
         create_report(messages)
 
 def install_agent(oms_bundle):
@@ -240,7 +271,7 @@ def install_agent(oms_bundle):
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -postinstall".format(container, get_versioned_python(image)))
         os.system("docker exec {0} {1} -u /home/temp/omsfiles/oms_run_script.py -status".format(container, get_versioned_python(image)))
         install_times.update({image: datetime.now()})
-        write_log_command("\n[{0}] Inject logs ...".format(image), log_file)
+        write_log_command("\n[{0}] Inject Logs ...".format(image), log_file)
         inject_logs(container, image)
         append_file(tmp_path, log_file)
         os.remove(tmp_path)
@@ -248,14 +279,13 @@ def install_agent(oms_bundle):
         html_file.write("<h2> Install OMS Agent {0} </h2>".format(version))
         copy_append_remove(container, image, 'omsresults.html', html_file)
         close_files(log_file, html_file, oms_file)
-        if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
-            x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
-            if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
-                message += """<td><span style='background-color: #66ff99'>Install Success</span></td>"""
-            elif x_out.rstrip() == "No Workspace":
-                message += """<td><span style='background-color: red; color: white'>Onboarding Failed</span></td>"""
+        status = check_workspace_status(container)
+        if status == WorkspaceStatus.ONBOARDED:
+            message += SUCCESS_TEMPLATE.format("Install Success")
+        elif status == WorkspaceStatus.NOT_ONBOARDED:
+            message += FAILURE_TEMPLATE.format("Onboarding Failed")
         else:
-            message += """<td><span style='background-color: red; color: white'>Install Failed</span></td>"""
+            message += FAILURE_TEMPLATE.format("Install Failed")
     return message
 
 def upgrade_agent(oms_bundle):
@@ -276,14 +306,13 @@ def upgrade_agent(oms_bundle):
         html_file.write("<h2> Upgrade OMS Agent {0} </h2>".format(version))
         copy_append_remove(container, image, 'omsresults.html', html_file)
         close_files(log_file, html_file, oms_file)
-        if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
-            x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
-            if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
-                message += """<td><span style='background-color: #66ff99'>Install Success</span></td>"""
-            elif x_out.rstrip() == "No Workspace":
-                message += """<td><span style='background-color: red; color: white'>Onboarding Failed</span></td>"""
+        status = check_workspace_status(container)
+        if status == WorkspaceStatus.ONBOARDED:
+            message += SUCCESS_TEMPLATE.format("Install Success")
+        elif status == WorkspaceStatus.NOT_ONBOARDED:
+            message += FAILURE_TEMPLATE.format("Onboarding Failed")
         else:
-            message += """<td><span style='background-color: red; color: white'>Install Failed</span></td>"""
+            message += FAILURE_TEMPLATE.format("Install Failed")
     return message
 
 def inject_logs(container, image):
@@ -301,7 +330,7 @@ def verify_data():
         write_log_command('\n[{0}] Verify E2E Data Results'.format(image), log_file)
         while datetime.now() < (install_times[image] + timedelta(minutes=E2E_DELAY)):
             mins, secs = get_time_diff(datetime.now(), install_times[image] + timedelta(minutes=E2E_DELAY))
-            sys.stdout.write('\rE2E propagation delay for {0}: {1} minutes {2} seconds...'.format(image, mins, secs))
+            sys.stdout.write('\rE2E propagation delay for {0}: {1} minutes {2} seconds ...'.format(image, mins, secs))
             sys.stdout.flush()
             sleep(1)
         print('')
@@ -322,12 +351,42 @@ def verify_data():
         # write to summary table
         from verify_e2e import success_count
         if success_count == 6:
-            message += """<td><span style='background-color: #66ff99'>Verify Success</td>"""
+            message += SUCCESS_TEMPLATE.format("Verify Success")
         elif 0 < success_count < 6:
             from verify_e2e import success_sources, failed_sources
             message += """<td><span style='background-color: #66ff99'>{0} Success</span> <br><br><span style='background-color: red; color: white'>{1} Failed</span></td>""".format(', '.join(success_sources), ', '.join(failed_sources))
         elif success_count == 0:
-            message += """<td><span style='background-color: red; color: white'>Verify Failed</span></td>"""
+            message += FAILURE_TEMPLATE.format("Verify Failed")
+    return message
+
+def deonboard_reonboard():
+    """De-onboard, then re-onboard the agent."""
+    message = ""
+    for image in images:
+        container, _, _, _, tmp_path, log_file, html_file, _ = setup_vars(image)
+        write_log_command('\n[{0}] De-onboard and Re-onboard OMS Agent ...'.format(image), log_file)
+        html_file.write("<h2> De-onboard and Re-onboard OMS Agent </h2>")
+        # set -o pipefail is needed to get the exit code in case the docker exec command fails; otherwise os.system returns the exit code of tee
+        try:
+            subprocess.check_output("set -o pipefail && docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -X | tee -a {1}".format(container, tmp_path), shell=True, executable='/bin/bash')
+            try:
+                subprocess.check_output("set -o pipefail && docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -w {1} -s {2} | tee -a {3}".format(container, workspace_id, workspace_key, tmp_path), shell=True, executable='/bin/bash')
+                message += SUCCESS_TEMPLATE.format("De-onboarding and Re-onboarding Success")
+            except subprocess.CalledProcessError as e:
+                message += FAILURE_TEMPLATE.format("De-onboarding Success; Re-onboarding Failure")
+        except subprocess.CalledProcessError as e:
+            message += FAILURE_TEMPLATE.format("De-onboarding Failure")
+
+        # if os.system('set -o pipefail && docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -X | tee -a {1}'.format(container, tmp_path)) == 0:
+        #     if os.system("set -o pipefail && docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -w {1} -s {2} | tee -a {3}".format(container, workspace_id, workspace_key, tmp_path)) == 0:
+        #         message += SUCCESS_TEMPLATE.format("De-onboarding and Re-onboarding Success")
+        #     else:
+        #         message += FAILURE_TEMPLATE.format("De-onboarding Success; Re-onboarding Failure")
+        # else:
+        #     message += FAILURE_TEMPLATE.format("De-onboarding Failure")
+        append_file(tmp_path, log_file)
+        os.remove(tmp_path)
+        close_files(log_file, html_file)
     return message
 
 def remove_agent():
@@ -346,14 +405,13 @@ def remove_agent():
         html_file.write("<h2> Remove OMS Agent </h2>")
         copy_append_remove(container, image, 'omsresults.html', html_file)
         close_files(log_file, html_file, oms_file)
-        if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
-            x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
-            if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
-                message += """<td><span style='background-color: red; color: white'>Remove Failed</span></td>"""
-            elif x_out.rstrip() == "No Workspace":
-                message += """<td><span style='background-color: red; color: white'>Onboarding Failed<span></td>"""
+        status = check_workspace_status(container)
+        if status == WorkspaceStatus.ONBOARDED:
+            message += FAILURE_TEMPLATE.format("Remove Failed")
+        elif status == WorkspaceStatus.NOT_ONBOARDED:
+            message += FAILURE_TEMPLATE.format("Onboarding Failed")
         else:
-            message += """<td><span style='background-color: #66ff99'>Remove Success</span></td>"""
+            message += SUCCESS_TEMPLATE.format("Remove Success")
     return message
 
 def reinstall_agent():
@@ -372,14 +430,13 @@ def reinstall_agent():
         html_file.write("<h2> Reinstall OMS Agent </h2>")
         copy_append_remove(container, image, 'omsresults.html', html_file)
         close_files(log_file, html_file, oms_file)
-        if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
-            x_out = subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True)
-            if re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x_out).group(0) == workspace_id:
-                message += """<td><span style='background-color: #66ff99'>Reinstall Success</span></td>"""
-            elif x_out.rstrip() == "No Workspace":
-                message += """<td><span style='background-color: red; color: white'>Onboarding Failed</span></td>"""
+        status = check_workspace_status(container)
+        if status == WorkspaceStatus.ONBOARDED:
+            message += SUCCESS_TEMPLATE.format("Reinstall Success")
+        elif status == WorkspaceStatus.NOT_ONBOARDED:
+            message += FAILURE_TEMPLATE.format("Onboarding Failed")
         else:
-            message += """<td><span style='background-color: red; color: white'>Reinstall Failed</span></td>"""
+            message += FAILURE_TEMPLATE.format("Reinstall Failed")
     return message
 
 def check_status():
@@ -394,17 +451,17 @@ def check_status():
         copy_append_remove(container, image, 'omsresults.html', html_file)
         close_files(log_file, html_file, oms_file)
         if os.system('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container)) == 0:
-            x_out = str(subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True))
-            if 'Onboarded' in x_out:
-                message += """<td><span style='background-color: #66ff99'>Agent Running</span></td>"""
-            elif 'Warning' in x_out:
-                message += """<td><span style='background-color: red; color: white'>Agent Registered, Not Running</span></td>"""
-            elif 'Saved' in x_out:
-                message += """<td><span style='background-color: red; color: white'>Agent Not Running, Not Registered</span></td>"""
-            elif 'Failure' in x_out:
-                message += """<td><span style='background-color: red; color: white'>Agent Not Running, Not Onboarded</span></td>"""
+            out = str(subprocess.check_output('docker exec {0} /opt/microsoft/omsagent/bin/omsadmin.sh -l'.format(container), shell=True))
+            if 'Onboarded' in out:
+                message += SUCCESS_TEMPLATE.format("Agent Running")
+            elif 'Warning' in out:
+                message += FAILURE_TEMPLATE.format("Agent Registered, Not Running")
+            elif 'Saved' in out:
+                message += FAILURE_TEMPLATE.format("Agent Not Running, Not Registered")
+            elif 'Failure' in out:
+                message += FAILURE_TEMPLATE.format("Agent Not Running, Not Onboarded")
         else:
-            message += """<td><span style='background-color: red; color: white'>Agent Not Installed</span></td>"""
+            message += FAILURE_TEMPLATE.format("Agent Not Installed")
     return message
 
 def purge_delete_agent():
@@ -424,7 +481,7 @@ def purge_delete_agent():
 
 def create_report(messages):
     """Compile the final HTML report."""
-    install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg = messages
+    install_msg, verify_msg, instantupgrade_install_msg, instantupgrade_verify_msg, deonboard_reonboard_msg, remove_msg, reinstall_msg, long_verify_msg, long_status_msg = messages
 
     # summary table
     imagesth = ""
@@ -482,20 +539,24 @@ def create_report(messages):
       </tr>
       {3}
       <tr>
-        <td>Remove OMSAgent</td>
+        <td>Deonboard and Reonboard OMSAgent</td>
         {4}
       </tr>
       <tr>
-        <td>Reinstall OMSAgent</td>
+        <td>Remove OMSAgent</td>
         {5}
       </tr>
-      {6}
+      <tr>
+        <td>Reinstall OMSAgent</td>
+        {6}
+      </tr>
+      {7}
       <tr>
         <td>Result Link</td>
-        {7}
+        {8}
       <tr>
     </table>
-    """.format(imagesth, install_msg, verify_msg, instantupgrade_summary, remove_msg, reinstall_msg, long_running_summary, resultsth)
+    """.format(imagesth, install_msg, verify_msg, instantupgrade_summary, deonboard_reonboard_msg, remove_msg, reinstall_msg, long_running_summary, resultsth)
     result_html_file.write(statustable)
 
     # Create final html & log file
