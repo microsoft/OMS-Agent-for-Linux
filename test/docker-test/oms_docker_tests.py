@@ -6,10 +6,11 @@ Test:
 1. Create container and install agent
 2. Wait for data to propagate to backend and check for data
 ?. Repeat steps 1 and 2 with newer agent
-3. Remove agent
-4. Reinstall agent
+4. De-onboard and re-onboard agent
+5. Remove agent
+6. Reinstall agent
 ?. Optionally, wait for hours and check data and agent status
-5. Purge agent and delete container
+7. Purge agent and delete container
 Finish: compile HTML report and log file
 """
 
