@@ -56,7 +56,7 @@ The Log Analytics agent for Linux is built to work with Azure Monitor logs, whic
 
 If you are using a distro or version that is not currently supported and doesn't fit our future support strategy, we recommend that you fork this repo, acknowledging that Microsoft support will not provide assistance with for forked agent versions.
 
-### [Python Requrements](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/log-analytics-agent#python-2-requirement)
+### [Python Requrements](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/agent-linux#python-2-requirement)
 
 ### 64-bit
 * CentOS 6 and 7
