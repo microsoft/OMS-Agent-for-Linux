@@ -1,5 +1,6 @@
-<data>
-  <audits BaselineId="OMS.Docker.Linux.1" BaseOrigId="1">
+<baseline BaselineId="OMS.Docker.Linux.1" BaseOrigId="1">
+  <!-- Each new <audits> section should contain a `docker|running` dependency  -->
+  <audits>
      <dependency type="ServiceStatus">docker|running</dependency>
      <audit
       description="Docker inventory Information"
@@ -11,20 +12,50 @@
       ruleId="bbf2c5e3-4ed6-4975-b900-64848efa8af4">
       <check distro="*" command="CheckDockerInfo"/>
     </audit>
+    <audit
+      description="Ensure a separate partition for containers has been created"
+      msid="1.01"
+      cceid="CIS-CE-1-01"
+      severity="Warning"
+      impact="Docker depends on `/var/lib/docker` as the default directory where all Docker related files, including the images, are stored. This directory might fill up fast and soon Docker and the host could become unusable. So, it is advisable to create a separate partition (logical volume) for storing Docker files."
+      remediation="For new installations, create a separate partition for `/var/lib/docker` mount point. For systems that were previously installed, use the Logical Volume Manager (LVM) to create partitions."
+      ruleId="7315f615-566c-4f93-b6d2-ee29c5549581">
+	  <check distro="*" command="CheckMatchingLines" path="/proc/mounts" regex="^\S+\s+\/var\/lib\/docker(?:\/|\s+)" />
+    </audit>
+    <audit
+      description="Ensure the container host has been hardened (Not Scored)"
+      msid="1.02"
+      cceid="CIS-CE-1-02"
+      severity="NotApplicable"
+      impact="You should follow infrastructure security best practices and harden your host OS. Keeping the host system hardened ensures that the host vulnerabilities are mitigated. Not hardening the host system could lead to security exposures and breaches."
+      remediation="You may consider various CIS Security Benchmarks for your container host. If you have other security guidelines or regulatory requirements to adhere to, follow them as suitable in your environment. Additionally, you can run a kernel with grsecurity and PaX. This would add many safety checks, both at compile-time and run-time. It is also designed to defeat many exploits and has powerful security features. These features do not require Docker-specific configuration, since those security features apply system-wide, independent of containers."
+      ruleId="ea077e13-39de-4ba6-b05a-181ebf8c0a86">
+	  <check distro="*" command="CheckAlwaysPass" justification="To obtain Container Host configuration status, refer to Azure Security Center recommendation for 'Vulnerabilities in security configuration on your machines should be remediated'"/>
+    </audit>>
      <audit
       description="Ensure docker version is up-to-date"
-      msid="1.3"
-      cceid="CIS-CE-1-3"
+      msid="1.03"
+      cceid="CIS-CE-1-03"
       severity="Critical"
       impact="Using up-to-date docker version will keep your host secure"
-      remediation="Follow the docker documentation in aim to upgrade your version"
+      remediation="To upgrade your version of Docker, follow Docker's documentation"
       ruleId="23d52f96-7ba6-45ef-8fa4-0251805d4896">
-      <check distro="*" command="CheckDockerVersionGreaterThan" version="17.12.0/17.03.2" />
+      <check distro="*" command="CheckDockerVersionAtLeast" version="18.09.2/18.09.2" />
+    </audit>
+    <audit
+      description="Ensure only trusted users are allowed to control Docker daemon"
+      msid="1.04"
+      cceid="CIS-CE-1-04"
+      severity="NotApplicable"
+      impact="Docker allows you to share a directory between the Docker host and a guest container without limiting the access rights of the container. This means that you can start a container and map the / directory on your host to the container. The container will then be able to alter your host file system without any restrictions. In more simple terms, this means that just by being a member of the Docker group, you can attain elevated privileges and start a container with a mapped / directory on the host."
+      remediation="Remove any untrusted users from the 'docker' group. Additionally, do not create a mapping of sensitive directories on your host to container volumes."
+      ruleId="f8e09e4c-9d86-43d1-9bd4-743f314d5fe0">
+      <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for authorizing the trusted users allowed to control Docker daemon" />
     </audit>
     <audit
       description="Ensure auditing is configured for the docker daemon"
-      msid="1.5"
-      cceid="CIS-CE-1-5"
+      msid="1.05"
+      cceid="CIS-CE-1-05"
       severity="Warning"
       impact="Apart from auditing your regular Linux file system and system calls, audit Docker daemon as well. Docker daemon runs with root privileges. It is thus necessary to audit its activities and usage."
       remediation="Add the line '-w /usr/bin/docker -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
@@ -33,8 +64,8 @@
     </audit>
     <audit
       description="Ensure auditing is configured for Docker files and directories - /var/lib/docker"
-      msid="1.6"
-      cceid="CIS-CE-1-6"
+      msid="1.06"
+      cceid="CIS-CE-1-06"
       severity="Warning"
       impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /var/lib/docker is one such directory. It holds all the information about containers. It must be audited."
       remediation="Add the line '-w /var/lib/docker -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
@@ -43,8 +74,8 @@
     </audit>
     <audit
       description="Ensure auditing is configured for Docker files and directories - /etc/docker"
-      msid="1.7"
-      cceid="CIS-CE-1-7"
+      msid="1.07"
+      cceid="CIS-CE-1-07"
       severity="Warning"
       impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. /etc/docker is one such directory. It holds various certificates and keys used for TLS communication between Docker daemon and Docker client. It must be audited."
       remediation="Add the line '-w /etc/docker -k docker' into the /etc/audit/audit.rules file. Then, restart the audit daemon by running the command: 'service auditd restart'"
@@ -53,8 +84,8 @@
     </audit>
     <audit
       description="Ensure auditing is configured for Docker files and directories - docker.service"
-      msid="1.8"
-      cceid="CIS-CE-1-8"
+      msid="1.08"
+      cceid="CIS-CE-1-08"
       severity="Warning"
       impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. docker.service is one such file. The docker.service file might be present if the daemon parameters have been changed by an administrator. It holds various parameters for Docker daemon. It must be audited, if applicable."
       remediation="Find out the 'docker.service' file location by running: 'systemctl show -p FragmentPath docker.service' and add the line '-w {docker.service file location} -k docker' into the /etc/audit/audit.rules file where {docker.service file location} is the file path you have found earlier. Restart the audit daemon by running the command: 'service auditd restart'"
@@ -65,8 +96,8 @@
     </audit>
     <audit
       description="Ensure auditing is configured for Docker files and directories - docker.socket"
-      msid="1.9"
-      cceid="CIS-CE-1-9"  
+      msid="1.09"
+      cceid="CIS-CE-1-09"  
       severity="Warning"
       impact="Apart from auditing your regular Linux file system and system calls, audit all Docker related files and directories. Docker daemon runs with root privileges. Its behavior depends on some key files and directories. docker.socket is one such file. It holds various parameters for Docker daemon socket. It must be audited, if applicable."
       remediation="Find out the 'docker.socket' file location by running: 'systemctl show -p FragmentPath docker.socket' and add the line '-w {docker.socket file location} -k docker' into the /etc/audit/audit.rules file where {docker.socket file location} is the file path you have found earlier. Restart the audit daemon by running the command: 'service auditd restart'"
@@ -117,20 +148,30 @@
       ruleId="7b2cdabf-f4c3-4e69-9af9-b65c3e2edae9">
       <check distro="*" command="CheckMatchingLinesInAuditDRules" filter= "" regex="^[-]w\s+(\/usr\/bin\/docker-runc|\/usr\/bin\/|\/usr\/)\s"/>
     </audit>
-     <audit
-      description="Ensure network traffic is restricted between containers on the default bridge"
-      msid="2.1"
-      cceid="CIS-CE-2-1"
+    <audit
+      description="Ensure the logging level is set to 'info'."
+      msid="2.02"
+      cceid="CIS-CE-2-02"
       severity="Critical"
-      impact="The inter-container communication would be disabled on the default network bridge. If any communication between containers on the same host is desired, then it needs to be explicitly defined using container linking or alternatively custom networks have to be defined."
-      remediation="Run the docker in daemon mode and pass --icc=false as an argument or set the 'icc' setting to false in the daemon.json file. Alternatively, you can follow the Docker documentation and create a custom network and only join containers that need to communicate to that custom network. The --icc parameter only applies to the default docker bridge, if custom networks are used then the approach of segmenting networks should be adopted instead."
-      ruleId="f30a6a51-9f47-4d3b-819d-7edf7fb53eb4">
-      <check distro="*" command="CheckNoMatchingLinesDockerNetworkInspect" filter="icc" regex="true" />
+      impact="Setting up an appropriate log level, configures the Docker daemon to log events that you would want to review later. A base log level of `info` and above would capture all logs except debug logs. Until and unless required, you should not run Docker daemon at `debug` log level."
+      remediation="Run the Docker daemon as below: ``` dockerd --log-level info"
+      ruleId="4e49e791-da11-423d-af64-cad1643a9696">
+      <check distro="*" command="CheckDockerdFlagSet" key="log-level" value="info" type="string"/>
+    </audit>
+    <audit
+      description="Ensure Docker is allowed to make changes to iptables"
+      msid="2.03"
+      cceid="CIS-CE-2-03"
+      severity="Critical"
+      impact="Docker will never make changes to your system `iptables ` rules if you choose to do so. Docker server would automatically make the needed changes to iptables based on how you choose your networking options for the containers if it is allowed to do so. It is recommended to let Docker server make changes to `iptables `automatically to avoid networking misconfiguration that might hamper the communication between containers and to the outside world. Additionally, it would save you hassles of updating `iptables `every time you choose to run the containers or modify networking options."
+      remediation="Do not run the Docker daemon with `--iptables=false` parameter. For example, do not start the Docker daemon as below: ``` dockerd --iptables=false ```"
+      ruleId="ca78b91c-9d23-4772-a40e-26730ded5cc3">
+      <check distro="*" command="CheckDockerdFlagNotSet" key="iptables" value="false" type="bool" />
     </audit>
     <audit
       description="Ensure insecure registries are not used"
-      msid="2.4"
-      cceid="CIS-CE-2-4"
+      msid="2.04"
+      cceid="CIS-CE-2-04"
       severity="Critical"
       impact="You should not be using any insecure registries in the production environment. Insecure registries can be tampered with leading to possible compromise to your production system."
       remediation="remove '--insecure-registry' flag from the dockerd start command"
@@ -139,8 +180,8 @@
     </audit>
     <audit
       description="The 'aufs' storage driver should not be used by the docker daemon"
-      msid="2.5"
-      cceid="CIS-CE-2-5"
+      msid="2.05"
+      cceid="CIS-CE-2-05"
       severity="Critical"
       impact="The 'aufs' storage driver is the oldest storage driver. It is based on a Linux kernel patch-set that is unlikely to be merged into the main Linux kernel. aufs driver is also known to cause some serious kernel crashes. aufs just has legacy support from Docker. Most importantly, aufs is not a supported driver in many Linux distributions using latest Linux kernels"
       remediation="The 'aufs' storage driver should be replaced by a different storage driver, we recommend to use 'overlay2'"
@@ -148,14 +189,34 @@
       <check distro="*" command="CheckNoMatchingLinesDockerInfo" filter="" regex="^Storage Driver:\s*aufs\s*$" />
     </audit>
     <audit
-      description="Ensure the default ulimit is configured appropriately"
-      msid="2.7"
-      cceid="CIS-CE-2-7"
+      description="Ensure TLS authentication for Docker daemon is configured"
+      msid="2.06"
+      cceid="CIS-CE-2-06"
+      severity="Critical"
+      impact="By default, Docker daemon binds to a non-networked Unix socket and runs with `root` privileges. If you change the default docker daemon binding to a TCP port or any other Unix socket, anyone with access to that port or socket can have full access to Docker daemon and in turn to the host system. Hence, you should not bind the Docker daemon to another IP/port or a Unix socket. If you must expose the Docker daemon via a network socket, configure TLS authentication for the daemon and Docker Swarm APIs (if using). This would restrict the connections to your Docker daemon over the network to a limited number of clients who could successfully authenticate over TLS."
+      remediation="Follow the steps mentioned in the Docker documentation or other references."
+      ruleId="4727b75b-6adb-45e2-8136-66e08d81503e">
+      <check distro="*" command="CheckDockerTLSFlagsSet"/>
+    </audit>
+    <audit
+      description="Enable user namespace support"
+      msid="2.08"
+      cceid="CIS-CE-2-08"
       severity="Warning"
-      impact="If the ulimits are not set properly, the desired resource control might not be achieved and might even make the system unusable."
-      remediation="Run the docker in daemon mode and pass --default-ulimit as argument with respective ulimits as appropriate in your environment. Alternatively, you can also set a specific resource limitation to each container separately by using the --ulimit argument with respective ulimits as appropriate in your environment."
-      ruleId="783e2e24-d659-4292-ae88-6cecc861ac3f">
-      <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" filter="Ulimits" regex="null" />
+      impact="The Linux kernel user namespace support in Docker daemon provides additional security for the Docker host system. It allows a container to have a unique range of user and group IDs which are outside the traditional user and group range utilized by the host system. For example, the root user will have expected administrative privilege inside the container but can effectively be mapped to an unprivileged UID on the host system."
+      remediation="Please consult Docker documentation for various ways in which this can be configured depending upon your requirements. Your steps might also vary based on platform - For example, on Red Hat, sub-UIDs and sub-GIDs mapping creation does not work automatically. You might have to create your own mapping. However, the high-level steps are as below: **Step 1:** Ensure that the files `/etc/subuid` and `/etc/subgid` exist. ``` touch /etc/subuid /etc/subgid ``` **Step 2:** Start the docker daemon with `--userns-remap` flag ``` dockerd --userns-remap=default ```"
+      ruleId="f17e0bd8-455c-4bf3-b036-c58daa770a03">
+      <check distro="*" command="CheckDockerdFlagSet" key="userns-remap" regex=".*" type="string" />
+    </audit>
+    <audit
+      description="Ensure the default cgroup usage has been confirmed"
+      msid="2.09"
+      cceid="CIS-CE-2-09"
+      severity="NotApplicable"
+      impact="System administrators typically define cgroups under which containers are supposed to run. Even if cgroups are not explicitly defined by the system administrators, containers run under docker cgroup by default. It is possible to attach to a cgroup that is not the default. This usage should be monitored and confirmed. By attaching to a cgroup that is not the default, it is possible to share resources unevenly and thus might starve the host for resources."
+      remediation="The default setting is good enough and can be left as-is. If you want to specifically set a non-default cgroup, pass --cgroup-parent parameter to the docker daemon when starting it."
+      ruleId="f74c21d3-070b-48da-8f68-60fd8ef0ab67">
+      <check distro="*" command="CheckAlwaysPass" justification="If the default setting is not used, it's the customer's responsibility to configure and measure an appropriate cgroup" />
     </audit>
     <audit
       description="Ensure base device size is not changed until needed"
@@ -166,17 +227,857 @@
       remediation="remove '--storage-opt dm.basesize' flag from the dockerd start command until you need it"
       ruleId="9cdefd3a-f2ea-4cd5-a807-30d2551eb45f">
       <check distro="*" command="CheckNoMatchingLinesPSCommand" filter="dockerd" regex="--storage-opt dm.basesize" />
-    </audit>    
-    <audit
-      description="Ensure a user for the container has been created"
-      msid="4.1"
-      cceid="CIS-CE-4-1"
-      severity="Warning"
-      impact="It is a good practice to run the container as a non-root user, if possible. Though user namespace mapping is now available, if a user is already defined in the container image, the container is run as that user by default and specific user namespace remapping is not required."
-      remediation="Ensure that the Dockerfile for the container image contains: 'USER {username or ID}' where username or ID refers to the user that could be found in the container base image. If there is no specific user created in the container base image, then add a useradd command to add the specific user before USER instruction."
-      ruleId="344e58e2-95d7-4c37-981c-c246be90ce8d">
-      <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" filter='"User"' regex='"0"|"root"|""' />
     </audit>
-  </audits>
-</data>
+    <audit
+      description="Ensure that authorization for Docker client commands is enabled"
+      msid="2.11"
+      cceid="CIS-CE-2-11"
+      severity="Optional"
+      impact="Docker’s out-of-the-box authorization model is all or nothing. Any user with permission to access the Docker daemon can run any Docker client command. The same is true for callers using Docker’s remote API to contact the daemon. If you require greater access control, you can create authorization plugins and add them to your Docker daemon configuration. Using an authorization plugin, a Docker administrator can configure granular access policies for managing access to Docker daemon. Third party integrations of Docker may implement their own authorization models to require authorization with the Docker daemon outside of docker's native authorization plugin (i.e. Kubernetes, Cloud Foundry, Openshift)."
+      remediation="**Step 1**: Install/Create an authorization plugin. **Step 2**: Configure the authorization policy as desired. **Step 3**: Start the docker daemon as below: ``` dockerd --authorization-plugin= ```"
+      ruleId="d0c0cce6-a750-4eb6-999b-b07a6e788393">
+      <check distro="*" command="CheckDockerdFlagSet" type="string"  key="authorization-plugin" regex="\S+" />
+    </audit>
+    <audit
+      description="Ensure centralized and remote logging is configured"
+      msid="2.12"
+      cceid="CIS-CE-2-12"
+      severity="Critical"
+      impact="Centralized and remote logging ensures that all important log records are safe despite catastrophic events. Docker now supports various such logging drivers. Use the one that suits your environment the best."
+      remediation="**Step 1**: Setup the desired log driver by following its documentation. **Step 2**: Start the docker daemon with that logging driver. For example, ``` dockerd --log-driver=syslog --log-opt syslog-address=tcp://192.xxx.xxx.xxx ```"
+      ruleId="ec48ba0c-076c-465f-b4b8-80fac3fd36b0">
+      <check distro="*" command="CheckNoMatchingLinesDockerInfo" regex="Logging\sDriver:\s*json-file\s*$" />
+    </audit>
+    <audit
+      description="Ensure operations on legacy registry (v1) are Disabled"
+      msid="2.13"
+      cceid="CIS-CE-2-13"
+      severity="NotApplicable"
+      impact="Docker registry v2 brings many performance and security improvements over v1. It supports container image provenance and other security features such as image signing and verification. Hence, operations on Docker legacy registry should be restricted."
+      remediation="Start the docker daemon with the following flag: '--disable-legacy-registry'"
+      ruleId="d2950dba-ef68-4960-b574-e0149a48fce4">
+      <check distro="*" command="CheckAlwaysPass" justification="This command was deprecated beginning with Docker v1.13, and is no longer supported by Azure" />
+    </audit>
+    <audit
+      description="Ensure live restore is Enabled"
+      msid="2.14"
+      cceid="CIS-CE-2-14"
+      severity="Critical"
+      impact="A core component of data security is availability. Setting `--live-restore` flag in the docker daemon ensures that container execution is not interrupted when the docker daemon is not available. This also means that it is now easier to update and patch the docker daemon without execution downtime."
+      remediation="Run the docker in daemon mode and pass `--live-restore` as an argument. For Example, ``` dockerd --live-restore ```"
+      ruleId="e7cd8630-1b95-40f7-806f-fd74a6ce21f0">
+      <check distro="*" command="CheckDockerdFlagSet" key="live-restore" value="true" type="bool">
+      <dependency type="DockerSwarm">false</dependency>
+    </check>
+    </audit>
+    <audit
+      description="Ensure Userland Proxy is Disabled"
+      msid="2.15"
+      cceid="CIS-CE-2-15"
+      severity="Warning"
+      impact="Docker engine provides two mechanisms for forwarding ports from the host to containers, hairpin NAT, and a userland proxy. In most circumstances, the hairpin NAT mode is preferred as it improves performance and makes use of native Linux iptables functionality instead of an additional component. Where hairpin NAT is available, the userland proxy should be disabled on startup to reduce the attack surface of the installation."
+      remediation="Run the Docker daemon as follow: 'dockerd --userland-proxy=false'"
+      ruleId="cd105263-ff1d-44b9-a32e-3b273e09cc1b">
+      <check distro="*" command="CheckDockerdFlagSet" key="userland-proxy" value="false" type="bool" />
+    </audit>
+    <audit
+      description="Ensure daemon-wide custom seccomp profile is applied, if needed (Not Scored)"
+      msid="2.16"
+      cceid="CIS-CE-2-16"
+      severity="NotApplicable"
+      impact="A large number of system calls are exposed to every userland process, and many of them remain unused for the entire lifetime of the process. Most applications benefit from a reduced set of system calls. The reduced set of system calls also reduces the total kernel surface exposed to the application and thus improvises application security. You can choose to apply your own custom seccomp profile instead of Docker's default seccomp profile. Alternatively, if Docker's default profile is good for your environment, you can choose to ignore this recommendation."
+      remediation="By default, Docker's seccomp profile is applied. If this is good for your environment, no action is necessary. Alternatively, to apply your own seccomp profile, use the --seccomp-profile flag at daemon start or put it in the daemon runtime parameters file."
+      ruleId="a874672d-ee68-469b-a33d-4ac5467b7d2b">
+      <check distro="*" command="CheckAlwaysPass" justification="If the custom seccomp profile is applied, it's the customer's responsibility to configure and measure the setting" />
+    </audit>
+    <audit
+      description="Ensure experimental features are avoided in production"
+      msid="2.17"
+      cceid="CIS-CE-2-17"
+      severity="Optional"
+      impact="Experimental is now a runtime docker daemon flag instead of a separate build. Passing `--experimental` as a runtime flag to the docker daemon, activates experimental features. Experimental is now considered a stable release, but with a couple of features which might not have tested and guaranteed API stability."
+      remediation="Do not pass `--experimental` as a runtime parameter to the docker daemon."
+      ruleId="c5d4cfbf-73cf-44a5-9d27-9935726c311a">
+      <check distro="*" command="CheckDockerdFlagNotSet" key="experimental" value="true" type="bool" />
+    </audit>
+    <audit
+      description="Ensure containers are restricted from acquiring new privileges."
+      msid="2.18"
+      cceid="CIS-CE-2-18"
+      severity="Critical"
+      impact="A process can set the `no_new_priv` bit in the kernel. It persists across fork, clone and execve. The `no_new_priv` bit ensures that the process or its children processes do not gain any additional privileges via suid or sgid bits. This way a lot of dangerous operations become a lot less dangerous because there is no possibility of subverting privileged binaries. Setting this at the daemon level ensures that by default all new containers are restricted from acquiring new privileges."
+      remediation="Run the Docker daemon as below: ``` dockerd --no-new-privileges ```"
+      ruleId="ccdbd31c-cfd6-41d2-83ad-1ed982462cbf">
+      <check distro="*" command="CheckDockerdFlagSet" key="no-new-privileges" type="bool" value="true"/>
+    </audit>
+    <audit
+      description="Ensure that docker.service file ownership is set to root:root."
+      msid="3.01"
+      cceid="CIS-CE-3-01"
+      severity="Critical"
+      impact="`docker.service` file contains sensitive parameters that may alter the behavior of Docker daemon. Hence, it should be owned and group-owned by `root` to maintain the integrity of the file."
+      remediation="**Step 1**: Find out the file location: ``` systemctl show -p FragmentPath docker.service ``` **Step 2**: If the file does not exist, this recommendation is not applicable. If the file exists, execute the below command with the correct file path to set the ownership and group ownership for the file to `root`. For example, ``` chown root:root /usr/lib/systemd/system/docker.service ```"
+      ruleId="fc2db464-53d6-4978-8b6c-417b02c1e87e">
+      <check distro="*" command="CheckUnitFileStats" path="docker.service" owner="root" group="root">
+      <dependency type="SystemDUnitExists">docker.service</dependency>
+      </check>
+    </audit> 
+    <audit
+      description="Ensure that docker .service file permissions are set to 644 or more restrictive"
+      msid="3.02"
+      cceid="CIS-CE-3-02"
+      severity="Critical"
+      impact="`docker.service` file contains sensitive parameters that may alter the behavior of Docker daemon. Hence, it should not be writable by any other user other than `root` to maintain the integrity of the file."
+      remediation="**Step 1**: Find out the file location: ``` systemctl show -p FragmentPath docker.service ``` **Step 2**: If the file does not exist, this recommendation is not applicable. If the file exists, execute the below command with the correct file path to set the file permissions to `644`. For example, ``` chmod 644 /usr/lib/systemd/system/docker.service ```"
+      ruleId="0c3fe131-c050-463a-a18f-672b5fbff86f">
+      <check distro="*" command="CheckUnitFileStats" path="docker.service" mode-mask="644" allow-stricter="true">
+      <dependency type="SystemDUnitExists">docker.service</dependency>
+      </check>
+    </audit>
+    <audit
+      description="Ensure that docker.socket file ownership is set to root:root."
+      msid="3.03"
+      cceid="CIS-CE-3-03"
+      severity="Critical"
+      impact="`docker.socket` file contains sensitive parameters that may alter the behavior of Docker remote API. Hence, it should be owned and group-owned by `root` to maintain the integrity of the file."
+      remediation="**Step 1**: Find out the file location: ``` systemctl show -p FragmentPath docker.socket ``` **Step 2**: If the file does not exist, this recommendation is not applicable. If the file exists, execute the below command with the correct file path to set the ownership and group ownership for the file to `root`. For example, ``` chown root:root /usr/lib/systemd/system/docker.socket ```"
+      ruleId="9f22ba94-a517-49c4-b04e-0868de8ee51a">
+      <check distro="*" command="CheckUnitFileStats" path="docker.socket" owner="root" group="root">
+      <dependency type="SystemDUnitExists">docker.service</dependency>
+      </check>
+    </audit>  
+    <audit
+      description="Ensure that docker.socket file permissions are set to 644 or more restrictive"
+      msid="3.04"
+      cceid="CIS-CE-3-04"
+      severity="Critical"
+      impact="`docker.socket` file contains sensitive parameters that may alter the behavior of Docker daemon. Hence, it should not be writable by any other user other than `root` to maintain the integrity of the file."
+      remediation="**Step 1**: Find out the file location: ``` systemctl show -p FragmentPath docker.socket ``` **Step 2**: If the file does not exist, this recommendation is not applicable. If the file exists, execute the below command with the correct file path to set the file permissions to `644`. For example, ``` chmod 644 /usr/lib/systemd/system/docker.service ```"
+      ruleId="d57a531b-2853-4543-bcc8-bb1d241c4493">
+      <check distro="*" command="CheckUnitFileStats" path="docker.socket" mode-mask="644" allow-stricter="true">
+      <dependency type="SystemDUnitExists">docker.service</dependency>
+      </check>
+    </audit>
+    <audit
+      description="Ensure that /etc/docker directory ownership is set to root:root."
+      msid="3.05"
+      cceid="CIS-CE-3-05"
+      severity="Critical"
+      impact="`/etc/docker` directory contains certificates and keys in addition to various sensitive files. Hence, it should be owned and group-owned by `root` to maintain the integrity of the directory."
+      remediation="``` chown root:root /etc/docker ``` This would set the ownership and group-ownership for the directory to `root`."
+      ruleId="0692d26a-851e-4967-aad6-2b034ed23135">
+      <check distro="*" command="CheckFileStats" path="/etc/docker" owner="root" group="root"/> 
+    </audit>
+    <audit
+      description="Ensure that /etc/docker directory permissions are set to 755 or more restrictive"
+      msid="3.06"
+      cceid="CIS-CE-3-06"
+      severity="Critical"
+      impact="`/etc/docker` directory contains certificates and keys in addition to various sensitive files. Hence, it should only be writable by `root` to maintain the integrity of the directory."
+      remediation="``` chmod 755 /etc/docker ``` This would set the permissions for the directory to `755`."
+      ruleId="7f7df0f7-6968-4173-9c11-da000b10b52d">
+      <check distro="*" command="CheckFileStats" path="/etc/docker" mode-mask="755" allow-stricter="true"/>
+    </audit>
+    <audit
+      description="Ensure that registry certificate file ownership is set to root:root"
+      msid="3.07"
+      cceid="CIS-CE-3-07"
+      severity="Critical"
+      impact="`/etc/docker/certs.d/` directory contains Docker registry certificates. These certificate files must be owned and group-owned by `root` to maintain the integrity of the certificates."
+      remediation="``` chown root:root /etc/docker/certs.d//* ``` This would set the ownership and group-ownership for the registry certificate files to `root`."
+      ruleId="aea37eac-5339-4b2d-b04e-e792b4c4154f">
+      <check distro="*" command="CheckDirStats" path="/etc/docker/certs.d/" owner="root" group="root"/>
+    </audit>
+    <audit
+      description="Ensure that registry certificate file permissions are set to 444 or more restrictive"
+      msid="3.08"
+      cceid="CIS-CE-3-08"
+      severity="Critical"
+      impact="`/etc/docker/certs.d/` directory contains Docker registry certificates. These certificate files must have permissions of `444` to maintain the integrity of the certificates."
+      remediation="``` chmod 444 /etc/docker/certs.d//* ``` This would set the permissions for registry certificate files to `444`."
+      ruleId="a975323b-2b8c-4642-a666-df3a94fffcc6">
+      <check distro="*" command="CheckDirStats" path="/etc/docker/certs.d/" mode-mask="7444" allow-stricter="true"/>
+    </audit>
+    <audit
+      description="Ensure that TLS CA certificate file ownership is set to root:root"
+      msid="3.09"
+      cceid="CIS-CE-3-09"
+      severity="Critical"
+      impact="The TLS CA certificate file should be protected from any tampering. It is used to authenticate Docker server based on given CA certificate. Hence, it must be owned and group-owned by `root` to maintain the integrity of the CA certificate."
+      remediation="``` chown root:root  ``` This would set the ownership and group-ownership for the TLS CA certificate file to `root`."
+      ruleId="996599f0-9b0a-4213-83f0-14c03228308e">
+      <check distro="*" command="CheckDockerTLSFileStats" key="tlscacert" owner="root" group="root"/>
+    </audit>
+    <audit
+      description="Ensure that TLS CA certificate file permissions are set to 444 or more restrictive"
+      msid="3.10"
+      cceid="CIS-CE-3-10"
+      severity="Critical"
+      impact="The TLS CA certificate file should be protected from any tampering. It is used to authenticate Docker server based on given CA certificate. Hence, it must have permissions of `444` to maintain the integrity of the CA certificate."
+      remediation="``` chmod 444 ``` This would set the file permissions of the TLS CA file to `444`."
+      ruleId="75fb9d46-1350-4468-b8a0-4ac5643dcbea">
+      <check distro="*" command="CheckDockerTLSFileStats" key="tlscacert" mode-mask="444" allow-stricter="true"/>
+    </audit>
+    <audit
+      description="Ensure that Docker server certificate file ownership is set to root:root"
+      msid="3.11"
+      cceid="CIS-CE-3-11"
+      severity="Critical"
+      impact="The Docker server certificate file should be protected from any tampering. It is used to authenticate Docker server based on the given server certificate. Hence, it must be owned and group-owned by `root` to maintain the integrity of the certificate."
+      remediation="``` chown root:root  ``` This would set the ownership and group-ownership for the Docker server certificate file to `root`."
+      ruleId="94cb349e-2cc3-4166-b564-54aacdf4bcd4">
+      <check distro="*" command="CheckDockerTLSFileStats" key="tlscert" owner="root" group="root"/>
+    </audit>
+    <audit
+      description="Ensure that Docker server certificate file permissions are set to 444 or more restrictive"
+      msid="3.12"
+      cceid="CIS-CE-3-12"
+      severity="Critical"
+      impact="The Docker server certificate file should be protected from any tampering. It is used to authenticate Docker server based on the given server certificate. Hence, it must have permissions of `444` to maintain the integrity of the certificate."
+      remediation="``` chmod 444  ``` This would set the file permissions of the Docker server file to `444`."
+      ruleId="a938bf93-7b14-4d9a-b98b-27f4eedf48c7">
+      <check distro="*" command="CheckDockerTLSFileStats" key="tlscert" mode-mask="444" allow-stricter="true"/>
+    </audit>
+    <audit
+      description="Ensure that Docker server certificate key file ownership is set to root:root"
+      msid="3.13"
+      cceid="CIS-CE-3-13"
+      severity="Critical"
+      impact="The Docker server certificate key file should be protected from any tampering or unneeded reads. It holds the private key for the Docker server certificate. Hence, it must be owned and group-owned by `root` to maintain the integrity of the Docker server certificate."
+      remediation="``` chown root:root  ``` This would set the ownership and group-ownership for the Docker server certificate key file to `root`."
+      ruleId="d6576e7b-7841-4f75-b4d1-948faf8e5846">
+      <check distro="*" command="CheckDockerTLSFileStats" key="tlskey" owner="root" group="root"/>
+    </audit>
+    <audit
+      description="Ensure that Docker server certificate key file permissions are set to 400"
+      msid="3.14"
+      cceid="CIS-CE-3-14"
+      severity="Critical"
+      impact="The Docker server certificate key file should be protected from any tampering or unneeded reads. It holds the private key for the Docker server certificate. Hence, it must have permissions of `400` to maintain the integrity of the Docker server certificate."
+      remediation="``` chmod 400  ``` This would set the Docker server certificate key file permissions to `400`."
+      ruleId="d8b23920-3a4d-4cf2-b089-4360514d1396">
+      <check distro="*" command="CheckDockerTLSFileStats" key="tlskey" mode-mask="400" allow-stricter="true"/>
+    </audit>
+    <audit
+      description="Ensure that Docker socket file ownership is set to root:docker"
+      msid="3.15"
+      cceid="CIS-CE-3-15"
+      severity="Critical"
+      impact="Docker daemon runs as `root`. The default Unix socket hence must be owned by `root`. If any other user or process owns this socket, then it might be possible for that non-privileged user or process to interact with Docker daemon. Also, such a non-privileged user or process might interact with containers. This is neither secure nor desired behavior. Additionally, the Docker installer creates a Unix group called `docker`. You can add users to this group, and then those users would be able to read and write to default Docker Unix socket. The membership to the `docker` group is tightly controlled by the system administrator. If any other group owns this socket, then it might be possible for members of that group to interact with Docker daemon. Also, such a group might not be as tightly controlled as the `docker` group. This is neither secure nor desired behavior. Hence, the default Docker Unix socket file must be owned by `root` and group-owned by `docker` to maintain the integrity of the socket file."
+      remediation="``` chown root:docker /var/run/docker.sock ``` This would set the ownership to `root` and group-ownership to `docker` for default Docker socket file."
+      ruleId="44b718dd-e711-4c24-8fe1-a92e7d204c70">
+      <check distro="*" command="CheckFileStats" path="/var/run/docker.sock" owner="root" group="docker"/>
+    </audit>
+    <audit
+      description="Ensure that Docker socket file permissions are set to 660 or more restrictive"
+      msid="3.16"
+      cceid="CIS-CE-3-16"
+      severity="Critical"
+      impact="Only `root` and members of `docker` group should be allowed to read and write to default Docker Unix socket. Hence, the Docket socket file must have permissions of `660` or more restrictive."
+      remediation="``` chmod 660 /var/run/docker.sock ``` This would set the file permissions of the Docker socket file to `660`."
+      ruleId="34786628-0012-4b84-bf21-cc1f70dac193">
+      <check distro="*" command="CheckFileStats" path="/var/run/docker.sock" mode-mask="660" allow-stricter="true"/>
+    </audit>
+    <audit
+      description="Ensure that daemon.json file ownership is set to root:root"
+      msid="3.17"
+      cceid="CIS-CE-3-17"
+      severity="Critical"
+      impact="`daemon.json` file contains sensitive parameters that may alter the behavior of docker daemon. Hence, it should be owned and group-owned by `root` to maintain the integrity of the file."
+      remediation="``` chown root:root /etc/docker/daemon.json ``` This would set the ownership and group-ownership for the file to `root`."
+      ruleId="2f95813a-d3e2-40af-a8c5-174b4ce53a7a">
+      <check distro="*" command="CheckFileStatsIfExists" path="/etc/docker/daemon.json" owner="root" group="root" fail-on-error="true"/>
+    </audit>
+    <audit
+      description="Ensure that daemon.json file permissions are set to 644 or more restrictive"
+      msid="3.18"
+      cceid="CIS-CE-3-18"
+      severity="Critical"
+      impact="`daemon.json` file contains sensitive parameters that may alter the behavior of docker daemon. Hence, it should be writable only by `root` to maintain the integrity of the file."
+      remediation="``` chmod 644 /etc/docker/daemon.json ``` This would set the file permissions for this file to `644`."
+      ruleId="6ef251ae-cfa2-4237-af7f-d938b159c98b">
+      <check distro="*" command="CheckFileStatsIfExists" path="/etc/docker/daemon.json" mode-mask="644" allow-stricter="true" key="FAIL"/>
+    </audit>
+    <audit
+      description="Ensure that /etc/default/docker file ownership is set to root:root"
+      msid="3.19"
+      cceid="CIS-CE-3-19"
+      severity="Critical"
+      impact="`/etc/default/docker` file contains sensitive parameters that may alter the behavior of docker daemon. Hence, it should be owned and group-owned by `root` to maintain the integrity of the file."
+      remediation="``` chown root:root /etc/default/docker ``` This would set the ownership and group-ownership for the file to `root`."
+      ruleId="bd73ac28-d85f-47cd-979a-8eb8014ebd31">
+      <check distro="*" command="CheckFileStats" path="/etc/default/docker" owner="root" group="root">
+        <dependency type="FileExists">/etc/default/docker</dependency>
+      </check>
+    </audit>
+    <audit
+      description="Ensure that /etc/default/docker file permissions are set to 644 or more restrictive"
+      msid="3.20"
+      cceid="CIS-CE-3-20"
+      severity="Critical"
+      impact="`/etc/default/docker` file contains sensitive parameters that may alter the behavior of docker daemon. Hence, it should be writable only by `root` to maintain the integrity of the file."
+      remediation="``` chmod 644 /etc/default/docker ``` This would set the file permissions for this file to `644`."
+      ruleId="bf66d138-2b47-4dd9-8629-125aae091e25">
+      <check distro="*" command="CheckFileStats" path="/etc/default/docker" mode-mask="644" allow-stricter="true">
+        <dependency type="FileExists">/etc/default/docker</dependency>
+      </check>
+    </audit>
+    <audit
+      description="Ensure the container is restricted from acquiring additional privileges"
+      msid="5.25"
+      cceid="CIS-CE-5-25"
+      severity="Critical"
+      impact="A process can set the `no_new_priv` bit in the kernel. It persists across fork, clone and execve. The `no_new_priv` bit ensures that the process or its children processes do not gain any additional privileges via suid or sgid bits. This way a lot of dangerous operations become a lot less dangerous because there is no possibility of subverting privileged binaries."
+      remediation="For example, you should start your container as below: ``` docker run --rm -it --security-opt=no-new-privileges ubuntu bash ```"
+      ruleId="0b2a1e4f-66ec-4c3f-97f9-7683f0edc090">
+      <check distro="*" command="CheckDockerSecOps" regex="no-new-privileges"/>
+    </audit>
+    <audit
+      description="Ensure swarm services are bound to a specific host interface"
+      msid="7.03"
+      cceid="CIS-CE-7-03"
+      severity="Critical"
+      impact="When a swarm is initialized the default value for the `--listen-addr` flag is `0.0.0.0:2377` which means that the swarm services will listen on all interfaces on the host. If a host has multiple network interfaces this may be undesirable as it may expose the docker swarm services to networks which are not involved in the operation of the swarm. By passing a specific IP address to the `--listen-addr`, a specific network interface can be specified limiting this exposure."
+      remediation="Remediation of this requires re-initialization of the swarm specifying a specific interface for the `--listen-addr` parameter."
+      ruleId="ffd90cfc-01c4-4ebe-9001-5bc96422cee5">
+      <check distro="*" command="CheckNoMatchingLinesNetstat" key="-ltn" filter="2377" regex="(?:0.0.0.0:|\[::\]):2377" />
+    </audit>
+    </audits>
 
+    <!-- This audits group ensures that the docker version meets a specific minimum before running checks -->
+
+    <audits>
+      <dependency type="ServiceStatus">docker|running</dependency>
+      <dependency type="DockerVersion">17.12.0/17.03.2</dependency>
+      <audit
+        description="Ensure network traffic is restricted between containers on the default bridge"
+        msid="2.01"
+        cceid="CIS-CE-2-01"
+        severity="Critical"
+        impact="The inter-container communication would be disabled on the default network bridge. If any communication between containers on the same host is desired, then it needs to be explicitly defined using container linking or alternatively custom networks have to be defined."
+        remediation="Run the docker in daemon mode and pass --icc=false as an argument or set the 'icc' setting to false in the daemon.json file. Alternatively, you can follow the Docker documentation and create a custom network and only join containers that need to communicate to that custom network. The --icc parameter only applies to the default docker bridge, if custom networks are used then the approach of segmenting networks should be adopted instead."
+        ruleId="f30a6a51-9f47-4d3b-819d-7edf7fb53eb4">
+        <check distro="*" command="CheckNoMatchingLinesDockerNetworkInspect" filter="icc" regex="true" />
+      </audit>
+      <audit
+        description="Ensure the default ulimit is configured appropriately"
+        msid="2.07"
+        cceid="CIS-CE-2-07"
+        severity="Warning"
+        impact="If the ulimits are not set properly, the desired resource control might not be achieved and might even make the system unusable."
+        remediation="Run the docker in daemon mode and pass --default-ulimit as argument with respective ulimits as appropriate in your environment. Alternatively, you can also set a specific resource limitation to each container separately by using the --ulimit argument with respective ulimits as appropriate in your environment."
+        ruleId="783e2e24-d659-4292-ae88-6cecc861ac3f">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" filter="Ulimits" regex="null" />
+      </audit>
+      <audit
+        description="Ensure a user for the container has been created"
+        msid="4.01"
+        cceid="CIS-CE-4-01"
+        severity="Warning"
+        impact="It is a good practice to run the container as a non-root user, if possible. Though user namespace mapping is now available, if a user is already defined in the container image, the container is run as that user by default and specific user namespace remapping is not required."
+        remediation="Ensure that the Dockerfile for the container image contains: 'USER {username or ID}' where username or ID refers to the user that could be found in the container base image. If there is no specific user created in the container base image, then add a useradd command to add the specific user before USER instruction."
+        ruleId="344e58e2-95d7-4c37-981c-c246be90ce8d">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" filter='"User"' regex='"0"|"root"|""' />
+      </audit>
+      <audit
+        description="Ensure that containers use trusted base images (Not Scored)"
+        msid="4.02"
+        cceid="CIS-CE-4-02"
+        severity="NotApplicable"
+        impact="Official repositories are Docker images curated and optimized by the Docker community or the vendor. There could be other potentially unsafe public repositories. When using container images from Docker and other third parties, exercise caution regarding their access to your organization's data."
+        remediation="1. Configure and use Docker Content Trust (DCT) 2. Inspect Docker image history to evaluate the potential risks to your network 3. Scan Docker images for vulnerabilities in their dependencies and configurations they will impose upon your network."
+        ruleId="b4c198e8-b93e-452d-a4f4-0fb5f0f97bee">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for using trusted base images" />
+      </audit>
+      <audit
+        description="Ensure unnecessary packages are not installed in the container (Not Scored)"
+        msid="4.03"
+        cceid="CIS-CE-4-03"
+        severity="NotApplicable"
+        impact="Smaller containers are more portable, faster to deploy, easier to maintain, and more secure because of the reduced attack surface. Only install software required for the purpose of the container."
+        remediation="When designing your container, only install the software required for the container's purpose. To simplify this process, use a minimal base image such as Alpine or BusyBox instead of the standard CentOS/Red Hat/Debian images. Keeping your container size small increases the efficiency, performance, maintainability, and security of your containers and their applications. As a final hardening measure for leaf/production containers, you can remove the package installer."
+        ruleId="d9f08a7b-3884-49b2-a8ae-bcb7aaaa9117">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers need to ensure unnecessary packages are not installed in the container" />
+      </audit>
+      <audit
+        description="Ensure images are scanned and rebuilt to include security patches (Not Scored)"
+        msid="4.04"
+        cceid="CIS-CE-4-04"
+        severity="NotApplicable"
+        impact="Vulnerabilities are weaknesses that can be exploited. Security patches are updates that resolve vulnerabilities. We can use scanning tools to find vulnerabilities within an image and then check for available patches to mitigate those issues. Patches update the system to the most recent code base, which is where vendors typically target their latest fixes. Before applying security patches, evaluate them and follow the patching best practices."
+        remediation="1.	Pull all the base images (i.e., given your set of Dockerfiles, extract all images declared in FROM instructions, and re-pull them to check for updated/patched versions). 2. Patch the packages within the images using 'docker pull'.  3. Force a rebuild of each image: 'docker build --no-cache'. 4. Restart all containers with the updated images."
+        ruleId="ac4e7840-7eaf-4432-a356-d2d2b9730876">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers need to ensure images are scanned and rebuilt to include security patches" />
+      </audit>
+      <audit
+        description="Ensure Content trust for Docker is Enabled"
+        msid="4.05"
+        cceid="CIS-CE-4-05"
+        severity="NotApplicable"
+        impact="Content trust allows you to use digital signatures when communicating with remote Docker registries. Signatures allow client-side verification of the integrity and publisher of specific image tags, and ensure provenance of container images."
+        remediation="To enable content trust in a bash shell, enter the following command: 'export DOCKER_CONTENT_TRUST=1' Alternatively, set this environment variable in your profile file so that content trust in enabled on every login."
+        ruleId="6afb09f4-ca79-471e-898f-6e2064977460">
+        <check distro="*" command="CheckAlwaysPass" justification="Customer is responsible for setting environment variables used to enable Content trust for Docker." />
+      </audit>
+      <audit
+        description="Ensure HEALTHCHECK instructions have been added to the container image"
+        msid="4.06"
+        cceid="CIS-CE-4-06"
+        severity="Critical"
+        impact="One of the important security triads is availability. Adding `HEALTHCHECK` instruction to your container image ensures that the docker engine periodically checks the running container instances against that instruction to ensure that the instances are still working. Based on the reported health status, the docker engine could then exit non-working containers and instantiate new ones."
+        remediation="Follow Docker documentation and rebuild your container image with `HEALTHCHECK` instruction."
+        ruleId="2832ffab-c36f-4c7d-83a9-1a623867bec5">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Config.Healthcheck }}" regex="^&lt;nil&gt;$" />
+      </audit>
+      <audit
+        description="Ensure update instructions are not used alone in the Dockerfile (Not Scored)"
+        msid="4.07"
+        cceid="CIS-CE-4-07"
+        severity="NotApplicable"
+        impact="Adding the update instructions in a single line on the Dockerfile will cache the update layer. When you then build an image using the same instruction, the previously cached update layer will be used. This could potentially block fresh updates from being added to later builds."
+        remediation="When installing packages, follow the relevant instructions for updating, installing, and version pinning. This busts the cache and forces an extract of the required versions. Alternatively, to avoid using cached layers use the --no-cache flag during the docker build process."
+        ruleId="704914a3-5963-4e8e-9c27-d6443f360831">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure setuid and setgid permissions are removed from the images (Not Scored)"
+        msid="4.08"
+        cceid="CIS-CE-4-08"
+        severity="NotApplicable"
+        impact="There are legitimate uses for the setuid and setgid permissions. However, they can potentially be used in privilege escalation attacks. We recommend removing these permissions from packages that don't need them within your images."
+        remediation="Allow setuid and setgid permissions only on executables which need them. You could remove these permissions during build time by adding the following command in your Dockerfile, preferably towards the end of the Dockerfile: 'RUN find / -perm +6000 -type f -exec chmod a-s {} \; || true'"
+        ruleId="4709cb1d-82a3-489d-9008-683097582f6a">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure COPY is used instead of ADD in Dockerfile (Not Scored)"
+        msid="4.09"
+        cceid="CIS-CE-4-09"
+        severity="NotApplicable"
+        impact="The COPY instruction copies files from the local host to the container's file system. The ADD instruction can potentially retrieve files from remote URLs and perform operations such as unpacking. To avoid the risks of ADD, we recommend using COPY instead."
+        remediation="Use COPY instructions in Dockerfiles."
+        ruleId="79a50b3a-9a46-46fe-ac22-ede02ef0a43e">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure secrets are not stored in Dockerfiles (Not Scored)"
+        msid="4.10"
+        cceid="CIS-CE-4-10"
+        severity="NotApplicable"
+        impact="Dockerfiles could be backtracked easily by using native Docker commands such as docker history and various tools and utilities. Also, as a general practice, image publishers provide Dockerfiles to build the credibility for their images. Hence, the secrets within these Dockerfiles could be easily exposed and potentially exploited."
+        remediation="Do not store any kind of secrets within Dockerfiles."
+        ruleId="bf6e92fb-b63c-45d1-bfbf-80d0775e6b21">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure verified packages are only Installed (Not Scored)"
+        msid="4.11"
+        cceid="CIS-CE-4-11"
+        severity="NotApplicable"
+        impact="Verifying the authenticity of packages is essential for building a secure container image. Tampered packages could be malicious or contain exploitable vulnerabilities."
+        remediation="Use GPG keys for downloading and verifying packages or any other secure package distribution mechanism of your choice. "
+        ruleId="7c1fbe1b-a12c-493b-b407-dec62ea7093e">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure either SELinux or AppArmor is enabled as appropriate"
+        msid="5.01-2"
+        cceid="CIS-CE-5-01-02"
+        severity="Warning"
+        impact="AppArmor protects the Linux OS and applications from various threats by enforcing security policy which is also known as AppArmor profile. You can create your own AppArmor profile for containers or use the Docker's default AppArmor profile. This would enforce security policies on the containers as defined in the profile. SELinux provides a Mandatory Access Control (MAC) system that greatly augments the default Discretionary Access Control (DAC) model. You can thus add an extra layer of safety by enabling SELinux on your Linux host, if applicable."
+        remediation="After enabling the relevant Mandatory Access Control Plugin for your distro, run the docker daemon as ```docker run --interactive --tty --security-opt=&quot;apparmor:PROFILENAME&quot; centos /bin/bash``` for AppArmor or ```docker run --interactive --tty --security-opt label=level:TopSecret centos /bin/bash for SELinux."
+        ruleId="88c85b1d-3fcd-40b2-bfbf-20925ff8fb38">
+        <check distro="*" command="CheckMACEnabledDocker" />
+      </audit>
+      <audit
+        description="Ensure Linux Kernel Capabilities are restricted within containers"
+        msid="5.03"
+        cceid="CIS-CE-5-03"
+        severity="Warning"
+        impact="Docker supports the addition and removal of capabilities, allowing the use of a non-default profile. This may make Docker more secure through capability removal, or less secure through the addition of capabilities. It is thus recommended to remove all capabilities except those explicitly required for your container process. For example, capabilities such as below are usually not needed for container process: ``` NET_ADMIN SYS_ADMIN SYS_MODULE ```"
+        remediation="Execute the below command to add needed capabilities: $> docker run --cap-add={&quot;Capability 1&quot;,&quot;Capability 2&quot;}    For example, ``` docker run --interactive --tty --cap-add={&quot;NET_ADMIN&quot;,&quot;SYS_ADMIN&quot;} centos:latest /bin/bash ``` Execute the below command to drop unneeded capabilities: $> docker run --cap-drop={&quot;Capability 1&quot;,&quot;Capability 2&quot;}    For example, ``` docker run --interactive --tty --cap-drop={&quot;SETUID&quot;,&quot;SETGID&quot;} centos:latest /bin/bash ``` Alternatively, You may choose to drop all capabilities and add only add the needed ones: $> docker run --cap-drop=all --cap-add={&quot;Capability 1&quot;,&quot;Capability 2&quot;}    For example, ``` docker run --interactive --tty --cap-drop=all --cap-add={&quot;NET_ADMIN&quot;,&quot;SYS_ADMIN&quot;} centos:latest /bin/bash ```"
+        ruleId="1fc2604f-5e24-4bff-8ac2-97ddff2ca804">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: CapDrop={{ .HostConfig.CapDrop }}" regex="&lt;no\svalue&gt;" />
+      </audit>
+      <audit
+        description="Ensure privileged containers are not used"
+        msid="5.04"
+        cceid="CIS-CE-5-04"
+        severity="Critical"
+        impact="The `--privileged` flag gives all capabilities to the container, and it also lifts all the limitations enforced by the device cgroup controller. In other words, the container can then do almost everything that the host can do. This flag exists to allow special use-cases, like running Docker within Docker."
+        remediation="Do not run container with the `--privileged` flag. For example, do not start a container as below: ``` docker run --interactive --tty --privileged centos /bin/bash ```"
+        ruleId="470022cf-262c-4d9f-b4d8-7b217bdd046e">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Privileged={{ .HostConfig.Privileged }}" regex = "true" />
+      </audit>
+      <audit
+        description="Ensure sensitive host system directories are not mounted on containers"
+        msid="5.05"
+        cceid="CIS-CE-5-05"
+        severity="Optional"
+        impact="If sensitive directories are mounted in read-write mode, it would be possible to make changes to files within those sensitive directories. The changes might bring down security implications or unwarranted changes that could put the Docker host in compromised state."
+        remediation="Do not mount host sensitive directories on containers especially in read-write mode."
+        ruleId="73b1e3be-45fc-4ca9-aba6-d73c40ea30db">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Volumes={{ .Mounts }}" regex="^.*Source:\/(?:|boot|dev|etc|lib|proc|sys|usr)\/?(?:\]|\s)" />
+      </audit>
+      <audit
+        description="Ensure ssh is not run within containers"
+        msid="5.06"
+        cceid="CIS-CE-5-06"
+        severity="NotApplicable"
+        impact="Running SSH within a container increases the complexity of the following security operations: 1. Managing access policies and security compliance for SSH server. 2. Managing keys and passwords across various containers. 3. Managing security upgrades for SSH server. To avoid increasing the complexity of these security management tasks, we recommend enabling shell access to your containers without using SSH."
+        remediation="Uninstall SSH server from the container and use nsenteror any other commands such as docker exec or docker attach to interact with the container instance."
+        ruleId="c407d874-5a57-4217-848b-0d9e73cd889a">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure privileged ports are not mapped within containers"
+        msid="5.07"
+        cceid="CIS-CE-5-07"
+        severity="NotApplicable"
+        impact="Privileged ports receive and transmit sensitive and privileged data. Allowing containers to use them raises security risks. Despite this, containers are executed with the NET_BIND_SERVICE Linux kernel capability that doesn't restrict the privileged port mapping. Therefore, Docker allows a user to explicitly declare a mapping to a privileged port on the host. However, if a user does not specifically declare the container port to host port mapping, Docker uses a default mapping to an available one in the host's 4915365535 block."
+        remediation="Do not map container ports to privileged host ports when starting a container. Also, ensure that there are no such container to host privileged port mapping declarations in your Dockerfile."
+        ruleId="607629c7-9094-4d98-ac8b-67bb025b6ea4">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure only needed ports are open on the container"
+        msid="5.08"
+        cceid="CIS-CE-5-08"
+        severity="NotApplicable"
+        impact="A container can be run just with the ports defined in the Dockerfile for its image or can be arbitrarily passed run time parameters to open a list of ports. Additionally, Overtime, Dockerfile may undergo various changes and the list of exposed ports may or may not be relevant to the application you are running within the container. Opening unneeded ports increase the attack surface of the container and the containerized application. As a recommended practice, do not open unneeded ports."
+        remediation="Fix the Dockerfile of the container image to expose only needed ports by your containerized application. You can also completely ignore the list of ports defined in the Dockerfile by NOT using -P (UPPERCASE) or --publish-all flag when starting the container. Use the -p (lowercase) or --publish flag to explicitly define the ports that you need for a particular container instance."
+        ruleId="afdee429-f60e-4dad-ac5d-e05dbfc96f36">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure the host's network namespace is not shared"
+        msid="5.09"
+        cceid="CIS-CE-5-09"
+        severity="Critical"
+        impact="This is potentially dangerous. It allows the container process to open low-numbered ports like any other `root` process. It also allows the container to access network services like D-bus on the Docker host. Thus, a container process can potentially do unexpected things such as shutting down the Docker host. You should not use this option."
+        remediation="Do not pass `--net=host` option when starting the container."
+        ruleId="761b4295-6599-4683-99d0-f5c45b64a3aa">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}" regex="host" />
+      </audit>
+      <audit
+        description="Ensure memory usage for container is limited"
+        msid="5.10"
+        cceid="CIS-CE-5-10"
+        severity="Critical"
+        impact="By default, container can use all of the memory on the host. You can use memory limit mechanism to prevent a denial of service arising from one container consuming all of the host’s resources such that other containers on the same host cannot perform their intended functions. Having no limit on memory can lead to issues where one container can easily make the whole system unstable and as a result unusable."
+        remediation="Run the container with only as much memory as required. Always run the container using the `--memory` argument. For example, you could run a container as below: ``` docker run --interactive --tty --memory 256m centos /bin/bash ``` In the above example, the container is started with a memory limit of 256 MB. Note: Please note that the output of the below command would return values in scientific notation if memory limits are in place. ``` docker inspect --format='{{.Config.Memory}}' 7c5a2d4c7fe0 ``` For example, if the memory limit is set to `256 MB` for the above container instance, the output of the above command would be `2.68435456e+08` and NOT 256m. You should convert this value using a scientific calculator or programmatic methods."
+        ruleId="49b7e10e-7a44-4785-9ffa-0c648d730a4f">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Memory={{ .HostConfig.Memory }}" regex="Memory=0\s*$" />
+      </audit>
+      <audit
+        description="Ensure CPU priority is set appropriately on the container"
+        msid="5.11"
+        cceid="CIS-CE-5-11"
+        severity="NotApplicable"
+        impact="By default, CPU time is divided between containers equally. You can optionally use CPU sharing to control how CPU time is divided between your container instances. Using CPU sharing, you can prioritize one container over another and prevent lower priority containers from claiming extra CPU time. This ensures that the high priority containers are served better."
+        remediation="Manage the CPU shares between your containers. To use the optional CPU share feature, start your container using the --cpu-shares argument."
+        ruleId="f49fa82b-34c3-4b52-ab60-aa77d07715d0">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure the container's root filesystem is mounted as read only"
+        msid="5.12"
+        cceid="CIS-CE-5-12"
+        severity="Critical"
+        impact="Enabling this option forces containers at runtime to explicitly define their data writing strategy to persist or not persist their data. This also reduces security attack vectors since the container instance's filesystem cannot be tampered with or written to unless it has explicit read-write permissions on its filesystem folder and directories."
+        remediation="Add a `--read-only` flag at a container's runtime to enforce the container's root filesystem to be mounted as read only. ``` docker run  --read-only   ``` Enabling the `--read-only` option at a container's runtime should be used by administrators to force a container's executable processes to only write container data to explicit storage locations during the container's runtime. Examples of explicit storage locations during a container's runtime include, but not limited to: 1. Use the `--tmpfs` option to mount a temporary file system for non-persistent data writes. ``` docker run --interactive --tty --read-only --tmpfs &quot;/run&quot; --tmpfs &quot;/tmp&quot; centos /bin/bash ``` 2. Enabling Docker `rw` mounts at a container's runtime to persist container data directly on the Docker host filesystem. ``` docker run --interactive --tty --read-only -v /opt/app/data:/run/app/data:rw centos /bin/bash ``` 3. Utilizing Docker shared-storage volume plugins for Docker data volume to persist container data. ``` docker volume create -d convoy --opt o=size=20GB my-named-volume ``` ``` docker run --interactive --tty --read-only -v my-named-volume:/run/app/data centos /bin/bash ``` 3. Transmitting container data outside of the docker during the container's runtime for container data to persist container data. Examples include hosted databases, network file shares, and APIs."
+        ruleId="d205c014-eee5-4314-ad18-41c707d7ada0">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: ReadonlyRootfs={{ .HostConfig.ReadonlyRootfs }}" regex="false" />
+      </audit>
+      <audit
+        description="Ensure incoming container traffic is binded to a specific host interface"
+        msid="5.13"
+        cceid="CIS-CE-5-13"
+        severity="Warning"
+        impact="If you have multiple network interfaces on your host machine, the container can accept connections on the exposed ports on any network interface. This might not be desired and may not be secured. Many a times a particular interface is exposed externally and services such as intrusion detection, intrusion prevention, firewall, load balancing, etc. are run on those interfaces to screen incoming public traffic. Hence, you should not accept incoming connections on any interface. You should only allow incoming connections from a particular external interface."
+        remediation="Bind the container port to a specific host interface on the desired host port. For example, ``` docker run --detach --publish 10.2.3.4:49153:80 nginx ``` In the example above, the container port `80` is bound to the host port on `49153` and would accept incoming connection only from `10.2.3.4` external interface."
+        ruleId="ad802919-427d-4685-b11a-895d8d600244">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Ports={{json .NetworkSettings.Ports }}" regex="(?:0.0.0.0)|{}" />
+      </audit>
+      <audit
+        description="Ensure 'on-failure' container restart policy is set to '5' or lower"
+        msid="5.14"
+        cceid="CIS-CE-5-14"
+        severity="Warning"
+        impact="If you indefinitely keep trying to start the container, it could possibly lead to a denial of service on the host. It could be an easy way to do a distributed denial of service attack especially if you have many containers on the same host. Additionally, ignoring the exit status of the container and `always` attempting to restart the container leads to non-investigation of the root cause behind containers getting terminated. If a container gets terminated, you should investigate on the reason behind it instead of just attempting to restart it indefinitely. Thus, it is recommended to use `on-failure` restart policy and limit it to maximum of `5` restart attempts."
+        remediation="If a container is desired to be restarted of its own, then, for example, you could start the container as below: ``` docker run --detach --restart=on-failure:5 nginx ```"
+        ruleId="eb1d86ee-861b-4f95-a2b6-654890fe6a67" >
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Name={{ .HostConfig.RestartPolicy.Name }} Count={{ .HostConfig.RestartPolicy.MaximumRetryCount }}" regex="Name=(?:no|always|unless-stopped)|Count=[6-9]" />
+      </audit>
+      <audit
+        description="Ensure the host's process namespace is not shared"
+        msid="5.15"
+        cceid="CIS-CE-5-15"
+        severity="Warning"
+        impact="PID namespace provides separation of processes. The PID Namespace removes the view of the system processes, and allows process ids to be reused including PID `1`. If the host's PID namespace is shared with the container, it would basically allow processes within the container to see all of the processes on the host system. This breaks the benefit of process level isolation between the host and the containers. Someone having access to the container can eventually know all the processes running on the host system and can even kill the host system processes from within the container. This can be catastrophic. Hence, do not share the host's process namespace with the containers."
+        remediation="Do not start a container with `--pid=host` argument. For example, do not start a container as below: ``` docker run --interactive --tty --pid=host centos /bin/bash ```"
+        ruleId="9804d8d9-34f9-41f7-a72f-ea0c06ab6ac4">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: PidMode={{ .HostConfig.PidMode }}" regex="host$" />
+      </audit>
+      <audit
+        description="Ensure the host's IPC namespace is not shared"
+        msid="5.16"
+        cceid="CIS-CE-5-16"
+        severity="Warning"
+        impact="IPC namespace provides separation of IPC between the host and containers. If the host's IPC namespace is shared with the container, it would basically allow processes within the container to see all of the IPC on the host system. This breaks the benefit of IPC level isolation between the host and the containers. Someone having access to the container can eventually manipulate the host IPC. This can be catastrophic. Hence, do not share the host's IPC namespace with the containers."
+        remediation="Do not start a container with `--ipc=host` argument. For example, do not start a container as below: ``` docker run --interactive --tty --ipc=host centos /bin/bash ```"
+        ruleId="3add040f-2a14-4d1d-8b0c-65746daf2ec8">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}" regex="host$" />
+      </audit>
+      <audit
+        description="Ensure host devices are not directly exposed to containers"
+        msid="5.17"
+        cceid="CIS-CE-5-17"
+        severity="Critical"
+        impact="The `--device` option exposes the host devices to the containers and consequently, the containers can directly access such host devices. You would not require the container to run in `privileged` mode to access and manipulate the host devices. By default, the container will be able to read, write and mknod these devices. Additionally, it is possible for containers to remove block devices from the host. Hence, do not expose host devices to containers directly. If at all, you would want to expose the host device to a container, use the sharing permissions appropriately: - r - read only - w - writable - m - mknod allowed"
+        remediation="Do not directly expose the host devices to containers. If at all, you need to expose the host devices to containers, use the correct set of permissions: For example, do not start a container as below: ``` docker run --interactive --tty --device=/dev/tty0:/dev/tty0:rwm --device=/dev/temp_sda:/dev/temp_sda:rwm centos bash ``` For example, share the host device with correct permissions: ``` docker run --interactive --tty --device=/dev/tty0:/dev/tty0:rw --device=/dev/temp_sda:/dev/temp_sda:r centos bash ```"
+        ruleId="28902379-17da-4620-b6ed-2ce4911b4b43">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Devices={{ .HostConfig.Devices }}" regex="[.+]" />
+      </audit>
+      <audit
+        description="Ensure the default ulimit is overwritten at runtime, only if needed (Not Scored)"
+        msid="5.18"
+        cceid="CIS-CE-5-18"
+        severity="NotApplicable"
+        impact="ulimit controls the resources available to the shell and to the processes it starts. Even legitimate users and processes can drain system resources and make it unusable. The default ulimit set at the Docker daemon level should be honored. If the default ulimit settings are not appropriate for a particular container instance, you may override them. Overriding the limit should be an exceptional practice, not a standard operation. If most of the container instances are overriding default ulimit settings, consider changing the default ulimit settings to something that is appropriate for your environment."
+        remediation="Only override the default ulimit settings if needed."
+        ruleId="1bb1baff-f6d7-4253-9cc7-39a986b25a1e">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure mount propagation mode is not set to shared"
+        msid="5.19"
+        cceid="CIS-CE-5-19"
+        severity="Warning"
+        impact="A shared mount is replicated at all mounts and the changes made at any mount point are propagated to all mounts. Mounting a volume in shared mode does not restrict any other container to mount and make changes to that volume. This might be catastrophic if the mounted volume is sensitive to changes. Do not set mount propagation mode to shared until needed."
+        remediation="Do not mount volumes in shared mode propagation. For example, do not start container as below: ``` docker run  --volume=/hostPath:/containerPath:shared   ```"
+        ruleId="5a98ae14-a5b9-4aa2-ba24-4ead6344cb44">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Propagation:{{range $mnt := .Mounts }} {{ $mnt.Propagation }} {{end}}" regex="Propagation:shared$"/>
+      </audit>
+      <audit
+        description="Ensure the host's UTS namespace is not shared"
+        msid="5.20"
+        cceid="CIS-CE-5-20"
+        severity="Warning"
+        impact="Sharing the UTS namespace with the host provides full permission to the container to change the hostname of the host. This is insecure and should not be allowed."
+        remediation="Do not start a container with `--uts=host` argument. For example, do not start a container as below: ``` docker run --rm --interactive --tty --uts=host rhel7.2 ```"
+        ruleId="b7cae9a9-f4ae-4bb9-83fd-5030dd9088c4">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}" regex="host$" />
+      </audit>
+      <audit
+        description="Ensure the default seccomp profile is not Disabled"
+        msid="5.21"
+        cceid="CIS-CE-5-21"
+        severity="NotApplicable"
+        impact="A large number of system calls are exposed to every userland process with many of them going unused for the entire lifetime of the process. Most of the applications do not need all the system calls and thus benefit by having a reduced set of available system calls. The reduced set of system calls reduces the total kernel surface exposed to the application and thus improvises application security."
+        remediation="By default, seccomp profiles are enabled. You do not need to do anything unless you want to modify and use the modified seccomp profile."
+        ruleId="17c5efe8-9fb9-43d5-8813-a719e5ced678">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure docker exec commands are not used with privileged option"
+        msid="5.22"
+        cceid="CIS-CE-5-22"
+        severity="NotApplicable"
+        impact="Using the --privileged option in docker exec gives extended Linux capabilities to the command. This could potentially be insecure and unsafe - especially when you are running containers with dropped capabilities or with enhanced restrictions."
+        remediation="Do not use --privileged option in docker exec command."
+        ruleId="40770bd9-e55c-4520-a579-2c863271ef46">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure docker exec commands are not used with user option"
+        msid="5.23"
+        cceid="CIS-CE-5-23"
+        severity="NotApplicable"
+        impact="Using the --user option in docker exec executes the command within the container as that user. This could potentially be insecure and unsafe - especially when you are running containers with dropped capabilities or with enhanced restrictions. For example, suppose your container is running as tomcat user (or any other non-root user), it would be possible to run a command through docker exec as rootwith -user=root option. This could potentially be dangerous."
+        remediation="Do not use --user option in docker exec command."
+        ruleId="a4beb1d7-2449-44e0-a129-0539e424ca77">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images." />
+      </audit>
+      <audit
+        description="Ensure cgroup usage is confirmed"
+        msid="5.24"
+        cceid="CIS-CE-5-24"
+        severity="Critical"
+        impact="System administrators typically define cgroups under which containers are supposed to run. Even if cgroups are not explicitly defined by the system administrators, containers run under `docker` cgroup by default. At run-time, it is possible to attach to a different cgroup other than the one that was expected to be used. This usage should be monitored and confirmed. By attaching to a different cgroup than the one that is expected, excess permissions and resources might be granted to the container and thus, can prove to be unsafe."
+        remediation="Do not use `--cgroup-parent` option in `docker run` command unless needed."
+        ruleId="aa4c934b-1d65-4b23-9279-297a177476d6">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: Cgroup={{ .HostConfig.CgroupParent }}" regex="$[[:alpha:]]" />
+      </audit>
+      <audit
+        description="Ensure container health is checked at runtime"
+        msid="5.26"
+        cceid="CIS-CE-5-26"
+        severity="Critical"
+        impact="One of the important security triads is availability. If the container image you are using does not have a pre-defined `HEALTHCHECK` instruction, use the `--health-cmd` parameter to check container health at runtime. Based on the reported health status, you could take necessary actions."
+        remediation="Run the container using `--health-cmd` and the other parameters. For example, ``` docker run -d --health-cmd='stat /etc/passwd || exit 1' nginx ```"
+        ruleId="61bd6315-aefd-441c-8886-9dedc18b1fa6">
+      <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: {{ .State.Health.Status }}" regex="(unhealthy)|(Template parsing error)" />
+      </audit>
+      <audit
+        description="Ensure docker commands always get the latest version of the image"
+        msid="5.27"
+        cceid="CIS-CE-5-27"
+        severity="NotApplicable"
+        impact="Multiple docker commands such as docker pull, docker run, etc. are known to have an issue: by default they extract the local copy of the image (if present) even though there is an updated version of the image with the 'same tag' in the upstream repository. This could lead to using older, vulnerable images."
+        remediation="To avoid extracting cached older versions, use proper version pinning mechanisms (the latest tag which is assigned by default is still vulnerable to caching attacks). Version pinning mechanisms should be used for base images, packages, and entire images. You can customize version pinning rules."
+        ruleId="9989bc7e-7e2c-4404-bbf5-a20ba4783602">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for managing the image version history in repository" />
+      </audit>
+      <audit
+        description="Ensure PIDs cgroup limit is used"
+        msid="5.28"
+        cceid="CIS-CE-5-28"
+        severity="Critical"
+        impact="Attackers could launch a fork bomb with a single command inside the container. This fork bomb can crash the entire system and requires a restart of the host to make the system functional again. PIDs cgroup `--pids-limit` will prevent this kind of attacks by restricting the number of forks that can happen inside a container at a given time."
+        remediation="Use `--pids-limit` flag while launching the container with an appropriate value. For example, ``` docker run -it --pids-limit 100  ``` In the above example, the number of processes allowed to run at any given time is set to 100. After a limit of 100 concurrently running processes is reached, docker would restrict any new process creation."
+        ruleId="361d066c-e3c7-4cc7-a378-c475959db99b">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id}} PidsLimit={{ .HostConfig.PidsLimit }}" regex="^(?:0|-1)$" />
+      </audit>
+      <audit
+        description="Ensure Docker's default bridge docker0 is not used"
+        msid="5.29"
+        cceid="CIS-CE-5-29"
+        severity="Critical"
+        impact="Docker connects virtual interfaces created in the bridge mode to a common bridge called `docker0`. This default networking model is vulnerable to ARP spoofing and MAC flooding attacks since there is no filtering applied."
+        remediation="Follow Docker documentation and setup a user-defined network. Run all the containers in the defined network."
+        ruleId="c4dfe5aa-40db-4e46-bc77-a2016b7c97a7">
+        <check distro="*" command="CheckDockerNotUsingDefaultBridge"/>
+      </audit>
+      <audit
+        description="Ensure the host's user namespace is not shared"
+        msid="5.30"
+        cceid="CIS-CE-5-30"
+        severity="Critical"
+        impact="User namespaces ensure that a root process inside the container will be mapped to a non-root process outside the container. Sharing the user namespaces of the host with the container thus does not isolate users on the host with users on the containers."
+        remediation="Do not share user namespaces between host and containers. For example, do not run a container as below: ``` docker run --rm -it --userns=host ubuntu bash ```"
+        ruleId="98a6f77b-b3ca-40f0-ad14-2c3f39263635">
+        <check distro="*" command="CheckNoMatchingLinesDockerContainerInspect" key="{{ .Id }}: UsernsMode={{ .HostConfig.UsernsMode }}" regex="host$" />
+      </audit>
+      <audit
+        description="Ensure the Docker socket is not mounted inside any containers"
+        msid="5.31"
+        cceid="CIS-CE-5-31"
+        severity="Critical"
+        impact="If the docker socket is mounted inside a container it would allow processes running within the container to execute docker commands which effectively allows for full control of the host."
+        remediation="Ensure that no containers mount `docker.sock` as a volume."
+        ruleId="1c5a25de-9c82-4b79-8331-f33cdda3bf76">
+        <check distro="*" command="CheckDockerSockMount"/>
+      </audit>
+      <audit
+        description="Ensure image sprawl is avoided (Not Scored)"
+        msid="6.01"
+        cceid="CIS-CE-6-01"
+        severity="NotApplicable"
+        impact="Tagged images are useful to fall back from 'latest' to a specific version of an image in production. Images with unused or old tags may contain exploitable vulnerabilities. Additionally, keeping redundant and unused images on your host filesystem may cause it to become full and result in a denial of service."
+        remediation="Keep the set of images that you actually need and establish a workflow to remove old or stale images from the host. Additionally, use features such as pull-by-digest to get specific images from the registry. You can also follow the steps below to find and delete unused images."
+        ruleId="9816d84d-459c-4a9b-8c4e-5c3ec9831a4e">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for configuration of container images."/>
+      </audit>
+      <audit
+        description="Ensure container sprawl is avoided (Not Scored)"
+        msid="6.02"
+        cceid="CIS-CE-6-02"
+        severity="NotApplicable"
+        impact="The flexibility of containers makes it easy to run multiple instances of applications and indirectly leads to Docker images that exist at varying security patch levels. It also means that you are consuming host resources that otherwise could have been used for running 'useful' containers. Having an unmanageable number of containers on a particular host makes the situation vulnerable to mishandling, misconfiguration, and fragmentation. Avoid container sprawl and keep the number of containers on your hosts at a manageable level."
+        remediation="Periodically check your container inventory per host and clean up the stopped containers using the following command: 'docker container prune'"
+        ruleId="da685655-79fd-4b90-a0ed-c257a5eec5b4">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for managing the number of containers per host"/>
+      </audit>
+      <audit
+        description="Ensure swarm mode is not Enabled, if not needed"
+        msid="7.01"
+        cceid="CIS-CE-7-01"
+        severity="NotApplicable"
+        impact="By default, a Docker engine instance will not listen on any network ports, with all communications with the client coming over the Unix socket. When Docker swarm mode is enabled on a docker engine instance, multiple network ports are opened on the system and made available to other systems on the network for the purposes of cluster management and node communications."
+        remediation="If swarm mode has been enabled on a system in error, run: 'docker swarm leave'"
+        ruleId="e37a0ca3-7562-48d8-8887-ac28fc2128dc">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for determining whether swarm mode is needed"/>
+      </audit>
+      <audit
+        description="Ensure the minimum number of manager nodes have been created in a swarm"
+        msid="7.02"
+        cceid="CIS-CE-7-02"
+        severity="NotApplicable"
+        impact="Manager nodes within a swarm have control over the swarm and change its configuration modifying security parameters. Having excessive manager nodes could render the swarm more susceptible to compromise. If fault tolerance is not required in the manager nodes, a single node should be elected as a manager. If fault tolerance is required then the smallest practical odd number to achieve the appropriate level of tolerance should be configured."
+        remediation="If an excessive number of managers is configured, the excess can be demoted as worker using the following command: 'docker node demote {ID}' Where is the node ID value of the manager to be demoted."
+        ruleId="7e3039ec-e2a8-437e-a21e-eb9bc19414d2">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for determining the minimum number of required manager nodes"/>
+      </audit>
+      <audit
+        description="Ensure data exchanged between containers are encrypted on different nodes on the overlay network"
+        msid="7.04"
+        cceid="CIS-CE-7-04"
+        severuty="Optional"
+        impact="By default, data exchanged between containers on different nodes on the overlay network is not encrypted. This could potentially expose traffic between the container nodes."
+        remediation="Create overlay network with `--opt encrypted` flag."
+        ruleId="00327be6-dfc0-49d4-b45b-e2a2c5c179ed">
+        <check distro="*" command="CheckNoMatchingLinesDockerNetworkInspect" key="{{if eq .Driver &quot;overlay&quot;}}{{ .Name }}: {{ .Options.encrypted }}{{end}}" regex="&lt;no value&gt;" />
+      </audit>
+      <audit
+        description="Ensure Docker's secret management commands are used for managing secrets in a Swarm cluster (Not Scored)"
+        msid="7.05"
+        cceid="CIS-CE-7-05"
+        severity="NotApplicable"
+        impact="Docker has various commands for managing secrets in a Swarm cluster. This is the foundation for future secret support in Docker with potential improvements such as Windows support, different backing stores, etc."
+        remediation="Follow docker secret documentation and use it to manage secrets effectively."
+        ruleId="735169b2-be8a-4c1d-9ffa-4afacb93e5fa">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for managing secrets in Swarm clusters" />
+      </audit>
+      <audit
+        description="Ensure swarm manager is run in auto-lock mode"
+        msid="7.06"
+        cceid="CIS-CE-7-06"
+        severity="Warning"
+        impact="When Docker restarts, both the TLS key used to encrypt communication among swarm nodes, and the key used to encrypt and decrypt Raft logs on disk, are loaded into each manager node's memory. You should protect the mutual TLS encryption key and the key used to encrypt and decrypt Raft logs at rest. This protection could be enabled by initializing swarm with `--autolock` flag. With `--autolock `enabled, when Docker restarts, you must unlock the swarm first, using a key encryption key generated by Docker when the swarm was initialized."
+        remediation="If you are initializing swarm, use the below command. ``` docker swarm init --autolock ``` If you want to set `--autolock` on an existing swarm manager node, use the below command. ``` docker swarm update --autolock ```"
+        ruleId="fc66ec35-7c23-41bf-b433-a333540a9389">
+        <check distro="*" command="CheckDockerCommandOutputNotMatch" key="swarm unlock-key" regex="no unlock key is set" expect="true" />
+      </audit>
+      <audit
+        description="Ensure swarm manager auto-lock key is rotated periodically (Not Scored)"
+        msid="7.07"
+        cceid="CIS-CE-7-07"
+        severity="NotApplicable"
+        impact="Swarm manager auto-lock keys are not automatically rotated. You should rotate them periodically as a best practice."
+        remediation="Run the following command to rotate the keys: 'docker swarm unlock-key --rotate' Additionally, to facilitate auditing for this recommendation, maintain key rotation records and ensure that you establish a pre-defined frequency for key rotation."
+        ruleId="fe4b1c92-9a05-42ad-85a1-06fb748b0154">
+        <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for tracking and implementing key rotation for swarm manager auto-lock key" />
+      </audit>
+      <audit
+          description="Ensure node certificates are rotated as appropriate (Not Scored)"
+          msid="7.08"
+          cceid="CIS-CE-7-08"
+          severity="NotApplicable"
+          impact="Docker Swarm uses mutual TLS for clustering operations amongst its nodes. Certificate rotation ensures that in an event such as compromised node or key, it is difficult to impersonate a node. By default, node certificates are rotated every 90 days. You should rotate it more often or as appropriate in your environment."
+          remediation="Run the following command to set the desired expiry time. For example: 'docker swarm update --cert-expiry 48h'"
+          ruleId="a5b0207c-3457-4b42-83ba-77027f2b42fd">
+          <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for rotation of swarm node certificates" />
+      </audit>
+      <audit
+          description="Ensure CA certificates are rotated as appropriate (Not Scored)"
+          msid="7.09"
+          cceid="CIS-CE-7-09"
+          severity="NotApplicable"
+          impact="Docker Swarm uses mutual TLS for clustering operations amongst its nodes. Certificate rotation ensures that in an event such as compromised node or key, it is difficult to impersonate a node. Node certificates depend upon root CA certificates. For operational security, it is important to rotate these frequently. Currently, root CA certificates are not rotated automatically. You should thus establish a process to rotate it at the desired frequency."
+          remediation="Run the following command to rotate the certificate: 'docker swarm ca --rotate'"
+          ruleId="c43ac9d3-f3cb-4d9c-8a12-c755eaa541e1">
+          <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for rotation of root CA certificates" />
+      </audit>
+      <audit
+          description="Ensure management plane traffic has been separated from data plane traffic (Not Scored)"
+          msid="7.10"
+          cceid="CIS-CE-7-10"
+          severity="NotApplicable"
+          impact="Separating the management plane traffic from data plane traffic ensures that these traffics are on their respective paths. These paths could then be individually monitored and could be tied to different traffic control policies and monitoring. It also ensures that management plane is always reachable despite the huge volume of data flow."
+          remediation="Initialize Swarm with dedicated interfaces for management and data planes respectively. For example: 'docker swarm init --advertise-addr=192.168.0.1 --data-path-addr=17.1.0.3' "
+          ruleId="3c330143-46bb-4940-acb9-4e77a68d1377">
+          <check distro="*" command="CheckAlwaysPass" justification="Customers are responsible for separation of management plane traffic from data plane traffic" />
+      </audit>
+  </audits>
+</baseline>
