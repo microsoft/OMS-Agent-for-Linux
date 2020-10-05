@@ -670,7 +670,12 @@ onboard()
             # Set up a cron job to run the OMSConsistencyInvoker every 15 minutes
             # This should be done regardless of MetaConfig creation
             if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
-                echo "*/15 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+	    	RANDOM=$(date +%s)
+		A=$(($RANDOM%13+2))
+		B=$(($A+15))
+		C=$(($B+15))
+		D=$(($C+15))	
+                echo "$A,$B,$C,$D * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
             fi
 
             if [ ! -f $METACONFIG_PY ]; then
