@@ -1565,12 +1565,12 @@ case "$installMode" in
 
             # In case --upgrade is run without -w <id> and -s <key>
             if [ ! -f "$OMS_CONSISTENCY_INVOKER" ]; then
-	    	RANDOM=$(date +%s)
-		A=$(($RANDOM%13+2))
-		B=$(($A+15))
-		C=$(($B+15))
-		D=$(($C+15))		
-                echo "$A,$B,$C,$D * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
+                RANDOM=$(date +%s)
+                A=$(($RANDOM%13+2))
+                B=$(($A+15))
+                C=$(($B+15))
+                D=$(($C+15))
+                echo "$A,$B,$C,$D * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER		
             fi
             /opt/omi/bin/service_control restart
         fi
