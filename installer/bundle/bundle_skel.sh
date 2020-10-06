@@ -1565,8 +1565,8 @@ case "$installMode" in
 
             # In case --upgrade is run without -w <id> and -s <key>
             if [ ! -f "$OMS_CONSISTENCY_INVOKER" ]; then
-                RANDOM=$(date +%s)
-                A=$(($RANDOM%13+2))
+                randomNo=$(od -An -N1 -i /dev/urandom)
+                A=$(($randomNo%13+2))
                 B=$(($A+15))
                 C=$(($B+15))
                 D=$(($C+15))
