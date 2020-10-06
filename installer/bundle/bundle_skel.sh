@@ -1513,7 +1513,7 @@ case "$installMode" in
 
         # Update OMS Agent
         shouldInstall_omsagent
-	rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
+        rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
         pkg_upd $OMS_PKG omsagent $?
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
