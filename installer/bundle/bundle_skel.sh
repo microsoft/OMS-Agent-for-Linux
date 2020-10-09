@@ -1513,6 +1513,7 @@ case "$installMode" in
 
         # Update OMS Agent
         shouldInstall_omsagent
+        rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
         pkg_upd $OMS_PKG omsagent $?
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
@@ -1564,7 +1565,12 @@ case "$installMode" in
 
             # In case --upgrade is run without -w <id> and -s <key>
             if [ ! -f "$OMS_CONSISTENCY_INVOKER" ]; then
-                echo "*/15 * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
+                randomNo=$(od -An -N1 -i /dev/urandom)
+                A=$(($randomNo%13+2))
+                B=$(($A+15))
+                C=$(($B+15))
+                D=$(($C+15))
+                echo "$A,$B,$C,$D * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER		
             fi
             /opt/omi/bin/service_control restart
         fi
