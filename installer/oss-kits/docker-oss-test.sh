@@ -15,7 +15,7 @@ if [ "$(uname -m)" == "x86_64" ]; then
             fi
             # version check (order of below check is important)
             # supported versions -- major versions >= 17, except azure forks. We need to special case for major version 3, due to Moby azure fork (which did not have 'azure' in them)
-            if [ "$($PYTHON -c "print(\"azure\" in \"$(docker version --format {{.Server.Version}}))" 2>/dev/null)" == "True" ]; then
+            if [ "$($PYTHON -c "print(\"azure\" in \"$(docker version --format {{.Server.Version}})\")" 2>/dev/null)" == "True" ]; then
                 echo "  Azure fork is found in Docker version. Docker agent will not be installed." 1>&2
                 exit 1
             elif [ "$($PYTHON -c "print(int(\"$(docker version --format {{.Server.Version}})\".split('.')[0]) == 3)" 2>/dev/null)" == "True" ]; then
