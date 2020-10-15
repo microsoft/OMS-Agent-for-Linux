@@ -3,7 +3,7 @@
 SOLO_LAD_DIR=/var/lib/waagent/Microsoft.Azure.Diagnostics.LinuxDiagnostic-*
 OMS_LAD_DIR=/var/opt/microsoft/omsagent/LAD
 
-OMS_ONBOARD_AGENT=onboard_agent.sh
+OMS_UNINSTALL_AGENT=uninstall.sh
 
 WAAGENT_DIR=/var/lib/waagent
 WAAGENT_XML=$WAAGENT_DIR/Microsoft.EnterpriseCloud.Monitoring.OmsAgentForLinux.*.manifest.xml
@@ -14,7 +14,7 @@ STOPPED_WAAGENT=0
 UNSUPPORTED_PKG_INSTALLER=66
 UNSUPPORTED_SERVICE_CONTROLLER=67
 UNSUPPORTED_WAAGENT_NAME=68
-ONBOARD_AGENT_MISSING=69
+UNINSTALL_AGENT_MISSING=69
 
 
 # $1 - exit status
@@ -306,22 +306,22 @@ if [ $EXTENSION_INSTALLED -eq 0 ]; then
 fi
 
 # run OMS purge command
-echo "---------- Downloading OMS Onboarding Script ----------"
-if [ ! -f $OMS_ONBOARD_AGENT ]; then
-    wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh
+echo "---------- Downloading OMS Uninstall Script ----------"
+if [ ! -f $OMS_UNINSTALL_AGENT ]; then
+    wget https://raw.githubusercontent.com/microsoft/OMS-Agent-for-Linux/master/installer/scripts/uninstall.sh
     if [ $? -ne 0 ]; then
-        echo "Error accessing Github to download the purge script for the OMS Agent" >&2
+        echo "Error accessing Github to download the uninstall script for the OMS Agent" >&2
         echo "Please ensure that this machine can connect to the following URL:" >&2
-        echo "  https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh" >&2
-        echo "Or ensure the onboard_agent.sh script is available in the same directory as this script." >&2
-        call_exit $ONBOARD_AGENT_MISSING
+        echo "  https://raw.githubusercontent.com/microsoft/OMS-Agent-for-Linux/master/installer/scripts/uninstall.sh" >&2
+        echo "Or ensure the uninstall.sh script is available in the same directory as this script." >&2
+        call_exit $UNINSTALL_AGENT_MISSING
     fi
 fi
 echo ""
 
-echo "---------- Running OMS Purge Script ----------"
-chmod +x ./onboard_agent.sh
-./onboard_agent.sh --purge
+echo "---------- Running OMS Uninstall Script ----------"
+chmod +x uninstall.sh
+./uninstall.sh P
 
 # remove OMS Extension info
 
