@@ -64,7 +64,6 @@ ulinux_detect_servicecontroller()
     # Detect based on systemd
     if which systemctl > /dev/null 2>&1; then
         CONTROLLER="systemctl"
-    
     # Fall back on detection via filepath
     else
         if   [ -f "/bin/systemctl" ]; then
@@ -135,16 +134,10 @@ check_waagent_name()
         elif systemctl status walinuxagent > /dev/null 2>&1; then
             WAAGENT_NAME="walinuxagent"
         fi
-    elif [ "$CONTROLLER" = "service" ]; then
-        if service waagent status > /dev/null 2>&1; then
+    else
+        if $CONTROLLER waagent status > /dev/null 2>&1; then
             WAAGENT_NAME="waagent"
-        elif service walinuxagent status > /dev/null 2>&1; then
-            WAAGENT_NAME="walinuxagent"
-        fi
-    elif [ "$CONTROLLER" = "invoke-rc.d" ]; then
-        if invoke-rc.d waagent status > /dev/null 2>&1; then
-            WAAGENT_NAME="waagent"
-        elif invoke-rc.d walinuxagent status > /dev/null 2>&1; then
+        elif $CONTROLLER walinuxagent status > /dev/null 2>&1; then
             WAAGENT_NAME="walinuxagent"
         fi
     fi
@@ -162,10 +155,8 @@ stop_waagent()
     if check_service_running; then
         if [ "$CONTROLLER" = "systemctl" ]; then
             systemctl stop $WAAGENT_NAME
-        elif [ "$CONTROLLER" = "service" ]; then
-            service $WAAGENT_NAME stop
         else
-            invoke-rc.d $WAAGENT_NAME stop
+            $CONTROLLER $WAAGENT_NAME stop
         fi
 
         if [ $? -ne 0 ]; then
@@ -182,10 +173,8 @@ restart_waagent()
     if [ $STOPPED_WAAGENT -eq 1 ]; then
         if [ "$CONTROLLER" = "systemctl" ]; then
             systemctl restart $WAAGENT_NAME
-        elif [ "$CONTROLLER" = "service" ]; then
-            service $WAAGENT_NAME restart
         else
-            invoke-rc.d $WAAGENT_NAME restart
+            $CONTROLLER $WAAGENT_NAME restart
         fi
 
         if [ $? -ne 0 ]; then
