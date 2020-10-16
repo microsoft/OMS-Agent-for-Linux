@@ -301,6 +301,11 @@ if [ $EXTENSION_INSTALLED -eq 0 ]; then
     echo "Go to Azure Portal -> Virtual Machines -> <vm_name> -> Settings -> Extensions"
     echo "and then click the '...' in the OMSAgentForLinux row and click 'Uninstall'"
     echo "(Do this as well with the DependencyAgentLinux row)"
+    echo "---------- IMPORTANT NOTE ----------"
+    echo "If you have a policy or ASC set up to push the OMS Extension to the machine, it will quickly"
+    echo "re-install the extension. To ensure that this doesn't occur, please make sure to resume the"
+    echo "script immediately after the extension is uninstalled via portal."
+    echo "------------------------------------"
     read -p "Press enter to proceed once the Extension is uninstalled." toss2
     echo ""
 fi
