@@ -215,7 +215,9 @@ group_rm()
 dir_rm()
 {
     if [ -d $1 ]; then
-        pkg_rm $2
+        if [ "$2" != "" ]; then
+            pkg_rm $2
+        fi
         if [ -d $1 ]; then
             rm -rf $1
         fi
@@ -371,6 +373,10 @@ dir_rm /var/opt/microsoft/scx scx
 if [ ! "$(ls -A /var/opt/microsoft > /dev/null 2>&1)" ]; then
     dir_rm /var/opt/microsoft
 fi
+
+dir_rm /etc/opt/omi
+dir_rm /opt/omi
+dir_rm /var/opt/omi
 
 if [ $EXTENSION_INSTALLED -eq 0 ]; then
     dir_rm /var/lib/waagent/Microsoft.EnterpriseCloud.Monitoring.OmsAgentForLinux-*
