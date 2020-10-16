@@ -226,7 +226,12 @@ dir_rm()
 
 ##### PURGE SCRIPT FOLLOWS #####
 
-
+# check that we're running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "In order to successfully purge the agent, this script needs to be run as root."
+    echo "Please run this script with 'sudo' in front in order to purge the agent."
+    call_exit 1
+fi
 
 ulinux_detect_installer
 ulinux_detect_servicecontroller
