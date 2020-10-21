@@ -272,7 +272,7 @@ if [ $LAD_MDSD_INSTALLED -eq 0 ]; then
     echo "make sure to resume the script immediately after the extension is uninstalled"
     echo "via portal."
     echo "------------------------------------"
-    read -p "Press enter to proceed once the Extension is uninstalled." toss2
+    read -p "Press enter to proceed once the LAD Extension is uninstalled." toss2
     echo ""
 
     # remove LAD directories
@@ -281,7 +281,7 @@ if [ $LAD_MDSD_INSTALLED -eq 0 ]; then
     do
         dir_rm d
     done
-    
+
     if [ -d $OMS_LAD_DIR ]; then
         dir_rm $OMS_LAD_DIR
     fi
@@ -324,7 +324,7 @@ if [ $EXTENSION_INSTALLED -eq 0 ]; then
     echo "make sure to resume the script immediately after the extension is uninstalled"
     echo "via portal."
     echo "------------------------------------"
-    read -p "Press enter to proceed once the Extension is uninstalled." toss2
+    read -p "Press enter to proceed once the OMS Extension is uninstalled." toss2
     echo ""
 fi
 
