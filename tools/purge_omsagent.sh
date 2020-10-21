@@ -211,13 +211,14 @@ group_rm()
 }
 
 # $1 - The name of the directory to delete (if it exists)
-# $2 - The name of the package associated with the directory
 dir_rm()
 {
     if [ -d $1 ]; then
-        if [ "$2" != "" ]; then
-            pkg_rm $2
-        fi
+        # get package name
+        d=${1%*/}       # remove the trailing "/"
+        pkg=${d##*/}    # grab the folder name (aka the package name)
+        pkg_rm pkg
+        # remove directory if still exists
         if [ -d $1 ]; then
             rm -rf $1
         fi
@@ -348,28 +349,28 @@ fi
 
 # remove directories (if they exist)
 echo "---------- Removing all relevant directories ----------"
-dir_rm /etc/opt/microsoft/auoms auoms
-dir_rm /etc/opt/microsoft/dependency-agent dependency-agent
-dir_rm /etc/opt/microsoft/omsagent omsagent
-dir_rm /etc/opt/microsoft/scx scx
+dir_rm /etc/opt/microsoft/auoms
+dir_rm /etc/opt/microsoft/dependency-agent
+dir_rm /etc/opt/microsoft/omsagent
+dir_rm /etc/opt/microsoft/scx
 if [ ! "$(ls -A /etc/opt/microsoft > /dev/null 2>&1)" ]; then
     dir_rm /etc/opt/microsoft
 fi
 
-dir_rm /opt/microsoft/auoms auoms
-dir_rm /opt/microsoft/dependency-agent dependency-agent
-dir_rm /opt/microsoft/omsagent omsagent
-dir_rm /opt/microsoft/omsconfig omsconfig
-dir_rm /opt/microsoft/scx scx
+dir_rm /opt/microsoft/auoms
+dir_rm /opt/microsoft/dependency-agent
+dir_rm /opt/microsoft/omsagent
+dir_rm /opt/microsoft/omsconfig
+dir_rm /opt/microsoft/scx
 if [ ! "$(ls -A /opt/microsoft > /dev/null 2>&1)" ]; then
     dir_rm /opt/microsoft
 fi
 
-dir_rm /var/opt/microsoft/auoms auoms
-dir_rm /var/opt/microsoft/dependency-agent dependency-agent
-dir_rm /var/opt/microsoft/omsagent omsagent
-dir_rm /var/opt/microsoft/omsconfig omsconfig
-dir_rm /var/opt/microsoft/scx scx
+dir_rm /var/opt/microsoft/auoms
+dir_rm /var/opt/microsoft/dependency-agent
+dir_rm /var/opt/microsoft/omsagent
+dir_rm /var/opt/microsoft/omsconfig
+dir_rm /var/opt/microsoft/scx
 if [ ! "$(ls -A /var/opt/microsoft > /dev/null 2>&1)" ]; then
     dir_rm /var/opt/microsoft
 fi
@@ -379,7 +380,10 @@ dir_rm /opt/omi
 dir_rm /var/opt/omi
 
 if [ $EXTENSION_INSTALLED -eq 0 ]; then
-    dir_rm /var/lib/waagent/Microsoft.EnterpriseCloud.Monitoring.OmsAgentForLinux-*
+    for d in /var/lib/waagent/Microsoft.EnterpriseCloud.Monitoring.OmsAgentForLinux-*
+    do
+        dir_rm d
+    done
 fi
 
 echo ""
