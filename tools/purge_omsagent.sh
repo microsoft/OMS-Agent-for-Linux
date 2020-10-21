@@ -249,7 +249,7 @@ if [ $LAD_MDSD_INSTALLED -eq 0 ]; then
     echo "  Purging OMS without purging LAD may not fully succeed, because LAD has a dependency on OMS."
     echo "  In order to successfully purge OMS, LAD must be purged as well."
     while : ; do
-        read -p "Do you wish to continue with purging? (y/n)" continue_lad
+        read -p "Do you wish to continue with purging? (y/n): " continue_lad
         if [ "$continue_lad" = "y" ]; then
             echo "Continuing with purge..."
             echo "--------------------------------------------------------------------------------"
@@ -266,27 +266,36 @@ if [ $LAD_MDSD_INSTALLED -eq 0 ]; then
     echo "Please go to portal.azure.com and uninstall the LAD extension."
     echo "Go to Azure Portal -> Virtual Machines -> <vm_name> -> Settings -> Extensions"
     echo "and then click the '...' in the LinuxDiagnostic row and click 'Uninstall'"
+    echo "---------- IMPORTANT NOTE ----------"
+    echo "If you have a policy or ASC set up to push the OMS Extension to the machine, it"
+    echo "will quickly re-install the extension. To ensure that this doesn't occur, please"
+    echo "make sure to resume the script immediately after the extension is uninstalled"
+    echo "via portal."
+    echo "------------------------------------"
     read -p "Press enter to proceed once the Extension is uninstalled." toss2
     echo ""
 
     # remove LAD directories
     echo "---------- Removing LAD directories ----------"
-    if [ -d $SOLO_LAD_DIR ]; then
-        rm -rf $SOLO_LAD_DIR
-    fi
+    for d in $SOLO_LAD_DIR
+    do
+        dir_rm d
+    done
+    
     if [ -d $OMS_LAD_DIR ]; then
-        rm -rf $OMS_LAD_DIR
+        dir_rm $OMS_LAD_DIR
     fi
 
     # remove LAD package
-    echo "---------- Removing LAD package ----------"
-    pkg_rm lad-mdsd
+    check_if_pkg_is_installed lad-mdsd
+    if [ $? -eq 0 ]; then
+        pkg_rm lad-mdsd
+    fi
 
     # remove MDSD package
     check_if_pkg_is_installed mdsd
     MDSD_INSTALLED=$?
     if [ $MDSD_INSTALLED -eq 0 ]; then
-        echo "---------- Removing MDSD package ----------"
         pkg_rm mdsd
     fi
 
@@ -416,3 +425,4 @@ echo "  - Install+onboard via shell bundle using the onboard_agent.sh file:"
 echo "    $ wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh"
 echo "    $ sudo ./onboard_agent.sh -w <workspace_id> -s <shared_key>"
 echo "Thank you!"
+call_exit 0
