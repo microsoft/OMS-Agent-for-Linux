@@ -585,7 +585,7 @@ pkg_upd() {
         return $?
     else
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        rpm --upgrade $FORCE ${pkg_filename}.rpm
+        rpm --upgrade --replacepkgs $FORCE ${pkg_filename}.rpm
         return $?
     fi
 }
