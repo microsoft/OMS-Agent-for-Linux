@@ -285,7 +285,7 @@ echo "========================= Performing Building FluentD"
 cd ${FLUENTD_DIR}
 elevate bundle install --local
 elevate bundle exec rake build
-elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.40.gem
+elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.41.gem
 # Ruby 2.6 has JIT disabled by default, let enable it when jit provide performance gain.
 # sed -i 's/bin\/ruby/bin\/ruby --jit/g' ${RUBY_DESTDIR}/bin/fluentd
 
