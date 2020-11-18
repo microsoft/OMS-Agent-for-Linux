@@ -74,7 +74,7 @@ If you are using a distro or version that is not currently supported and doesn't
 * Debian GNU/Linux 8 and 9
 * Ubuntu Linux 14.04 LTS and 16.04 LTS
 
-**Note:** Containers are not supported. If you need to monitor containers, leverage the [container monitoring solution](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview).
+**Note:** Containers are not supported. If you need to monitor containers, please leverage the [Container Monitoring solution](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/containers) for Docker hosts or [Azure Monitor for containers](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview) for Kubernetes.
 
 **Note:** Openssl 1.1.0 is only supported on x86_64 platforms (64-bit).
 
