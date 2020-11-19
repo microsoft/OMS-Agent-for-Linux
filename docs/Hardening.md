@@ -85,6 +85,47 @@ $> cat /etc/security/limits.conf | grep omsagent
 omsagent  hard  nproc  200
 ```
 
+### User Access Limitation
+#### Issue
+OMS can run into an issue where OMSConsistencyInvoker is not called by crond due to customized security rules. In a more general sense, OMS runs as the omsagent user in the VM, and any modifications to crond permissions or sudoers permissions can cause issues when running the agent.
+
+#### How to Check
+You can run the below command to see the security rules for crond:
+```
+$> cat /etc/security/access.conf
++ : root : ALL
++ : @admin : ALL
+- : ALL : ALL
+```
+In the above scenario, omsagent wouldn't be able to run any crond processes, since the security rules above have been modified to deny all types of access except for root and admin users. This could result in the below logs in /var/log/cron:
+```
+crond[47608]: (omsagent) FAILED to authorize user with PAM (Permission denied)
+```
+
+For sudoers, OMS Agent upon install creates a sudoers file in /etc/sudoers.d/. You can check if there have been any modifications to the file by running the following command:
+```
+$> wget --quiet -O oms-sudoers-test https://raw.githubusercontent.com/microsoft/OMS-Agent-for-Linux/master/installer/conf/sudoers; diff oms-sudoers-test /etc/sudoers.d/omsagent
+```
+This will download a copy of the original OMS sudoers file saved as `oms-sudoers-test`, and compares it against the current OMS sudoers file. Any output is a sign of changes to the file.
+
+Note: If the above command errors saying `diff: /etc/sudoers.d/omsagent: No such file or directory`, then OMS couldn't create a sudoers file, and instead put the information in /etc/sudoers. You can instead check the /etc/sudoers file to ensure it contains all of the contents of `oms-sudoers-test`.
+
+#### How to Fix
+To fix the crond issue, just ensure that the crond process can run cron command as omsagent user by modifying the /etc/security/access.conf file. After modification, the file should look like below:
+```
+$> cat /etc/security/access.conf
++ : root : ALL
++ : @admin : ALL
++ : omsagent : ALL
+- : ALL : ALL
+```
+
+Unfortunately, we don't support changes to any sudoers files. You can replace the modified /etc/sudoers.d/omsagent file with the original to try and fix the issue:
+```
+$> sudo mv oms-sudoers-test /etc/sudoers.d/omsagent
+```
+The same logic should apply if the /etc/sudoers file itself is the problem - ensure that /etc/sudoers hasn't been edited from its original state, then add the contents of `oms-sudoers-test` to /etc/sudoers without modification.
+
 ### Existing Ruby from RVM
 #### Issue
 OMS Agent ships a specific version of Ruby. Installing a different version of Ruby from the RVM (Ruby Version Manager) may define global environment variables (e.g. `GEM_HOME`, `GEM_PATH`) that conflict with those used by the OMS-specific Ruby installation.
