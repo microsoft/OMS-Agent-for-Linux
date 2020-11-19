@@ -72,7 +72,8 @@ module Fluent
           'EventTime' => OMS::Common::fast_utc_to_iso8601_format(Time.at(time).utc),
           'Message' => "#{ident}: #{record['message']}",
           'Facility' =>  tags[tags.size - 2],
-          'Severity' => tags[tags.size - 1]
+          'Severity' => tags[tags.size - 1],
+          'Host' => record['host']
       }
 
       host_ip = @ip_cache.get_ip(record['host'])
