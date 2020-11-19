@@ -1,4 +1,4 @@
-# Linux Hardening using OMS Log Collector
+# Linux Hardening using OMS Agent
 We support some industry standard hardening (please see [Supported Hardening or Customization](#supported-hardening-or-customization) for more details). Other forms of hardening are officially unsupported, but we provide some [troubleshooting steps](#common-hardening-issues) to follow for customized hardening.
 
 # Table of Contents
