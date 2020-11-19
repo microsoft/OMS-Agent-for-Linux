@@ -108,7 +108,11 @@ $> wget --quiet -O oms-sudoers-test https://raw.githubusercontent.com/microsoft/
 ```
 This will download a copy of the original OMS sudoers file saved as `oms-sudoers-test`, and compares it against the current OMS sudoers file. Any output is a sign of changes to the file.
 
-Note: If the above command errors saying `diff: /etc/sudoers.d/omsagent: No such file or directory`, then OMS couldn't create a sudoers file, and instead put the information in /etc/sudoers. You can instead check the /etc/sudoers file to ensure it contains all of the contents of `oms-sudoers-test`.
+Note: If the above command errors saying `diff: /etc/sudoers.d/omsagent: No such file or directory`, then OMS couldn't create a sudoers file, and instead put the information in /etc/sudoers. You can instead check the /etc/sudoers file to ensure it contains all of the contents of `oms-sudoers-test`:
+```
+$> grep -f "/etc/sudoers" "oms-sudoers-test" >> grep-result-test; diff grep-result-test oms-sudoers-test; rm -f grep-result-test
+```
+This will compare to see if the content of the original OMS sudoers file is in /etc/sudoers without any changes. Any output from this command is a sign of changes to the OMS sudoers information.
 
 #### How to Fix
 To fix the crond issue, just ensure that the crond process can run cron command as omsagent user by modifying the /etc/security/access.conf file. After modification, the file should look like below:
@@ -120,11 +124,11 @@ $> cat /etc/security/access.conf
 - : ALL : ALL
 ```
 
-Unfortunately, we don't support changes to any sudoers files. You can replace the modified /etc/sudoers.d/omsagent file with the original to try and fix the issue:
+Unfortunately, we don't support changes to the omsagent sudoers.d file. You can replace the modified /etc/sudoers.d/omsagent file with the original to try and fix the issue:
 ```
 $> sudo mv oms-sudoers-test /etc/sudoers.d/omsagent
 ```
-The same logic should apply if the /etc/sudoers file itself is the problem - ensure that /etc/sudoers hasn't been edited from its original state, then add the contents of `oms-sudoers-test` to /etc/sudoers without modification.
+The same logic should apply if the /etc/sudoers file itself is the problem - ensure that the contents of `oms-sudoers-test` are added to /etc/sudoers without modification.
 
 ### Existing Ruby from RVM
 #### Issue
