@@ -1,6 +1,5 @@
-# Linux Hardening while using OMS Log Collector
-We support some industry standard hardening (please see [Supported Hardening or Customization](#supported-hardening-or-customization) for more details).
-We also can provide some [troubleshooting steps](#common-hardening-issues) for customized hardening.
+# Linux Hardening using OMS Log Collector
+We support some industry standard hardening (please see [Supported Hardening or Customization](#supported-hardening-or-customization) for more details). Other forms of hardening are officially unsupported, but we provide some [troubleshooting steps](#common-hardening-issues) to follow for customized hardening.
 
 # Table of Contents
 - [Supported Hardening or Customization](#supported-hardening-or-customization)
@@ -36,19 +35,19 @@ Several major folders in Linux need to have appropriate file permissions, otherw
 | `/var` | 755 | `drwxr-xr-x` |
 | `/var/log` | 775 | `drwxrwxr-x` |
 | `/etc` | 775 | `drwxrwxr-x` |
+| `/opt` | 775 | `drwxrwxr-x` |
 | `/tmp` | 775 | `drwxrwxr-x` |
 
 #### How to Check
 You can check what the permissions for these folders are by the following:
 ```
-$> ls -l / | grep var
-dr-x--x--x  14 root root       4096 Apr  6  2019 var
-$> ls -l /var | grep log
-dr-x--x--x  11 root syslog     4096 Nov 17 00:05 log
-$> ls -l / | grep etc
-dr-x--x--x 132 root root      12288 Nov 14 06:30 etc
-$> ls -l / | grep tmp
-dr-x------  20 root root       4096 Nov 17 08:38 tmp
+$> ls -l / | grep -E 'var|etc|opt|tmp'; ls -ld /var/log
+drw-r--r--.  85 root root 8192 Nov 13 00:55 etc
+dr--------.   6 root root   55 Nov 10 18:15 opt
+dr-x--x---.   7 root root   93 Nov 18 03:13 tmp
+dr-x--x--x.  20 root root  282 Nov 13 00:54 var
+drwxr-----.  10 root root 4096 Nov 15 03:36 /var/log
+
 ```
 
 #### How to Fix
@@ -88,7 +87,7 @@ omsagent  hard  nproc  200
 
 ### Existing Ruby from RVM
 #### Issue
-Because the OMS Agent ships a specific version of Ruby, there's a possibility of installing a different version of Ruby from the RVM (Ruby version manager). This can end up with conflicts with the OMS version, due to the global variables set by RVM (ex: GEM_HOME, GEM_PATH).
+OMS Agent ships a specific version of Ruby. Installing a different version of Ruby from the RVM (Ruby Version Manager) may define global environment variables (e.g. `GEM_HOME`, `GEM_PATH`) that conflict with those used by the OMS-specific Ruby installation.
 
 #### How to Check
 You can check the version of Ruby that's running with the following commands:
@@ -98,7 +97,7 @@ ruby 2.2.2p95 (2015-04-13 revision 50295) [x86_64-linux]
 $> which ruby
 /usr/local/rvm/rubies/ruby-2.2.2/bin/ruby
 ```
-Standard Ruby install through OMS Agent should result in below:
+The standard Ruby install should result in below:
 ```
 $> which ruby
 /usr/bin/ruby
@@ -144,6 +143,13 @@ RubyGems Environment:
      - /usr/bin
      - /usr/local/rvm/bin
      - /root/bin
+```
+Specifically, checking the `GEM PATHS` section should give an idea as to what paths are being used for Ruby. You can also check the individual paths with the following:
+```
+$> echo $GEM_HOME
+/usr/local/rvm/gems/ruby-2.2.2
+$> echo $GEM_PATH
+/usr/local/rvm/gems/ruby-2.2.2:/usr/local/rvm/gems/ruby-2.2.2@global
 ```
 
 #### How to Fix
