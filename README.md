@@ -51,8 +51,9 @@ The Log Analytics agent for Linux is built to work with Azure Monitor logs, whic
 2. Focus support on any of the [Azure Linux Endorsed distros](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros). Note that there may be some delay between a new distro/version being Azure Linux Endorsed and it being supported for the Log Analytics Linux agent.
 3. Not support versions that have passed their manufacturer's end-of-support date.
 4. Always support the latest GA version of a supported distro.
-5. Not support new versions of AMI.
-6. Only support versions that run SSL 1.x by default.
+5. Only support VM images; containers, even those derived from official distro publishers' images, are not supported.
+6. Not support new versions of AMI.
+7. Only support versions that run SSL 1.x by default.
 
 If you are using a distro or version that is not currently supported and doesn't fit our future support strategy, we recommend that you fork this repo, acknowledging that Microsoft support will not provide assistance with for forked agent versions.
 
@@ -72,6 +73,8 @@ If you are using a distro or version that is not currently supported and doesn't
 * Red Hat Enterprise Linux Server 6
 * Debian GNU/Linux 8 and 9
 * Ubuntu Linux 14.04 LTS and 16.04 LTS
+
+**Note:** Containers are not supported. If you need to monitor containers, please leverage the [Container Monitoring solution](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/containers) for Docker hosts or [Azure Monitor for containers](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-overview) for Kubernetes.
 
 **Note:** Openssl 1.1.0 is only supported on x86_64 platforms (64-bit).
 
