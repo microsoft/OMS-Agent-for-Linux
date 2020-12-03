@@ -976,12 +976,12 @@ DenyGroups
       cceid="CCE-15018-5"
       severity="Important"
       impact="An attacker could use this system to send emails with malicious content to other users"
-      remediation="Add the line 'inet_interfaces localhost' to the file '/etc/postfix/main.cf'"
+      remediation="Add the line 'inet_interfaces = localhost' to the file '/etc/postfix/main.cf'"
       ruleId="d0cc4e35-70a1-4ee5-b572-3b969201562e">
       <check
         distro="Ubuntu"
         command="CheckMatchingLinesIfExists"
-        regex="^[\s\t]*inet_interfaces\s+localhost\s*$"
+        regex="^[\s\t]*inet_interfaces\s*=\s*localhost\s*$"
         path="/etc/postfix/main.cf" />
     </audit>
     <audit
