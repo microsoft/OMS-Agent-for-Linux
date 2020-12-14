@@ -37,7 +37,7 @@ TST_EXTRACT_DIR="`pwd -P`/tst_omsbundle.$$"
 TST_PATH="${BIN_PATH}/troubleshooter"
 TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
 
-TST_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/troubleshooter/source/code/troubleshooter/omsagent_tst.tar.gz"
+TST_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/source/code/troubleshooter/omsagent_tst.tar.gz"
 TST_DOCS="https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting-Tool.md"
 
 # These symbols will get replaced during the bundle creation process.
