@@ -38,7 +38,7 @@ TST_PATH="${BIN_PATH}/troubleshooter"
 TST_MODULES_PATH="/opt/microsoft/omsagent/tst"
 PURGE_SCRIPT_PATH="${BIN_PATH}/purge_omsagent.sh"
 
-TST_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/troubleshooter/source/code/troubleshooter/omsagent_tst.tar.gz"
+TST_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/source/code/troubleshooter/omsagent_tst.tar.gz"
 TST_DOCS="https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting-Tool.md"
 PURGE_SCRIPT_PKG="https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/tools/purge_omsagent.sh"
 
