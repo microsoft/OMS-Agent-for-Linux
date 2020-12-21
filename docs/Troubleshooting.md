@@ -342,6 +342,7 @@ Follow these steps to recover from a bad state, like changing/removing important
 * Connection to the OMS Service is blocked
 * VM was rebooted
 * OMI package was manually upgraded to a newer version compared to what was installed by OMS Agent package
+* OMI is frozen, blocking OMS agent
 * DSC resource logs "class not found" error in `omsconfig.log` log file
 * OMS Agent for Linux data is backed up
 * DSC logs "Current configuration does not exist. Execute Start-DscConfiguration command with -Path parameter to specify a configuration file and create a current configuration first." in `omsconfig.log` log file, but no log message exists about `PerformRequiredConfigurationChecks` operations.
@@ -353,6 +354,7 @@ Follow these steps to recover from a bad state, like changing/removing important
 * If using a proxy, check proxy troubleshooting steps above
 * In some Azure distribution systems omid OMI server daemon does not start after Virtual machine is rebooted. This will result in not seeing Audit, ChangeTracking or UpdateManagement solution related data. Workaround is manually start omi server by running `sudo /opt/omi/bin/service_control restart`
 * After OMI package is manually upgraded to a newer version it has to be manually restarted for OMS Agent to conitnue functioning. This step is required for some distros where OMI server does not automatically start after upgrade. Please run `sudo /opt/omi/bin/service_control restart` to restart OMI.
+* In some situations, OMI can become frozen. The OMS agent may enter a blocked state waiting for OMI, blocking all data collection. The OMS agent process will be running but there will be no activity, evidenced by no new log lines (such as sent heartbeats) present in `omsagent.log`. Restart OMI with `sudo /opt/omi/bin/service_control restart` to recover the agent.
 * If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
