@@ -411,6 +411,13 @@ def copyCommonFiles(omsLinuxType):
     cmd='cp /var/opt/omi/log/omi* /tmp/omslogs'
     out=execCommand(cmd)
     writeLogCommand(cmd)
+    scxExists=os.path.exists('/var/opt/microsoft/scx/log/scx.log')
+    if(scxExists == True):
+       cmd='cp /var/opt/microsoft/scx/log/scx* /tmp/omslogs'
+       out=execCommand2(cmd)
+       writeLogCommand(cmd)
+    else:
+       writeLogCommand('Skipping collection of scx.log as it does not exist')
     cmd='cp /var/opt/microsoft/scx/log/scx* /tmp/omslogs'
     out=execCommand2(cmd)
     writeLogCommand(cmd)
@@ -537,7 +544,9 @@ def estCommonFileSize(omsLinuxType):
     folderName='/etc/opt/microsoft/omsagent/'
     reqSize+=getFolderSize(folderName)
     reqSize+=os.path.getsize('/var/opt/microsoft/omsconfig/omsconfig.log')
-    reqSize+=os.path.getsize('/var/opt/microsoft/scx/log/scx.log')
+    scxExists=os.path.exists('/var/opt/microsoft/scx/log/scx.log')
+    if(scxExists == True):
+       reqSize+=os.path.getsize('/var/opt/microsoft/scx/log/scx.log')
     if(omsLinuxType == 'Ubuntu'):
        reqSize+=os.path.getsize('/var/log/syslog')
     else:
