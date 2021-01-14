@@ -61,8 +61,9 @@ If none of these steps work for you the following channels for help are also ava
 | 5 | The shell bundle must be executed as root OR there was 403 error returned during onboarding; Run your command using `sudo` |
 | 6 | Invalid package architecture OR there was error 200 error returned during onboarding; omsagent-*x64.sh packages can only be installed on 64-bit systems, and omsagent-*x86.sh packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
 | 17 | Installation of OMS package failed; Look through the command output for the root failure |
-| 19 | Installation of OMI package failed; Look through the command output for the root failure |
-| 20 | Installation of SCX package failed; Look through the command output for the root failure |
+| 18 | Installation of OMSConfig package failed; Look through the command output for the root failure; Any Github issues should be opened with the [Powershell-DSC-for-Linux Github repo](https://github.com/microsoft/PowerShell-DSC-for-Linux) |
+| 19 | Installation of OMI package failed; Look through the command output for the root failure; Any Github issues should be opened with the [OMI Github repo](https://github.com/microsoft/omi) |
+| 20 | Installation of SCX package failed; Look through the command output for the root failure; Any Github issues should be opened with the [SCXCore Github repo](https://github.com/microsoft/SCXcore) |
 | 21 | Installation of Provider kits failed; Look through the command output for the root failure |
 | 22 | Installation of bundled package failed; Look through the command output for the root failure |
 | 23 | SCX or OMI package already installed; Use `--upgrade` instead of `--install` to install the shell bundle |
