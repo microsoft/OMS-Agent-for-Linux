@@ -54,7 +54,9 @@ error_messages = {
     ERR_RSA_KEY : "RSA key is invalid, please check {0} for the issue.",
     ERR_FILE_EMPTY : "File {0} is empty.",
     ERR_INFO_MISSING : "Couldn't get {0}. Please check {1} for the issue.",
-    ERR_ENDPT : "Machine couldn't connect to {0}: {1}",
+    ERR_ENDPT : "Machine couldn't connect to {0}: openssl command failed. "\
+          "Please run the command below for more information on the failure:\n"\
+          "\n  $ {1}\n",
     ERR_GUID : "The agent is configured to report to a different workspace - the GUID "\
           "given is {0}, while the workspace is {1}.",
     ERR_OMS_WONT_RUN : "The agent isn't running / will not start. {0}",

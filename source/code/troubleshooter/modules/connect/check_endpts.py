@@ -7,13 +7,19 @@ from errors      import error_info
 from helpers     import geninfo_lookup
 
 OMSADMIN_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
+SSL_CMD = "echo | openssl s_client -connect {0}:443 -brief"
 
-# socket connect to specific endpoint
-def check_endpt(endpoint):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+# openssl connect to specific endpoint
+def check_endpt_ssl(endpoint):
     try:
-        response = sock.connect_ex((endpoint, 443))
-        return (response == 0)
+        ssl_output = subprocess.check_output(SSL_CMD.format(endpoint), shell=True,\
+                     stderr=subprocess.STDOUT, universal_newlines=True)
+        if (ssl_output.startswith("CONNECTION ESTABLISHED")):
+            return True
+        else:
+            return False
     except Exception:
         return False
 
@@ -21,7 +27,7 @@ def check_endpt(endpoint):
 
 # check general internet connectivity
 def check_internet_connect():
-    if (check_endpt("bing.com") and check_endpt("google.com")):
+    if (check_endpt_ssl("docs.microsoft.com")):
         return NO_ERROR
     else:
         return ERR_INTERNET
@@ -36,10 +42,10 @@ def check_agent_service_endpt():
         return ERR_INFO_MISSING
     agent_endpt = dsc_endpt.split('/')[2]
 
-    if (check_endpt(agent_endpt)):
+    if (check_endpt_ssl(agent_endpt)):
         return NO_ERROR
     else:
-        error_info.append((agent_endpt, "couldn't ping endpoint"))
+        error_info.append((agent_endpt, SSL_CMD.format(agent_endpt)))
         return ERR_ENDPT
 
 
@@ -76,8 +82,8 @@ def check_log_analytics_endpts():
             endpt = endpt.replace('*', workspace_id)
 
         # ping endpoint
-        if (not check_endpt(endpt)):
-            error_info.append((endpt,))
+        if (not check_endpt_ssl(endpt)):
+            error_info.append((endpt, SSL_CMD.format(endpt)))
             success = ERR_ENDPT
 
     return success
