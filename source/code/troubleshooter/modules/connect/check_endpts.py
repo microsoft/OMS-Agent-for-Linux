@@ -1,6 +1,6 @@
 # INSPIRED BY update_mgmt_health_check.py
 
-import socket
+import subprocess
 
 from error_codes import *
 from errors      import error_info
