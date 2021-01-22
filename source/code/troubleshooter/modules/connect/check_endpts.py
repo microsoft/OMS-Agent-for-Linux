@@ -16,7 +16,18 @@ def check_endpt_ssl(endpoint):
     try:
         ssl_output = subprocess.check_output(SSL_CMD.format(endpoint), shell=True,\
                      stderr=subprocess.STDOUT, universal_newlines=True)
-        if (ssl_output.startswith("CONNECTION ESTABLISHED")):
+        ssl_output_lines = ssl_output.split('\n')
+        
+        (connected, verified) = (False, False)
+        for line in ssl_output_lines:
+            if (line == "CONNECTION ESTABLISHED"):
+                connected = True
+                continue
+            if (line == "Verification: OK"):
+                verified = True
+                continue
+
+        if (connected and verified):
             return True
         else:
             return False
