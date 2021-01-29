@@ -72,7 +72,9 @@ error_messages = {
     ERR_HEARTBEAT : "Heartbeats are failing to send data to the workspace.",
     ERR_MULTIHOMING : "Machine registered with more than one log analytics workspace. List of "\
           "workspaces: {0}",
-    ERR_INTERNET : "Machine is not connected to the internet.",
+    ERR_INTERNET : "Machine is not connected to the internet: openssl command failed. "\
+          "Please run the command below for more information on the failure:\n"\
+          "\n  $ {0}\n",
     ERR_QUERIES : "The following queries failed: {0}.",
     ERR_SYSLOG_WKSPC : "Syslog collection is set up for workspace {0}, but OMS is set up with "\
           "workspace {1}. Please see {2} for the issue.",
