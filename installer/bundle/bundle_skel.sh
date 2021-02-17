@@ -486,6 +486,7 @@ install_purge_script()
             echo ""
             return 0
         fi
+    fi
 
     return 0
 }
