@@ -45,10 +45,6 @@ not function properly. omsconfig can be installed by rerunning the omsagent inst
       instance.should_receive(:`).with(CHECK_IF_DPKG).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_INSTALL).and_return(1)
     end
-    
-    flexmock(Process::Status).new_instances do |instance|
-      instance.should_receive(:success?).and_return(false)
-    end
 
     d = create_driver
     d.run
@@ -70,10 +66,6 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
       instance.should_receive(:`).with(CHECK_DSC_STATUS).and_return("Mock DSC config check")
       instance.should_receive(:`).with(CHECK_DSC_STATUS_PYTHON_3).and_return("Mock DSC config check")
       instance.should_receive(:`).with(CHECK_PYTHON).and_return("/usr/bin/python2") # as if python2 is installed
-    end
-
-    flexmock(Process::Status).new_instances do |instance|
-      instance.should_receive(:success?).and_return(false)
     end
 
     d = create_driver
@@ -101,10 +93,6 @@ OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-D
       instance.should_receive(:`).with(CHECK_DSC_STATUS).and_return(result)
       instance.should_receive(:`).with(CHECK_DSC_STATUS_PYTHON_3).and_return(result)
       instance.should_receive(:`).with(CHECK_PYTHON).and_return("/usr/bin/python2") # as if python2 is installed
-    end
-    
-    flexmock(Process::Status).new_instances do |instance|
-      instance.should_receive(:success?).and_return(true)
     end
 
     d = create_driver
