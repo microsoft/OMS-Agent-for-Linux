@@ -229,7 +229,7 @@
         severity="Critical"
         impact="An attacker could compromise a weakly secured SSH connection"
         remediation="Run the command '/usr/local/bin/azsecd remediate -r configure-ssh-ciphers'. This will add the line 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr' to the file '/etc/ssh/sshd_config'"
-        ruleId="b070ed99-f249-4714-aea4-0af6f68afcb8d">
+        ruleId="b07d4c69-a1d9-4c22-a486-634ec3b8c380">
         <check 
           distro="*" 
           command="CheckMatchingConfigValue"
