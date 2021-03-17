@@ -28,7 +28,32 @@ module Fluent
       super
     end
 
+    # For perf debugging
+    def check_eps()
+      if @eps_counter == nil
+        @eps_counter = 0
+
+        @eps_thread = Thread.new {
+          current_time = Time.now
+          previous_time = current_time
+          loop {
+            current_time = Time.now
+            diff_time_ms = (current_time - previous_time)
+            if diff_time_ms >= 1
+              $log.info("Security Syslog EPS #{@eps_counter}, for #{diff_time_ms} second")
+              @eps_counter = 0
+            end
+            previous_time = current_time
+            sleep 1
+          }
+        }
+      end
+      @eps_counter += 1
+    end
+
     def filter(tag, time, record)
+      # check_eps()
+
       # Get the data type name (blob in ODS) from record tag
       # Only records that can be associated to a blob are processed
 
@@ -47,7 +72,8 @@ module Fluent
           'EventTime' => OMS::Common::fast_utc_to_iso8601_format(Time.at(time).utc),
           'Message' => "#{ident}: #{record['message']}",
           'Facility' =>  tags[tags.size - 2],
-          'Severity' => tags[tags.size - 1]
+          'Severity' => tags[tags.size - 1],
+          'Host' => record['host']
       }
 
       host_ip = @ip_cache.get_ip(record['host'])

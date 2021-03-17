@@ -16,6 +16,7 @@ If none of these steps work for you the following channels for help are also ava
 - [OMS output plugin debug](#oms-output-plugin-debug)
 - [Verbose output](#verbose-output)
 - [My forwarded Syslog messages are not showing up!](#my-forwarded-syslog-messages-are-not-showing-up)
+- [Why OMS Ruby is shipping openssl?](#why-oms-ruby-is-shipping-openssl)
 - [I'm unable to connect through my proxy to OMS](#im-unable-to-connect-through-my-proxy-to-oms)
 - [I'm getting a 403 when I'm trying to onboard!](#im-getting-a-403-when-im-trying-to-onboard)
 - [I'm seeing a 500 Error and 404 Error in the log file right after onboarding](#im-seeing-a-500-error-and-404-error-in-the-log-file-right-after-onboarding)
@@ -47,7 +48,7 @@ If none of these steps work for you the following channels for help are also ava
 
  **Note:** Editing configuration files for performance counters & syslog is overwritten if Portal Configuration is enabled. Disable configuration in the OMS Portal (all nodes) or for single nodes run the following:
 
- `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable'`
+ `sudo /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable && sudo rm /etc/opt/omi/conf/omsconfig/configuration/Current.mof* /etc/opt/omi/conf/omsconfig/configuration/Pending.mof*`
 
 ## Installation Error Codes
 
@@ -60,8 +61,9 @@ If none of these steps work for you the following channels for help are also ava
 | 5 | The shell bundle must be executed as root OR there was 403 error returned during onboarding; Run your command using `sudo` |
 | 6 | Invalid package architecture OR there was error 200 error returned during onboarding; omsagent-*x64.sh packages can only be installed on 64-bit systems, and omsagent-*x86.sh packages can only be installed on 32-bit systems; Download the correct package for your architecture from the [latest release](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/latest) |
 | 17 | Installation of OMS package failed; Look through the command output for the root failure |
-| 19 | Installation of OMI package failed; Look through the command output for the root failure |
-| 20 | Installation of SCX package failed; Look through the command output for the root failure |
+| 18 | Installation of OMSConfig package failed; Look through the command output for the root failure; Any Github issues should be opened with the [Powershell-DSC-for-Linux Github repo](https://github.com/microsoft/PowerShell-DSC-for-Linux) |
+| 19 | Installation of OMI package failed; Look through the command output for the root failure; Any Github issues should be opened with the [OMI Github repo](https://github.com/microsoft/omi) |
+| 20 | Installation of SCX package failed; Look through the command output for the root failure; Any Github issues should be opened with the [SCXCore Github repo](https://github.com/microsoft/SCXcore) |
 | 21 | Installation of Provider kits failed; Look through the command output for the root failure |
 | 22 | Installation of bundled package failed; Look through the command output for the root failure |
 | 23 | SCX or OMI package already installed; Use `--upgrade` instead of `--install` to install the shell bundle |
@@ -106,8 +108,9 @@ If none of these steps work for you the following channels for help are also ava
   buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms*.buffer
   buffer_queue_limit 10
   flush_interval 20s
-  retry_limit 10
+  retry_limit 6
   retry_wait 30s
+  max_retry_wait 30m
 </match>
  ```
 
@@ -136,8 +139,9 @@ Comment out the OMS output plugin by adding a `#` in front of each line
 #  buffer_path /var/opt/microsoft/omsagent/<workspace id>/state/out_oms*.buffer
 #  buffer_queue_limit 10
 #  flush_interval 20s
-#  retry_limit 10
+#  retry_limit 6
 #  retry_wait 30s
+#  max_retry_wait 30m
 #</match>
 ```
 
@@ -163,6 +167,28 @@ Below the output plugin, uncomment the following section by removing the `#` in 
 * Simulate a Syslog message to OMS using `logger` command
   * `logger -p local0.err "This is my test message"`
 
+### Why OMS Ruby is shipping OpenSSL?
+* OMS doesn't package OpenSSL, and if you are concerned about the openssl.so file located here /opt/microsoft/omsagent/ruby/lib/ruby/2.6.0/x86_64-linux/, there is nothing to worry about, that file is only the library that Ruby is using the handle most abstractions around calling the OpenSSL native API.
+* Why when I use the 'strings' command I can see the presence of OpenSSL 1.0.1 in openssl.so:
+```
+strings /opt/microsoft/omsagent/ruby/lib/ruby/2.6.0/x86_64-linux/openssl.so | grep OpenSSL
+OpenSSL H
+OpenSSL H
+OpenSSL
+OpenSSL 1.0.1 14 Mar 2012
+```
+* Well, the 'strings' will only show you the strings used inside a binary, but you can't prove if that binary does include OpenSSL. To prove that, you have to use 'ldd' command which will list all dynamic libraries. From the output below you can see that openssl.so point to libssl.so.1.1 which is the real OpenSSL:
+```
+ldd /opt/microsoft/omsagent/ruby/lib/ruby/2.6.0/x86_64-linux/openssl.so
+	linux-vdso.so.1 (0x00007ffcca6cf000)
+	libssl.so.1.1 => /usr/lib/x86_64-linux-gnu/libssl.so.1.1 (0x00007fc87f14e000)
+	libcrypto.so.1.1 => /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 (0x00007fc87ec83000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fc87e8e5000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fc87e4f4000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fc87e2d5000)
+	libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fc87e0d1000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fc87f62c000)
+```
 ### I'm unable to connect through my proxy to OMS
 #### Probable Causes
 * The proxy specified during onboarding was incorrect
@@ -316,6 +342,7 @@ Follow these steps to recover from a bad state, like changing/removing important
 * Connection to the OMS Service is blocked
 * VM was rebooted
 * OMI package was manually upgraded to a newer version compared to what was installed by OMS Agent package
+* OMI is frozen, blocking OMS agent
 * DSC resource logs "class not found" error in `omsconfig.log` log file
 * OMS Agent for Linux data is backed up
 * DSC logs "Current configuration does not exist. Execute Start-DscConfiguration command with -Path parameter to specify a configuration file and create a current configuration first." in `omsconfig.log` log file, but no log message exists about `PerformRequiredConfigurationChecks` operations.
@@ -327,6 +354,7 @@ Follow these steps to recover from a bad state, like changing/removing important
 * If using a proxy, check proxy troubleshooting steps above
 * In some Azure distribution systems omid OMI server daemon does not start after Virtual machine is rebooted. This will result in not seeing Audit, ChangeTracking or UpdateManagement solution related data. Workaround is manually start omi server by running `sudo /opt/omi/bin/service_control restart`
 * After OMI package is manually upgraded to a newer version it has to be manually restarted for OMS Agent to conitnue functioning. This step is required for some distros where OMI server does not automatically start after upgrade. Please run `sudo /opt/omi/bin/service_control restart` to restart OMI.
+* In some situations, OMI can become frozen. The OMS agent may enter a blocked state waiting for OMI, blocking all data collection. The OMS agent process will be running but there will be no activity, evidenced by no new log lines (such as sent heartbeats) present in `omsagent.log`. Restart OMI with `sudo /opt/omi/bin/service_control restart` to recover the agent.
 * If you see DSC resource "class not found" error in omsconfig.log, please run `sudo /opt/omi/bin/service_control restart`
 * In some cases, when the OMS Agent for Linux cannot talk to the OMS Service, data on the Agent is backed up to the full buffer size: 50 MB. The OMS Agent for Linux should be restarted by running the following command `/opt/microsoft/omsagent/bin/service_control restart`
  * **Note:** This issue is fixed in Agent version >= 1.1.0-28
@@ -409,7 +437,7 @@ sudo service crond start
 * Check that the `omsconfig` agent can communicate with the OMS Portal Service
   * Run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/GetDscConfiguration.py'`
    * This command returns the Configuration that agent sees from the portal including Syslog settings, Linux Performance Counters, and Custom Logs
-   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration.
+   * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py'`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration.
 
 
 **Background:** Instead of the OMS Agent for Linux user running as a privileged user, `root` - The OMS Agent for Linux runs as the `omsagent` user. In most cases explicit permission must be granted to this user in order for certain files to be read.

@@ -39,7 +39,10 @@ module Fluent
 
     def handle_record(ipname, record)
       @log.trace "Handling diagnostic records for ipname : #{ipname}"
-      req = OMS::Common.create_ods_request(OMS::Configuration.diagnostic_endpoint.path, record, @compress)
+      extra_headers = {
+        OMS::CaseSensitiveString.new('x-ms-client-request-retry-count') => "#{@num_errors}"
+      }
+      req = OMS::Common.create_ods_request(OMS::Configuration.diagnostic_endpoint.path, record, @compress, extra_headers)
       unless req.nil?
         http = OMS::Common.create_ods_http(OMS::Configuration.diagnostic_endpoint, @proxy_config)
         start = Time.now

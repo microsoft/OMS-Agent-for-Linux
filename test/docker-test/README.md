@@ -3,7 +3,7 @@
 
 ## Requirements
 
-* Docker - Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
+* Docker 18.09+ — Install for [Windows](https://docs.docker.com/docker-for-windows/install/) or [Linux](https://docs.docker.com/install/)
 * Python 2.7+ & [pip](https://pip.pypa.io/en/stable/installing/)
 * [Requests](http://docs.python-requests.org/en/master/), [ADAL](https://github.com/AzureAD/azure-activedirectory-library-for-python), [json2html](https://github.com/softvar/json2html)
 
@@ -47,6 +47,13 @@ $ python -u build_images.py -pull distro1 distro2 ...
 ```
 
 ### Using docker build
+
+Note that to build Red Hat containers, you must include your Red Hat subscription creds in a file `redhat_creds` in the `docker-test` directory. The format must be:
+
+```
+username
+password
+```
 
 #### Build all images using Dockerfiles
 
@@ -105,34 +112,12 @@ $ python -u build_images.py -build distro1 distro2 ...
 
 ### Run test scripts
 
-- Available modes (approximate runtime for all distros). Long and instantupgrade can be enabled together:
-  - default (30m): No options needed. Runs the install & reinstall tests on the latest agent with a single verification.
-  - `long` (+`LONG_DELAY`): Adds a long wait time (`LONG_DELAY` in oms_docker_tests.py) followed by a second verification.
-  - `instantupgrade` (+15m): Install the older version first, verify status, upgrade to newer version and continue tests.
-- With all modes, a subset of images can be tested by providing the corresponding image names
-
-#### All images
+#### Usage
 
 ```bash
-$ python -u oms_docker_tests.py
+$ python oms_docker_tests.py --help
 ```
 
-#### Subset of images
+#### Runtime
 
-```bash
-$ python -u oms_docker_tests.py image1 image2 ...
-```
-
-#### All images, long-term
-
-```bash
-$ python -u oms_docker_tests.py long
-```
-
-#### Subset of images, Test upgrade from old bundle to new bundle
-
-Note: Define a proper value for the `old oms bundle` in parameters.json file and bundle must be present in omsfiles folder
-
-```bash
-$ python -u oms_docker_tests.py instantupgrade image1 image2 ...
-```
+With all distros enabled, the default runtime is approximately 30 minutes, with instant upgrade addding another 15. Running in long mode adds the specified duration or the default 250 minutes.

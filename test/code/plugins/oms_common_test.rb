@@ -221,6 +221,19 @@ module OMS
       assert(fqdn.size > 0, "Fqdn returned is empty")
     end
 
+    def test_get_private_ips
+        $log = MockLog.new
+        serialized_private_ips = Common.get_private_ips
+        assert($log.logs.empty?, "There was an error getting private ip(s)")
+        assert_not_equal(nil, serialized_private_ips, "Should never receive nil from get_private_ips")
+
+        begin
+            private_ips = JSON.parse(serialized_private_ips)
+        rescue => e
+            assert(false, "Failed to deserialize private IP array: #{e}")
+        end
+    end
+
     @@InstallConf = "1.1.0-124 20160412 Release_Build\n" \
       "2016-05-24T00:27:55.0Z\n" 
 
@@ -237,7 +250,7 @@ module OMS
       fake_conf_path = @tmp_conf_file.path + '.fake'
       assert_equal(false, File.file?(fake_conf_path))
       agent_version = Common.get_agent_version(fake_conf_path)
-      assert_equal(nil, agent_version, "Should not find data in a non existing file")
+      assert_equal('0.0.0-0', agent_version, "Should not find data in a non existing file")
 
       # Should retry the second time since it did not find anything before
       File.write(@tmp_conf_file.path, "1.1.0-124 20160412\n2016-05-24T00:27:55.0Z")
@@ -249,7 +262,7 @@ module OMS
       conf = "  "
       File.write(@tmp_conf_file.path, conf)
       agent_version = Common.get_agent_version(@tmp_conf_file.path)
-      assert_equal(nil, agent_version, "Should not find data when line is missing")
+      assert_equal('0.0.0-0', agent_version, "Should not find data when line is missing")
     end
 
     def test_get_installed_date()

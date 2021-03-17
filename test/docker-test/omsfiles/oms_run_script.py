@@ -3,8 +3,8 @@
 import datetime
 import os
 import os.path
-import subprocess
 import re
+import subprocess
 import sys
 import time
 
@@ -29,8 +29,6 @@ if "check_output" not in dir(subprocess): # duck punch it in!
 
     subprocess.check_output = check_output
 
-operation = None
-
 outFile = '/home/temp/omsresults.out'
 openFile = open(outFile, 'w+')
 
@@ -44,37 +42,39 @@ def linux_detect_installer():
         INSTALLER = "RPM"
 
 def main():
-    """Determine the operation to executed, and execute it."""
+    """Determine the operation to execute, and execute it."""
     linux_detect_installer()
 
-    global operation
+    operation = None
     try:
-        option = sys.argv[1]
-        if re.match('^([-/]*)(preinstall)', option):
+        operation = sys.argv[1]
+        if re.match('^([-/]*)(preinstall)', operation):
             set_hostname()
             start_system_services()
             install_additional_packages()
-        elif re.match('^([-/]*)(postinstall)', option):
+        elif re.match('^([-/]*)(postinstall)', operation):
             detect_workspace_id()
             config_start_oms_services()
             restart_services()
-        elif re.match('^([-/]*)(status)', option):
+        elif re.match('^([-/]*)(status)', operation):
             result_commands()
             service_control_commands()
             write_html()
-        elif re.match('^([-/]*)(copyomslogs)', option):
+        elif re.match('^([-/]*)(copyomslogs)', operation):
             detect_workspace_id()
             copy_oms_logs()
-        elif re.match('^([-/]*)(injectlogs)', option):
+        elif re.match('^([-/]*)(injectlogs)', operation):
             inject_logs()
-    except:
-        if operation is None:
-            print("No operation specified. run with 'preinstall', 'postinstall', 'status', or 'injectlogs'")
+    except Exception as e:
+        print("Encountered {0} in oms_run_script: {1}".format(type(e).__name__, e))
+
+    if operation is None:
+        print("No operation specified. run with 'preinstall', 'postinstall', 'status', 'copyomslogs', or 'injectlogs'")
 
 def replace_items(infile, old_word, new_word):
     """Replace old_word with new_world in file infile."""
     if not os.path.isfile(infile):
-        print("Error on replace_word, not a regular file: " + infile)
+        print("Failed to replace item, target is not a regular file: " + infile)
         sys.exit(1)
 
     f1 = open(infile, 'r').read()
@@ -88,10 +88,22 @@ def append_file(src, dest):
     dest.write(f.read())
     f.close()
 
+def run_service_command(service, operation):
+    """Run a service operation on the specified service using the available service manager."""
+    if os.system('which service > /dev/null 2>&1') == 0:
+        os.system('service {0} {1}'.format(service, operation))
+    elif os.system('which systemctl > /dev/null 2>&1') == 0:
+        os.system('systemctl {0} {1}'.format(operation, service))
+    else:
+        print('Cannot find service nor systemctl commands.')
+        sys.exit(1)
+
 def detect_workspace_id():
     """Detect the workspace id where the agent is onboarded."""
     global workspace_id
     x = subprocess.check_output('/opt/microsoft/omsagent/bin/omsadmin.sh -l', shell=True)
+    if sys.version_info >= (3,):
+        x = x.decode('utf-8')
     try:
         workspace_id = re.search('[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}', x).group(0)
     except AttributeError:
@@ -107,45 +119,67 @@ def set_hostname():
 
 def start_system_services():
     """Start rsyslog, cron and apache to enable log collection."""
-    os.system('service rsyslog start')
+    run_service_command('rsyslog', 'start')
     if INSTALLER == 'DPKG':
-        os.system('cron \
-                && service apache2 start')
+        os.system('cron')
+        run_service_command('apache2', 'start')
     elif INSTALLER == 'RPM':
-        os.system('service crond start \
-                && service httpd start')
+        run_service_command('crond', 'start')
+        run_service_command('httpd', 'start')
 
 def install_additional_packages():
     """Install additional packages as needed."""
     if INSTALLER == 'DPKG':
         os.system('apt-get -y update')
     elif INSTALLER == 'RPM':
-        os.system('yum -y update')
+        # newest version of systemd package have some issue with the service file https://access.redhat.com/solutions/4420581
+        hostname = os.popen('hostname').read().split('-')[0]
+        systemd_flag = '--exclude systemd,systemd-libs,systemd-sysv' if any(s in hostname for s in ['centos7', 'oracle7', 'redhat8', 'redhat8py3']) else ''
+        os.system('yum -y update {0}'.format(systemd_flag))
 
-def disable_dsc():
-    """Disable DSC so that agent can be manually configured."""
-    os.system('/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py --disable')
-    pending_mof = '/etc/opt/omi/conf/omsconfig/configuration/Pending.mof'
-    current_mof = '/etc/opt/omi/conf/omsconfig/configuration/Pending.mof'
-    if os.path.isfile(pending_mof) or os.path.isfile(current_mof):
-        os.remove(pending_mof)
-        os.remove(current_mof)
+def run_dsc():
+    """Run DSC to pull the workspace configuration."""
+
+    # Optional step to disable DSC config management by deleting the cron job
+    # print('Remove cron job')
+    # cmd = 'rm /etc/cron.d/OMSConsistencyInvoker'
+    # output = exec_command(cmd, stderr=subprocess.STDOUT)
+    # write_log_command(cmd)
+    # write_log_output(output)
+
+    # Oprional step to manually install DSC modules placed in omsfiles/modules
+    # print('Install DSC Modules ...')
+    # module_names = ["nx_99.99.zip", "nxFileInventory_99.99.zip", "nxOMSAgentNPMConfig_99.99.zip", "nxOMSAuditdPlugin_99.99.zip", "nxOMSAutomationWorker_99.99.zip",
+                    # "nxOMSContainers_99.99.zip", "nxOMSCustomLog_99.99.zip", "nxOMSGenerateInventoryMof_99.99.zip", "nxOMSKeyMgmt_99.99.zip", "nxOMSPerfCounter_99.99.zip",
+                    # "nxOMSPlugin_99.99.zip", "nxOMSSudoCustomLog_99.99.zip", "nxOMSSyslog_99.99.zip", "nxOMSWLI_99.99.zip"]
+    # for module in module_names:
+    #     if sys.version_info < (3,):
+    #         cmd = 'sudo su - omsagent -c "python2 /opt/microsoft/omsconfig/Scripts/InstallModule.py /home/temp/omsfiles/modules/{0} 1"'.format(module)
+    #     else:
+    #         cmd = 'sudo su - omsagent -c "python3 /opt/microsoft/omsconfig/Scripts/python3/InstallModule.py /home/temp/omsfiles/modules/{0} 1"'.format(module)
+    #     output = exec_command(cmd, stderr=subprocess.STDOUT)
+    #     write_log_command(cmd)
+    #     write_log_output(output)
+
+    print('Pulling configuration from DSC ...')
+    if sys.version_info < (3,):
+        cmd = 'sudo su omsagent -c "python2 /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py"'
+    else:
+        cmd = 'sudo su omsagent -c "python3 /opt/microsoft/omsconfig/Scripts/python3/PerformRequiredConfigurationChecks.py"'
+    output = exec_command(cmd, stderr=subprocess.STDOUT)
+    write_log_command(cmd)
+    write_log_output(output)
 
 def copy_config_files():
     """Convert, copy, and set permissions for agent configuration files."""
-    os.system('dos2unix /home/temp/omsfiles/perf.conf \
-            && dos2unix /home/temp/omsfiles/rsyslog-oms.conf \
-            && cat /home/temp/omsfiles/perf.conf >> /etc/opt/microsoft/omsagent/{0}/conf/omsagent.conf \
-            && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/opt/omi/conf/omsconfig/rsyslog-oms.conf \
-            && cp /home/temp/omsfiles/rsyslog-oms.conf /etc/rsyslog.d/95-omsagent.conf \
-            && chown omsagent:omiusers /etc/rsyslog.d/95-omsagent.conf \
-            && chmod 644 /etc/rsyslog.d/95-omsagent.conf \
-            && cp /home/temp/omsfiles/customlog.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
-            && chown omsagent:omiusers /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf \
-            && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/apache_logs.conf \
+    os.system('cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/apache_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/apache_logs.conf \
             && cp /etc/opt/microsoft/omsagent/sysconf/omsagent.d/mysql_logs.conf /etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/mysql_logs.conf'.format(workspace_id))
-    replace_items('/etc/opt/microsoft/omsagent/{0}/conf/omsagent.conf'.format(workspace_id), '<workspace-id>', workspace_id)
-    replace_items('/etc/opt/microsoft/omsagent/{0}/conf/omsagent.d/customlog.conf'.format(workspace_id), '<workspace-id>', workspace_id)
+
+def cron_conf():
+    """Create a cron job to append to custom.log every minute."""
+    cronjob = '* * * * * root cat /home/temp/omsfiles/custom.log >> /var/log/custom.log'
+    os.system('echo "{0}" > /etc/cron.d/customlog'.format(cronjob))
+    run_service_command('cron', 'restart')
 
 def apache_mysql_conf():
     """Configure Apache and MySQL, set up empty log files, and add permissions."""
@@ -201,34 +235,39 @@ def inject_logs():
             && cat /home/temp/omsfiles/mysql-slow.log >> /var/log/mysql/mysql-slow.log \
             && cat /home/temp/omsfiles/custom.log >> /var/log/custom.log')
 
-
 def config_start_oms_services():
     """Orchestrate overall configuration prior to agent start."""
     os.system('/opt/omi/bin/omiserver -d')
-    disable_dsc()
+    run_dsc()
     copy_config_files()
+    cron_conf()
     apache_mysql_conf()
 
 def restart_services():
     """Restart rsyslog, OMI, and OMS."""
     time.sleep(10)
-    os.system('service rsyslog restart \
-            && /opt/omi/bin/service_control restart \
+    run_service_command('rsyslog', 'restart')
+    os.system('/opt/omi/bin/service_control restart \
             && /opt/microsoft/omsagent/bin/service_control restart')
 
-def exec_command(cmd):
+def exec_command(cmd, stderr=None, shell=True):
     """Run the provided command, check, and return its output."""
     try:
-        out = subprocess.check_output(cmd, shell=True)
-        return out
+        out = subprocess.check_output(cmd, stderr=stderr, shell=shell)
+        if sys.version_info < (3,):
+            return out
+        else:
+            return out.decode('utf-8')
     except subprocess.CalledProcessError as e:
-        print(e.returncode)
+        print('exec_command cmd="{0}" failed with code={1}, msg="{2}"'.format(cmd, e.returncode, e.output))
         return e.returncode
 
-def write_log_output(out):
+def write_log_output(out, print_log=False):
     """Save command output to the log file."""
     if(type(out) != str):
         out = str(out)
+    if print_log:
+        print(out)
     openFile.write(out + '\n')
     openFile.write('-' * 80)
     openFile.write('\n')

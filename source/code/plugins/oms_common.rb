@@ -17,6 +17,8 @@ module OMS
     require 'digest'
     require 'date'
     require 'securerandom'
+    require 'resolv-replace'
+    require 'socket'
 
     require_relative 'omslog'
     require_relative 'oms_configuration'
@@ -513,13 +515,13 @@ module OMS
             end
           end
 
-          # calculate the md5 of /etc/locatime
-          md5sum = Digest::MD5.file(@@tzLocalTimePath).hexdigest
+          # calculate the hash of /etc/locatime
+          hashsum = Digest::SHA256.file(@@tzLocalTimePath).hexdigest
 
           # looks for a file in the /usr/share/zoneinfo/, which is identical to /etc/localtime. use the file name as the timezone
           Dir.glob("#{@@tzBaseFolder}**/*") { |filepath|
-            # find all the files whose md5 is the same as the /etc/localtime
-            if File.file? filepath and Digest::MD5.file(filepath).hexdigest == md5sum
+            # find all the files whose SHA256 is the same as the /etc/localtime
+            if File.file? filepath and Digest::SHA256.file(filepath).hexdigest == hashsum
               tzID = get_unified_timezoneid(filepath)
 
               # look for the entry in the timezone mapping
@@ -622,6 +624,21 @@ module OMS
         return @@FQDN
       end
 
+      def get_private_ips
+        begin
+          # Unlike Syslog which could be up to 10K EPS, HB is 1 EPM which obviates need for caching
+          addr_infos = Socket.ip_address_list
+        rescue => error
+          OMS::Log.error_once("Unable to get private IPs: #{error}")
+          return [].to_json
+        end
+    
+        private_ipv4 = addr_infos.select( &:ipv4_private? )      # RFC 1918: {10/8, 172.16/12, 192.168/16}
+        private_ipv6 = addr_infos.select( &:ipv6_unique_local? ) # RFC 4193: {fc00::/7}
+
+        return (private_ipv4 + private_ipv6).map( &:inspect_sockaddr ).to_json
+      end
+
       def get_installed_date(conf_path = "/etc/opt/microsoft/omsagent/sysconf/installinfo.txt")
         return @@InstalledDate if !@@InstalledDate.nil?
 
@@ -651,7 +668,8 @@ module OMS
             @@AgentVersion = agent_version
           end
         end
-        return @@AgentVersion
+
+        return @@AgentVersion.nil? ? '0.0.0-0': @@AgentVersion
       end
 
       def fast_utc_to_iso8601_format(utctime, fraction_digits=3)
@@ -730,6 +748,11 @@ module OMS
         if compress == true
           headers["Content-Encoding"] = "deflate"
         end
+
+        headers["User-Agent"] = "LinuxMonitoringAgent/#{OMS::Common.get_agent_version}"
+        headers[OMS::CaseSensitiveString.new("x-ms-app")] = "LinuxMonitoringAgent"
+        headers[OMS::CaseSensitiveString.new("x-ms-client-version")] = OMS::Common.get_agent_version
+        headers[OMS::CaseSensitiveString.new("x-ms-client-platform")] = "Linux"
 
         req = Net::HTTP::Post.new(path, headers)
         json_msg = serializer.call(record)
@@ -887,17 +910,11 @@ module OMS
     
     def get_ip_from_socket(hostname)
       begin
-        addrinfos = Socket::getaddrinfo(hostname, "echo", Socket::AF_UNSPEC)
+        return Resolv.getaddress(hostname)
       rescue => error
         OMS::Log.error_once("Unable to resolve the IP of '#{hostname}': #{error}")
         return nil
       end
-
-      if addrinfos.size >= 1
-        return addrinfos[0][3]
-      end
-
-      return nil
     end
 
     def refresh_cache

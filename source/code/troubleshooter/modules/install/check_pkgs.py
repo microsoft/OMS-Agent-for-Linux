@@ -1,0 +1,61 @@
+import subprocess
+
+from error_codes import *
+from helpers     import geninfo_lookup, get_dpkg_pkg_version, get_rpm_pkg_version
+
+def get_package_version(pkg):
+    pkg_mngr = geninfo_lookup('PKG_MANAGER')
+
+    # dpkg
+    if (pkg_mngr == 'dpkg'):
+        return get_dpkg_pkg_version(pkg)
+    # rpm
+    elif (pkg_mngr == 'rpm'):
+        return get_rpm_pkg_version(pkg)
+    else:
+        return None
+
+
+
+# get current OMSConfig (DSC) version running on machine
+def get_omsconfig_version():
+    pkg_version = get_package_version('omsconfig')
+    if (pkg_version == None):
+        # couldn't find OMSConfig
+        return None
+    return pkg_version
+
+
+
+# get current OMI version running on machine
+def get_omi_version():
+    pkg_version = get_package_version('omi')
+    if (pkg_version == None):
+        # couldn't find OMI
+        return None
+    return pkg_version
+
+
+
+# get current SCX version running on machine
+def get_scx_version():
+    pkg_version = get_package_version('scx')
+    if (pkg_version == None):
+        # couldn't find SCX
+        return None
+    return pkg_version
+
+
+
+# check to make sure all necessary packages are installed
+def check_packages():
+    if (get_omsconfig_version() == None):
+        return ERR_OMSCONFIG
+
+    if (get_omi_version() == None):
+        return ERR_OMI
+
+    if (get_scx_version() == None):
+        return ERR_SCX
+    
+    return NO_ERROR

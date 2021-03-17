@@ -1,5 +1,5 @@
---- ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb	2019-07-25 17:44:35.237194903 -0700
-+++ ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb.new	2019-07-25 17:37:30.812313080 -0700
+--- ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb	2020-01-30 14:33:09.822104248 -0800
++++ ../source/ext/fluentd/lib/fluent/plugin/in_exec.rb.new	2020-01-30 14:34:54.750378370 -0800
 @@ -109,15 +109,16 @@
      def shutdown
        if @run_interval
@@ -45,15 +45,19 @@
      end
  
      def run_periodic
-@@ -138,8 +148,10 @@
+@@ -138,12 +148,14 @@
        until @finished
          begin
            io = IO.popen(@command, "r")
 +          @run_periodic_pid = io.pid
            @parser.call(io)
 -          Process.waitpid(io.pid)
-+          Process.waitpid(@run_periodic_pid)
-+          @run_periodic_pid = nil
          rescue
            log.error "exec failed to run or shutdown child process", error: $!.to_s, error_class: $!.class.to_s
            log.warn_backtrace $!.backtrace
+         ensure
++          Process.waitpid(@run_periodic_pid)
++          @run_periodic_pid = nil
+           sleep @run_interval
+         end
+       end

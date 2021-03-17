@@ -25,7 +25,7 @@ endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
 AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
-AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.0.2-20
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.3.4-31
 AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
@@ -330,6 +330,9 @@ $(TARGET_DIR)/dsc : $(DSC_TARGET_DIR)
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar
 	@echo "========================= Performing Building shell bundle"
 	../installer/bundle/create_bundle.sh $(TARGET_DIR) $(INTERMEDIATE_DIR) $(OUTPUT_PACKAGE_PREFIX).tar
+	@echo "========================= Generating SHA256SUM of shell bundle: $(OUTPUT_PACKAGE_PREFIX).sh"
+	cd $(TARGET_DIR)/; sha256sum $(OUTPUT_PACKAGE_PREFIX).sh > $(OUTPUT_PACKAGE_PREFIX).sha256sums
+	cd $(BASE_DIR)/build
 
 
 $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar
@@ -662,7 +665,7 @@ tests : test
 unittest : $(RUBY_TESTING_DIR)
 	@echo "========================= Performing Running MSFT Unit Tests"
 	cp $(PLUGINS_DIR)/* $(RUBY_TESTING_PLUGIN_DIR)
-	cd $(BASE_DIR); PATH=$(RUBY_TESTING_DIR)/bin:$(PATH) $(RUBY_TESTING_DIR)/bin/rake -f $(BASE_DIR)/test/Rakefile.rb test \
+	cd $(BASE_DIR); PATH=$(RUBY_TESTING_DIR)/bin:$(PATH) $(RUBY_TESTING_DIR)/bin/rake --trace -f $(BASE_DIR)/test/Rakefile.rb test \
 		BASE_DIR=$(BASE_DIR) \
 		PLUGINS_TEST_DIR=$(BASE_DIR)/test/code/plugins \
 		RUBY_DEST_DIR=$(RUBY_TESTING_DIR)

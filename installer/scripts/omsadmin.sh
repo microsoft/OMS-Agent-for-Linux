@@ -53,7 +53,16 @@ AGENT_MAINTENANCE_MISSING_CONFIG_FILE=4
 AGENT_MAINTENANCE_MISSING_CONFIG=5
 AGENT_MAINTENANCE_ERROR_WRITING_TO_FILE=12
 
-METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
+# DSC MetaConfig generation script
+if [ -x "$(command -v python2)" ]; then
+    METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
+elif [ -x "$(command -v python3)" ]; then
+    METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/python3/OMS_MetaConfigHelper.py
+else
+    # Failure to find python/the correct script path will only break onboarding (just one
+    # of omsadmin's numerous functions); exit with failure in the onboard() function instead
+    METACONFIG_PY=""
+fi
 
 # Certs
 FILE_KEY=$CERT_DIR/oms.key
@@ -113,6 +122,8 @@ RUBY_ERROR_GENERATING_GUID=31
 ERROR_GENERATING_CERTS=32
 ERROR_GENERATING_METACONFIG=33
 ERROR_METACONFIG_PY_NOT_PRESENT=34
+# Dependency-related:
+INSTALL_PYTHON=60
 
 # curl error codes:
 CURL_PROXY_RESOLVE_ERROR=5
@@ -215,19 +226,19 @@ clean_exit()
 log_info()
 {
     echo -e "info\t$1"
-    logger -i -p "$LOG_FACILITY".info -t omsagent "$1"
+    logger -i -p "$LOG_FACILITY".info -t omsagent "[INFO] $1"
 }
 
 log_warning()
 {
     echo -e "warning\t$1"
-    logger -i -p "$LOG_FACILITY".warning -t omsagent "$1"
+    logger -i -p "$LOG_FACILITY".warning -t omsagent "[WARNING] $1"
 }
 
 log_error()
 {
     echo -e "error\t$1"
-    logger -i -p "$LOG_FACILITY".err -t omsagent "$1"
+    logger -i -p "$LOG_FACILITY".err -t omsagent "[ERROR] $1"
 }
 
 parse_args()
@@ -422,6 +433,12 @@ onboard_lad()
 
 onboard()
 {
+    if [ "$METACONFIG_PY" = "" ]; then
+        echo "Error: Python is not installed on this system, onboarding cannot continue." >&2
+        echo "Please install either the python2 or python3 package." >&2
+        clean_exit $INSTALL_PYTHON
+    fi
+
     if [ $VERBOSE -eq 1 ]; then
         # Mask the shared key
         local shared_key_trunc=`echo "$SHARED_KEY" | cut -c 1-4 2> /dev/null`
@@ -547,6 +564,8 @@ onboard()
         case "$ASSET_TAG" in
             77*) OMSCLOUD_ID=$ASSET_TAG ;;       # If the asset tag begins with a 77 this is the azure guid
         esac
+        PRODUCT_UUID=$(cat /sys/devices/virtual/dmi/id/product_uuid)
+        UUID=$(echo $PRODUCT_UUID | tr '[:upper:]' '[:lower:]')
     fi
 
     #This is a temporary fix for Systems with Curl versions using HTTP\2 as default
@@ -651,7 +670,12 @@ onboard()
             # Set up a cron job to run the OMSConsistencyInvoker every 15 minutes
             # This should be done regardless of MetaConfig creation
             if [ ! -f /etc/cron.d/OMSConsistencyInvoker ]; then
-                echo "*/15 * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
+                randomNo=$(od -An -N1 -i /dev/urandom)
+                A=$(($randomNo%13+2))
+                B=$(($A+15))
+                C=$(($B+15))
+                D=$(($C+15))
+                echo "$A,$B,$C,$D * * * * $AGENT_USER /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > /etc/cron.d/OMSConsistencyInvoker
             fi
 
             if [ ! -f $METACONFIG_PY ]; then
@@ -1141,7 +1165,10 @@ configure_logrotate()
 
     # create the logrotate file for omsagent if workspace is LAD
     if [ "$WORKSPACE_ID" = "LAD" ]; then
-        echo "/var/opt/microsoft/omsagent/LAD/log/omsagent.log {\n\trotate 10\n\tmissingok\n\tnotifempty\n\tcompress\n\tsize 100M\n\tcopytruncate\n}" > /etc/logrotate.d/omsagent-$WORKSPACE_ID
+        # create the logrotate file for the LAD if it doesn't exist
+    	if [ ! -f /etc/logrotate.d/omsagent-$WORKSPACE_ID ]; then
+            cp $SYSCONF_DIR/lad-logrotate.conf  /etc/logrotate.d/omsagent-$WORKSPACE_ID
+    	fi
     else
     	# create the logrotate file for the workspace if it doesn't exist
     	if [ ! -f /etc/logrotate.d/omsagent-$WORKSPACE_ID ]; then

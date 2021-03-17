@@ -221,7 +221,6 @@ ${{RUBY_DEST}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/index.rhtml; ${{R
 
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/js/search.js; ${{RUBY_INT}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/js/search.js; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/js/darkfish.js; ${{RUBY_INT}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/js/darkfish.js; 644; root; root
-${{RUBY_DEST}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/js/jquery.js; ${{RUBY_INT}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/js/jquery.js; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/servlet_not_found.rhtml; ${{RUBY_INT}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/servlet_not_found.rhtml; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/table_of_contents.rhtml; ${{RUBY_INT}}/lib/ruby/2.6.0/rdoc/generator/template/darkfish/table_of_contents.rhtml; 644; root; root
@@ -7699,7 +7698,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/in_mon
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/in_dummy.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/in_dummy.rb; 664; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/filter_stdout.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/filter_stdout.rb; 664; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/in_exec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/in_exec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/filter_parser.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/filter_parser.rb; 664; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/filter_parser.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/filter_parser.rb; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/out_stdout.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/plugin/out_stdout.rb; 664; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/root_agent.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluentd-0.12.40/lib/fluent/root_agent.rb; 644; root; root
@@ -10130,9 +10129,9 @@ ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/oniguruma.h;                      ${{RUBY
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/missing.h;                        ${{RUBY_INT}}/include/ruby-2.6.0/ruby/missing.h;                 644; root; root
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/ruby.h;                           ${{RUBY_INT}}/include/ruby-2.6.0/ruby/ruby.h;                    644; root; root
 
-${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;          ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;   644; root; root
+${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.5.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.5.h; 644; root; root
 
-${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.3.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.3.h; 644; root; root
+${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;          ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;   644; root; root
 
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby.h;                                ${{RUBY_INT}}/include/ruby-2.6.0/ruby.h;                         644; root; root
 

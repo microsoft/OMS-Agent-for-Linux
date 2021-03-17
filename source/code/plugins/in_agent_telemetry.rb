@@ -22,7 +22,7 @@ module Fluent
     config_param :os_info, :string, :default => '/etc/opt/microsoft/scx/conf/scx-release' #optional
     config_param :install_info, :string, :default => '/etc/opt/microsoft/omsagent/sysconf/installinfo.txt' #optional
 
-    MIN_QUERY_INTERVAL = 1
+    MIN_QUERY_INTERVAL = 60
     MAX_QUERY_INTERVAL = 60 * 60 * 1
 
     def configure (conf)

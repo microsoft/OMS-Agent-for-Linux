@@ -38,7 +38,7 @@ module Fluent
             current_time = Time.now
             diff_time_ms = (current_time - previous_time)
             if diff_time_ms >= 1
-              $log.info("EPS #{@eps_counter}, for #{diff_time_ms} second")
+              $log.info("Default Syslog EPS #{@eps_counter}, for #{diff_time_ms} second")
               @eps_counter = 0
             end
             previous_time = current_time
@@ -51,6 +51,7 @@ module Fluent
 
     def filter(tag, time, record)
       # check_eps()
+
       pid = record["pid"]
       hostname = record["host"]
       tags = tag.split('.') # The tag should looks like this : oms.syslog.authpriv.notice

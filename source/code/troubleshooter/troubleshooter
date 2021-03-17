@@ -1,0 +1,103 @@
+#!/bin/bash
+
+TST_START=/opt/microsoft/omsagent/tst/modules/main.py
+
+# check what version of python the user has
+python_prereq_check()
+{
+    # check python
+    echo "Checking for python install..."
+    PYTHON=""
+    PY_VERSION=""
+
+    if [ -x "$(command -v python2)" ]; then
+        PYTHON="python2"
+
+        # check if Python 2.6 or newer
+        PY_VERSION=$((python2 --version) 2>&1)
+        case $PY_VERSION in
+            "Python 2.6"* | "Python 2.7"* )
+                ;;
+            * )
+                echo "Python version $PY_VERSION is not supported."\
+                     "OMS (and this troubleshooter) require Python 2.6 or newer,"\
+                     "please install a supported version of Python and try again."
+                return 1
+                ;;
+        esac
+
+    elif [ -x "$(command -v python3)" ]; then
+        PYTHON="python3"
+        PY_VERSION=$((python3 --version) 2>&1)
+
+    else
+        echo "No version of Python found on machine."\
+             "OMS (and this troubleshooter) require Python 2.6 or newer,"\
+             "please install a supported version of Python and try again."
+        return 1
+    fi
+
+
+    # check python packages
+    echo "Checking all necessary python modules are installed..."
+    success=0
+    temp_pkgs="copy errno os platform re socket ssl subprocess"
+    if [ $PYTHON = "python2" ]; then
+        pkgs="$temp_pkgs urllib2"
+        # add the urllib2 for 2
+    else
+        pkgs="$temp_pkgs urllib.request"
+        # add the urllib.request for 3
+    fi
+    
+    for pkg in $pkgs; do
+        $PYTHON -c "import $pkg" 1> /dev/null 2> /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Python package '$pkg' not installed."
+            success=1
+        fi
+    done
+
+
+    # check other packages
+    echo "Checking all necessary programs are installed..."
+    programs="gdb"
+    for prog in $programs; do
+        which $prog 1> /dev/null 2> /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Program '$prog' not installed."
+            success=1
+        fi
+    done
+    
+    return $success
+}
+
+run_troubleshooter()
+{
+    if [ -f $TST_START ]; then
+        echo "Running troubleshooting tool in $PY_VERSION..."
+        echo ""
+        $PYTHON $TST_START
+    else
+        echo "Troubleshooter not properly installed."
+        exit 1
+    fi
+}
+
+# in case user runs with --help, and in case for future options
+if [ "$1" = "--help" ]; then 
+    echo "This script runs the OMS Agent troubleshooter."
+    echo "Note: Python 2.6 or newer is required to run successfully."
+    echo "Run this script without any options to run the troubleshooter on this machine."
+    exit 0
+fi
+
+# check python and run troubleshooter
+python_prereq_check
+if [ $? -ne 0 ]; then
+    echo "Please fix above issues before running troubleshooter."
+    exit 1
+else
+    run_troubleshooter
+fi
