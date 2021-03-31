@@ -910,7 +910,11 @@ module OMS
     
     def get_ip_from_socket(hostname)
       begin
-        return Resolv.getaddress(hostname)
+        Resolv::DNS.open do |dns|
+          dns.timeouts = 3
+          ip = dns.getaddress(hostname)
+          return ip.to_s
+       end
       rescue => error
         OMS::Log.error_once("Unable to resolve the IP of '#{hostname}': #{error}")
         return nil
