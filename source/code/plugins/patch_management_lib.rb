@@ -57,11 +57,11 @@ class LinuxUpdates
         hostOSDetailsMap = getHostOSDetails()
 	  #os short name is not proper for oracle linux at /etc/opt/microsoft/scx/conf/scx-release. this is to return proper short name till scx fixes the issue.
 	  if hostOSDetailsMap.key?("OSFullName") && hostOSDetailsMap.key?("OSShortName")
-		  osFullName = hostOSDetailsMap["OSFullName"]
-		  osShortName = hostOSDetailsMap["OSShortName"]
-		  if osFullName.downcase.include?("oracle") && ! osShortName.downcase.include?("oracle")
+			osFullName = hostOSDetailsMap["OSFullName"]
+			osShortName = hostOSDetailsMap["OSShortName"]
+			if osFullName.downcase.include?("oracle") && ! osShortName.downcase.include?("oracle")
 				os_short_name = "Oracle"
-          end
+			end
 	  end
 
         # match string of the form (1 or more non . chars)- followed by a . - (1 or more non . chars) - followed by anything
