@@ -46,7 +46,7 @@ def check_internet_connect():
         return WARN_INTERNET
     else:
         error_info.append((SSL_CMD.format("docs.microsoft.com"),))
-        return ERR_INTERNET
+        return WARN_INTERNET_CONN
 
 
 

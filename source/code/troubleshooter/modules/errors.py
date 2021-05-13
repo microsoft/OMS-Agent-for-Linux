@@ -19,7 +19,7 @@ err_summary = []
 
 # set of all errors which are actually warnings
 warnings = set([WARN_FILE_PERMS, WARN_LOG_ERRS, WARN_LOG_WARNS, WARN_LARGE_FILES, \
-                WARN_INTERNET, WARN_ENDPT])
+                WARN_INTERNET_CONN, WARN_INTERNET, WARN_ENDPT])
 
 # dictionary correlating error codes to error messages
 error_messages = {
@@ -73,7 +73,7 @@ error_messages = {
     ERR_HEARTBEAT : "Heartbeats are failing to send data to the workspace.",
     ERR_MULTIHOMING : "Machine registered with more than one log analytics workspace. List of "\
           "workspaces: {0}",
-    ERR_INTERNET : "Machine is not connected to the internet: openssl command failed. "\
+    WARN_INTERNET_CONN : "Machine is not connected to the internet: openssl command failed. "\
           "Please run the command below for more information on the failure:\n"\
           "\n  $ {0}\n",
     ERR_QUERIES : "The following queries failed: {0}.",
