@@ -163,9 +163,9 @@ def check_log_analytics_endpts():
                 success = ERR_ENDPT
 
     # if any connection issues found
-    if (success = ERR_ENDPT):
+    if (success == ERR_ENDPT):
         error_info.extend(connected_err)
     # if no connection issues found but some verification issues found
-    elif (success = WARN_ENDPT):
+    elif (success == WARN_ENDPT):
         error_info.extend(verified_err)
     return success
