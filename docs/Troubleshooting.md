@@ -499,6 +499,13 @@ caused a severe performance issue, that we've been seeing come up a lot in Redha
 To learn more about this issue, check the following documentation: 
 * Bug [1667121](https://bugzilla.redhat.com/show_bug.cgi?id=1667121) performance regression in libcurl caused by the use of PK11_CreateManagedGenericObject() [rhel-7.6.z]
 
+Alternatively, if running in a Docker container, using devicemapper will often cause OMI to use 100% CPU.
+* You can check if devicemapper is being used by running:
+```
+df -h | grep /dev/mapper
+```
+* Unfortunately we don't support devicemapper, as Docker has also deprecated it. Resolution would be to uninstall devicemapper and restart OMS containers.
+
 #### Debugging omiagent high CPU
 Performance related bugs don't happen all the time, and they are very difficult to reproduce.
 If you experience such issue with omiagent you should use the script omiHighCPUDiagnostics.sh which will collect 
