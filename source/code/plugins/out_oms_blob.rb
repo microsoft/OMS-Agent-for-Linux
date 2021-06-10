@@ -352,6 +352,7 @@ module Fluent
       blob_uri, blocks_committed, blob_size = get_blob_uri_and_committed_blocks(container_type, data_type, custom_data_type, suffix)
       time = Time.now - start
       @log.debug "Success getting the BLOB information in #{time.round(3)}s"
+      @log.debug "BLOB URI is #{blob_uri}"
 
       start = Time.now
 
