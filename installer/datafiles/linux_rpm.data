@@ -14,6 +14,13 @@ ${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.el6.te;                   installer/s
 ${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.pp;                       intermediate/${{BUILD_CONFIGURATION}}/selinux/omsagent-logrotate.pp;     755; root; root
 ${{SEPKG_DIR_OMSAGENT}}/omsagent-logrotate.el6.pp;                   intermediate/${{BUILD_CONFIGURATION}}/selinux.el6/omsagent-logrotate.pp; 755; root; root
 
+%ghost /opt/microsoft/omsagent/plugin/VMInsightsDataCollector.rb
+%ghost /opt/microsoft/omsagent/plugin/changetracking_lib.rb
+%ghost /opt/microsoft/omsagent/plugin/filter_patch_management.rb
+%ghost /opt/microsoft/omsagent/plugin/out_oms_changetracking_file.rb
+%ghost /opt/microsoft/omsagent/plugin/patch_management_lib.rb
+%ghost /opt/microsoft/omsconfig/Scripts/OMSAuditdPlugin.sh
+
 %Directories
 /usr/share/selinux/packages;                                         755; root; root; sysdir
 /usr/share/selinux/packages/omsagent-logrotate;                      755; root; root
