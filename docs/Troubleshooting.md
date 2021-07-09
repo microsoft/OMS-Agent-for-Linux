@@ -502,7 +502,7 @@ To learn more about this issue, check the following documentation:
 Alternatively, if running in a Docker container, using devicemapper will often cause OMI to use 100% CPU.
 * You can check if devicemapper is being used by running:
 ```
-df -h | grep /dev/mapper
+docker info | grep 'Storage Driver'
 ```
 * Unfortunately we don't support devicemapper, as Docker has also deprecated it. Resolution would be to uninstall devicemapper and restart OMS containers.
 
