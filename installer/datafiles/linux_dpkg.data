@@ -5,3 +5,11 @@ PACKAGE_TYPE: 'DPKG'
 %Dependencies
 omi (>= 1.3.0.2)
 scx (>= 1.6.3.212)
+
+%Files
+/opt/microsoft/omsagent/plugin/VMInsightsDataCollector.rb;              source/code/plugins/VMInsightsDataCollector.rb;        744; root; root
+/opt/microsoft/omsagent/plugin/changetracking_lib.rb;                   source/code/plugins/changetracking_lib.rb;             744; root; root
+/opt/microsoft/omsagent/plugin/filter_patch_management.rb;              source/code/plugins/filter_patch_management.rb;        744; root; root
+/opt/microsoft/omsagent/plugin/out_oms_changetracking_file.rb;          source/code/plugins/out_oms_changetracking_file.rb;    744; root; root
+/opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
+
