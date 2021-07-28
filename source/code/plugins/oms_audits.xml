@@ -6,24 +6,24 @@
     <audit
       description="Ensure nodev option set on /home partition."
       msid="1.1.4"
-      impact="An attacker could mount a special device (e.g. block or character device) on the /home partition."
-      remediation="Edit the /etc/fstab file and nodev the fourth field (mounting options) for the /home partition. See the fstab(5) manual page for more information."
+      impact="An attacker could mount a special device (for example, block or character device) on the /home partition."
+      remediation="Edit the /etc/fstab file and nodev the fourth field (mounting options) for the /home partition. For more information, see the fstab(5) manual pages."
       ruleId="a87f15ed-1115-a22d-6f43-17db97c91111">
       <check distro="*" command="CheckNoMatchingLines" regex="nodev" filter="\s/home\s" path="/etc/fstab" />
     </audit>
     <audit
       description="Ensure nodev option set on /tmp partition."
       msid="1.1.5"
-      impact="An attacker could mount a special device (e.g. block or character device) on the /tmp partition."
-      remediation="Edit the /etc/fstab file and nodev the fourth field (mounting options) for the /tmp partition. See the fstab(5) manual page for more information."
+      impact="An attacker could mount a special device (for example, block or character device) on the /tmp partition."
+      remediation="Edit the /etc/fstab file and nodev the fourth field (mounting options) for the /tmp partition. For more information, see the fstab(5) manual pages."
       ruleId="a87f15ed-1115-a22d-6f43-17db97c91161">
       <check distro="*" command="CheckNoMatchingLines" regex="nodev" filter="\s/tmp\s" path="/etc/fstab" />
     </audit>
     <audit
       description="Ensure nodev option set on /var/tmp partition."
       msid="1.1.6"
-      impact="An attacker could mount a special device (e.g. block or character device) on the /var/tmp partition."
-      remediation="Edit the /etc/fstab file and nodev the fourth field (mounting options) for the /var/tmp partition. See the fstab(5) manual page for more information."
+      impact="An attacker could mount a special device (for example, block or character device) on the /var/tmp partition."
+      remediation="Edit the /etc/fstab file and nodev the fourth field (mounting options) for the /var/tmp partition. For more information, see the fstab(5) manual pages."
       ruleId="a87f15ed-1115-a22d-6f43-17db97c91181">
       <check distro="*" command="CheckNoMatchingLines" regex="nodev" filter="\s/var/tmp\s" path="/etc/fstab" />
     </audit>
@@ -31,7 +31,7 @@
       description="Ensure nosuid option set on /tmp partition."
       msid="1.1.7"
       impact="Since the /tmp filesystem is only intended for temporary file storage, set this option to ensure that users cannot create setuid files in /var/tmp."
-      remediation="Edit the /etc/fstab file and nosuid the fourth field (mounting options) for the /tmp partition. See the fstab(5) manual page for more information."
+      remediation="Edit the /etc/fstab file and nosuid the fourth field (mounting options) for the /tmp partition. For more information, see the fstab(5) manual pages."
       ruleId="a87f15ed-1115-a22d-6f43-17db97c91191">
       <check distro="*" command="CheckNoMatchingLines" regex="nosuid" filter="\s/tmp\s" path="/etc/fstab" />
     </audit>
@@ -39,7 +39,7 @@
       description="Ensure nosuid option set on /var/tmp partition."
       msid="1.1.8"
       impact="Since the /var/tmp filesystem is only intended for temporary file storage, set this option to ensure that users cannot create setuid files in /var/tmp."
-      remediation="Edit the /etc/fstab file and nosuid the fourth field (mounting options) for the /var/tmp partition. See the fstab(5) manual page for more information."
+      remediation="Edit the /etc/fstab file and nosuid the fourth field (mounting options) for the /var/tmp partition. For more information, see the fstab(5) manual pages."
       ruleId="a87f15ed-1115-a22d-6f43-17db97c91171">
       <check distro="*" command="CheckNoMatchingLines" regex="nosuid" filter="\s/var/tmp\s" path="/etc/fstab" />
     </audit>
@@ -47,7 +47,7 @@
       description="Ensure noexec option set on /var/tmp partition."
       msid="1.1.9"
       impact="Since the `/var/tmp` filesystem is only intended for temporary file storage, set this option to ensure that users cannot run executable binaries from `/var/tmp` ."
-      remediation="Edit the /etc/fstab file and add noexec to the fourth field (mounting options) for the /var/tmp partition. See the fstab(5) manual page for more information."
+      remediation="Edit the /etc/fstab file and add noexec to the fourth field (mounting options) for the /var/tmp partition. For more information, see the fstab(5) manual pages."
       ruleId="b97f15dd-8185-a12d-6f43-17db97c98477">
       <check distro="*" command="CheckNoMatchingLines" regex="noexec" filter="\s/var/tmp\s" path="/etc/fstab" />
     </audit>
@@ -55,7 +55,7 @@
       description="Ensure noexec option set on /dev/shm partition."
       msid="1.1.16"
       impact="Setting this option on a file system prevents users from executing programs from shared memory. This deters users from introducing potentially malicious software on the system."
-      remediation="Edit the /etc/fstab file and add noexec to the fourth field (mounting options) for the /dev/shm partition. See the fstab(5) manual page for more information."
+      remediation="Edit the /etc/fstab file and add noexec to the fourth field (mounting options) for the /dev/shm partition. For more information, see the fstab(5) manual pages."
       ruleId="11e6dc3b-0659-3dc8-7d12-8eb0bb6c0890">
       <check distro="*" command="CheckNoMatchingLines" regex="noexec" filter="\s/dev/shm\s" path="/etc/fstab" />
     </audit>
@@ -96,7 +96,7 @@
     <audit
       description="Ensure permissions on /etc/motd are configured."
       msid="1.7.1.4"
-      impact="If the `/etc/motd` file does not have the correct ownership it could be modified by unauthorized users with incorrect or misleading information."
+      impact="If the `/etc/motd` file does not have the correct ownership, it could be modified by unauthorized users with incorrect or misleading information."
       remediation="Set the owner and group of /etc/motd to root and set permissions to 0644 or run '/opt/microsoft/omsagent/plugin/omsremediate -r file-permissions'"
       ruleId="b08735e4-8565-0ab1-0fba-b15e31be98e4">
       <check distro="*" command="CheckFileStatsIfExists" path="/etc/motd" owner="root" group="root" mode="644" allow-stricter="true" />
@@ -104,7 +104,7 @@
     <audit
       description="Ensure permissions on /etc/issue are configured."
       msid="1.7.1.5"
-      impact="If the `/etc/issue` file does not have the correct ownership it could be modified by unauthorized users with incorrect or misleading information."
+      impact="If the `/etc/issue` file does not have the correct ownership, it could be modified by unauthorized users with incorrect or misleading information."
       remediation="Set the owner and group of /etc/issue to root and set permissions to 0644 or run '/opt/microsoft/omsagent/plugin/omsremediate -r file-permissions'"
       ruleId="69032884-324a-3289-a171-b17a541f7adb">
       <check distro="*" command="CheckFileStats" path="/etc/issue" owner="root" group="root" mode="644" allow-stricter="true" />
@@ -112,7 +112,7 @@
     <audit
       description="Ensure permissions on /etc/issue.net are configured."
       msid="1.7.1.6"
-      impact="If the `/etc/issue.net` file does not have the correct ownership it could be modified by unauthorized users with incorrect or misleading information."
+      impact="If the `/etc/issue.net` file does not have the correct ownership, it could be modified by unauthorized users with incorrect or misleading information."
       remediation="Set the owner and group of /etc/issue.net to root and set permissions to 0644 or run '/opt/microsoft/omsagent/plugin/omsremediate -r file-permissions'"
       ruleId="9110c0c6-27f1-065e-140d-2672c1ad055b">
       <check distro="*" command="CheckFileStats" path="/etc/issue.net" owner="root" group="root" mode="644" allow-stricter="true" />
@@ -122,7 +122,7 @@
       msid="2.1"
       cceid="CCE-3522-0"
       severity="Important"
-      impact="An attacker could mount a special device (e.g. block or character device) via removable media"
+      impact="An attacker could mount a special device (for example, block or character device) via removable media"
       remediation="Add the nodev option to the fourth field (mounting options) in /etc/fstab"
       ruleId="5c7537f2-b90b-44a4-89c9-4fca5fd79ef7">
       <check distro="*" command="CheckNoMatchingLines" filter="^[^#]\S+\s+\S*(floppy|cdrom)" regex="nodev" path="/etc/fstab" />
@@ -174,9 +174,9 @@
      <audit
       description="Ensure default deny firewall policy"
       msid="3.6.2"
-      impact="With a default accept policy the firewall will accept any packet that is not configured to be denied. It is easier to white list acceptable usage than to black list unacceptable usage."
-      remediation="Set the default policy for incoming, outgoing and routed traffic to `deny` or `rejecct` as appropriate using your firewall software"
-      ruleId="15ca11bf-034a-56d6-564f-2f857d1f96c6">
+      impact="With a default accept policy the firewall will accept any packet that is not configured to be denied. It is easier to maintain a secure firewall with a default DROP policy than it is with a default ALLOW policy."
+      remediation="Set the default policy for incoming, outgoing and routed traffic to `deny` or `reject` as appropriate using your firewall software"
+      ruleId="eb6c608a-2316-41bd-aa00-604249e31f27">
       <check
         distro="*"
         command="CheckIptablesStatus"
@@ -219,7 +219,7 @@
       description="Ensure lockout for failed password attempts is configured."
       msid="5.3.2"
       impact="Locking out user IDs after `n` unsuccessful consecutive login attempts mitigates brute force password attacks against your systems."
-      remediation="for Ubuntu and Debian, add the pam_tally and pam_deny modules as appropriate. For all other distros, refer to your distrobution's documentation"
+      remediation="for Ubuntu and Debian, add the pam_tally and pam_deny modules as appropriate. For all other distros, refer to your distro's documentation"
       ruleId="1895704d-a326-90ca-3795-3a1289e7482d">
       <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/common-auth" filter="\s+pam_tally2\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
       <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/password-auth" filter="^\s*auth\s+required\s+pam_faillock\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
@@ -294,7 +294,7 @@
     <audit
       description="Ensure all groups in /etc/passwd exist in /etc/group"
       msid="6.2.15"
-      impact="Groups defined in the `/etc/passwd` file but not in the `/etc/group` file pose a threat to system security since group permissions are not properly managed."
+      impact="Groups which are defined in the /etc/passwd file but not in the /etc/group file poses a threat to system security since group permissions are not properly managed."
       remediation="For each group defined in /etc/passwd, ensure there is a corresponding group in /etc/group"
       ruleId="835a98f5-46da-5332-6b45-38df223e9d9a">
       <check distro="*" command="CheckGroupValidity"/>
@@ -414,7 +414,7 @@
       severity="Critical"
       impact="An attacker could join security groups if this file is not properly secured"
       remediation="Set the permissions and ownership of /etc/gshadow or run '/opt/microsoft/omsagent/plugin/omsremediate -r set-etc-gshadow-perms'"
-      ruleId="0a7f2b28-8586-6cef-512e-a28f991d83cd">
+      ruleId="0fe59dec-472c-4b11-a221-36053a47afb6">
       <check distro="*" command="CheckFileStatsIfExists" path="/etc/gshadow" owner="root" group="root,shadow" mode-mask="07177"/>
     </audit>
     <audit
@@ -454,7 +454,7 @@
       severity="Critical"
       impact="An attacker could elevate privileges by modifying group membership"
       remediation="Set the permissions and ownership of /etc/group- or run '/opt/microsoft/omsagent/plugin/omsremediate -r set-etc-group-perms"
-      ruleId="c41a47e9-1ba0-4e72-9f43-4659a4bfed63">
+      ruleId="865ebb92-8e64-4e3a-aa9b-0290768aa8f1">
       <check distro="*" command="CheckFileStats" path="/etc/group-" owner="root" group="root" mode="644" allow-stricter="true" />
     </audit>
     <audit
@@ -639,7 +639,7 @@
       cceid="CCE-4133-5"
       severity="Critical"
       impact="An attacker could perform an ICMP attack resulting in DoS"
-      remediation="Run `sysctl -w key=value` and set to a compliant value or run or run '/opt/microsoft/omsagent/plugin/omsremediate -r enable-icmp-ignore-bogus-error-responses'"
+      remediation="Run `sysctl -w key=value` and set to a compliant value or run '/opt/microsoft/omsagent/plugin/omsremediate -r enable-icmp-ignore-bogus-error-responses'"
       ruleId="88acc143-2f76-4418-9aa9-d0d5f244ab5f">
       <check distro="*" command="CheckMatchingLines" regex="^1$" path="/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses" />
     </audit>
@@ -761,7 +761,7 @@
     <audit
       description="Ensure logging is configured"
       msid="60"
-      impact="A great deal of important security-related information is sent via `rsyslog` (e.g., successful and failed su attempts, failed login attempts, root login attempts, etc.)."
+      impact="A great deal of important security-related information is sent via `rsyslog` (for example, successful and failed su attempts, failed login attempts, root login attempts, etc.)."
       remediation="Configure syslog, rsyslog or syslog-ng as appropriate"
       ruleId="15ca11bf-034a-56d6-564f-2f857d1f96c6">
       <check distro="*" command="CheckFileExistsRegex" path="/var/log" regex="(syslog|\S+\.log$)"/>
@@ -777,9 +777,9 @@
       <check distro="*" command="CheckPackageInstalledRegexp" packagename="^r?syslog(-ng)?$" />
     </audit>
     <audit
-      description="Ensure a loging service is enabled"
+      description="Ensure a logging service is enabled"
       msid="62"
-      impact="It is imparitive to have the ability to log events on a node."
+      impact="It is imperative to have the ability to log events on a node."
       remediation="Enable the rsyslog package or run '/opt/microsoft/omsagent/plugin/omsremediate -r enable-rsyslog'"
       ruleId="4c4e42e2-4cd2-3eaf-147b-ea4f61164d3e">
       <check distro="*" command="CheckServiceStatus" service="rsyslog" expect="running">
@@ -878,7 +878,7 @@
       msid="70.2"
       cceid="CCE-4252-3"
       severity="Important"
-      impact="An attacker could exploit a vulnerability in an xinetd service to gain access"
+      impact="An attacker could exploit a vulnerability in a xinetd service to gain access"
       remediation="Uninstall the inetd service (apt-get remove xinetd)"
       ruleId="1d9557b2-b58f-4f81-bde9-4f9b08a3b2f1">
       <check distro="*" command="CheckServiceDisabled" service="xinetd" />
@@ -908,7 +908,7 @@
       msid="72"
       cceid="CCE-3390-2"
       severity="Critical"
-      impact="An attacker could eavesdrop or highjack unencrypted telnet sessions"
+      impact="An attacker could eavesdrop or hijack unencrypted telnet sessions"
       remediation="Remove or comment out the telnet entry in the file '/etc/inetd.conf'"
       ruleId="0617b91c-2a28-42bd-b5b3-7562555b41ed">
       <check distro="*" command="CheckNoMatchingLinesIfExists" regex="^[\s\t]*telnet" path="/etc/inetd.conf" />
@@ -918,7 +918,7 @@
       msid="73"
       cceid="CCE-4330-7"
       severity="Critical"
-      impact="An attacker could eavesdrop or highjack unencrypted telnet sessions"
+      impact="An attacker could eavesdrop or hijack unencrypted telnet sessions"
       remediation="Uninstall any telnetd packages"
       ruleId="6c716f88-a252-4fe9-9c5c-ba9236a80beb">
       <check distro="*" command="CheckPackageNotInstalledRegexp" packagename="[a-z-]*telnetd" />
@@ -928,7 +928,7 @@
       msid="74"
       cceid="CCE-4141-8"
       severity="Critical"
-      impact="An attacker could eavesdrop or highjack unencrypted sessions"
+      impact="An attacker could eavesdrop or hijack unencrypted sessions"
       remediation="Remove or comment out the shell entry in the file '/etc/inetd.conf'"
       ruleId="dda66a42-30d1-4621-9565-f09628ac8047">
       <check distro="*" command="CheckNoMatchingLinesIfExists" regex="^[\s\t]*shell" path="/etc/inetd.conf" />
@@ -938,7 +938,7 @@
       msid="77"
       cceid="CCE-4308-3"
       severity="Critical"
-      impact="An attacker could eavesdrop or highjack unencrypted rsh sessions"
+      impact="An attacker could eavesdrop or hijack unencrypted rsh sessions"
       remediation="Uninstall the rsh-server package (apt-get remove rsh-server)"
       ruleId="b256491f-f804-4c44-bfa4-057dd2f44c30">
       <check distro="*" command="CheckPackageNotInstalled" packagename="rsh-server" />
@@ -968,7 +968,7 @@
       msid="80"
       cceid="CCE-4273-9"
       severity="Important"
-      impact="An attacker could eavesdrop or highjack an unencrypted session"
+      impact="An attacker could eavesdrop or hijack an unencrypted session"
       remediation="Remove the tftp entry from the file '/etc/inetd.conf'"
       ruleId="cb086aef-fec2-467f-a03b-627c00020926">
       <check distro="*" command="CheckNoMatchingLinesIfExists" regex="^[\s\t]*tftp" path="/etc/inetd.conf" />
@@ -978,7 +978,7 @@
       msid="81"
       cceid="CCE-3916-4"
       severity="Important"
-      impact="An attacker could eavesdrop or highjack an unencrypted session"
+      impact="An attacker could eavesdrop or hijack an unencrypted session"
       remediation="Uninstall the tftpd package (apt-get remove tftpd)"
       ruleId="ae9ce111-ef4d-4d34-8f76-fdc38263f153">
       <check distro="*" command="CheckPackageNotInstalled" packagename="tftpd" />
@@ -1070,7 +1070,7 @@
       description="Ensure permissions on /etc/cron.d are configured."
       msid="93"
       impact="Granting write access to this directory for non-privileged users could provide them the means for gaining unauthorized elevated privileges. Granting read access to this directory could give an unprivileged user insight in how to gain elevated privileges or circumvent auditing controls."
-      remediation="Set the owner and group of /etc/chron.d to root and permissions to 0700 or run or run '/opt/microsoft/omsagent/plugin/omsremediate -r fix-cron-file-perms'"
+      remediation="Set the owner and group of /etc/chron.d to root and permissions to 0700 or run '/opt/microsoft/omsagent/plugin/omsremediate -r fix-cron-file-perms'"
       ruleId="efa30987-4c67-73f5-979f-cb50f79466de">
       <check distro="*" command="CheckFileStatsIfExists" path="/etc/cron.d" owner="root" group="root" mode="700" allow-stricter="true"/>
     </audit>
@@ -1359,7 +1359,7 @@
       description="Ensure password hashing algorithm is SHA-512"
       msid="157.11"
       severity="Critical"
-      impact="The SHA-512 algorithm provides much stronger hashing than MD5, thus providing additional protection to the system by increasing the level of effort for an attacker to successfully determine passwords. Note that these change only apply to accounts configured on the local system."
+      impact="The SHA-512 algorithm provides much stronger hashing than MD5, thus providing additional protection to the system by increasing the level of effort for an attacker to successfully determine passwords. Note: These changes only apply to accounts configured on the local system."
       remediation="Set password hashing algorithm to sha512. Many distributions provide tools for updating PAM configuration, consult your documentation for details. If no tooling is provided edit the appropriate `/etc/pam.d/` configuration file and add or modify the `pam_unix.so` lines to include the sha512 option:
 ```
 password sufficient pam_unix.so sha512
@@ -1373,7 +1373,7 @@ password sufficient pam_unix.so sha512
       msid="157.12"
       severity="Critical"
       impact="By restricting the frequency of password changes, an administrator can prevent users from repeatedly changing their password in an attempt to circumvent password reuse controls."
-      remediation="Set the `PASS_MIN_DAYS` parameter to 7 in `/etc/login.defs: `PASS_MIN_DAYS 7`. Modify user parameters for all users with a password set to match: `chage --mindays 7`  or run '/opt/microsoft/omsagent/plugin/omsremediate -r set-pass-min-days'"
+      remediation="Set the `PASS_MIN_DAYS` parameter to 7 in `/etc/login.defs`: `PASS_MIN_DAYS 7`. Modify user parameters for all users with a password set to match: `chage --mindays 7`  or run '/opt/microsoft/omsagent/plugin/omsremediate -r set-pass-min-days'"
       ruleId="50272a84-672d-4c11-a67e-9d058adaf67a">
       <check distro="*" command="CheckMatchingLines" regex="^\s*PASS_MIN_DAYS\s+([7-9]|[1-9][0-9]+)\s*$" path="/etc/login.defs" />
     </audit>
@@ -1381,7 +1381,7 @@ password sufficient pam_unix.so sha512
       description="Ensure all users last password change date is in the past"
       msid="157.14"
       severity="Critical"
-      impact="If a users recorded password change date is in the future then they could bypass any set password expiration."
+      impact="If a users recorded password change date is in the future, then they could bypass any set password expiration."
       remediation="Ensure inactive password lock is 30 days or less
 Run the following command to set the default password inactivity period to 30 days:
 ```
@@ -1425,7 +1425,7 @@ Modify user parameters for all users with a password set to match:
       <check distro="*" command="CheckRootUID" path="/etc/passwd"/>
     </audit>
     <audit
-      description="Remove unnecesary packages"
+      description="Remove unnecessary packages"
       msid="158"
       cceid="CCE-XXXXX-6"
       severity="Informational"
@@ -1435,12 +1435,12 @@ Modify user parameters for all users with a password set to match:
       <check distro="Ubuntu" command="CheckPackageNotInstalled" packagename="landscape-common" />
     </audit>
     <audit
-      description="Remove unnecesary accounts"
+      description="Remove unnecessary accounts"
       msid="159"
       cceid="CCE-XXXXX-7"
       severity="Informational"
       impact="For compliance"
-      remediation="Remove the unnecesary accounts"
+      remediation="Remove the unnecessary accounts"
       ruleId="627b7494-0e62-4093-9f77-db8d526d036b">
       <check distro="Ubuntu" command="CheckNoMatchingLines" regex="^games:" path="/etc/passwd" />
     </audit>
@@ -1463,7 +1463,7 @@ Modify user parameters for all users with a password set to match:
       severity="Critical"
       impact="The capturing of system events provides system administrators with information to allow them to determine if unauthorized access to their system is occurring."
       remediation="Run AuditD service (systemctl start auditd)"
-      ruleId="f9fd03d2-75e4-4564-84a9-4e955f1e7c30">
+      ruleId="c146c4a4-5eb6-4205-88da-5a71a82f2d45">
       <check distro="*" command="CheckServiceEnabled"  expect="running" service="auditd">
     	<dependency type="PackageInstalled">audit(?:d)?$</dependency>
       </check>
@@ -1491,7 +1491,7 @@ Modify user parameters for all users with a password set to match:
       msid="181"
       severity="Critical"
       impact="The `rsyncd` service presents a security risk as it uses unencrypted protocols for communication."
-      remediation="Run one of the following commands to disable `rsyncd` : `chkconfig rsyncd off`, 'systemctl disable rsyncd`, `update-rc.d rsyncd disable` or run '/opt/microsoft/omsagent/plugin/omsremediate -r disable-rsysnc'"
+      remediation="Run one of the following commands to disable `rsyncd` : `chkconfig rsyncd off`, `systemctl disable rsyncd`, `update-rc.d rsyncd disable` or run '/opt/microsoft/omsagent/plugin/omsremediate -r disable-rsysnc'"
       ruleId="63aba603-b1f8-40df-82c5-38915452ce23">
       <check distro="*" command="CheckServiceDisabled" service="rsync" />
     </audit>
