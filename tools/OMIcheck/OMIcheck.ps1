@@ -1,19 +1,22 @@
 ﻿$upgradeOMI = $false; #detect only
+
+# Update these paths accordingly.
 $checkScriptPath  = "C:\linux\OMIcheck\omi_check.sh"
 $upgradeScriptPath = "C:\linux\OMIcheck\omi_upgrade.sh"
 
 # Get all Azure Subscriptions
 $subs = Get-AzSubscription
- 
-# For each subscription execute to find (and upgrade) omi patch on Linux VMs
+
+# For each subscription execute to find (and upgrade) OMI on Linux VMs
+# TODO: This can be converted to ForEach-Object -Parallel. However, it requires PSh >= 7.1
 foreach ($sub in $subs)
 {
     #DEBUG: Limit to one subscription only.
-    #if ($sub.Name -eq "Geneva Monitoring Agent - LinuxMdsd")
+    #if ($sub.Name -eq "My subscription name here")
     #{
         # Set Azure Subscription context    
         Set-AzContext -Subscription $sub.Id
-        
+
         Write-Output "Listing Virutal Machines in subscription '$($sub.Name)'"
         $VMs = Get-AzVM -Status
         $VMsSorted = $VMs | Sort-Object -Property ResourceGroupName
@@ -37,15 +40,16 @@ foreach ($sub in $subs)
                 Write-Host -ForegroundColor Gray `t`t $VM.Name " in resource group : VM is not running"
                 continue
             }
-        
+
             if ($VM.StorageProfile.OsDisk.OsType.ToString() -ne "Linux")
             {
                 Write-Host -ForegroundColor Gray `t`t $VM.Name ": VM is not running Linux OS"
                 continue
             }
 
-            $check = Invoke-AzVMRunCommand -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name -CommandId 'RunShellScript' -ScriptPath $checkScriptPath
- 
+            # TODO: Consider setting timeout. Parameter does not exist, -AsJob is an option for v2.
+            $check = Invoke-AzVMRunCommand -ResourceGroupName $VM.ResourceGroupName -Name $VM.Name -CommandId 'RunShellScript' -ScriptPath $checkScriptPath
+
             $split = $check.Value.Message.Split(" ",[System.StringSplitOptions]::RemoveEmptyEntries)
             if ($check.Value.Message.Contains("/opt/omi/bin/omiserver:"))
             {
@@ -59,8 +63,8 @@ foreach ($sub in $subs)
                     Write-Host -ForegroundColor Red `t`t $VM.Name ": VM has vulnerable OMI version " $pkgVer
                     if ($upgradeOMI)
                     {
-                        $upgrade = Invoke-AzVMRunCommand -ResourceGroupName $vm.ResourceGroupName -Name $vm.Name -CommandId 'RunShellScript' -ScriptPath $upgradeScriptPath
-                        Write-Host -ForegroundColor Red `t`t $VM.Name ": OMI package is downloaded and upgraded. " $upgrade.Value.Message
+                        $upgrade = Invoke-AzVMRunCommand -ResourceGroupName $VM.ResourceGroupName -Name $VM.Name -CommandId 'RunShellScript' -ScriptPath $upgradeScriptPath
+                        Write-Host -ForegroundColor Red `t`t $VM.Name ": Result of OMI package upgrade attempt: " $upgrade.Value.Message
                     }
                 }
             }
