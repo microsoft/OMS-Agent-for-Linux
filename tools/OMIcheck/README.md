@@ -2,7 +2,7 @@
 
 - Review the script and update the paths accordingly.
 
-- You can run this script from CloudShell in Azure portal or Windows/Linux/MacOS desktop, make sure to update Az.Compute modules to the latest and or your Powershell version.
+- You can run this script from cloud shell in Azure portal or Windows/Linux/MacOS desktop, make sure to update Az.Compute modules to the latest and or your Powershell version.
 
   > Update-Module -Confirm Az.Compute
 
@@ -15,3 +15,5 @@
 - It run a remote command to detect OMI version, and reports findings.
 
 - Optional flag to install omi 1.6.8.1 is off by defualt.
+
+- You can run the script back to back more than once for validations.

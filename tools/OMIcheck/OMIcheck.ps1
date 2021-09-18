@@ -1,16 +1,18 @@
 ﻿# This script lists the virtual machines in Azure subscriptions of the user,
 # and looks for vulnerable OMI packages. The report is grouped by subscription and resource group name.
 
-# Set the flag below to tru if you want the vulnerable OMI to be patched.
+# Set below flag to true if you want vulnerable OMI to be patched.
 # If OMSLinuxAgent is installed, then a minor update will be triggered.
 # If OMI is standalone, the latest bits will be installed from Github.
 $upgradeOMI = $false; #detect only
+$omsVersionGood = "1.13"
 
 # Update these paths accordingly. In cloud shell, the path is usually /home/user_name
 $checkScriptPath  = "C:\linux\OMIcheck\omi_check.sh"
 $upgradeScriptPath = "C:\linux\OMIcheck\omi_upgrade.sh"
 
 # Get all Azure Subscriptions
+Connect-AzAccount #-UseDeviceAuthentication
 $subs = Get-AzSubscription
 
 # For each subscription execute to find (and upgrade) OMI on Linux VMs
@@ -78,7 +80,7 @@ foreach ($sub in $subs)
                         if ($omsExt -ne $null)
                         {
                             # Trigger a goal state change for GA.
-                            Set-AzVMExtension -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Location $VM.Location -Publisher $omsExt.Publisher -Name $omsExt.Name -ExtensionType $omsExt.VirtualMachineExtensionType
+                            Set-AzVMExtension -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Location $VM.Location -Publisher $omsExt.Publisher -Name $omsExt.Name -ExtensionType $omsExt.VirtualMachineExtensionType -Version $omsVersionGood -NoWait
                             Write-Host -ForegroundColor Green `t`t $VM.Name ": Set OMSLinuxAgent extension goal state for update"
                         }
                         else
