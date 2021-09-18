@@ -1,6 +1,6 @@
 - This tool detects vulnerable OMI installations (< 1.6.8.1) in your subscriptions.
 
-- Review the script and update the paths accordingly.
+- Review the script and update upgradeOMI accordingly.
 
 - It should be run in Powershell and output can be directed to a file such as .\OMIcheck.ps1 > out.txt
 

@@ -1,8 +1,7 @@
 ﻿$upgradeOMI = $false; #detect only
 
-# Update these paths accordingly.
-$checkScriptPath  = "C:\linux\OMIcheck\omi_check.sh"
-$upgradeScriptPath = "C:\linux\OMIcheck\omi_upgrade.sh"
+$checkScriptPath  = "$($PSScriptRoot)\omi_check.sh"
+$upgradeScriptPath = "$($PSScriptRoot)\omi_upgrade.sh"
 
 # Get all Azure Subscriptions
 $subs = Get-AzSubscription
