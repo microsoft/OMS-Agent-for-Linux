@@ -26,11 +26,14 @@ foreach ($sub in $subs)
         Set-AzContext -Subscription $sub.Id
 
         Write-Output "Listing Virutal Machines in subscription '$($sub.Name)'"
-        $VMs = Get-AzVM -Status
+        $VMs = Get-AzVM
         $VMsSorted = $VMs | Sort-Object -Property ResourceGroupName
         $PreviousRG = ""
         foreach($VM in $VMs)
         {
+            #Get status of each VM to prevent throttling
+            $VM = Get-AzVM -Name $VM.Name -Status
+            
             #DEBUG: limit to 1 vm only
             #if ($vm.name -ne "my-testing-vm")
             #{
