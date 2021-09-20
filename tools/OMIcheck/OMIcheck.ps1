@@ -25,7 +25,7 @@ foreach ($sub in $subs)
         # Set Azure Subscription context    
         Set-AzContext -Subscription $sub.Id
 
-        Write-Output "Listing Virutal Machines in subscription '$($sub.Name)'"
+        Write-Output "Listing Virtual Machines in subscription '$($sub.Name)'"
         $VMs = Get-AzVM -Status
         $VMsSorted = $VMs | Sort-Object -Property ResourceGroupName
         $PreviousRG = ""
