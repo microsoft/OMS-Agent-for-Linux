@@ -12,7 +12,7 @@
 
 - It uses the credentials of the user to list the subscriptions and VMs
 
-- It run a remote command to detect OMI version, and reports findings.
+- It runs a remote command to detect OMI version, and reports findings.
 
 - Optional flag to install omi 1.6.8.1 is off by defualt.
 
