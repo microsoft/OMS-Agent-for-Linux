@@ -14,6 +14,6 @@
 
 - It run a remote command to detect OMI version, and reports findings.
 
-- Optional flag to install omi 1.6.8.1 is off by defualt.
+- Optional flag to install omi 1.6.8.1 is off by default.
 
 - You can run the script back to back more than once for validations.
