@@ -1,6 +1,6 @@
 - This tool detects vulnerable OMI installations (< 1.6.8.1) in your subscriptions.
 
-- Review the script and update the paths accordingly.
+- Review the script and update upgradeOMI accordingly.
 
 - You can run this script from cloud shell in Azure portal or Windows/Linux/MacOS desktop, make sure to update Az.Compute modules to the latest and or your Powershell version.
 
@@ -14,6 +14,6 @@
 
 - It runs a remote command to detect OMI version, and reports findings.
 
-- Optional flag to install omi 1.6.8.1 is off by defualt.
+- Optional flag to install omi 1.6.8.1 is off by default.
 
 - You can run the script back to back more than once for validations.
