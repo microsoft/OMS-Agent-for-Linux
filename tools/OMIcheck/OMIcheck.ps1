@@ -18,8 +18,8 @@ $OMSpublisher = "Microsoft.EnterpriseCloud.Monitoring"
 $OMSextName = "OmsAgentForLinux"
 
 # Update these paths accordingly. In cloud shell, the path is usually /home/user_name
-$checkScriptPath  = "C:\linux\OMIcheck\omi_check.sh"
-$upgradeScriptPath = "C:\linux\OMIcheck\omi_upgrade.sh"
+$checkScriptPath  = "$PSScriptRoot\omi_check.sh"
+$upgradeScriptPath = "$PSScriptRoot\omi_upgrade.sh"
 
 # Parse the response string.
 function ParsePkgVersions($str)
