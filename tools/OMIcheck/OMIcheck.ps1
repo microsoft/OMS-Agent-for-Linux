@@ -10,6 +10,7 @@ $OmiServerGoodVersion = "OMI-1.6.8-1"
 $OmiPkgGoodVersion = "1.6.8.1"
 $LadPkgGoodVersion = "1.5.110-LADmaster.1483"
 $OmsPkgGoodVersion = "1.13.40.0"
+$OmsTypeHandlerVersion = 1.13
 
 $LADpublisher = "Microsoft.Azure.Diagnostics"
 $LADextName = "LinuxDiagnostic"
@@ -92,8 +93,15 @@ function UpdateLAD($VM)
         if ($ladExt.ProvisioningState -eq "Succeeded")
         {
             # Trigger a goal state change for GA.
-            Set-AzVMExtension -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Location $ladExt.Location -Publisher $ladExt.Publisher -Name $ladExt.Name -ExtensionType $ladExt.ExtensionType -TypeHandlerVersion $ladExt.TypeHandlerVersion
-            Write-Host -ForegroundColor Green `t`t $VM.Name ": Set LinuxDiagnostic extension goal state for update"
+            $response = Set-AzVMExtension -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Location $ladExt.Location -Publisher $ladExt.Publisher -Name $ladExt.Name -ExtensionType $ladExt.ExtensionType -TypeHandlerVersion $ladExt.TypeHandlerVersion -ForceRerun (Get-Date).ToString()
+            if ($response.IsSuccessStatusCode)
+            {
+                Write-Host -ForegroundColor Green `t`t $VM.Name ": LinuxDiagnostic extension goal state for update is set."
+            }
+            else
+            {
+                Write-Host -ForegroundColor Red `t`t $VM.Name ": LinuxDiagnostic extension goal state for update failed to set." $response
+            }
         }
         else
         {
@@ -112,8 +120,15 @@ function UpdateOMS($VM)
         if ($omsExt.ProvisioningState -eq "Succeeded")
         {
             # Trigger a goal state change for GA.
-            Set-AzVMExtension -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Location $omsExt.Location -Publisher $omsExt.Publisher -Name $omsExt.Name -ExtensionType $omsExt.ExtensionType -TypeHandlerVersion $omsExt.TypeHandlerVersion
-            Write-Host -ForegroundColor Green `t`t $VM.Name ": Set OMSLinuxAgent extension goal state for update"
+            $response = Set-AzVMExtension -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Location $omsExt.Location -Publisher $omsExt.Publisher -Name $omsExt.Name -ExtensionType $omsExt.ExtensionType -TypeHandlerVersion $OmsTypeHandlerVersion -ForceRerun (Get-Date).ToString()
+            if ($response.IsSuccessStatusCode)
+            {
+                Write-Host -ForegroundColor Green `t`t $VM.Name ": OMSLinuxAgent extension goal state for update is set."
+            }
+            else
+            {
+                Write-Host -ForegroundColor Red `t`t $VM.Name ": OMSLinuxAgent extension goal state for update failed to set." $response
+            }
         }
         else
         {
@@ -132,7 +147,18 @@ function UpdateLADinVMSS($VMss)
     {
         # Trigger a goal state change for GA.
         $ladExt.AutoUpgradeMinorVersion = $true
-        Update-AzVmss -VirtualMachineScaleSet $VMss -ResourceGroupName $VMss.ResourceGroupName -VMScaleSetName $VMss.Name
+        $forceUpdateString = (Get-Date).ToString()
+        $ladExt.ForceUpdateTag = forceUpdateString
+        $response = Update-AzVmss -VirtualMachineScaleSet $VMss -ResourceGroupName $VMss.ResourceGroupName -VMScaleSetName $VMss.Name
+        $ladExt2 = $VMss.VirtualMachineProfile.ExtensionProfile.Extensions | where { $_.Publisher -eq $LADpublisher -and $_.Type -eq $LADextName }
+        if ($ladExt2.ForceUpdateTag -eq $forceUpdateString)
+        {
+            Write-Host -ForegroundColor Green `t`t $VMss.Name ": LinuxDiagnostic extension goal state for update is set."
+        }
+        else
+        {
+            Write-Host -ForegroundColor Red `t`t $VMss.Name ": LinuxDiagnostic extension goal state for update failed to set." $response
+        }
         # If the upgrade policy on the VMSS scale set is manual, start the upgrade on each instance manually.
         if ($VMss.UpgradePolicy.Mode -eq "Manual")
         {
@@ -156,7 +182,19 @@ function UpdateOMSinVMSS($VMss)
     {
         # Trigger a goal state change for GA.
         $omsExt.AutoUpgradeMinorVersion = $true
-        Update-AzVmss -VirtualMachineScaleSet $VMss -ResourceGroupName $VMss.ResourceGroupName -VMScaleSetName $VMss.Name
+        $omsExt.TypeHandlerVersion = $OmsTypeHandlerVersion
+        $forceUpdateString = (Get-Date).ToString()
+        $omsExt.ForceUpdateTag = $forceUpdateString
+        $response = Update-AzVmss -VirtualMachineScaleSet $VMss -ResourceGroupName $VMss.ResourceGroupName -VMScaleSetName $VMss.Name
+        $omsExt2 = $response.VirtualMachineProfile.ExtensionProfile.Extensions | where { $_.Publisher -eq $OMSpublisher -and $_.Type -eq $OMSextName }
+        if ($omsExt2.ForceUpdateTag -eq $forceUpdateString)
+        {
+            Write-Host -ForegroundColor Green `t`t $VMss.Name ": OMSLinuxAgent extension goal state for update is set."
+        }
+        else
+        {
+            Write-Host -ForegroundColor Red `t`t $VMss.Name ": OMSLinuxAgent extension goal state for update failed to set." $response
+        }
         # If the upgrade policy on the VMSS scale set is manual, start the upgrade on each instance manually.
         if ($VMss.UpgradePolicy.Mode -eq "Manual")
         {
