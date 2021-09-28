@@ -24,8 +24,8 @@ $subs = Get-AzSubscription
 foreach ($sub in $subs)
 {
     #DEBUG: Limit to one subscription only.
-    #if ($sub.Name -eq "My subscription name here")
-    #{
+    if ($sub.Name -eq "DEVOPS")
+    {
         # Set Azure Subscription context
         Set-AzContext -Subscription $sub.Id
 
@@ -39,19 +39,19 @@ foreach ($sub in $subs)
             foreach($instance in $instances)
             {
                 $vmi = Get-AzVmssVM -ResourceGroupName $ss.ResourceGroupName -VMScaleSetName $ss.Name -InstanceId $instance.InstanceId -InstanceView
-                $VM = Get-AzVmssVM -ResourceGroupName $ss.ResourceGroupName -VMScaleSetName $ss.Name -InstanceId $instance.InstanceId
+                $vm = Get-AzVmssVM -ResourceGroupName $ss.ResourceGroupName -VMScaleSetName $ss.Name -InstanceId $instance.InstanceId
 
                 # Update only running VMs.
                 if ($vmi.Statuses[$vmi.Statuses.Count - 1].DisplayStatus -ne "VM Running")
                 {
-                    Write-Host -ForegroundColor Gray `t`t $VM.Name " in resource group : VM is not running"
+                    Write-Host -ForegroundColor Gray `t`t $vm.Name " in resource group : VM is not running"
                     continue
                 }
 
                 # Update Linux only VMs.
-                if ($VM.StorageProfile.OsDisk.OsType.ToString() -ne "Linux")
+                if ($vm.StorageProfile.OsDisk.OsType.ToString() -ne "Linux")
                 {
-                    Write-Host -ForegroundColor Gray `t`t $VM.Name ": VM is not running Linux OS"
+                    Write-Host -ForegroundColor Gray `t`t $vm.Name ": VM is not running Linux OS"
                     continue
                 }
 
@@ -63,11 +63,11 @@ foreach ($sub in $subs)
                     $pkgVer = $split[3]
                     if($pkgVer -eq "OMI-1.6.8-1")
                     {
-                        Write-Host -ForegroundColor Green `t`t $VM.Name ": VM has patched OMI version " $pkgVer
+                        Write-Host -ForegroundColor Green `t`t $vm.Name ": VM has patched OMI version " $pkgVer
                     }
                     else
                     {
-                        Write-Host -ForegroundColor Red `t`t $VM.Name ": VM has vulnerable OMI version " $pkgVer
+                        Write-Host -ForegroundColor Red `t`t $vm.Name ": VM has vulnerable OMI version " $pkgVer
                         if ($upgradeOMI)
                         {
                             # Is it possible to upgrade similar to how it's done on VM Extension?
@@ -81,21 +81,21 @@ foreach ($sub in $subs)
                             #        -Publisher $omsExt.Publisher `
                             #        -Type $omsExt.Type
                             #        -TypeHandlerVersion $omsVersionGood -NoWait
-                            #    Write-Host -ForegroundColor Green `t`t $VM.Name ": Set OMSLinuxAgent extension goal state for update"
+                            #    Write-Host -ForegroundColor Green `t`t $vm.Name ": Set OMSLinuxAgent extension goal state for update"
                             #}
                             #else
                             #{
 
                                 # Upgrade standalone OMI.
                                 $upgrade = Invoke-AzVmssVMRunCommand -VirtualMachineScaleSetVM $VM -CommandId 'RunShellScript' -ScriptPath $upgradeScriptPath
-                                Write-Host -ForegroundColor Red `t`t $VM.Name ": Result of OMI package upgrade attempt: " $upgrade.Value.Message
+                                Write-Host -ForegroundColor Red `t`t $vm.Name ": Result of OMI package upgrade attempt: " $upgrade.Value.Message
                             #}
                         }
                     }
                 }
                 else
                 {
-                    Write-Host -ForegroundColor Gray `t`t $VM.Name ": VM has no OMI package"
+                    Write-Host -ForegroundColor Gray `t`t $vm.Name ": VM has no OMI package"
                 }
 
                 #DEBUG:
@@ -103,5 +103,5 @@ foreach ($sub in $subs)
             }
 
         }
-    #}
+    }
 }
