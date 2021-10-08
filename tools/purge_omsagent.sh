@@ -363,7 +363,7 @@ dir_rm /etc/opt/microsoft/auoms
 dir_rm /etc/opt/microsoft/dependency-agent
 dir_rm /etc/opt/microsoft/omsagent
 dir_rm /etc/opt/microsoft/scx
-if [ ! "$(ls -A /etc/opt/microsoft > /dev/null 2>&1)" ]; then
+if [ ! "$(ls -A /etc/opt/microsoft)" ]; then
     dir_rm /etc/opt/microsoft
 fi
 
@@ -372,7 +372,7 @@ dir_rm /opt/microsoft/dependency-agent
 dir_rm /opt/microsoft/omsagent
 dir_rm /opt/microsoft/omsconfig
 dir_rm /opt/microsoft/scx
-if [ ! "$(ls -A /opt/microsoft > /dev/null 2>&1)" ]; then
+if [ ! "$(ls -A /opt/microsoft)" ]; then
     dir_rm /opt/microsoft
 fi
 
@@ -381,7 +381,7 @@ dir_rm /var/opt/microsoft/dependency-agent
 dir_rm /var/opt/microsoft/omsagent
 dir_rm /var/opt/microsoft/omsconfig
 dir_rm /var/opt/microsoft/scx
-if [ ! "$(ls -A /var/opt/microsoft > /dev/null 2>&1)" ]; then
+if [ ! "$(ls -A /var/opt/microsoft)" ]; then
     dir_rm /var/opt/microsoft
 fi
 
