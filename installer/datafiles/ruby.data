@@ -1139,11 +1139,8 @@ ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/util/list.rb;                     ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/security.rb;                      ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/security.rb;               644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/psych_tree.rb;                    ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/psych_tree.rb;             644; root; root
 
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/AddTrustExternalCARoot.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/AddTrustExternalCARoot.pem; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/index.rubygems.org/GlobalSignRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/index.rubygems.org/GlobalSignRootCA.pem; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.global.ssl.fastly.net/DigiCertHighAssuranceEVRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.global.ssl.fastly.net/DigiCertHighAssuranceEVRootCA.pem; 644; root; root
+${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA_R3.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA_R3.pem; 644; root; root
+${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA.pem; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/source_list.rb;                   ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/source_list.rb;            644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/deprecate.rb;                     ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/deprecate.rb;              644; root; root
@@ -10129,9 +10126,9 @@ ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/oniguruma.h;                      ${{RUBY
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/missing.h;                        ${{RUBY_INT}}/include/ruby-2.6.0/ruby/missing.h;                 644; root; root
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/ruby.h;                           ${{RUBY_INT}}/include/ruby-2.6.0/ruby/ruby.h;                    644; root; root
 
-${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.5.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.5.h; 644; root; root
-
 ${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;          ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;   644; root; root
+
+${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.8.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.8.h; 644; root; root
 
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby.h;                                ${{RUBY_INT}}/include/ruby-2.6.0/ruby.h;                         644; root; root
 
@@ -10289,8 +10286,6 @@ ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/package/tar_reader; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/util;            755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs;       755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org; 755; root; root
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/index.rubygems.org; 755; root; root
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.global.ssl.fastly.net; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/request_set;     755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/request_set/lockfile; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/request;         755; root; root
