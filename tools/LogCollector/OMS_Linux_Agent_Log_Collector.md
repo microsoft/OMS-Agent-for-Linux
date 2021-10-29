@@ -52,7 +52,7 @@ sudo python omslinux_agentlog.py -o /home/user/omslogs -s SR1234567890
 - `omslinux_agentlog.py`: A python script to collect logs and command line output for further troubleshooting
 
 ## Log Collector Output Files and Directories:
-- All logs are saved under the path provided via the `-o` or `--outdir` flag. If the path does not exist, the script will fail.
+- All logs are saved under the path provided via the `-o` flag. If the path does not exist, the script will fail.
 - The output is archived with the following file format:
     omslinuxagentlog-\<SR Number\>-\<UTCDateTime\>.tgz
     Example: `omslinuxagentlog-SR1234567890-2017-06-14T11:57:01.599947.tgz`

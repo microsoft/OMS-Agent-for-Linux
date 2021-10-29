@@ -111,7 +111,7 @@ def copyContainerFiles(omsContainerName, omsLinuxType):
     execCommandAndLog('docker cp omsagent:/var/opt/microsoft/omsconfig/omsconfig.log {0}/omslogs/container'.format(outDir), False)
     execCommandAndLog('docker cp omsagent:/var/opt/microsoft/scx/log/scx.log {0}/omslogs/container'.format(outDir), False)
     execCommandAndLog('docker cp omsagent:/etc/opt/microsoft/omsagent/* {0}/omslogs/container/WSData'.format(outDir), False)
-    if(omsLinuxType == 'Ubuntu'):
+    if omsLinuxType in ['Ubuntu', 'Debian']:
        execCommandAndLog('docker cp omsagent:/var/log/syslog {0}/omslogs/container'.format(outDir), False)
     else:
        execCommandAndLog('docker cp omsagent:/var/log/messages {0}/omslogs/container'.format(outDir), False)
@@ -183,7 +183,7 @@ def copyCommonFiles(omsLinuxType):
     execCommandAndLog('cp -rf /etc/opt/omi/conf/omsconfig/configuration/* {0}/omslogs/dscconfiguration'.format(outDir), False)
     execCommandAndLog('mkdir -p {0}/omslogs/WSData'.format(outDir), False)
     execCommandAndLog('cp -rf /etc/opt/microsoft/omsagent/* {0}/omslogs/WSData'.format(outDir), False)
-    if (omsLinuxType == 'Ubuntu'):
+    if omsLinuxType in ['Ubuntu', 'Debian']:
        execCommandAndLog('cp /var/log/syslog* {0}/omslogs'.format(outDir), False)
     else:
        execCommandAndLog('cp /var/log/messages* {0}/omslogs'.format(outDir), False)
@@ -650,7 +650,7 @@ try:
     elif linuxType in ['Ubuntu', 'Debian']:
        runDPKGCommands(omsInstallType)
     else:
-       msg='Unsupported Linux OS ... Stopping OMS Log Collection ... %s' % linuxType
+       msg='Unsupported Linux OS...Stopping OMS Log Collection...'
        print(msg)
        writeLogOutput(msg)
        sys.exit(1)
