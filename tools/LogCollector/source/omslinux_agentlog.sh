@@ -33,15 +33,16 @@ case $0 in
 esac
 echo $SCRIPT_INDIRECT
 
-# Displays the Usage options for command 
-# if the given input option is invalid
+# Display the Usage for this script
 usage()
 {
-   echo "Usage: sudo $1 [OPTIONS]"
-   echo "Options:"
-   echo "  -s srnum, --srnum srnum         Use SR Number to collect OMS Logs"
-   echo "  -c comname, --comname comname   Company name for reference <Optional>"
-   echo "  -? | -h | --help                Shows this usage text."
+    echo "Usage:   sudo $1 [OPTIONS]"
+    echo "Example: sudo $1 -o /home/user -s 9876543210 -c Contoso"
+    echo "Options:"
+    echo "  -o /output/dir,     Path to output directory; must already exist"
+    echo "  -s srnum,           Use SR Number to collect OMS Logs"
+    echo "  -c comname,         (Optional) Company name for reference"
+    echo "  -? | -h             Shows this usage text"
 }
 
 # Checks if python is installed and required
@@ -111,45 +112,58 @@ oms_prereqchk()
 
 # Main logic to check pre-requisites &
 # run python script to collect logs
-argchk=1
-while [ $# -ne 0 ] && [ $argchk -ne 0 ]
+outdir=
+srnum=
+company=
+while getopts "o:s:c:h?" flag
 do
-    case "$1" in
-         -s | --srnum)
-            argchk=0
+    case "${flag}" in
+        o)
+            outdir=${OPTARG}
             ;;
-         -/? | -h | --help)
+        s)
+            srnum=${OPTARG}
+            ;;
+        c)
+            company=${OPTARG}
+            ;;
+        h|\?)
             usage `basename $0` >&2
             exit 0
             ;;
-         *)
-            echo "Unknown argument: '$1'" >&2
-            echo "Use -h or --help for usage" >&2
+        *)
+            usage `basename $0` >&2
             exit 1
             ;;
     esac
 done
 
+if [ -z "$outdir" ] || [ -z "$srnum" ]; then
+    echo "Missing required arguments" >&2
+    usage `basename $0` >&2
+    exit 1
+fi
+
+if [ ! -d "$outdir" ]; then
+    echo "Provided output directory $outdir does not exist; please create it before running the script" >&2
+    exit 1
+fi
+
+# Convert relative path to an absolute one
+outdir=$(readlink -f $outdir)
+
 python_prereqchk
 if [ $? -ne 0 ]; then
-     echo "Required OMS prerequisite python executable and python modules not installed ..."
-     exit 1
+    echo "Required OMS prerequisite python executable and python modules not installed ..."
+    exit 1
 fi
 
-#oms_prereqchk
-#if [ $? -ne 0 ]; then
-#     echo "OMS Linux Agent not installed for collecting OMS Logs..."
-#     exit 1
-#fi
-
-echo "Calling Python script to collect OMS Logs...<START> $3"
-if [ -n $3 ] && [ "$3" = "-c" ]; then
-     echo $3
-     echo $4
-     sudo $PYTHON $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2" -c "$4"
+echo "Beginning log collection ..."
+if [ -z "$company" ]; then
+    sudo $PYTHON $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -o "$outdir" -s "$srnum"
 else
-     sudo $PYTHON $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -s "$2"
+    sudo $PYTHON $SCRIPT_INDIRECT/$OMS_LOGCOLLECTOR -o "$outdir" -s "$srnum" -c "$company"
 fi
-echo "Calling Python script to collect OMS Logs...<END>"
+echo "Finished log collection."
 
 exit 0
