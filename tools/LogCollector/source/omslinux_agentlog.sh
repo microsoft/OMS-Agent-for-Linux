@@ -4,7 +4,7 @@
 #   troubleshooting OMS Linux Agent (Github, Extension & Container)
 #   issues by support personnel
 #
-#   Authors, Reviewers & Contributors : 
+#   Authors, Reviewers & Contributors :
 #                 KR Kandavel Azure CAT PM
 #                 Keiko Harada OMS PM,
 #                 Laura Galbraith OMS SE
@@ -46,7 +46,7 @@ usage()
 }
 
 # Checks if python is installed and required
-# python modules can be imported successfully 
+# python modules can be imported successfully
 python_prereqchk()
 {
     # Check for Python ctypes library (required for omsconfig)
@@ -93,12 +93,12 @@ python_prereqchk()
     return $prereqpass
 }
 
-# Checks if OMS Linux Agent install directory is present 
+# Checks if OMS Linux Agent install directory is present
 # if not then it recommends running the OMS Linux Agent
 # installation before collecting logs for troubleshooting
 oms_prereqchk()
 {
-    echo "Checking for OMS Linux Agent install..." 
+    echo "Checking for OMS Linux Agent install..."
     omsprereqflag=0
     if [ ! -d /var/opt/microsoft/omsagent ] && [ ! -d /var/opt/microsoft/omsconfig ]; then
         echo "OMS Linux Agent install directories are not present

@@ -14,7 +14,7 @@
 
    Date        : 2017-07-20
    Version     : 2.3
-   
+
 '''
 from __future__ import print_function
 # coding: UTF-8
@@ -246,8 +246,14 @@ def GetUpdates():
 Remove temporary files under $outDir/omslogs once it is archived
 '''
 def removeTempFiles():
-    execCommandAndLog('rm -R -rf {0}/omslogs'.format(outDir))
-    execCommandAndLog('rm -rf {0}/oms.status'.format(outDir))
+    cmd='rm -R -rf {0}/omslogs'.format(outDir)
+    out=execCommand(cmd)
+    print(cmd)
+    print(out)
+    cmd='rm -rf {0}/oms.status'.format(outDir)
+    out=execCommand(cmd)
+    print(cmd)
+    print(out)
     return 0
 
 '''
@@ -299,7 +305,7 @@ def chkDiskFreeSpace(estSize, estExtSize, cmdSize):
     # use f_bfree for superuser, or f_bavail if filesystem
     # has reserved space for superuser
     freeSpace=stat.f_bfree*stat.f_bsize
-    if(totSize < freeSpace): 
+    if(totSize < freeSpace):
           print('Enough space available in {0} to store logs...'.format(outDir))
           print('*' * 80)
     else:
@@ -316,11 +322,11 @@ def chkOMSAgentInstallStatus(omsInstallType):
     omsInstallDir = [ "/var/opt/microsoft/omsagent",
                       "/var/opt/microsoft/omsconfig"
                     ]
-    if(omsInstallType != 3):        
+    if(omsInstallType != 3):
         for dir in omsInstallDir:
             if(not os.path.exists(dir)):
                return 1
-    return 0           
+    return 0
 
 '''
 Check the type (Github, Extension, Container) of agent running in Linux machine
@@ -337,7 +343,7 @@ def chkOMSAgentInstallType():
       path='/var/lib/waagent/' + lfiles[0]
       print(path)
       omsExtension=os.path.exists(path)
-      print(omsExtension) 
+      print(omsExtension)
     if(omsExtension == True):
          out="OMS Linux Agent is installed through VM Extension...\n"
          omsInstallType=1
@@ -370,7 +376,7 @@ def chkOMSAgentInstallType():
     return omsInstallType
 
 '''
-Get size in bytes of a folder 
+Get size in bytes of a folder
 '''
 def getFolderSize(foldername):
     fileSize=0
@@ -467,7 +473,7 @@ def compressOMSLog(source, target):
     return 0
 
 '''
-Logic to validate input arguments before collecting the logs 
+Logic to validate input arguments before collecting the logs
 '''
 def inpArgCheck(argv):
     global outDir, srNum, comName
@@ -495,8 +501,8 @@ def inpArgCheck(argv):
     return 0
 
 '''
-Main() logic for log collection, calling the above functions 
-'''  
+Main() logic for log collection, calling the above functions
+'''
 ret=inpArgCheck(sys.argv[1:])
 if(ret == 1 or ret == 2):
     sys.exit(1)
@@ -510,7 +516,7 @@ print('SR Number: ', srNum)
 print('Company Name: ', comName)
 
 global logger
-outFile='{0}/omslinux.out'.format(outDir)
+outFilePath='{0}/omslogs/omslinux.out'.format(outDir)
 compressFile='{0}/omslinuxagentlog'.format(outDir) + '-' + srNum + '-' + str(datetime.datetime.utcnow().isoformat()) + '.tgz'
 print(compressFile)
 
@@ -523,11 +529,12 @@ try:
     '''
     Initialize routine to create necessary files and directories for storing logs & command o/p
     '''
-    outFile = open(outFile, 'w') 
+    execCommand('mkdir -p {0}/omslogs'.format(outDir))
+    outFile = open(outFilePath, 'w')
     writeLogOutput('SR Number: ' + srNum + '   Company Name: ' + comName)
 
     curutctime=datetime.datetime.utcnow()
-    logtime='Log Collection Start Time (UTC): %s' % (curutctime) 
+    logtime='Log Collection Start Time (UTC): %s' % (curutctime)
     print(logtime)
     writeLogOutput(logtime)
 
@@ -563,7 +570,7 @@ try:
           msg = 'Unsupported Linux OS...Stopping OMS Log Collection...'
           print(msg)
           writeLogOutput(msg)
-          sys.exit() 
+          sys.exit()
     else:
        msg = 'Unsupported Linux OS...Stopping OMS Log Collection...'
        print(msg)
@@ -577,9 +584,9 @@ try:
     writeLogOutput('Linux type installed is...%s' % linuxType)
     omsInstallType=chkOMSAgentInstallType()
     if(omsInstallType == 1):
-       execCommandAndLog('mkdir -p ' + outDir + '/vmagent')
-       execCommandAndLog('mkdir -p ' + outDir + '/extension/log')
-       execCommandAndLog('mkdir -p ' + outDir + '/extension/lib')
+       execCommandAndLog('mkdir -p ' + outDir + '/omslogs/vmagent')
+       execCommandAndLog('mkdir -p ' + outDir + '/omslogs/extension/log')
+       execCommandAndLog('mkdir -p ' + outDir + '/omslogs/extension/lib')
        estSize=estCommonFileSize(linuxType)
        estExtSize=estExtensionFileSize(linuxType)
        cmdSize=10 * 1024
@@ -601,8 +608,8 @@ try:
        else:
           sys.exit(1)
     elif(omsInstallType == 3):
-       execCommandAndLog('mkdir -p ' + outDir + '/container')
-       execCommandAndLog('mkdir -p ' + outDir + '/container/WSData')
+       execCommandAndLog('mkdir -p ' + outDir + '/omslogs/container')
+       execCommandAndLog('mkdir -p ' + outDir + '/omslogs/container/WSData')
        omsContainerID=getOMSAgentContainerID()
        omsContainerName=getOMSAgentContainerName()
        estSize=estCommonFileSize(linuxType)
@@ -666,7 +673,7 @@ try:
     '''
     cmd='chmod ug+x ./dscDiagnostics.sh'
     out=execCommand(cmd)
-    execCommandAndLog('bash ./dscDiagnostics.sh ' + outDir + '/dscdiagnostics-' + str(datetime.datetime.utcnow().isoformat()))
+    execCommandAndLog('bash ./dscDiagnostics.sh ' + outDir + '/omslogs/dscdiagnostics-' + str(datetime.datetime.utcnow().isoformat()))
 
     '''
     Run Update Assessment diagnostics commands
@@ -685,7 +692,7 @@ try:
     '''
     Run Update Management Health Check Script
     '''
-    path = "{0}/updateMgmtlogs".format(outDir)
+    path = "{0}/omslogs/updateMgmtlogs".format(outDir)
     versioned_python = "python{0}".format(sys.version_info[0])
     execCommandAndLog('sudo {0} ./update_mgmt_health_check.py {1}'.format(versioned_python, path))
 
@@ -694,7 +701,7 @@ try:
     '''
 except (IOError) as e:
     print(e)
-    logging.error('Could not save repo to repofile %s: %s' % (outFile, e))
+    logging.error('Could not save to file %s: %s' % (outFilePath, e))
     sys.exit(2)
 except (OSError) as e:
     print(e)
@@ -704,13 +711,13 @@ except (Exception) as e:
     print(e)
     logging.error('General Exception occurred %s' % (e))
     sys.exit(2)
-    
+
 finally:
     '''
     Final logic to close o/p file and create tar ball for sending it to support
     '''
-    outFile.close()
-    compressOMSLog(outDir, compressFile)
+    compressOMSLog(outDir + '/omslogs', compressFile)
     removeTempFiles()
+    outFile.close()
     print('OMS Linux Agent Log is archived in file : %s' % (compressFile))
     sys.exit()
