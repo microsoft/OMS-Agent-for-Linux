@@ -423,6 +423,6 @@ echo "  - Wait for Azure Security Center to provision the VM (if it is active)"
 echo "  - Manually connect the VM to the workspace (Azure Log Analytics - > Workspace -> Virtual Machines -> VM_name -> Connect)"
 echo "  - Install+onboard via shell bundle using the onboard_agent.sh file:"
 echo "    $ wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh"
-echo "    $ sudo ./onboard_agent.sh -w <workspace_id> -s <shared_key>"
+echo "    $ sudo sh ./onboard_agent.sh -w <workspace_id> -s <shared_key>"
 echo "Thank you!"
 call_exit 0
