@@ -59,10 +59,6 @@ omsagent ALL=(ALL) NOPASSWD: /usr/bin/python3 /opt/microsoft/omsconfig/modules/n
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/python3 /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/3.x/worker/omsutil.py *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/pkill -u nxautomation *
 
-#run update management commands
-omsagent ALL=(ALL) NOPASSWD: /usr/bin/tail *
-omsagent ALL=(ALL) NOPASSWD: /bin/tail *
-
 # configuring omsconfig
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py *
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/python3/OMS_MetaConfigHelper.py *
