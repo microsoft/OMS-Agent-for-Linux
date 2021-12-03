@@ -67,4 +67,8 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/python3/OMS_MetaCo
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/plugin/containerlogtailfilereader.rb *
 omsagent ALL=(ALL) NOPASSWD: /bin/touch /var/opt/microsoft/docker-cimprov/state/ContainerLogFile.pos.log
 
+# Enable secure_update.sh
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/secure/secure_update.sh *
+
+
 # End sudo configuration for omsagent
