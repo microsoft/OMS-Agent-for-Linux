@@ -63,4 +63,8 @@ omsagent ALL=(ALL) NOPASSWD: /usr/bin/pkill -u nxautomation *
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py *
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/python3/OMS_MetaConfigHelper.py *
 
+# Enable secure_update.sh
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/secure/secure_update.sh *
+
+
 # End sudo configuration for omsagent
