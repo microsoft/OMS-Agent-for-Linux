@@ -1556,6 +1556,14 @@ case "$installMode" in
         fi
 
         # Update DSC
+        # Since we are using same path for old package and new package,
+        # In case of dsc upgrade, the package is removed as part of preuninstall event on old version.
+        # It resulted in omsconfig not functioning after upgrade, if we do the uninstall before upgrade then
+        # preuninstall event on the old version won't happen and omsconfig bits will not be deleted in upgrade.
+        if shouldInstall_omsconfig; then
+            echo "Removing omsconfig package as part of upgrade"
+            pkg_rm omsconfig
+        fi
         shouldInstall_omsconfig
         pkg_upd $DSC_PKG omsconfig $?
         TEMP_STATUS=$?
