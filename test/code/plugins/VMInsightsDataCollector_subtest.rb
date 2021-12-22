@@ -422,7 +422,7 @@ module VMInsights
 
         def test_proc_stat_insufficient_entries
             File.open(@proc_stat, WriteASCII) { |f|
-                f.puts "cpu", "10", "20"
+                f.puts "cpu 10 20"
             }
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_cpu_idle
@@ -432,7 +432,7 @@ module VMInsights
 
         def test_proc_stat_garbage
             File.open(@proc_stat, WriteASCII) { |f|
-                f.puts "ga", "rb", "ge", "tr", "ash"
+                f.puts "ga rb age tr ash"
             }
             total, idle  = @object_under_test.get_cpu_idle
             assert_equal 0, total
@@ -910,7 +910,7 @@ module VMInsights
             f.puts ProcMemSamplePart0
         end
 
-        def mock_proc_stat(times = [])
+        def mock_proc_stat(times = ["0", "0", "0", "0"])
             File.open(@proc_stat, WriteASCII) { |f|
                 populate_proc_stat f, times
             }
