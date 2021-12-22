@@ -21,8 +21,8 @@ module VMInsights
             DataWithWrappingCounter.set_32_bit(! is_64_bit)
             @saved_net_data = get_net_data
             @saved_disk_data.baseline
-            u, i = get_cpu_idle
-            { :up => u, :idle => i }
+            t, i = get_cpu_idle
+            { :total => t, :idle => i }
         end
 
         def start_sample
@@ -54,23 +54,28 @@ module VMInsights
             return available, total
         end
 
-        # returns: cummulative uptime, cummulative idle time
+        # returns: cummulative total time, cummulative idle time
+
+        # /proc/stat contains system statistics since last restart
+        # first line contains aggregate across all CPUs
+        # format:
+        #
+        # cpu user nice system idle iowait irq softirq steal guest guest_nice
+        # eg: cpu  2904083 315778 1613190 140077550 216726 0 88355 0 0 0
+        # https://www.kernel.org/doc/html/latest/filesystems/proc.html#miscellaneous-kernel-statistics-in-proc-stat
         def get_cpu_idle
-            uptime = nil
+            total = nil
             idle = nil
-            File.open(File.join(@root, "proc", "uptime"), "rb") { |f|
+            File.open(File.join(@root, "proc", "stat"), "rb") { |f|
                 line = f.gets
-                next if line.nil?
-                line.scanf(" %f %f ") { |u, i|
-                    uptime = u
-                    idle = i
+                raise Unavailable, "/proc/stat empty" if line.nil?
+                a = line.split(" ")
+                # cpu user nice system idle - remaining entries depend on kernel version
+                raise Unavailable, "/proc/stat insufficient entries" if a.length < 5
+                a = a.slice(1, a.length) # skip the first entry in row: "cpu"
+                idle, total = a[3].to_i, a.map(&:to_i).sum
                 }
-            }
-
-            raise IDataCollector::Unavailable, "Uptime not found" if uptime.nil?
-            raise IDataCollector::Unavailable, "Idle time not found" if idle.nil?
-
-            return uptime, idle
+            return total, idle
         end
 
         # returns:
