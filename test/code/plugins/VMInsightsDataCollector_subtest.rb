@@ -189,11 +189,11 @@ module VMInsights
                 "0",
                 "0"
             ]
-            expected_total = 22637015
+            expected_total_time = 22637015
             expected_idle = 22625563
             mock_proc_stat times
             actual = @object_under_test.baseline
-            assert_equal expected_total, actual[:total]
+            assert_equal expected_total_time, actual[:total_time]
             assert_equal expected_idle, actual[:idle]
         end
 
@@ -213,11 +213,11 @@ module VMInsights
                 "0"
             ]
 
-            expected_total = 13714
+            expected_total_time = 13714
             expected_idle = 2262
             mock_proc_stat times
-            actual_total, actual_idle = @object_under_test.get_cpu_idle
-            assert_equal expected_total, actual_total
+            actual_total_time, actual_idle = @object_under_test.get_cpu_idle
+            assert_equal expected_total_time, actual_total_time
             assert_equal expected_idle, actual_idle
         end
 
@@ -434,8 +434,8 @@ module VMInsights
             File.open(@proc_stat, WriteASCII) { |f|
                 f.puts "ga rb age tr ash"
             }
-            total, idle  = @object_under_test.get_cpu_idle
-            assert_equal 0, total
+            total_time, idle  = @object_under_test.get_cpu_idle
+            assert_equal 0, total_time
             assert_equal 0, idle
         end
 

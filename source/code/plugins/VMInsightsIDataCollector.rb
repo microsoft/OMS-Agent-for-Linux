@@ -13,7 +13,7 @@ module VMInsights
 
         # return:
         #   Hash with elements:
-        #       :total - cummulative system total time
+        #       :total_time - cummulative system total time
         #       :idle - cummulative system idle time
         def baseline
             not_implemented

@@ -22,7 +22,7 @@ module VMInsights
             @saved_net_data = get_net_data
             @saved_disk_data.baseline
             t, i = get_cpu_idle
-            { :total => t, :idle => i }
+            { :total_time => t, :idle => i }
         end
 
         def start_sample
@@ -64,18 +64,18 @@ module VMInsights
         # eg: cpu  2904083 315778 1613190 140077550 216726 0 88355 0 0 0
         # https://www.kernel.org/doc/html/latest/filesystems/proc.html#miscellaneous-kernel-statistics-in-proc-stat
         def get_cpu_idle
-            total = nil
+            total_time = nil
             idle = nil
             File.open(File.join(@root, "proc", "stat"), "rb") { |f|
                 line = f.gets
                 raise Unavailable, "/proc/stat empty" if line.nil?
-                a = line.split(" ")
+                time_entries = line.split(" ")
                 # cpu user nice system idle - remaining entries depend on kernel version
                 raise Unavailable, "/proc/stat insufficient entries" if a.length < 5
-                a = a.slice(1, a.length) # skip the first entry in row: "cpu"
-                idle, total = a[3].to_i, a.map(&:to_i).sum
+                time_entries = time_entries.slice(1, time_entries.length) # skip the first entry in row: "cpu"
+                idle, total_time = time_entries[3].to_i, time_entries.map(&:to_i).sum
                 }
-            return total, idle
+            return total_time, idle
         end
 
         # returns:

@@ -389,8 +389,8 @@ module VMInsights
 
         def test_cpu_total_delta_zero
             @dc.mock_cpu_deltas = [
-                { :total => 1234567, :idle => 54321 },
-                { :total => 0, :idle => 0 },
+                { :total_time => 1234567, :idle => 54321 },
+                { :total_time => 0, :idle => 0 },
             ]
 
             polling_interval = 1
@@ -466,16 +466,16 @@ module VMInsights
             @dc.mock_increment_mem_kb = increment
 
             @dc.mock_cpu_deltas = [
-                { :total => 1300, :idle => 100 },
-                { :total => 60, :idle => 6 },
-                { :total => 60, :idle => 60 },
-                { :total => 60, :idle => 7 },
-                { :total => 60, :idle => 10 },
-                { :total => 60, :idle => 12 },
-                { :total => 60, :idle => 50 },
-                { :total => 60, :idle => 59 },
-                { :total => 60, :idle => 59 },
-                { :total => 60, :idle => 0 },
+                { :total_time => 1300, :idle => 100 },
+                { :total_time => 60, :idle => 6 },
+                { :total_time => 60, :idle => 60 },
+                { :total_time => 60, :idle => 7 },
+                { :total_time => 60, :idle => 10 },
+                { :total_time => 60, :idle => 12 },
+                { :total_time => 60, :idle => 50 },
+                { :total_time => 60, :idle => 59 },
+                { :total_time => 60, :idle => 59 },
+                { :total_time => 60, :idle => 0 },
             ]
             expected_cpus = @dc.mock_cpu_count
 
@@ -954,7 +954,7 @@ module VMInsights
         end
 
         def compute_expected_cpu_use(deltas)
-            100.0 * (1.0 - ((deltas[:idle] * 1.0) / (deltas[:total] * 1.0)))
+            100.0 * (1.0 - ((deltas[:idle] * 1.0) / (deltas[:total_time] * 1.0)))
         end
 
         class SampleValidator
@@ -1328,19 +1328,19 @@ module VMInsights
             @mock_increment_mem_kb = 0
             @get_available_memory_exception = nil
 
-            @mock_cpu_total = 0
+            @mock_cpu_total_time = 0
             @mock_cpu_idle = 0
             @mock_cpu_baseline =
-                            { :total => 42, :idle => 17 }
+                            { :total_time => 42, :idle => 17 }
             @mock_cpu_deltas = [
-                            { :total => 3, :idle => 0.5 },
-                            { :total => 3, :idle => 0.5 },
-                            { :total => 3, :idle => 0.5 },
-                            { :total => 3, :idle => 0.5 },
-                            { :total => 3, :idle => 0.5 },
-                            { :total => 3, :idle => 0.5 },
-                            { :total => 3, :idle => 0.5 },
-                            { :total => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
             ]
             @mock_index = 0
             @mock_cpu_count = 6
@@ -1366,7 +1366,7 @@ module VMInsights
 
         def baseline
             @baselined = true
-            @mock_cpu_total += @mock_cpu_baseline[:total]
+            @mock_cpu_total_time += @mock_cpu_baseline[:total_time]
             @mock_cpu_idle += @mock_cpu_baseline[:idle]
             @mock_cpu_baseline
         end
@@ -1398,9 +1398,9 @@ module VMInsights
             raise @get_cpu_use_exception unless @get_cpu_use_exception.nil?
             result = @mock_cpu_deltas[@mock_index % @mock_cpu_deltas.size]
             @mock_index += 1
-            @mock_cpu_total += result[:total]
+            @mock_cpu_total_time += result[:total_time]
             @mock_cpu_idle += result[:idle]
-            return @mock_cpu_total, @mock_cpu_idle
+            return @mock_cpu_total_time, @mock_cpu_idle
         end
 
         def get_number_of_cpus
