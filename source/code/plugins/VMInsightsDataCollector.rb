@@ -71,7 +71,7 @@ module VMInsights
                 raise Unavailable, "/proc/stat empty" if line.nil?
                 time_entries = line.split(" ")
                 # cpu user nice system idle - remaining entries depend on kernel version
-                raise Unavailable, "/proc/stat insufficient entries" if a.length < 5
+                raise Unavailable, "/proc/stat insufficient entries" if time_entries.length < 5
                 time_entries = time_entries.slice(1, time_entries.length) # skip the first entry in row: "cpu"
                 idle, total_time = time_entries[3].to_i, time_entries.map(&:to_i).sum
                 }
