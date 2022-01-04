@@ -17,10 +17,10 @@ The Log Analytics agent for Linux comprises multiple packages. The release file 
 
 **Package** | **Version** | **Description**
 ----------- | ----------- | --------------
-omsagent | 1.13.40-0 | The Operations Management Suite Agent for Linux
-omsconfig | 1.1.1-930 | Configuration agent for the OMS Agent
+omsagent | 1.14.9-0 | The Operations Management Suite Agent for Linux
+omsconfig | 1.1.1-931 | Configuration agent for the OMS Agent
 omi | 1.6.8-1 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
-scx | 1.6.4-7 | OMI CIM Providers for operating system performance metrics
+scx | 1.6.8-1 | OMI CIM Providers for operating system performance metrics
 apache-cimprov | 1.0.1 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
 mysql-cimprov | 1.0.1 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
 docker-cimprov | 1.0.0 | Docker provider for OMI. Only installed if Docker is detected.
