@@ -63,6 +63,11 @@ module VMInsights
         # cpu user nice system idle iowait irq softirq steal guest guest_nice
         # eg: cpu  2904083 315778 1613190 140077550 216726 0 88355 0 0 0
         # https://www.kernel.org/doc/html/latest/filesystems/proc.html#miscellaneous-kernel-statistics-in-proc-stat
+
+        # Above values are stored as u64 counters measuring in nanoseconds
+        # For 256 cpu's this means rollover occurs in approx 833 days (worst case)
+        # https://elixir.bootlin.com/linux/latest/source/fs/proc/stat.c#L111
+        # https://elixir.bootlin.com/linux/v4.18/source/fs/proc/stat.c#L120
         def get_cpu_idle
             total_time = nil
             idle = nil
@@ -72,8 +77,11 @@ module VMInsights
                 time_entries = line.split(" ")
                 # cpu user nice system idle - remaining entries depend on kernel version
                 raise Unavailable, "/proc/stat: first entry not cpu" if time_entries[0] != "cpu"
-                raise Unavailable, "/proc/stat insufficient entries" if time_entries.length < 8
+                raise Unavailable, "/proc/stat insufficient entries" if time_entries.length < 5
                 time_entries = time_entries.slice(1, time_entries.length) # skip the first entry in row: "cpu"
+
+                # last six entries are kernel version dependent so pad with 6 0 values
+                time_entries.push("0", "0", "0", "0", "0", "0")
                 idle = time_entries[3].to_i + time_entries[4].to_i
                 total_time = time_entries.map(&:to_i).sum
                 }
