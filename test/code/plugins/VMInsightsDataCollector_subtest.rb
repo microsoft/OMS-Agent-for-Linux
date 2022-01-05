@@ -190,7 +190,7 @@ module VMInsights
                 "0"
             ]
             expected_total_time = 22637015
-            expected_idle = 22625563
+            expected_idle = 22631853
             mock_proc_stat times
             actual = @object_under_test.baseline
             assert_equal expected_total_time, actual[:total_time]
@@ -214,7 +214,7 @@ module VMInsights
             ]
 
             expected_total_time = 13714
-            expected_idle = 2262
+            expected_idle = 8552
             mock_proc_stat times
             actual_total_time, actual_idle = @object_under_test.get_cpu_idle
             assert_equal expected_total_time, actual_total_time
@@ -422,7 +422,7 @@ module VMInsights
 
         def test_proc_stat_insufficient_entries
             File.open(@proc_stat, WriteASCII) { |f|
-                f.puts "cpu 10 20"
+                f.puts "cpu 10 20 30 40 50 60"
             }
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_cpu_idle
@@ -430,13 +430,32 @@ module VMInsights
             assert ex.message.include?("/proc/stat insufficient entries"), ex.inspect
         end
 
+        def test_proc_stat_minimum_entries
+            File.open(@proc_stat, WriteASCII) { |f|
+                f.puts "cpu 10 20 30 40 50 60 70"
+            }
+            total_time, idle  = @object_under_test.get_cpu_idle
+            assert_equal 280, total_time
+            assert_equal 90, idle
+        end
+
         def test_proc_stat_garbage
             File.open(@proc_stat, WriteASCII) { |f|
-                f.puts "ga rb age tr ash"
+                f.puts "cpu garb age tr ash du mps ter fi re"
             }
             total_time, idle  = @object_under_test.get_cpu_idle
             assert_equal 0, total_time
             assert_equal 0, idle
+        end
+
+        def test_proc_stat_first_token_not_cpu
+            File.open(@proc_stat, WriteASCII) { |f|
+                f.puts "garbage 10 20 30 40 50 60 70 80"
+            }
+            ex = assert_raises(IDataCollector::Unavailable) { ||
+                @object_under_test.get_cpu_idle
+            }
+            assert ex.message.include?("/proc/stat: first entry not cpu"), ex.inspect
         end
 
         def test_get_net_stats_no_baseline
@@ -910,7 +929,7 @@ module VMInsights
             f.puts ProcMemSamplePart0
         end
 
-        def mock_proc_stat(times = ["0", "0", "0", "0"])
+        def mock_proc_stat(times = ["0", "0", "0", "0", "0", "0", "0"])
             File.open(@proc_stat, WriteASCII) { |f|
                 populate_proc_stat f, times
             }
