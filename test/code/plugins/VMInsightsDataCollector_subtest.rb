@@ -38,8 +38,8 @@ module VMInsights
 
             proc_dir = mkdir_p(@mock_root_dir, "proc")
             @proc_meminfo = File.join(proc_dir, "meminfo")
-            @proc_uptime = File.join(proc_dir, "uptime")
-            mock_proc_uptime
+            @proc_stat = File.join(proc_dir, "stat")
+            mock_proc_stat
             proc_net_dir = mkdir_p(proc_dir, "net")
             @mock_netdev = File.join(proc_net_dir, "dev")
             @mock_netroute = File.join(proc_net_dir, "route")
@@ -53,7 +53,7 @@ module VMInsights
             @mock_netdev = nil
             @mock_netroute = nil
             @mock_netvirt = nil
-            @proc_uptime = nil
+            @proc_stat = nil
             @proc_meminfo = nil
             @lsblk_result = nil
             @lsblk = nil
@@ -177,34 +177,48 @@ module VMInsights
 
         def test_get_cpu_idle_baseline
             check_for_baseline_common
-            expected_uptime = 42
-            expected_idle = 17
-            mock_proc_uptime expected_uptime, expected_idle
+            times = [
+                "2255",
+                "34",
+                "2290",
+                "22625563",
+                "6290",
+                "127",
+                "456",
+                "0",
+                "0",
+                "0"
+            ]
+            expected_total_time = 22637015
+            expected_idle = 22631853
+            mock_proc_stat times
             actual = @object_under_test.baseline
-            assert_equal expected_uptime, actual[:up]
+            assert_equal expected_total_time, actual[:total_time]
             assert_equal expected_idle, actual[:idle]
         end
 
         def test_get_cpu_idle
             check_for_baseline_common
             @object_under_test.baseline
-            expected_uptime = 420
-            expected_idle = 7
-            mock_proc_uptime expected_uptime, expected_idle
-            actual_uptime, actual_idle = @object_under_test.get_cpu_idle
-            assert_equal expected_uptime, actual_uptime
-            assert_equal expected_idle, actual_idle
-        end
+            times = [
+                "2255",
+                "34",
+                "2290",
+                "2262",
+                "6290",
+                "127",
+                "456",
+                "0",
+                "0",
+                "0"
+            ]
 
-        def test_get_cpu_idle_fractional
-            check_for_baseline_common
-            @object_under_test.baseline
-            expected_uptime = 0.42
-            expected_idle = 0.17
-            mock_proc_uptime expected_uptime, expected_idle
-            actual_uptime, actual_idle = @object_under_test.get_cpu_idle
-            assert_in_delta expected_uptime, actual_uptime, 0.001
-            assert_in_delta expected_idle, actual_idle, 0.001
+            expected_total_time = 13714
+            expected_idle = 8552
+            mock_proc_stat times
+            actual_total_time, actual_idle = @object_under_test.get_cpu_idle
+            assert_equal expected_total_time, actual_total_time
+            assert_equal expected_idle, actual_idle
         end
 
         def test_get_cpu_count
@@ -386,11 +400,11 @@ module VMInsights
             }
         end
 
-        def test_proc_uptime_unreadable
-            File.chmod(0222, @proc_uptime)
+        def test_proc_stat_unreadable
+            File.chmod(0222, @proc_stat)
             begin
-                File.open(@proc_uptime, "r") { |f| }
-                omit "#{@proc_uptime} not R/O"
+                File.open(@proc_stat, "r") { |f| }
+                omit "#{@proc_stat} not R/O"
             rescue Errno::EACCES    # ensure the file has been made unreadable before making test assertions
                 assert_raises(Errno::EACCES) { ||
                     @object_under_test.get_cpu_idle
@@ -398,22 +412,50 @@ module VMInsights
             end
         end
 
-        def test_proc_uptime_empty
-            File.new(@proc_uptime, "w").close
+        def test_proc_stat_empty
+            File.new(@proc_stat, "w").close
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_cpu_idle
             }
-            assert ex.message.include?("Uptime not found"), ex.inspect
+            assert ex.message.include?("/proc/stat empty"), ex.inspect
         end
 
-        def test_proc_uptime_garbage
-            File.open(@proc_uptime, WriteASCII) { |f|
-                f.puts "gobble", "d", "gook"
+        def test_proc_stat_insufficient_entries
+            File.open(@proc_stat, WriteASCII) { |f|
+                f.puts "cpu 10 20 30"
             }
             ex = assert_raises(IDataCollector::Unavailable) { ||
                 @object_under_test.get_cpu_idle
             }
-            assert ex.message.include?("Uptime not found"), ex.inspect
+            assert ex.message.include?("/proc/stat insufficient entries"), ex.inspect
+        end
+
+        def test_proc_stat_minimum_entries
+            File.open(@proc_stat, WriteASCII) { |f|
+                f.puts "cpu 10 20 30 40"
+            }
+            total_time, idle  = @object_under_test.get_cpu_idle
+            assert_equal 100, total_time
+            assert_equal 40, idle
+        end
+
+        def test_proc_stat_garbage
+            File.open(@proc_stat, WriteASCII) { |f|
+                f.puts "cpu garb age tr ash du mps ter fi re"
+            }
+            total_time, idle  = @object_under_test.get_cpu_idle
+            assert_equal 0, total_time
+            assert_equal 0, idle
+        end
+
+        def test_proc_stat_first_token_not_cpu
+            File.open(@proc_stat, WriteASCII) { |f|
+                f.puts "garbage 10 20 30 40 50 60 70 80"
+            }
+            ex = assert_raises(IDataCollector::Unavailable) { ||
+                @object_under_test.get_cpu_idle
+            }
+            assert ex.message.include?("/proc/stat: first entry not cpu"), ex.inspect
         end
 
         def test_get_net_stats_no_baseline
@@ -887,9 +929,9 @@ module VMInsights
             f.puts ProcMemSamplePart0
         end
 
-        def mock_proc_uptime(expected_uptime = 0, expected_idle = 0)
-            File.open(@proc_uptime, WriteASCII) { |f|
-                populate_proc_uptime f, expected_uptime, expected_idle
+        def mock_proc_stat(times = ["0", "0", "0", "0", "0", "0", "0"])
+            File.open(@proc_stat, WriteASCII) { |f|
+                populate_proc_stat f, times
             }
         end
 
@@ -1067,8 +1109,12 @@ module VMInsights
         WriteASCII = "w:ASCII-8BIT"
         ReadASCII = "r:ASCII-8BIT"
 
-        def populate_proc_uptime(f, uptime, idle)
-            f.puts " #{uptime} \t #{idle}\t"
+        def populate_proc_stat(f, times)
+            str = "cpu"
+            times.each { |time|
+                str += (" " + time)
+            }
+            f.puts str
         end
 
         def assert_in_range(expected_low, expected_high, actual, msg=nil)
