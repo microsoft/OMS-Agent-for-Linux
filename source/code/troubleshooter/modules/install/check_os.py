@@ -7,6 +7,8 @@ from helpers     import get_os_bits, get_os_version
 supported_dists = {'redhat' : ['6', '7', '8'], # CentOS
                    'centos' : ['6', '7', '8'], # CentOS
                    'red hat' : ['6', '7', '8'], # Oracle, RHEL
+                   'rocky' : ['8'], # Rocky Linux
+                   'almalinux' : ['8'], # Alma Linux
                    'oracle' : ['6', '7', '8'], # Oracle
                    'debian' : ['8', '9'], # Debian
                    'ubuntu' : ['14.04', '16.04', '18.04', '20.04'], # Ubuntu
