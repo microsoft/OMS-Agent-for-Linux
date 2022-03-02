@@ -96,6 +96,8 @@ usage()
     echo "  --restart-deps             Reconfigure and restart dependent service(s)."
     echo "  --source-references        Show source code reference hashes."
     echo "  --upgrade                  Upgrade the package in the system."
+    echo "  --skip-docker-provider-install  skip installation of docker provider package in the system."
+
     echo "  --enable-opsmgr            Enable port 1270 for usage with opsmgr."
     echo "  --version                  Version of this shell bundle."
     echo "  --version-check            Check versions already installed to see if upgradable."
@@ -263,8 +265,8 @@ is_suse11_platform_with_openssl1(){
 
 detect_cylance(){
   # Don't use 'service' to check the existance of a service
-  # because it will fail if there is no service available 
-  
+  # because it will fail if there is no service available
+
   [ -f /etc/init.d/cylance ] && return 0
   [ -f /etc/init.d/cylancesvc ] && return 0
   [ -d /opt/cylance ] && return 0
@@ -468,7 +470,7 @@ install_troubleshooter()
     echo ""
     echo "  $ sudo /opt/microsoft/omsagent/bin/troubleshooter"
     echo ""
-        
+
     return 0
 }
 
@@ -792,12 +794,12 @@ remove_and_install()
 
     if [ $temp_status -ne 0 ]; then
         echo "$OMI_PKG package failed to install and exited with status $temp_status"
-        
+
         if [ $temp_status -eq 2 ]; then # dpkg is messed up
             return $DEPENDENCY_MISSING
         else
             return $OMI_INSTALL_FAILED
-        fi        
+        fi
     fi
 
     ${OMI_SERVICE} reload
@@ -970,6 +972,11 @@ do
             shift 1
             ;;
 
+        --skip-docker-provider-install)
+            skipDockerProviderInstall="true"
+            shift 1
+            ;;
+
         -w|--id)
             onboardID=$2
             shift 2
@@ -1070,7 +1077,7 @@ cd $EXTRACT_DIR
 # Do we need to remove the package?
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
-    
+
     check_if_pkg_is_installed azsec-mdsd
     azsec_mdsd_installed=$?
     check_if_pkg_is_installed lad-mdsd
@@ -1107,7 +1114,7 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
 
         pkg_rm omsconfig
 
-        
+
         # If MDSD/LAD is installed and we're just removing (not purging), leave OMS, SCX and OMI
         # if at least one of mdsd product is installed
         MDSD_INSTALLED=$(( $azsec_mdsd_installed && $lad_mdsd_installed ))
@@ -1444,6 +1451,11 @@ case "$installMode" in
                 OSS_BUNDLE=`basename $i -oss-test.sh`
                 [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
+                if [ $OSS_BUNDLE == "docker" ] && [ ! -z $skipDockerProviderInstall ] && [ $skipDockerProviderInstall == "true" ]; then
+                    echo "$OSS_BUNDLE provider package skipped to install since skip docker provider install option opted-in"
+                    continue
+                fi
+
                 ./$i
                 if [ $? -eq 0 ]; then
                     ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
@@ -1510,7 +1522,7 @@ case "$installMode" in
             echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
             OMI_EXIT_STATUS=$ErrCode
         fi
-	
+
         # Install SCX
         shouldInstall_scx
         if [ $? -eq 0 ]; then
@@ -1601,7 +1613,7 @@ case "$installMode" in
                 B=$(($A+15))
                 C=$(($B+15))
                 D=$(($C+15))
-                echo "$A,$B,$C,$D * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER		
+                echo "$A,$B,$C,$D * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
             fi
             /opt/omi/bin/service_control restart
         fi
