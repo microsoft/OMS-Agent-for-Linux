@@ -1452,7 +1452,7 @@ case "$installMode" in
                 OSS_BUNDLE=`basename $i -oss-test.sh`
                 [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
-                if [ "$OSS_BUNDLE" == "docker"  -a  ! -z "$skipDockerProviderInstall"  -a  "$skipDockerProviderInstall" == "true" ]; then
+                if [ "$OSS_BUNDLE" == "docker"  -a  "$skipDockerProviderInstall" == "true" ]; then
                     echo "$OSS_BUNDLE provider package skipped to install since skip docker provider install option opted-in"
                     continue
                 fi
@@ -1630,7 +1630,7 @@ case "$installMode" in
             OSS_BUNDLE=`basename $i -oss-test.sh`
             [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
-            if [ "$OSS_BUNDLE" == "docker"  -a  ! -z "$skipDockerProviderInstall"  -a  "$skipDockerProviderInstall" == "true" ]; then
+            if [ "$OSS_BUNDLE" == "docker"  -a  "$skipDockerProviderInstall" == "true" ]; then
                 echo "$OSS_BUNDLE provider package skipped to install since skip docker provider install option opted-in"
                 continue
             fi
