@@ -1630,6 +1630,11 @@ case "$installMode" in
             OSS_BUNDLE=`basename $i -oss-test.sh`
             [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
+            if [ $OSS_BUNDLE == "docker" ] && [ ! -z $skipDockerProviderInstall ] && [ $skipDockerProviderInstall == "true" ]; then
+                echo "$OSS_BUNDLE provider package skipped to install since skip docker provider install option opted-in"
+                continue
+            fi
+
             ./$i
             if [ $? -eq 0 ]; then
                 ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies
