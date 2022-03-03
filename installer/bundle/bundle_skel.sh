@@ -973,6 +973,7 @@ do
             ;;
 
         --skip-docker-provider-install)
+            echo "Provided skip-docker-provider-install option"
             skipDockerProviderInstall="true"
             shift 1
             ;;
