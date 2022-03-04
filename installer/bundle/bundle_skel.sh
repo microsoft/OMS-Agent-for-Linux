@@ -89,32 +89,32 @@ usage()
 {
     echo "usage: $1 [OPTIONS]"
     echo "Options:"
-    echo "  --extract                  Extract contents and exit."
-    echo "  --force                    Force upgrade (override version checks)."
-    echo "  --install                  Install the package from the system."
-    echo "  --purge                    Uninstall the package and remove all related data."
-    echo "  --restart-deps             Reconfigure and restart dependent service(s)."
-    echo "  --source-references        Show source code reference hashes."
-    echo "  --upgrade                  Upgrade the package in the system."
+    echo "  --extract                       Extract contents and exit."
+    echo "  --force                         Force upgrade (override version checks)."
+    echo "  --install                       Install the package from the system."
+    echo "  --purge                         Uninstall the package and remove all related data."
+    echo "  --restart-deps                  Reconfigure and restart dependent service(s)."
+    echo "  --source-references             Show source code reference hashes."
+    echo "  --upgrade                       Upgrade the package in the system."
     echo "  --skip-docker-provider-install  skip installation of docker provider package in the system."
 
-    echo "  --enable-opsmgr            Enable port 1270 for usage with opsmgr."
-    echo "  --version                  Version of this shell bundle."
-    echo "  --version-check            Check versions already installed to see if upgradable."
-    echo "  --debug                    use shell debug mode."
+    echo "  --enable-opsmgr                 Enable port 1270 for usage with opsmgr."
+    echo "  --version                       Version of this shell bundle."
+    echo "  --version-check                 Check versions already installed to see if upgradable."
+    echo "  --debug                         use shell debug mode."
     echo
-    echo "  -w id, --id id             Use workspace ID <id> for automatic onboarding."
-    echo "  -s key, --shared key       Use <key> as the shared key for automatic onboarding."
-    echo "  -d dmn, --domain dmn       Use <dmn> as the OMS domain for onboarding. Optional."
-    echo "                             default: opinsights.azure.com"
-    echo "                             ex: opinsights.azure.us (for FairFax)"
-    echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
-    echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  -w id, --id id                  Use workspace ID <id> for automatic onboarding."
+    echo "  -s key, --shared key            Use <key> as the shared key for automatic onboarding."
+    echo "  -d dmn, --domain dmn            Use <dmn> as the OMS domain for onboarding. Optional."
+    echo "                                  default: opinsights.azure.com"
+    echo "                                  ex: opinsights.azure.us (for FairFax)"
+    echo "  -p conf, --proxy conf           Use <conf> as the proxy configuration."
+    echo "                                  ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  -a id, --azure-resource id Use Azure Resource ID <id>."
     echo "  -m marker, --multi-homing-marker marker"
-    echo "                             Onboard as a multi-homing(Non-Primary) workspace."
+    echo "                                  Onboard as a multi-homing(Non-Primary) workspace."
     echo
-    echo "  -? | -h | --help           shows this usage text."
+    echo "  -? | -h | --help                shows this usage text."
 }
 
 source_references()
@@ -1453,7 +1453,9 @@ case "$installMode" in
                 [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
                 if [ "$OSS_BUNDLE" = "docker" ]  && [ "$skipDockerProviderInstall" = "true" ]; then
-                    echo "$OSS_BUNDLE provider package skipped to install since skip docker provider install option opted-in"
+                   echo "$OSS_BUNDLE provider package installation skipped since --skip-docker-provider-install flag is set.
+                         If you are installing over an existing omsagent install and wish to remove the docker provider,
+                         you should first purge the existing installation and then install using the --skip-docker-provider-install flag."
                     continue
                 fi
 
@@ -1631,7 +1633,9 @@ case "$installMode" in
             [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
             if [ "$OSS_BUNDLE" = "docker" ]  && [ "$skipDockerProviderInstall" = "true" ]; then
-                echo "$OSS_BUNDLE provider package skipped to install since skip docker provider install option opted-in"
+                echo "$OSS_BUNDLE provider package installation skipped since --skip-docker-provider-install flag is set.
+                      If you are installing over an existing omsagent install and wish to remove the docker provider,
+                      you should first purge the existing installation and then install using the --skip-docker-provider-install flag."
                 continue
             fi
 
