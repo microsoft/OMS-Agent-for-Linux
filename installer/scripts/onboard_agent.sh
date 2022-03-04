@@ -24,6 +24,7 @@ usage()
     echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
     echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  --purge                    Uninstall the package and remove all related data."
+    echo "  --skip-docker-provider-install  skip installation of docker provider package in the system."
     echo "  -? | -h | --help           shows this usage text."
 }
 
@@ -51,6 +52,11 @@ do
             purgeAgent="true"
             break;
             ;;
+
+        --skip-docker-provider-install)
+           skipDockerProviderInstall="true"
+           shift 1
+           ;;
 
         -p|--proxy)
             proxyConf=$2
@@ -88,6 +94,10 @@ fi
 if [ -n "$proxyConf" ]; then
     bundleParameters="${bundleParameters} -p $proxyConf"
 fi
+if [ -n "$skipDockerProviderInstall" ]; then
+    bundleParameters="${bundleParameters} --skip-docker-provider-install"
+fi
+
 
 # We need to use sudo for commands in the following block, if not running as root
 SUDO=''
