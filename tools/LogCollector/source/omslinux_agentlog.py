@@ -93,7 +93,7 @@ def runContainerCommands(omsContainerName):
     execCommandAndLog('docker exec omsagent df -k')
     execCommandAndLog('docker exec omsagent ps -ef | grep -i oms | grep -v grep')
     execCommandAndLog('docker exec omsagent ps -ef | grep -i omi | grep -v grep')
-    cmd='docker exec omsagent /opt/microsoft/omsagent/bin/omsadmin.sh -l > /tmp/oms.status'
+    cmd='docker exec omsagent /opt/microsoft/omsagent/bin/omsadmin.sh -l > {0}/oms.status'.format(outDir)
     writeLogCommand(cmd)
     out=execCommand2(cmd)
     execCommandAndLog('cat {0}/oms.status'.format(outDir))
