@@ -1139,11 +1139,8 @@ ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/util/list.rb;                     ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/security.rb;                      ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/security.rb;               644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/psych_tree.rb;                    ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/psych_tree.rb;             644; root; root
 
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/AddTrustExternalCARoot.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/AddTrustExternalCARoot.pem; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/index.rubygems.org/GlobalSignRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/index.rubygems.org/GlobalSignRootCA.pem; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.global.ssl.fastly.net/DigiCertHighAssuranceEVRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.global.ssl.fastly.net/DigiCertHighAssuranceEVRootCA.pem; 644; root; root
+${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA_R3.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA_R3.pem; 644; root; root
+${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA.pem; ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org/GlobalSignRootCA.pem; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/source_list.rb;                   ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/source_list.rb;            644; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/deprecate.rb;                     ${{RUBY_INT}}/lib/ruby/2.6.0/rubygems/deprecate.rb;              644; root; root
@@ -1319,7 +1316,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/fluentd-0.12.40.gem;            ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/flexmock-2.0.5.gem;             ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/flexmock-2.0.5.gem;      644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/oj-3.7.9.gem;                   ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/oj-3.7.9.gem;            644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/parallel-1.12.0.gem;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/parallel-1.12.0.gem;     644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/multi_json-1.12.2.gem;          ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/multi_json-1.12.2.gem;   644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/http_parser.rb-0.6.0.gem;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/http_parser.rb-0.6.0.gem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/parallel_tests-0.15.3.gem;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/parallel_tests-0.15.3.gem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/rr-1.1.2.gem;                   ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/rr-1.1.2.gem;            644; root; root
@@ -1327,7 +1323,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/msgpack-1.1.0.gem;              ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/timecop-0.8.1.gem;              ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/timecop-0.8.1.gem;       644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/test-unit-3.2.0.gem;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/test-unit-3.2.0.gem;     644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/iso8601-0.12.1.gem;             ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/iso8601-0.12.1.gem;      644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/simplecov-html-0.7.1.gem;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/simplecov-html-0.7.1.gem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/fluent-plugin-mdsd-0.1.9.pre.build.master.71.gem; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/fluent-plugin-mdsd-0.1.9.pre.build.master.71.gem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/string-scrub-0.0.5.gem;         ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/string-scrub-0.0.5.gem;  644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/json-2.1.0.gem;                 ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/json-2.1.0.gem;          644; root; root
@@ -1335,7 +1330,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/cool.io-1.5.3.gem;              ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/rake-10.4.2.gem;                ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/rake-10.4.2.gem;         644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/yajl-ruby-1.3.1.gem;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/yajl-ruby-1.3.1.gem;     644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/thread_safe-0.3.6.gem;          ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/thread_safe-0.3.6.gem;   644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/simplecov-0.7.0.gem;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/simplecov-0.7.0.gem;     644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/tzinfo-data-1.2017.3.gem;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/tzinfo-data-1.2017.3.gem; 644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/json-2.1.0/gem.build_complete; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/json-2.1.0/gem.build_complete; 644; root; root
@@ -6944,119 +6938,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/diagrams/.keep;       ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/.gitignore;           ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/.gitignore;    664; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/Rakefile;             ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/Rakefile;      664; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/Gemfile;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/Gemfile; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/README.md;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/README.md; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/LICENSE;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/LICENSE; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/.document;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/.document; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/lib/simplecov-html/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/lib/simplecov-html/version.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/lib/simplecov-html.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/lib/simplecov-html.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_loading.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_loading.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancybox-y.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancybox-y.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_se.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_se.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_main.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_main.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_e.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_e.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/blank.gif; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/blank.gif; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_over.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_over.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_sw.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_sw.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_nw.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_nw.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_close.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_close.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_left.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_left.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_w.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_w.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancybox-x.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancybox-x.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancybox.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancybox.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_nav_left.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_nav_left.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_s.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_s.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_ne.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_ne.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_nav_right.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_nav_right.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_n.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_shadow_n.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_right.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox/fancy_title_right.png; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/application.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/application.js; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/favicon_yellow.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/favicon_yellow.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/application.css; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/application.css; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/favicon_green.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/favicon_green.png; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_flat_75_ffffff_40x100.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_flat_75_ffffff_40x100.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_888888_256x240.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_888888_256x240.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_2e83ff_256x240.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_2e83ff_256x240.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_cd0a0a_256x240.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_cd0a0a_256x240.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_55_fbf9ee_1x400.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_65_ffffff_1x400.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_65_ffffff_1x400.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_95_fef1ec_1x400.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_95_fef1ec_1x400.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_75_dadada_1x400.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_75_dadada_1x400.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_75_e6e6e6_1x400.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_glass_75_e6e6e6_1x400.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_454545_256x240.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_454545_256x240.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_222222_256x240.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images/ui-icons_222222_256x240.png; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/loading.gif; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/loading.gif; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/magnify.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/magnify.png; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/favicon_red.png; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/favicon_red.png; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/Guardfile;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/Guardfile; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/simplecov-html.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/simplecov-html.gemspec; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/views/source_file.erb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/views/source_file.erb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/views/layout.erb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/views/layout.erb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/views/file_list.erb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/views/file_list.erb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/test/helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/test/helper.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/test/test_simple_cov-html.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/test/test_simple_cov-html.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/plugins/jquery-ui-1.8.4.custom.css; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/plugins/jquery-ui-1.8.4.custom.css; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/plugins/jquery.fancybox-1.3.1.css; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/plugins/jquery.fancybox-1.3.1.css; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/plugins/highlight.css; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/plugins/highlight.css; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/reset.css; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/reset.css; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/application.css; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/application.css; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/screen.css.sass; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/screen.css.sass; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/libraries/jquery-1.6.2.min.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/libraries/jquery-1.6.2.min.js; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/application.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/application.js; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.url.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.url.js; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.timeago.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.timeago.js; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.fancybox-1.3.1.pack.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.fancybox-1.3.1.pack.js; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.dataTables.min.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/jquery.dataTables.min.js; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/highlight.pack.js; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins/highlight.pack.js; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/.gitignore; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/.gitignore; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/Rakefile;   ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/Rakefile; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/README.md;     ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/README.md; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/LICENSE.md;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/LICENSE.md; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/CONTRIBUTING.md; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/CONTRIBUTING.md; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/json_gem.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/json_gem.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/yajl.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/yajl.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/json_pure.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/json_pure.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/ok_json.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/ok_json.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/jr_jackson.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/jr_jackson.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/json_common.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/json_common.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/gson.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/gson.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/oj.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/oj.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/nsjsonserialization.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters/nsjsonserialization.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/parse_error.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/parse_error.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/convertible_hash_keys.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/convertible_hash_keys.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/version.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/options.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/options.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/vendor/okjson.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/vendor/okjson.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapter.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapter.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/options_cache.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/options_cache.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapter_error.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapter_error.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json.rb; 644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/CHANGELOG.md;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/CHANGELOG.md; 644; root; root
-
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/rake-10.4.2/rakelib/test_times.rake; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/rake-10.4.2/rakelib/test_times.rake; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/rake-10.4.2/rakelib/publish.rake; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/rake-10.4.2/rakelib/publish.rake; 644; root; root
 
@@ -8357,146 +8238,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/CHANGELOG.md;        ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/gyoku.gemspec;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/gyoku.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/.gitignore;          ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/.gitignore;   644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/Rakefile;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/Rakefile;     644; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/Gemfile;         ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/Gemfile;  664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/README.md;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/README.md; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/LICENSE;         ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/LICENSE;  664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/support/env.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/support/env.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_groups_using_filter_class.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_groups_using_filter_class.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/merging_test_unit_and_rspec.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/merging_test_unit_and_rspec.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/minimum_coverage.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/minimum_coverage.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_coverage_dir.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_coverage_dir.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/maximum_coverage_drop.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/maximum_coverage_drop.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_without_simplecov.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_without_simplecov.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_nocov_token.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_nocov_token.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/unicode_compatiblity.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/unicode_compatiblity.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_merge_timeout.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_merge_timeout.feature; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/html_steps.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/html_steps.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/transformers.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/transformers.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/web_steps.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/web_steps.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/simplecov_steps.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions/simplecov_steps.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_without_simplecov.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_without_simplecov.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_groups_and_filters_complex.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_groups_and_filters_complex.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_groups_and_filters_basic.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_groups_and_filters_basic.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/refuse_coverage_drop.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/refuse_coverage_drop.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_styles.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_styles.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_fails_on_initialization.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_fails_on_initialization.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/skipping_code_blocks_manually.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/skipping_code_blocks_manually.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_command_name.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_command_name.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_basic.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_basic.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_autoload.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_autoload.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_groups_and_filters_complex.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/test_unit_groups_and_filters_complex.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/cucumber_basic.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/cucumber_basic.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_basic.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_basic.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_deactivate_merging.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_deactivate_merging.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_groups_using_filter_class.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_groups_using_filter_class.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_adapters.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_adapters.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_project_name.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_project_name.feature; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_formatters.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/config_formatters.feature; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_groups_and_filters_basic.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/rspec_groups_and_filters_basic.feature; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/CONTRIBUTING.md; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/CONTRIBUTING.md; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/merge_helpers.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/merge_helpers.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/railties/tasks.rake; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/railties/tasks.rake; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/configuration.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/configuration.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/railtie.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/railtie.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/formatter.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/formatter.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/last_run.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/last_run.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/adapters.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/adapters.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/result_merger.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/result_merger.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/formatter/simple_formatter.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/formatter/simple_formatter.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/formatter/multi_formatter.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/formatter/multi_formatter.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/file_list.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/file_list.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/source_file.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/source_file.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/filter.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/filter.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/result.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/result.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/json.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/json.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/version.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/exit_codes.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/exit_codes.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/defaults.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/defaults.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/command_guesser.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/command_guesser.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/.yardopts;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/.yardopts; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/Appraisals;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/Appraisals; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/.travis.yml;     ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/.travis.yml; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/CHANGELOG.md;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/CHANGELOG.md; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_deleted_source.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_deleted_source.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_command_guesser.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_command_guesser.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/shoulda_macros.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/shoulda_macros.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_filters.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_filters.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_source_file_line.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_source_file_line.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/helper.rb;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/helper.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/Gemfile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/Gemfile; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/support/env.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/support/env.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/test_stuff.feature; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/test_stuff.feature; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/step_definitions/my_steps.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/step_definitions/my_steps.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project/framework_specific.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project/framework_specific.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project/some_class.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project/some_class.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project/meta_magic.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project/meta_magic.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/some_class_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/some_class_spec.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/meta_magic_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/meta_magic_spec.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/faked_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/faked_spec.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/spec_helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec/spec_helper.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/meta_magic_test.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/meta_magic_test.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/test_helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/test_helper.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/some_class_test.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/some_class_test.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/faked_test.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test/faked_test.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/Rakefile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/Rakefile; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/cucumber.yml; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/cucumber.yml; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/testunit_good.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/testunit_good.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/rspec_good.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/rspec_good.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/testunit_bad.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/testunit_bad.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/rspec_bad.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks/rspec_bad.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/sample.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/sample.rb; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/app/controllers/sample_controller.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/app/controllers/sample_controller.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/app/models/user.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/app/models/user.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/deleted_source_sample.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/deleted_source_sample.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/resultset2.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/resultset2.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/iso-8859.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/iso-8859.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/utf-8.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/utf-8.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/resultset1.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/resultset1.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_merge_helpers.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_merge_helpers.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_source_file.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_source_file.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_return_codes.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_return_codes.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_file_list.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_file_list.rb; 640; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_result.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_result.rb; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_1_8_fallbacks.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/test_1_8_fallbacks.rb; 640; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/gemfiles/multi_json-legacy.gemfile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/gemfiles/multi_json-legacy.gemfile; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/gemfiles/multi_json-new.gemfile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/gemfiles/multi_json-new.gemfile; 664; root; root
-
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/simplecov.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/simplecov.gemspec; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/.gitignore;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/.gitignore; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/Rakefile;        ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/Rakefile; 664; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/cucumber.yml;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/cucumber.yml; 640; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/parallel_tests-0.15.3/Gemfile;   ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/parallel_tests-0.15.3/Gemfile; 644; root; root
 
@@ -10056,14 +9797,11 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/parallel_tests-0.15.3.gemspec;
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/flexmock-2.0.5.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/flexmock-2.0.5.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/string-scrub-0.0.5.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/string-scrub-0.0.5.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/msgpack-1.1.0.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/msgpack-1.1.0.gemspec; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/simplecov-0.7.0.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/simplecov-0.7.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/oj-3.7.9.gemspec;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/oj-3.7.9.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/timecop-0.8.1.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/timecop-0.8.1.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/fluentd-0.12.40.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/fluentd-0.12.40.gemspec; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/simplecov-html-0.7.1.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/simplecov-html-0.7.1.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/test-unit-rr-1.0.5.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/test-unit-rr-1.0.5.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/tzinfo-data-1.2017.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/tzinfo-data-1.2017.3.gemspec; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/multi_json-1.12.2.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/multi_json-1.12.2.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/builder-3.2.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/builder-3.2.3.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/iso8601-0.12.1.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/iso8601-0.12.1.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/sigdump-0.2.4.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/sigdump-0.2.4.gemspec; 644; root; root
@@ -10129,9 +9867,9 @@ ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/oniguruma.h;                      ${{RUBY
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/missing.h;                        ${{RUBY_INT}}/include/ruby-2.6.0/ruby/missing.h;                 644; root; root
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/ruby.h;                           ${{RUBY_INT}}/include/ruby-2.6.0/ruby/ruby.h;                    644; root; root
 
-${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.5.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.5.h; 644; root; root
-
 ${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;          ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;   644; root; root
+
+${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.8.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.8.h; 644; root; root
 
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby.h;                                ${{RUBY_INT}}/include/ruby-2.6.0/ruby.h;                         644; root; root
 
@@ -10289,8 +10027,6 @@ ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/package/tar_reader; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/util;            755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs;       755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.org; 755; root; root
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/index.rubygems.org; 755; root; root
-${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/ssl_certs/rubygems.global.ssl.fastly.net; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/request_set;     755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/request_set/lockfile; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/2.6.0/rubygems/request;         755; root; root
@@ -10993,26 +10729,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/ext/json/ext/generator; 755; 
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/ext/json/ext/fbuffer; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/ext/json/ext/parser; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/json-2.1.0/diagrams; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/lib; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/lib/simplecov-html; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/fancybox; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/public/smoothness/images; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/views; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/test; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/stylesheets/plugins; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/libraries; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-html-0.7.1/assets/javascripts/plugins; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/adapters; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/multi_json-1.12.2/lib/multi_json/vendor; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/rake-10.4.2;    755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/rake-10.4.2/rakelib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/rake-10.4.2/bin; 755; root; root
@@ -11196,29 +10912,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/lib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/lib/gyoku; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/spec; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/gyoku-1.3.1/spec/gyoku; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/support; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/features/step_definitions; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/railties; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/lib/simplecov/formatter; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/support; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/features/step_definitions; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/lib/faked_project; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/spec; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/faked_project/test; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/frameworks; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/app; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/app/controllers; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/test/fixtures/app/models; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/simplecov-0.7.0/gemfiles; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/parallel_tests-0.15.3; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/parallel_tests-0.15.3/bin; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/parallel_tests-0.15.3/lib; 755; root; root
