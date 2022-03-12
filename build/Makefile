@@ -10,7 +10,6 @@ OMI_KITS := $(shell cd ../../omi-kits; pwd -P)
 SCX_CORE_KITS := $(shell cd ../../scxcore-kits; pwd -P)
 PAL_DIR := $(shell cd ../../pal; pwd -P)
 DSC_DIR := $(shell cd ../../dsc; pwd -P)
-AUOMS_DIR := $(shell cd ../../auoms; pwd -P)
 AUOMS_KITS_DIR := $(shell cd ../../auoms-kits; pwd -P)
 RUBY_TESTING_TARGET_NAME=test
 
@@ -24,7 +23,6 @@ $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
-AUOMS_TARGET_DIR := $(AUOMS_DIR)/target/$(BUILD_CONFIGURATION)
 AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.3.4-31
 AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
