@@ -21,8 +21,8 @@ module VMInsights
             DataWithWrappingCounter.set_32_bit(! is_64_bit)
             @saved_net_data = get_net_data
             @saved_disk_data.baseline
-            u, i = get_cpu_idle
-            { :up => u, :idle => i }
+            t, i = get_cpu_idle
+            { :total_time => t, :idle => i }
         end
 
         def start_sample
@@ -54,23 +54,38 @@ module VMInsights
             return available, total
         end
 
-        # returns: cummulative uptime, cummulative idle time
+        # returns: cummulative total time, cummulative idle time
+
+        # /proc/stat contains system statistics since last restart
+        # first line contains aggregate across all CPUs
+        # format:
+        #
+        # cpu user nice system idle iowait irq softirq steal guest guest_nice
+        # eg: cpu  2904083 315778 1613190 140077550 216726 0 88355 0 0 0
+        # https://www.kernel.org/doc/html/latest/filesystems/proc.html#miscellaneous-kernel-statistics-in-proc-stat
+
+        # Above values are stored as u64 counters measuring in nanoseconds
+        # For 256 cpu's this means rollover occurs in approx 833 days (worst case)
+        # https://elixir.bootlin.com/linux/latest/source/fs/proc/stat.c#L111
+        # https://elixir.bootlin.com/linux/v4.18/source/fs/proc/stat.c#L120
         def get_cpu_idle
-            uptime = nil
+            total_time = nil
             idle = nil
-            File.open(File.join(@root, "proc", "uptime"), "rb") { |f|
+            File.open(File.join(@root, "proc", "stat"), "rb") { |f|
                 line = f.gets
-                next if line.nil?
-                line.scanf(" %f %f ") { |u, i|
-                    uptime = u
-                    idle = i
+                raise Unavailable, "/proc/stat empty" if line.nil?
+                time_entries = line.split(" ")
+                # cpu user nice system idle - remaining entries depend on kernel version
+                raise Unavailable, "/proc/stat: first entry not cpu" if time_entries[0] != "cpu"
+                raise Unavailable, "/proc/stat insufficient entries" if time_entries.length < 5
+                time_entries = time_entries.slice(1, time_entries.length) # skip the first entry in row: "cpu"
+
+                # last six entries are kernel version dependent so pad with 6 0 values
+                time_entries.push("0", "0", "0", "0", "0", "0")
+                idle = time_entries[3].to_i + time_entries[4].to_i
+                total_time = time_entries.map(&:to_i).sum
                 }
-            }
-
-            raise IDataCollector::Unavailable, "Uptime not found" if uptime.nil?
-            raise IDataCollector::Unavailable, "Idle time not found" if idle.nil?
-
-            return uptime, idle
+            return total_time, idle
         end
 
         # returns:

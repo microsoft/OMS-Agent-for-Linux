@@ -181,14 +181,14 @@ module VMInsights
             end
 
             def processor
-                uptime, idle = @data_collector.get_cpu_idle
-                uptime, idle = @cummulative_data.get_cpu_time_delta uptime, idle
-                raise IDataCollector::Unavailable.new "uptime delta is zero" if uptime.zero?
+                total_time, idle = @data_collector.get_cpu_idle
+                total_time, idle = @cummulative_data.get_cpu_time_delta total_time, idle
+                raise IDataCollector::Unavailable.new "total time delta is zero" if total_time.zero?
 
                 begin
                     cpus =  @data_collector.get_number_of_cpus
                     yield MetricTuple.factory "Processor", "UtilizationPercentage",
-                                    100.0 * (1.0 - ((idle * 1.0) / (uptime * 1.0 * cpus))),
+                                    100.0 * (1.0 - ((idle * 1.0) / (total_time * 1.0))),
                                     { "#{MetricTuple::Origin}/totalCpus" => cpus }
                 rescue => ex
                     unless @saved_cpu_exception.same(ex)
@@ -269,23 +269,23 @@ module VMInsights
 
             class CummulativeData
                 def initialize
-                    @uptime = 0
+                    @total_time = 0
                     @idle_time = 0
                 end
 
                 def initialize_from_baseline(baseline)
-                    u = baseline[:up]
-                    @uptime = u unless u.nil?
+                    total_time = baseline[:total_time]
+                    @total_time = total_time unless total_time.nil?
                     i = baseline[:idle]
                     @idle_time = i unless i.nil?
                 end
 
-                def get_cpu_time_delta(uptime, idle)
-                    uptime_delta = (uptime - @uptime)
-                    @uptime = uptime
+                def get_cpu_time_delta(total_time, idle)
+                    total_time_delta = (total_time - @total_time)
+                    @total_time = total_time
                     idle_delta = (idle - @idle_time)
                     @idle_time = idle
-                    return uptime_delta, idle_delta
+                    return total_time_delta, idle_delta
                 end
             end
 

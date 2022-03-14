@@ -241,7 +241,7 @@ module VMInsights
             @dc.mock_free_mem_kb = expected_free * 1024
 
             expected_cpus = @dc.mock_cpu_count
-            expected_cpu_percentage = compute_expected_cpu_use expected_cpus, @dc.mock_cpu_deltas(0)
+            expected_cpu_percentage = compute_expected_cpu_use @dc.mock_cpu_deltas(0)
 
             polling_interval = 2
             @configuration.poll_interval = polling_interval
@@ -387,10 +387,10 @@ module VMInsights
             }
         end
 
-        def test_cpu_uptime_delta_zero
+        def test_cpu_total_delta_zero
             @dc.mock_cpu_deltas = [
-                { :up => 1234567.8, :idle => 54321.0 },
-                { :up => 0, :idle => 0 },
+                { :total_time => 1234567, :idle => 54321 },
+                { :total_time => 0, :idle => 0 },
             ]
 
             polling_interval = 1
@@ -466,18 +466,16 @@ module VMInsights
             @dc.mock_increment_mem_kb = increment
 
             @dc.mock_cpu_deltas = [
-                { :up => 1300, :idle => 100 },
-                { :up => 60.01, :idle => 6 },
-                { :up => 60.01, :idle => 60 },
-                { :up => 60, :idle => 7.5 },
-                { :up => 60, :idle => 10 },
-                { :up => 60.01, :idle => 12.5 },
-                { :up => 60.01, :idle => 50 },
-                { :up => 60.01, :idle => 59.9 },
-                { :up => 60, :idle => 59.9 },
-                { :up => 60, :idle => 0 },
-                { :up => 60, :idle => 60 },
-                { :up => 60, :idle => 60 },
+                { :total_time => 1300, :idle => 100 },
+                { :total_time => 60, :idle => 6 },
+                { :total_time => 60, :idle => 60 },
+                { :total_time => 60, :idle => 7 },
+                { :total_time => 60, :idle => 10 },
+                { :total_time => 60, :idle => 12 },
+                { :total_time => 60, :idle => 50 },
+                { :total_time => 60, :idle => 59 },
+                { :total_time => 60, :idle => 59 },
+                { :total_time => 60, :idle => 0 },
             ]
             expected_cpus = @dc.mock_cpu_count
 
@@ -528,7 +526,7 @@ module VMInsights
                         expected_total += (increment / 1024.0)
                         memory_metrics_found += 1
                     elsif (namespace == Processor::Namespace && name == Processor::Utilization)
-                        expected_cpu_percentage = compute_expected_cpu_use expected_cpus, @dc.mock_cpu_deltas(i)
+                        expected_cpu_percentage = compute_expected_cpu_use @dc.mock_cpu_deltas(i)
                         assert_in_delta expected_cpu_percentage, value, 0.005
                         assert_equal expected_cpus, tags["#{ExpectedOrigin}/#{Processor::Total}"], tags
                         processor_metrics_found += 1
@@ -955,8 +953,8 @@ module VMInsights
             tags
         end
 
-        def compute_expected_cpu_use(cpus, deltas)
-            100.0 - (100.0 * deltas[:idle]) / (1.0 * deltas[:up] * cpus)
+        def compute_expected_cpu_use(deltas)
+            100.0 * (1.0 - ((deltas[:idle] * 1.0) / (deltas[:total_time] * 1.0)))
         end
 
         class SampleValidator
@@ -1330,19 +1328,19 @@ module VMInsights
             @mock_increment_mem_kb = 0
             @get_available_memory_exception = nil
 
-            @mock_cpu_uptime = 0
+            @mock_cpu_total_time = 0
             @mock_cpu_idle = 0
             @mock_cpu_baseline =
-                            { :up => 42, :idle => 17 }
+                            { :total_time => 42, :idle => 17 }
             @mock_cpu_deltas = [
-                            { :up => 3, :idle => 0.5 },
-                            { :up => 3, :idle => 0.5 },
-                            { :up => 3, :idle => 0.5 },
-                            { :up => 3, :idle => 0.5 },
-                            { :up => 3, :idle => 0.5 },
-                            { :up => 3, :idle => 0.5 },
-                            { :up => 3, :idle => 0.5 },
-                            { :up => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
+                            { :total_time => 3, :idle => 0.5 },
             ]
             @mock_index = 0
             @mock_cpu_count = 6
@@ -1368,7 +1366,7 @@ module VMInsights
 
         def baseline
             @baselined = true
-            @mock_cpu_uptime += @mock_cpu_baseline[:up]
+            @mock_cpu_total_time += @mock_cpu_baseline[:total_time]
             @mock_cpu_idle += @mock_cpu_baseline[:idle]
             @mock_cpu_baseline
         end
@@ -1400,9 +1398,9 @@ module VMInsights
             raise @get_cpu_use_exception unless @get_cpu_use_exception.nil?
             result = @mock_cpu_deltas[@mock_index % @mock_cpu_deltas.size]
             @mock_index += 1
-            @mock_cpu_uptime += result[:up]
+            @mock_cpu_total_time += result[:total_time]
             @mock_cpu_idle += result[:idle]
-            return @mock_cpu_uptime, @mock_cpu_idle
+            return @mock_cpu_total_time, @mock_cpu_idle
         end
 
         def get_number_of_cpus
