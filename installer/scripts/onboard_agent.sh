@@ -6,10 +6,10 @@
 
 
 # Values to be updated upon each new release
-GITHUB_RELEASE_X64="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.13.40-0/"
+GITHUB_RELEASE_X64="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.14.9-0/"
 GITHUB_RELEASE_X86="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/"
 
-BUNDLE_X64="omsagent-1.13.40-0.universal.x64.sh"
+BUNDLE_X64="omsagent-1.14.9-0.universal.x64.sh"
 BUNDLE_X86="omsagent-1.12.15-0.universal.x86.sh"
 
 usage()
@@ -24,6 +24,7 @@ usage()
     echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
     echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  --purge                    Uninstall the package and remove all related data."
+    echo "  --skip-docker-provider-install  skip installation of docker provider package in the system."
     echo "  -? | -h | --help           shows this usage text."
 }
 
@@ -51,6 +52,11 @@ do
             purgeAgent="true"
             break;
             ;;
+
+        --skip-docker-provider-install)
+           skipDockerProviderInstall="true"
+           shift 1
+           ;;
 
         -p|--proxy)
             proxyConf=$2
@@ -88,6 +94,10 @@ fi
 if [ -n "$proxyConf" ]; then
     bundleParameters="${bundleParameters} -p $proxyConf"
 fi
+if [ -n "$skipDockerProviderInstall" ]; then
+    bundleParameters="${bundleParameters} --skip-docker-provider-install"
+fi
+
 
 # We need to use sudo for commands in the following block, if not running as root
 SUDO=''

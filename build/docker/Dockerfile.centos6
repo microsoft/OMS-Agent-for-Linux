@@ -1,5 +1,6 @@
-FROM centos:6
+FROM centos:6.10
 MAINTAINER Abderrahmane Benbachir abderb@microsoft.com
+ARG vcores=8
 
 # Important for unittests
 RUN adduser omsagent && groupadd omiusers
@@ -8,7 +9,12 @@ RUN usermod -aG wheel omsagent
 RUN mkdir -p /home/scratch
 WORKDIR /home/scratch
 
-RUN yum install -y centos-release-scl yum-utils && yum-config-manager --enable rhel-server-rhscl-7-rpms
+RUN curl https://mdsdbuild.blob.core.windows.net/repofiles/centos6-eol.repo --output /etc/yum.repos.d/CentOS-Base.repo \
+    && yum -y install centos-release-scl \
+    && curl https://mdsdbuild.blob.core.windows.net/repofiles/centos6-scl-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl.repo \
+    && curl https://mdsdbuild.blob.core.windows.net/repofiles/centos6-scl-rh-eol.repo --output /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+
+RUN yum install -y centos-release-scl yum-utils && yum-config-manager --enable rhel-server-rhscl-8-rpms
 
 # Extra repos & dependencies
 RUN yum update -y && yum install -y epel-release
@@ -20,7 +26,7 @@ RUN yum install -y which wget sudo make tree vim cmake zip redhat-lsb \
     && yum clean all
  
 # Devtoolset-2 (gcc 4.8)
-RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo 
+RUN wget --no-check-certificate http://people.centos.org/tru/devtools-2/devtools-2.repo -O /etc/yum.repos.d/devtools-2.repo 
 RUN yum update -y && yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
 # Devtoolset-7 (gcc 7.3)
 RUN yum install -y devtoolset-7-toolchain
