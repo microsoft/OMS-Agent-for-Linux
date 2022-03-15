@@ -19,7 +19,7 @@ install:
   - cd Microsoft/Build-OMS-Agent-for-Linux
   # change url from ssh to https for submodules, travis-ci cannot download a submodule that isn’t on a public url
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-  - git submodule update --init --recursive auoms auoms-kits dsc dsc-kits omi omi-kits opsmgr-kits pal scxcore-kits
+  - git submodule update --init --recursive auoms-kits dsc dsc-kits omi omi-kits opsmgr-kits pal scxcore-kits
   - git clone https://github.com/Microsoft/OMS-Agent-for-Linux.git omsagent
   - git checkout master && git submodule foreach git checkout master
 
@@ -34,8 +34,6 @@ before_script:
   # pwd: /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux/omsagent/build
   # Since 'build' is a keyword for travis-CI, change Makefile to substitute 'omsagent/build' instead of 'build'
   - sed -i 's/(subst \/build,,$(CURDIR))/(subst omsagent\/build,omsagent,$(CURDIR))/' Makefile
-  # Substitue 'build' in Makefile for auoms as well
-  - sed -i 's/(subst \/build,,$(CURDIR))/(subst auoms\/build,auoms,$(CURDIR))/' ../../auoms/build/Makefile
   - docker pull abenbachir/oms-centos6-x64:latest || true
 
 script:
