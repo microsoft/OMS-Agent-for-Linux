@@ -144,7 +144,7 @@ cleanup_and_exit()
     fi
 
     if [ -n "$1" ]; then
-        echo "Shell bundle exiting with code $1"
+        echo "OMS agent shell bundle exiting with status code $1"
         exit $1
     else
         exit 0
@@ -591,11 +591,11 @@ pkg_upd() {
     pkg_name=$2
     pkg_allowed=$3
 
-    echo "----- Upgrading package: $pkg_name ($pkg_filename) -----"
+    echo "----- Upgrading package $pkg_name to version ($pkg_filename) -----"
 
     if [ -z "${forceFlag}" -a -n "$pkg_allowed" ]; then
         if [ $pkg_allowed -ne 0 ]; then
-            echo "Skipping package since existing version >= version available"
+            echo "Skipping package upgrade since existing version is >= than version already installed."
             return 0
         fi
     fi
@@ -793,7 +793,7 @@ remove_and_install()
     temp_status=$?
 
     if [ $temp_status -ne 0 ]; then
-        echo "$OMI_PKG package failed to install and exited with status $temp_status"
+        echo "$OMI_PKG package failed to install and exited with error code $temp_status"
 
         if [ $temp_status -eq 2 ]; then # dpkg is messed up
             return $DEPENDENCY_MISSING
@@ -807,16 +807,16 @@ remove_and_install()
 
     if [ $temp_status -ne 0 ]; then
         if [ $temp_status -eq 2 ]; then
-            ErrStr="System Issue with daemon control tool "
+            ErrStr="system issue with daemon control tool "
             ErrCode=$DEPENDENCY_MISSING
         elif [ $temp_status -eq 3 ]; then # dpkg is messed up
-            ErrStr="omi server conf file missing"
+            ErrStr="missing omi conf file"
             ErrCode=$DEPENDENCY_MISSING
         else
-            ErrStr="OMI installation failed"
+            ErrStr="OMI installation failure"
             ErrCode=$OMI_INSTALL_FAILED
         fi
-        echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+        echo "OMI server failed to start due to $ErrStr and exited with error code $temp_status"
         return $ErrCode
     fi
 
@@ -828,7 +828,7 @@ remove_and_install()
     temp_status=$?
 
     if [ $temp_status -ne 0 ]; then
-        echo "$SCX_PKG package failed to install and exited with status $temp_status"
+        echo "$SCX_PKG package failed to install and exited with error code $temp_status"
         return $SCX_INSTALL_FAILED
     fi
 
@@ -1384,17 +1384,17 @@ case "$installMode" in
 
             if [ $temp_status -ne 0 ]; then
                 if [ $temp_status -eq 2 ]; then
-                    ErrStr="System Issue with daemon control tool "
+                    ErrStr="system issue with daemon control tool "
                     ErrCode=$DEPENDENCY_MISSING
                 elif [ $temp_status -eq 3 ]; then # dpkg is messed up
-                    ErrStr="omi server conf file missing"
+                    ErrStr="missng omi server conf file"
                     ErrCode=$DEPENDENCY_MISSING
                 else
-                    ErrStr="OMI installation failed"
+                    ErrStr="OMI installation failure"
                     ErrCode=$OMI_INSTALL_FAILED
                 fi
 
-                echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+                echo "OMI server failed to start due to $ErrStr and exited with error code $temp_status"
                 OMI_EXIT_STATUS=$ErrCode
              fi
 
@@ -1416,7 +1416,7 @@ case "$installMode" in
                 remove_and_install
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "Install failed"
+                    echo "Re-installing $SCX_PKG or $OMI_PKG packages failed."
                     cleanup_and_exit $TEMP_STATUS
                 fi
             fi
@@ -1425,7 +1425,7 @@ case "$installMode" in
             pkg_add ${OMS_PKG} omsagent
             TEMP_STATUS=$?
             if [ $TEMP_STATUS -ne 0 ]; then
-               echo "$OMS_PKG package failed to install and exited with status $TEMP_STATUS"
+               echo "$OMS_PKG package failed to install and exited with error code $TEMP_STATUS"
                cleanup_and_exit $OMS_INSTALL_FAILED
             fi
 
@@ -1436,14 +1436,14 @@ case "$installMode" in
                 pkg_add ${DSC_PKG} omsconfig
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$DSC_PKG package failed to install and exited with status $TEMP_STATUS"
+                    echo "$DSC_PKG package failed to install and exited with error code $TEMP_STATUS"
                     cleanup_and_exit $DSC_INSTALL_FAILED
                 fi
             fi
 
             # Install bundled providers
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-            echo "----- Installing bundled packages -----"
+            echo "----- Installing bundled provider packages -----"
             for i in oss-kits/*-oss-test.sh; do
                 # If filespec didn't expand, break out of loop
                 [ ! -f $i ] && break
@@ -1464,7 +1464,7 @@ you should first purge the existing installation and then install using the --sk
                     ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
-                        echo "$OSS_BUNDLE provider package failed to install and exited with status $TEMP_STATUS"
+                        echo "$OSS_BUNDLE provider package failed to install and exited with error code $TEMP_STATUS"
                         BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
                     fi
                 fi
@@ -1488,7 +1488,7 @@ you should first purge the existing installation and then install using the --sk
                     ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
-                        echo "$BUNDLE package failed to install and exited with status $TEMP_STATUS"
+                        echo "$BUNDLE package failed to install and exited with error code $TEMP_STATUS"
                         BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
                     fi
                 fi
@@ -1512,17 +1512,17 @@ you should first purge the existing installation and then install using the --sk
 
         if [ $temp_status -ne 0 ]; then
             if [ $temp_status -eq 2 ]; then
-                ErrStr="System Issue with daemon control tool "
+                ErrStr="system issue with daemon control tool"
                 ErrCode=$DEPENDENCY_MISSING
             elif [ $temp_status -eq 3 ]; then # dpkg is messed up
-                  ErrStr="omi server conf file missing"
+                  ErrStr="missing omi server conf file"
                   ErrCode=$DEPENDENCY_MISSING
             else
-                  ErrStr="OMI installation failed"
+                  ErrStr="Failure upgrading OMI"
                   ErrCode=$OMI_INSTALL_FAILED
             fi
 
-            echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+            echo "OMI server failed to start due to $ErrStr and exited with error code $temp_status"
             OMI_EXIT_STATUS=$ErrCode
         fi
 
@@ -1542,10 +1542,10 @@ you should first purge the existing installation and then install using the --sk
         if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then
 
             remove_and_install
-            TEMP_STATUS=$?
-            if [ $TEMP_STATUS -ne 0 ]; then
-                echo "Upgrade failed"
-                cleanup_and_exit $TEMP_STATUS
+            UPGRADE_RETRY_SCX_OMI=$?
+            if [ $UPGRADE_RETRY_SCX_OMI -ne 0 ]; then
+                echo "Re-upgrading $SCX_PKG or $OMI_PKG packages failed."
+                cleanup_and_exit $UPGRADE_RETRY_SCX_OMI
             fi
         fi
 
@@ -1555,7 +1555,7 @@ you should first purge the existing installation and then install using the --sk
         pkg_upd $OMS_PKG omsagent $?
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            echo "$OMS_PKG package failed to upgrade and exited with error code $TEMP_STATUS"
             cleanup_and_exit $OMS_INSTALL_FAILED
         fi
 
@@ -1583,7 +1583,7 @@ you should first purge the existing installation and then install using the --sk
         pkg_upd $DSC_PKG omsconfig $?
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$DSC_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            echo "$DSC_PKG package failed to upgrade and exited with error code $TEMP_STATUS"
             cleanup_and_exit $DSC_INSTALL_FAILED
         fi
 
@@ -1623,7 +1623,7 @@ you should first purge the existing installation and then install using the --sk
 
         # Upgrade bundled providers
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        echo "----- Updating bundled packages -----"
+        echo "----- Updating bundled provider packages -----"
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
@@ -1644,7 +1644,7 @@ you should first purge the existing installation and then install using the --sk
                 ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$OSS_BUNDLE provider package failed to upgrade and exited with status $TEMP_STATUS"
+                    echo "$OSS_BUNDLE provider package failed to upgrade and exited with error code $TEMP_STATUS"
                     BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
                 fi
             fi
@@ -1668,7 +1668,7 @@ you should first purge the existing installation and then install using the --sk
                 ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$BUNDLE package failed to upgrade and exited with status $TEMP_STATUS"
+                    echo "$BUNDLE package failed to upgrade and exited with error code $TEMP_STATUS"
                     BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
                 fi
             fi
