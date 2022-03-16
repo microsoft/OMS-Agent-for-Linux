@@ -1550,12 +1550,12 @@ you should first purge the existing installation and then install using the --sk
         fi
 
         # Update OMS Agent
-        shouldInstall_omsagent
         rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
+        shouldInstall_omsagent
         pkg_upd $OMS_PKG omsagent $?
-        TEMP_STATUS=$?
-        if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$OMS_PKG package failed to upgrade and exited with error code $TEMP_STATUS"
+        OMS_UPDATE_STATUS=$?
+        if [ $OMS_UPDATE_STATUS -ne 0 ]; then
+            echo "$OMS_PKG package failed to upgrade and exited with error code $OMS_UPDATE_STATUS"
             cleanup_and_exit $OMS_INSTALL_FAILED
         fi
 
