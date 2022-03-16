@@ -144,7 +144,7 @@ cleanup_and_exit()
     fi
 
     if [ -n "$1" ]; then
-        echo "OMS agent shell bundle exiting with code $1"
+        echo "OMS agent shell bundle exiting with status code $1"
         exit $1
     else
         exit 0
@@ -591,11 +591,11 @@ pkg_upd() {
     pkg_name=$2
     pkg_allowed=$3
 
-    echo "----- Upgrading to package: $pkg_name ($pkg_filename) -----"
+    echo "----- Upgrading package $pkg_name to version ($pkg_filename) -----"
 
     if [ -z "${forceFlag}" -a -n "$pkg_allowed" ]; then
         if [ $pkg_allowed -ne 0 ]; then
-            echo "Skipping package since existing version >= version available"
+            echo "Skipping package upgrade since existing version is >= than version already installed."
             return 0
         fi
     fi
