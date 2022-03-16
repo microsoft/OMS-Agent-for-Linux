@@ -15,6 +15,10 @@ OMS_SERVICE=/opt/microsoft/omsagent/bin/service_control
 WORKSPACE_ID=
 SYSLOG_PORT=
 
+is_systemd()
+{
+    stat /run/systemd/system 1>/dev/null 2>&1
+}
 
 RestartService() {
     if [ -z "$1" ]; then
@@ -26,7 +30,7 @@ RestartService() {
 
     # Does the service exist under systemd?
     local systemd_dir=$(${OMS_SERVICE} find-systemd-dir)
-    pidof systemd 1> /dev/null 2> /dev/null
+    is_systemd
     if [ $? -eq 0 -a -f ${systemd_dir}/${1}.service ]; then
         /bin/systemctl restart $1
     else
