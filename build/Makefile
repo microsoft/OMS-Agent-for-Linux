@@ -23,7 +23,7 @@ $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
-AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.3.4-31
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.5.2-52
 AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
