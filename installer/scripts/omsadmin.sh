@@ -679,7 +679,7 @@ onboard()
             fi
 
             if [ ! -f $METACONFIG_PY ]; then
-                log_error "MetaConfig generation script not available at $METACONFIG_PY"
+                log_error "MetaConfig generation script not available at $METACONFIG_PY. For more details check logs in /var/opt/microsoft/omsconfig/omsconfig.log"
                 return $ERROR_METACONFIG_PY_NOT_PRESENT
             fi
 
@@ -697,9 +697,9 @@ onboard()
             fi
 
             if [ $error -eq 0 ]; then
-                log_info "Configured omsconfig"
+                log_info "omsconfig is configured successfuly"
             else
-                log_error "Error configuring omsconfig. Error: $error"
+                log_error "Configuring omsconfig and generating metaconfig failed with error code $error. For more details check logs in /var/opt/microsoft/omsconfig/omsconfig.log"
                 return $ERROR_GENERATING_METACONFIG
             fi
         fi
