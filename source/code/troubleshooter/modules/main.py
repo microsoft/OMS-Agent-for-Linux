@@ -110,7 +110,7 @@ def collect_logs():
           "reference. (Leave field empty to skip)")
     output_dir = get_input("Output Directory", lambda x : (os.path.isdir(x)), \
                            "Please input an existing, absolute filepath for the resulting zip file")
-    sr_num = get_input("SR Number", (lambda x : (x=="" or x.isalnum())), 
+    sr_num = get_input("SR Number", (lambda x : (x.isalnum())), 
                        "Please enter the SR number (without any spaces or special \n"\
                            "characters) to continue.")
     com_name = get_input("Company Name", (lambda x : True), "")
