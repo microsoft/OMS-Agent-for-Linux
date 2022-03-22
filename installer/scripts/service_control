@@ -406,6 +406,11 @@ check_oms_and_invoke()
 # Main Interface Procedures:  Those Major Functions called from Main
 #
 
+is_systemd()
+{
+    stat /run/systemd/system 1>/dev/null 2>&1
+}
+
 start_omsagent()
 {
     enable_omsagent_service
@@ -415,7 +420,7 @@ start_omsagent()
     fi
 
     # If systemd lives here, then we have a systemd unit file
-    if pidof systemd 1>/dev/null 2>&1; then
+    if is_systemd; then
         /bin/systemctl start $OMSAGENT_WS
     else
         if [ -x /usr/sbin/invoke-rc.d ]; then
@@ -442,7 +447,7 @@ stop_omsagent()
     remove_PIDfile_unless_omsagent_running
     if this_omsagent_running; then
         # If systemd lives here, then we have a systemd unit file
-        if pidof systemd 1> /dev/null 2>&1; then
+        if is_systemd; then
             /bin/systemctl stop $OMSAGENT_WS
         else
             if [ -x /usr/sbin/invoke-rc.d ]; then
@@ -477,7 +482,7 @@ restart_omsagent()
     fi
 
     # If systemd lives here, then we have a systemd unit file
-    if pidof systemd 1>/dev/null 2>&1; then
+    if is_systemd; then
         /bin/systemctl restart $OMSAGENT_WS
     else
         if [ -x /usr/sbin/invoke-rc.d ]; then
@@ -505,7 +510,7 @@ find_systemd_dir()
     # Various distributions have different paths for systemd unit files ...
     local UNIT_DIR_LIST="/usr/lib/systemd/system /lib/systemd/system"
 
-    if pidof systemd 1> /dev/null 2>&1; then
+    if is_systemd; then
         # Be sure systemctl lives where we expect it to
         if [ ! -f /bin/systemctl ]; then
             echo "FATAL: Unable to locate systemctl program" 1>&2
@@ -537,7 +542,7 @@ enable_omsagent_service()
             ln -s $BIN_DIR/omsagent $BIN_DIR/$OMSAGENT_WS
         fi
 
-        if pidof systemd 1> /dev/null 2>&1; then
+        if is_systemd; then
             # systemd
             local systemd_dir=$(find_systemd_dir)
             local omsagent_service=${systemd_dir}/$OMSAGENT_WS.service
