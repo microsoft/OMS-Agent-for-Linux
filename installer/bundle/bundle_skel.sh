@@ -610,34 +610,16 @@ pkg_upd() {
         return $?
     else
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        rpm --upgrade --replacepkgs $FORCE ${pkg_filename}.rpm
+        # Temp workaround for an upgrade issue seen on RedHat 7.5.
+        # Only for RedHat 7.5 call upgrade with --replacepkgs flag by default and only if force flag is not set. 
+        redhat_75=`cat /etc/*-release 2>/dev/null | grep -iP '.*?red.*?7\.5' 2>&1>/dev/null; echo $?`
+        if [ $FORCE -ne "--force" ] && [ $redhat_75 -eq 0 ]; then
+            rpm --upgrade --replacepkgs $FORCE ${pkg_filename}.rpm
+        else
+            rpm --upgrade $FORCE ${pkg_filename}.rpm
+        fi
         return $?
     fi
-}
-
-get_arch()
-{
-    if [ $(getconf LONG_BIT) = 64 ]; then
-        echo "x64"
-    else
-        echo "x86"
-    fi
-}
-
-compare_arch()
-{
-    # Check if the user is trying to install the correct bundle (x64 vs. x86)
-    echo "Checking host architecture ..."
-    HOST_ARCH=$(get_arch)
-
-    case $OMS_PKG in
-        *"$HOST_ARCH")
-            ;;
-        *)
-            echo "Cannot install $OMS_PKG on ${HOST_ARCH} platform"
-            cleanup_and_exit $INVALID_PACKAGE_ARCH
-            ;;
-    esac
 }
 
 compare_install_type()
@@ -1219,7 +1201,6 @@ fi
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     compare_install_type
-    compare_arch
 
     python_installed
     if [ $? -ne 0 ]; then
@@ -1286,7 +1267,7 @@ fi
 # Extract the binary here.
 #
 
-echo "Extracting..."
+echo "Extracting OMS agent install bundle..."
 
 tail -n +${SCRIPT_LEN_PLUS_ONE} "${SCRIPT}" | tar xzf -
 STATUS=$?
