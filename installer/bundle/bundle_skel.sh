@@ -612,8 +612,8 @@ pkg_upd() {
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
         # Temp workaround for an upgrade issue seen on RedHat 7.5.
         # Only for RedHat 7.5 call upgrade with --replacepkgs flag by default and only if force flag is not set. 
-        redhat_75=`cat /etc/*-release 2>/dev/null | grep -iP '.*?red.*?7\.5' 2>&1>/dev/null; echo $?`
-        if [ $FORCE -ne "--force" ] && [ $redhat_75 -eq 0 ]; then
+        redhat_75=`cat /etc/*-release 2> /dev/null | grep -iP '.*?red.*?7\.5' /dev/null 2>&1 ; echo $?`
+        if [ -n "${forceFlag}" ] && [ $redhat_75 -eq 0 ]; then
             rpm --upgrade --replacepkgs $FORCE ${pkg_filename}.rpm
         else
             rpm --upgrade $FORCE ${pkg_filename}.rpm
