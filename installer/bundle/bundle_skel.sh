@@ -381,6 +381,40 @@ check_if_program_exists_on_system()
     return $exists
 }
 
+check_if_fips()
+{
+    FIPS_ENABLED=$(sysctl crypto.fips_enabled)
+    if [[ $FIPS_ENABLED == *1* ]]; then
+        echo "FIPS detected"
+        return 1
+    else
+        echo "FIPS not detected"
+        return 0
+    fi
+}
+
+check_if_fips_distro()
+{
+    if [ -f "/etc/redhat-release" ]; then # RHEL, CentOS, Oracle
+        if [ -f "/etc/os-release" ]; then # get version
+            VERSION_ID=$(cat /etc/os-release | grep "^VERSION_ID=")
+            if [[ $VERSION_ID != *=6.* ]] && [[ $VERSION_ID != *=7.* ]]; then
+                echo "Applying NO_DIGEST fix to allow for OMS package installation"
+                return 1
+            else
+                # NO_DIGEST fix unnecessary
+                return 0
+            fi
+        else
+            # Unable to find distro version
+            return 0
+        fi
+    else
+        # VM not Redhat or similar, no fix needed
+        return 0
+    fi
+}
+
 install_if_program_does_not_exist_on_system()
 {
     # Parameters: $1 - name of program to check and possibly install
@@ -554,7 +588,16 @@ pkg_add()
            return $DEPENDENCY_MISSING
         fi
 
-        rpm -ivh $FORCE ${pkg_filename}.rpm
+        NO_DIGEST=""
+        check_if_fips
+        if [ $? -ne 0 ]; then
+            check_if_fips_distro
+            if [ $? -ne 0 ]; then
+                NO_DIGEST="--nodigest --nofiledigest"
+            fi
+        fi
+
+        rpm -ivh $FORCE $NO_DIGEST ${pkg_filename}.rpm
         return $?
     fi
 }
