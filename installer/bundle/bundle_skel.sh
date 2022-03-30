@@ -578,7 +578,7 @@ pkg_rm()
         rpm --erase ${1}
     fi
     if [ $? -ne 0 ]; then
-        echo "----- Ignore previous errors for package: $1 -----"
+        echo "----- Ignore previous errors from removing $1 package command. Continue... -----"
     fi
 }
 
