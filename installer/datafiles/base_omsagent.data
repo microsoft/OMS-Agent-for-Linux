@@ -254,8 +254,12 @@ chown -R omsagent:root /opt/microsoft/omsagent/plugin
 /opt/microsoft/omsagent/bin/omsadmin.sh -U
 
 %Postinstall_300
+POSTINSTALL_ERROR=0
 if [ -f /etc/omsagent-onboard.conf ]; then
     /opt/microsoft/omsagent/bin/omsadmin.sh
+    if [ $? -ne 0 ]; then
+       POSTINSTALL_ERROR=$?
+    fi
 else
     # Create a logrotate conf file for the Primary workspace if it does not already exist
     # This is needed when upgrading from old omsagent to multi-homing enabled version
@@ -267,6 +271,10 @@ fi
 # Set up a cron job to logrotate all omsagent-$WORKSPACE_ID every 5 minutes
 if [ ! -f /etc/cron.d/omsagent ]; then
     echo "*/5 * * * * root /usr/sbin/logrotate -s /var/lib/logrotate/omsagent-status /etc/logrotate.d/omsagent* >/dev/null 2>&1" > /etc/cron.d/omsagent
+fi
+
+if [ $POSTINSTALL_ERROR -ne 0 ]; then
+    exit $POSTINSTALL_ERROR
 fi
 
 %Postuninstall_10
