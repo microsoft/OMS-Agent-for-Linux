@@ -1,6 +1,6 @@
---- ../source/ext/fluentd/lib/fluent/plugin/in_tail.rb	2022-03-22 15:40:06.592276454 -0700
-+++ ../source/ext/fluentd/lib/fluent/plugin/in_tail.rb.new	2022-03-24 08:47:33.588865078 -0700
-@@ -24,6 +24,9 @@
+--- ../source/ext/fluentd/lib/fluent/plugin/in_tail.rb	2022-03-22 14:44:11.797607707 -0700
++++ ../source/ext/fluentd/lib/fluent/plugin/in_tail.rb.new	2022-03-22 15:00:10.526473440 -0700
+@@ -24,6 +24,8 @@
    class NewTailInput < Input
      Plugin.register_input('tail', self)
  
@@ -10,7 +10,7 @@
      def initialize
        super
        @paths = []
-@@ -94,6 +97,8 @@
+@@ -94,6 +96,7 @@
      end
  
      def configure_parser(conf)
@@ -19,7 +19,7 @@
        @parser = Plugin.new_parser(conf['format'])
        @parser.configure(conf)
      end
-@@ -130,7 +135,9 @@
+@@ -130,7 +133,9 @@
  
      def start
        if @pos_file
