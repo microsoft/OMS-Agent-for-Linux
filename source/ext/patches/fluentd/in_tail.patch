@@ -1,0 +1,32 @@
+--- ../source/ext/fluentd/lib/fluent/plugin/in_tail.rb	2022-03-22 15:40:06.592276454 -0700
++++ ../source/ext/fluentd/lib/fluent/plugin/in_tail.rb.new	2022-03-24 08:47:33.588865078 -0700
+@@ -24,6 +24,9 @@
+   class NewTailInput < Input
+     Plugin.register_input('tail', self)
+ 
++    FILE_PERMISSION = 0644
++    DIR_PERMISSION = 0755
++
+     def initialize
+       super
+       @paths = []
+@@ -94,6 +97,8 @@
+     end
+ 
+     def configure_parser(conf)
++      @file_perm = FILE_PERMISSION
++      @dir_perm = DIR_PERMISSION
+       @parser = Plugin.new_parser(conf['format'])
+       @parser.configure(conf)
+     end
+@@ -130,7 +135,9 @@
+ 
+     def start
+       if @pos_file
+-        @pf_file = File.open(@pos_file, File::RDWR|File::CREAT, DEFAULT_FILE_PERMISSION)
++        pos_file_dir = File.dirname(@pos_file)
++        FileUtils.mkdir_p(pos_file_dir, mode: @dir_perm) unless Dir.exist?(pos_file_dir)
++        @pf_file = File.open(@pos_file, File::RDWR|File::CREAT|File::BINARY, @file_perm)
+         @pf_file.sync = true
+         @pf = PositionFile.parse(@pf_file)
+       end

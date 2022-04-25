@@ -310,7 +310,7 @@ module Fluent
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestionBlob.status'
       status = '{ "operation": "ODSIngestionBlob", "success": "%s", "message": "%s" }' % [success, message]
       begin
-        File.open(fn,'w') { |file| file.write(status) }
+        File.open(fn,'w',0664) { |file| file.write(status) }
       rescue => e
         @log.debug "Error:'#{e}'"
       end

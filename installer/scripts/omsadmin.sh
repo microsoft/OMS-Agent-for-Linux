@@ -596,15 +596,15 @@ onboard()
         cleanup_certs
         return $ERROR_RESOLVING_HOST
     elif [ $error -eq $CURL_PROXY_RESOLVE_ERROR -a -n "$PROXY_SETTING" ]; then
-        log_error "Proxy could not be resolved during the onboarding request. Verify the proxy."
+        log_error "Proxy could not be resolved during the onboarding request: curl returned $error. Verify the proxy."
         cleanup_certs
         return $INVALID_PROXY
     elif [ $error -eq $CURL_CONNECT_HOST_ERROR -a -n "$PROXY_SETTING" ]; then
-        log_error "Error connecting to OMS service through proxy. Verify the proxy."
+        log_error "Error connecting to OMS service through proxy: curl returned $error. Verify the proxy."
         cleanup_certs
         return $INVALID_PROXY
     elif [ $error -ne 0 ]; then
-        log_error "Error during the onboarding request: curl returned $error. Check the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
+        log_error "Error during the onboarding request: curl returned $error. Check the internet connectivity and the correctness of the workspace ID and shared key or run omsadmin.sh with '-v'"
         cleanup_certs
         return $ERROR_ONBOARDING
     fi
@@ -679,7 +679,7 @@ onboard()
             fi
 
             if [ ! -f $METACONFIG_PY ]; then
-                log_error "MetaConfig generation script not available at $METACONFIG_PY"
+                log_error "MetaConfig generation script not available at $METACONFIG_PY. For more details check logs in /var/opt/microsoft/omsconfig/omsconfig.log"
                 return $ERROR_METACONFIG_PY_NOT_PRESENT
             fi
 
@@ -697,9 +697,9 @@ onboard()
             fi
 
             if [ $error -eq 0 ]; then
-                log_info "Configured omsconfig"
+                log_info "omsconfig is configured successfuly"
             else
-                log_error "Error configuring omsconfig. Error: $error"
+                log_error "Configuring omsconfig and generating metaconfig failed with error code $error. For more details check logs in /var/opt/microsoft/omsconfig/omsconfig.log"
                 return $ERROR_GENERATING_METACONFIG
             fi
         fi

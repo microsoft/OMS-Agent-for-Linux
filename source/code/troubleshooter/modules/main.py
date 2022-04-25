@@ -105,15 +105,18 @@ def check_all(interactive):
 
 def collect_logs():
     # get SR number / company name
-    print("Please input the SR number to collect OMS logs and (if applicable) the company\n"\
-        "name for reference. (Leave field empty to skip)")
-    sr_num = get_input("SR Number", (lambda x : (x=="" or x.isalnum())), 
+    print("Please input the output directory for where the zip file will be generated, the\n"\
+          "SR number to collect OMS logs, and (if applicable) the company name for\n"\
+          "reference. (Leave field empty to skip)")
+    output_dir = get_input("Output Directory", lambda x : (os.path.isdir(x)), \
+                           "Please input an existing, absolute filepath for the resulting zip file")
+    sr_num = get_input("SR Number", (lambda x : (x.isalnum())), 
                        "Please enter the SR number (without any spaces or special \n"\
                            "characters) to continue.")
     com_name = get_input("Company Name", (lambda x : True), "")
 
     # create command to run
-    logcollect_cmd = "cd {0}; sudo sh ./omslinux_agentlog.sh -s {1}".format(LOGCOLLECT_PATH, sr_num)
+    logcollect_cmd = "cd {0}; sudo sh ./omslinux_agentlog.sh -o {1} -s {2}".format(LOGCOLLECT_PATH, output_dir, sr_num)
     if (com_name != ''):
         logcollect_cmd = logcollect_cmd + ("-c {0}".format(com_name))
 
@@ -185,7 +188,7 @@ def run_troubleshooter():
             "  - Silent Mode runs through with no input required\n"\
             "  - Interactive Mode includes extra checks that require input")
         mode = get_input("Do you want to run the troubleshooter in silent (s) or interactive (i) mode?",\
-                        (lambda x : x.lower() in ['s','silent','i','interactive']),\
+                        (lambda x : x.lower() in ['s','silent','i','interactive','q','quit']),\
                         "Please enter 's'/'silent' to run silent mode, 'i'/'interactive' to run \n"\
                             "interactive mode, or 'q'/'quit' to quit.")
         if (mode.lower() in ['q','quit']):
