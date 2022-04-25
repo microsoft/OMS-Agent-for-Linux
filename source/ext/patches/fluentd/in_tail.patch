@@ -14,8 +14,8 @@
      end
  
      def configure_parser(conf)
-+      @file_perm = system_config.file_permission || FILE_PERMISSION
-+      @dir_perm = system_config.dir_permission || DIR_PERMISSION
++      @file_perm = FILE_PERMISSION
++      @dir_perm = DIR_PERMISSION
        @parser = Plugin.new_parser(conf['format'])
        @parser.configure(conf)
      end
