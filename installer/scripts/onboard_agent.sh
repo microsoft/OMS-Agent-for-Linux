@@ -16,16 +16,16 @@ usage()
 {
     echo "usage: $1 [OPTIONS]"
     echo "Options:"
-    echo "  -w id, --id id             Use workspace ID <id> for automatic onboarding."
-    echo "  -s key, --shared key       Use <key> as the shared key for automatic onboarding."
-    echo "  -d dmn, --domain dmn       Use <dmn> as the OMS domain for onboarding. Optional."
-    echo "                             default: opinsights.azure.com"
-    echo "                             ex: opinsights.azure.us (for FairFax)"
-    echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
-    echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
-    echo "  --purge                    Uninstall the package and remove all related data."
-    echo "  --skip-docker-provider-install  skip installation of docker provider package in the system."
-    echo "  -? | -h | --help           shows this usage text."
+    echo "  -w id, --id id                  Use workspace ID <id> for automatic onboarding."
+    echo "  -s key, --shared key            Use <key> as the shared key for automatic onboarding."
+    echo "  -d dmn, --domain dmn            Use <dmn> as the OMS domain for onboarding. Optional."
+    echo "                                  default: opinsights.azure.com"
+    echo "                                  ex: opinsights.azure.us (for FairFax)"
+    echo "  -p conf, --proxy conf           Use <conf> as the proxy configuration."
+    echo "                                  ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  --purge                         Uninstall the package and remove all related data."
+    echo "  --skip-docker-provider-install  Skip installation of docker provider package in the system."
+    echo "  -? | -h | --help                Shows this usage text."
 }
 
 
