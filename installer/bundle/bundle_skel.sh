@@ -1256,9 +1256,9 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
         fi
     fi
 
-    check_if_program_exists_on_system gpg
+    install_if_program_does_not_exist_on_system gpg
     if [ $? -ne 0 ]; then
-        echo "gpg is not installed, installation cannot continue."
+        echo "gpg was not installed, installation cannot continue. Please install gpg."
         cleanup_and_exit $INSTALL_GPG
     fi
 fi
