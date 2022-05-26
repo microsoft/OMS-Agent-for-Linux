@@ -1,7 +1,0 @@
-Subscription Id= 13723929-6644-4060-a50a-cc38ebc5e8b1, name = LinuxMdsd Test
-		VM aswatt-rh8fips-vm in resource group aswatt-test has no SCX package. Skipping.
-		VM aswatt-scx-centos7-vm in resource group aswatt-test has patched SCX version 1.6.9-2
-		VM aswatt-scx-centos7-vm in resource group aswatt-test has patched SCX version 1.6.9-2
-		VM aswatt-scx-ubuntu18-vm in resource group aswatt-test has patched SCX version 1.6.9-2
-		VM aswatt-testoms-vm in resource group aswatt-test has patched SCX version 1.6.9-2
-		VM aswatt-scx-ubuntu20-vm in resource group aswatt-test has patched SCX version 1.6.9-2
