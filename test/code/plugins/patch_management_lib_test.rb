@@ -252,6 +252,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                 "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                 "Installed" => true,
+                "PackageClassification"=>nil,
                 "UpdateState"=>"NotNeeded",
                 "Architecture"=>"all",
                 "PackageName" => "autotools-dev",
@@ -277,6 +278,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
@@ -302,6 +304,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
@@ -326,6 +329,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
@@ -355,6 +359,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
@@ -399,6 +404,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
