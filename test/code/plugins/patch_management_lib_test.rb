@@ -33,7 +33,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHeartbeatItem = {
                     "CollectionName" => "HeartbeatData_0.0.UpdateManagement.0_Heartbeat",
                     "Installed" => false,
-                    "PackageClasification"=>nil,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "UpdateManagementHeartbeat",
@@ -142,7 +142,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "PackageVersion"=>"1.18.4ubuntu1.1",
       "Repository"=>"Ubuntu:16.04/xenial-updates",
       "Installed"=>false,
-      "PackageClasification"=>nil,
+      "PackageClassification"=>nil,
       "UpdateState"=>"Needed"
     }
     
@@ -231,7 +231,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Repository"=> nil,
       "Size"=>"151",
       "Installed"=>true,
-      "PackageClasification"=>nil,
+      "PackageClassification"=>nil,
       "UpdateState"=>"NotNeeded"
     }
     
