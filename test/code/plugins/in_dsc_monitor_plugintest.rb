@@ -57,8 +57,8 @@ not function properly. omsconfig can be installed by rerunning the omsagent inst
   end
 
   def test_dsc_check_failure_message
-    dsc_statuscheck_fail_message = "Two successive configuration applications from \
-OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-DSC-for-Linux/issues"
+    dsc_statuscheck_fail_message = "Two subsequent runs of TestDscConfiguration.py \
+returned omsconfig resource(s) that are not in desired state. – please check omsconfig.log on local machine for more details."
 
     flexmock(Fluent::DscMonitoringInput).new_instances do |instance|
       instance.should_receive(:`).with(CHECK_IF_DPKG).and_return(0)
