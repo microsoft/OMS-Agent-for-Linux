@@ -202,7 +202,7 @@ class LinuxUpdates
         ret["PackageVersion"] = packageHash["Version"]  
         ret["Size"] = packageHash["Size"]
         ret["Repository"] = packageHash.key?("Repository") ? packageHash["Repository"] : nil
-        ret["PackageClassification"] = availableUpdatesHash.key?("Classification") ? availableUpdatesHash["Classification"] : nil
+        ret["PackageClassification"] = packageHash.key?("Classification") ? packageHash["Classification"] : nil
         ret["Installed"] = true
         ret["UpdateState"] = "NotNeeded"
         if (Integer(packageHash["InstalledOn"]) rescue false)
