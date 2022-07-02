@@ -33,6 +33,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHeartbeatItem = {
                     "CollectionName" => "HeartbeatData_0.0.UpdateManagement.0_Heartbeat",
                     "Installed" => false,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "UpdateManagementHeartbeat",
@@ -141,6 +142,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "PackageVersion"=>"1.18.4ubuntu1.1",
       "Repository"=>"Ubuntu:16.04/xenial-updates",
       "Installed"=>false,
+      "PackageClassification"=>nil,
       "UpdateState"=>"Needed"
     }
     
@@ -229,6 +231,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "Repository"=> nil,
       "Size"=>"151",
       "Installed"=>true,
+      "PackageClassification"=>nil,
       "UpdateState"=>"NotNeeded"
     }
     
@@ -249,6 +252,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                 "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                 "Installed" => true,
+                "PackageClassification"=>nil,
                 "UpdateState"=>"NotNeeded",
                 "Architecture"=>"all",
                 "PackageName" => "autotools-dev",
@@ -274,6 +278,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
@@ -299,6 +304,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
                     "Installed" => true,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
@@ -323,6 +329,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
@@ -352,6 +359,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
@@ -396,6 +404,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 {
                     "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
+                    "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
