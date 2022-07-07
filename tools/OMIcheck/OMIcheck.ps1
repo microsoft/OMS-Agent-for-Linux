@@ -18,10 +18,10 @@ $logToConsole    = $false
 #    - OMI package is installed from Github.
 $upgradeOMI = $false #detect only
 
-$OmiServerGoodVersion  = "OMI-1.6.8-1"
-$OmiPkgGoodVersion     = "1.6.8.1"
-$OmsPkgGoodVersion     = "1.13.40.0"
-$OmsTypeHandlerVersion = 1.13
+$OmiServerGoodVersion  = "OMI-1.6.9-1"
+$OmiPkgGoodVersion     = "1.6.9.1"
+$OmsPkgGoodVersion     = "1.14.11-0"
+$OmsTypeHandlerVersion = 1.14
 $OMSpublisher          = "Microsoft.EnterpriseCloud.Monitoring"
 $OMSextName            = "OmsAgentForLinux"
 $LADpublisher          = "Microsoft.Azure.Diagnostics"
@@ -532,7 +532,7 @@ function UpdateConnectedMachines($sub, $rg)
             continue
         }
 
-        if ($omsExt.TypeHandlerVersion -eq "1.13.40")
+        if ($omsExt.TypeHandlerVersion -eq "1.14.11")
         {
             Write-Host -ForegroundColor Green `t`t $CM.Name ": Server has patched OMS version " $omsExt.TypeHandlerVersion
             continue
@@ -541,12 +541,12 @@ function UpdateConnectedMachines($sub, $rg)
         Write-Host -ForegroundColor Red `t`t $CM.Name ": Server has vulnerable OMS version " $omsExt.TypeHandlerVersion
         if ($upgradeOMI)
         {
-            #Set-AzConnectedMachineExtension -MachineName $CM.Name -ResourceGroupName $rg -Name $OMSextName -Publisher $OMSpublisher -SubscriptionId $sub -TypeHandlerVersion "1.13.40" -AutoUpgradeMinorVersion -Location $CM.Location
+            #Set-AzConnectedMachineExtension -MachineName $CM.Name -ResourceGroupName $rg -Name $OMSextName -Publisher $OMSpublisher -SubscriptionId $sub -TypeHandlerVersion "1.14.11" -AutoUpgradeMinorVersion -Location $CM.Location
             $extToUpdate = Get-AzConnectedMachineExtension -ResourceGroupName $rg -MachineName $CM.Name -Name $OMSextName
             $extToUpdate.AutoUpgradeMinorVersion = $true
-            $extToUpdate.TypeHandlerVersion = "1.13.40"
+            $extToUpdate.TypeHandlerVersion = "1.14.11"
             $extToUpdate | Update-AzConnectedMachineExtension -MachineName $CM.Name -ResourceGroupName $rg -Name $OMSextName
-            #Update-AzConnectedMachineExtension -MachineName $CM.Name -ResourceGroupName $rg -Name $OMSextName -Publisher $OMSpublisher -SubscriptionId $sub -TypeHandlerVersion "1.13.40" -AutoUpgradeMinorVersion
+            #Update-AzConnectedMachineExtension -MachineName $CM.Name -ResourceGroupName $rg -Name $OMSextName -Publisher $OMSpublisher -SubscriptionId $sub -TypeHandlerVersion "1.14.11" -AutoUpgradeMinorVersion
         }
 
         #DEBUG:
