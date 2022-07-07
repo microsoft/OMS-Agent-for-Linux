@@ -21,21 +21,21 @@ fi
 which dpkg > /dev/null
 if [ $? = 0 ]; then
     pkgMgr="dpkg -i"
-    pkgName="omi-1.6.8-1.ssl_${osslver}.ulinux.x64.deb"
+    pkgName="omi-1.6.9-1.ssl_${osslver}.ulinux.x64.deb"
 else
     which rpm > /dev/null
     if [ $? = 0 ]; then
         # sometimes rpm db is not in a good shape.
         pkgMgr="rpm --rebuilddb && rpm -Uhv"
         #pkgMgr="rpm -Uhv"
-        pkgName="omi-1.6.8-1.ssl_${osslver}.ulinux.x64.rpm"
+        pkgName="omi-1.6.9-1.ssl_${osslver}.ulinux.x64.rpm"
     else
         echo Unknown package manager
         exit -2
     fi
 fi
 
-pkg="https://github.com/microsoft/omi/releases/download/v1.6.8-1/$pkgName"
+pkg="https://github.com/microsoft/omi/releases/download/v1.6.9-1/$pkgName"
 echo $pkg
 wget -q $pkg -O /tmp/$pkgName
 ls -l /tmp/$pkgName
