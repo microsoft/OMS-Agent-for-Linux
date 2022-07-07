@@ -420,7 +420,7 @@ function UpdateVMss($sub, $logger)
             continue
         }
 
-        $VMinstances = Get-AzVmssVM -ResourceGroupName $_.ResourceGroupName -VMScaleSetName $_.Name
+        $VMinstances = Get-AzVmssVM -ResourceGroupName $_.ResourceGroupName -VMScaleSetName $_.Name -InstanceView
         if ($null -eq $VMinstances -or 0 -eq $VMinstances.Count)
         {
             $logger.Log("`t`t" + $_.Name + " has no VM instance. Skipping.")
