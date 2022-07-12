@@ -321,7 +321,7 @@ function UpdateVMs($sub, $logger)
     # Set Azure Subscription context
     Set-AzContext -Subscription $sub.Id
 
-    Write-Output "Listing Virutal Machines in subscription '$($sub.Name)'"
+    Write-Output "Listing Virtual Machines in subscription '$($sub.Name)'"
     $VMs = Get-AzVM
     $VMsSorted = $VMs | Sort-Object -Property ResourceGroupName
     $VMsSorted | ForEach-Object -ThrottleLimit $using:ThrottlingLimit -Parallel {
@@ -400,7 +400,7 @@ function UpdateVMss($sub, $logger)
     # Set Azure Subscription context  
     Set-AzContext -Subscription $sub.Id
 
-    Write-Output "Listing Virutal Machine scale sets in subscription '$($sub.Name)'"
+    Write-Output "Listing Virtual Machine scale sets in subscription '$($sub.Name)'"
     $VMsss = Get-AzVmss
     $VMsssSorted = $VMsss | Sort-Object -Property ResourceGroupName
     $VMsssSorted | ForEach-Object -ThrottleLimit $using:ThrottlingLimit -Parallel {
