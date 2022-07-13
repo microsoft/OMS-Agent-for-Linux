@@ -3,7 +3,7 @@
 ## Overview
 Welcome to the Log Analytics agent for Linux! The agent for Linux enables rich and real-time analytics for operational data (Syslog, performance, alerts, inventory) from Linux servers, Docker containers and monitoring tools like Nagios, Zabbix and System Center.
 
-> :warning: **The Log Analytics agent is on a deprecation path** and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to  [migrate to the new Azure Monitor agent](https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration)  prior to that date.
+> :warning: The Log Analytics agent is on a **deprecation path** and won't be supported after **August 31, 2024.** If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to  [migrate to the new Azure Monitor agent](https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration)  prior to that date.
 >
 
 ## Quick Install guide
