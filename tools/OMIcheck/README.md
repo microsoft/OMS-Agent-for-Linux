@@ -16,7 +16,6 @@
 - It runs a remote command to detect OMI version, and reports findings.
 
 - Optional flag to install omi 1.6.9.1 is off by default. When set to true,
-  > if LinuxDiagnostics or OMSAgentLinux extension is installed, they will be updated.
-  > If not, the omi package will be downloaded from github and updated.
+   > The omi package will be downloaded from github and updated.
 
 - You can run the script back to back more than once for validations.
