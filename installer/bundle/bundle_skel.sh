@@ -145,8 +145,10 @@ cleanup_and_exit()
 
     if [ -n "$1" ]; then
         echo "OMS agent shell bundle exiting with status code $1"
+        echo -e "\033[0;31mThe Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to migrate to the new Azure Monitor agent(https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration) prior to that date.\033[0m"
         exit $1
     else
+        echo -e "\033[0;31mThe Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to migrate to the new Azure Monitor agent(https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration) prior to that date.\033[0m"
         exit 0
     fi
 }
