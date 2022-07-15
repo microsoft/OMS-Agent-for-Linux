@@ -10,7 +10,7 @@ class DscMonitorTest < Test::Unit::TestCase
   CHECK_DSC_INSTALL = "dpkg --list omsconfig > /dev/null 2>&1; echo $?"
   CHECK_DSC_STATUS = "/opt/microsoft/omsconfig/Scripts/TestDscConfiguration.py"
   CHECK_DSC_STATUS_PYTHON_3 = "/opt/microsoft/omsconfig/Scripts/python3/TestDscConfiguration.py"
-  CHECK_PYTHON = "which python2"
+  CHECK_PYTHON = "command -v python3"
 
   def setup
     Fluent::Test.setup
@@ -65,7 +65,7 @@ returned omsconfig resource(s) that are not in desired state. – please check o
       instance.should_receive(:`).with(CHECK_DSC_INSTALL).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_STATUS).and_return("Mock DSC config check")
       instance.should_receive(:`).with(CHECK_DSC_STATUS_PYTHON_3).and_return("Mock DSC config check")
-      instance.should_receive(:`).with(CHECK_PYTHON).and_return("/usr/bin/python2") # as if python2 is installed
+      instance.should_receive(:`).with(CHECK_PYTHON).and_return(0) # as if python3 is installed
     end
 
     d = create_driver
@@ -92,7 +92,7 @@ returned omsconfig resource(s) that are not in desired state. – please check o
       instance.should_receive(:`).with(CHECK_DSC_INSTALL).and_return(0)
       instance.should_receive(:`).with(CHECK_DSC_STATUS).and_return(result)
       instance.should_receive(:`).with(CHECK_DSC_STATUS_PYTHON_3).and_return(result)
-      instance.should_receive(:`).with(CHECK_PYTHON).and_return("/usr/bin/python2") # as if python2 is installed
+      instance.should_receive(:`).with(CHECK_PYTHON).and_return(1) # as if python2 is installed
     end
 
     d = create_driver
