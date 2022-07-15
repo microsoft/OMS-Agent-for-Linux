@@ -86,7 +86,7 @@ BUNDLES_PATH="bundles"
 BUNDLES_LEGACY_PATH="bundles/v1"
 
 # OMS Deprecation notice
-DEPRECATION_NOTICE="The Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to migrate to the new Azure Monitor agent(https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration) prior to that date."
+DEPRECATION_NOTICE="The Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to migrate to the new Azure Monitor agent (https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration) prior to that date."
 
 usage()
 {
