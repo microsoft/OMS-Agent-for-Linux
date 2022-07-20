@@ -85,6 +85,9 @@ OPENSSL_PATH="openssl"
 BUNDLES_PATH="bundles"
 BUNDLES_LEGACY_PATH="bundles/v1"
 
+# OMS Deprecation notice
+DEPRECATION_NOTICE="The Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to migrate to the new Azure Monitor agent (https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration) prior to that date."
+
 usage()
 {
     echo "usage: $1 [OPTIONS]"
@@ -145,8 +148,10 @@ cleanup_and_exit()
 
     if [ -n "$1" ]; then
         echo "OMS agent shell bundle exiting with status code $1"
+        echo "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit $1
     else
+        echo "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit 0
     fi
 }
