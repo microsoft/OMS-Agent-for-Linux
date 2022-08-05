@@ -9869,7 +9869,7 @@ ${{RUBY_DEST}}/include/ruby-2.6.0/ruby/ruby.h;                           ${{RUBY
 
 ${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;          ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/ruby/config.h;   644; root; root
 
-${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.8.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.8.h; 644; root; root
+${{RUBY_DEST}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.10.h; ${{RUBY_INT}}/include/ruby-2.6.0/${{RUBY_ARCM}}/rb_mjit_min_header-2.6.10.h; 644; root; root
 
 ${{RUBY_DEST}}/include/ruby-2.6.0/ruby.h;                                ${{RUBY_INT}}/include/ruby-2.6.0/ruby.h;                         644; root; root
 
