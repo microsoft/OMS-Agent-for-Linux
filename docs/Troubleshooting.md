@@ -384,7 +384,7 @@ sudo systemctl enable cron
 sudo systemctl start cron
 ```
 
-##### On RHEL/CeonOS:
+##### On RHEL/CentOS:
 ```
 # To Install the service binaries
 sudo yum install -y crond
