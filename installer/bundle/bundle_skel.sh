@@ -148,10 +148,10 @@ cleanup_and_exit()
 
     if [ -n "$1" ]; then
         echo "OMS agent shell bundle exiting with status code $1"
-        echo "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
+        echo -e "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit $1
     else
-        echo "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
+        echo -e "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit 0
     fi
 }
