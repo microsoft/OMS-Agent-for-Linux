@@ -139,7 +139,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "CollectionName"=> "dpkg" + @@delimiter + "1.18.4ubuntu1.1" + @@delimiter + "Ubuntu_14.04",
       "Architecture"=>"amd64",
       "PackageName"=>"dpkg",
-      "PackageVersion"=>"1.18.4ubuntu1.1",
+      "PackageVersion"=>"0:1.18.4ubuntu1.1",
       "Repository"=>"Ubuntu:16.04/xenial-updates",
       "Installed"=>false,
       "PackageClassification"=>nil,
@@ -227,7 +227,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       "CollectionName"=> "autotools-dev" + @@delimiter + "20150820.1" + @@delimiter + "Ubuntu_14.04",
       "Architecture"=>"all",
       "PackageName"=> "autotools-dev",
-      "PackageVersion"=>"20150820.1",
+      "PackageVersion"=>"0:20150820.1",
       "Repository"=> nil,
       "Size"=>"151",
       "Installed"=>true,
@@ -256,7 +256,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                 "UpdateState"=>"NotNeeded",
                 "Architecture"=>"all",
                 "PackageName" => "autotools-dev",
-                "PackageVersion" => "20150820.1",
+                "PackageVersion" => "0:20150820.1",
                 "Repository" => nil,
                 "Size" => "151"
             }]
@@ -282,7 +282,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
-                    "PackageVersion" => "20150820.1",
+                    "PackageVersion" => "0:20150820.1",
                     "Repository" => nil,
                     "Size" => "151",
                     "Timestamp" => "2016-07-11T02:02:16.000Z"
@@ -308,7 +308,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
-                    "PackageVersion" => "20150820.1",
+                    "PackageVersion" => "0:20150820.1",
                     "Repository" => nil,
                     "Size" => "151"
                 }]
@@ -333,7 +333,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
-                    "PackageVersion" => "1.18.4ubuntu1.1",
+                    "PackageVersion" => "0:1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
 
@@ -363,7 +363,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
-                    "PackageVersion" => "1.18.4ubuntu1.1",
+                    "PackageVersion" => "0:1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates",
                     "Timestamp" => "2016-07-11T02:02:16.000Z"
                 }]
@@ -408,7 +408,7 @@ class LinuxUpdatesTest < Test::Unit::TestCase
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
-                    "PackageVersion" => "1.18.4ubuntu1.1",
+                    "PackageVersion" => "0:1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
     
