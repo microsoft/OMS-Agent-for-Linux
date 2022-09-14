@@ -96,7 +96,7 @@ usage()
     echo "  --force                         Force upgrade (override version checks)."
     echo "  --install                       Install the package from the system."
     echo "  --purge                         Uninstall the package and remove all related data."
-    echo "  --noDigest                      Skip verification of package or header digests when reading"
+    echo "  --noDigest                      RPM manager skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest)"
     echo "  --restart-deps                  Reconfigure and restart dependent service(s)."
     echo "  --source-references             Show source code reference hashes."
     echo "  --upgrade                       Upgrade the package in the system."
@@ -560,8 +560,9 @@ pkg_add()
            return $DEPENDENCY_MISSING
         fi
 
-        [ -n "${noDigest}" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
-        rpm -ivh $FORCE $NODIGEST ${pkg_filename}.rpm
+        [ -n "${noDigest}" -a "${noDigest}" == "true" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
+        rpm -ivh $NODIGEST $FORCE ${pkg_filename}.rpm
+
         return $?
     fi
 }
@@ -620,7 +621,7 @@ pkg_upd() {
         # Temp workaround for an upgrade issue seen on RedHat 7.5.
         # Only for RedHat 7.5 call upgrade with --replacepkgs flag by default and only if force flag is not set. 
         redhat_75=`cat /etc/*-release 2> /dev/null | grep -iP '.*?red.*?7\.5' /dev/null 2>&1 ; echo $?`
-        [ -n "${noDigest}" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
+        [ -n "${noDigest}" -a "${noDigest}" == "true" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
         if [ -n "${forceFlag}" ] && [ $redhat_75 -eq 0 ]; then
             rpm --upgrade --replacepkgs $FORCE $NODIGEST ${pkg_filename}.rpm
         else
@@ -969,7 +970,7 @@ do
             ;;
 
         --noDigest)
-            echo "Provided noDigest flag -  rpm will not verify package or header digests when reading."
+            echo "Provided noDigest flag in cmdline - RPM skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest)"
             noDigest="true"
             shift 1
             ;;

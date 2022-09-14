@@ -24,7 +24,7 @@ usage()
     echo "  -p conf, --proxy conf           Use <conf> as the proxy configuration."
     echo "                                  ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  --purge                         Uninstall the package and remove all related data."
-    echo "  --noDigest                      Skip verification of package or header digests when reading"
+    echo "  --noDigest                      RPM skips verification of package or header digests when reading"
     echo "  --skip-docker-provider-install  Skip installation of docker provider package in the system."
     echo "  -? | -h | --help                Shows this usage text."
 }
