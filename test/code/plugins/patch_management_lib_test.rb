@@ -136,10 +136,10 @@ class LinuxUpdatesTest < Test::Unit::TestCase
       </INSTANCE>'
     
     expectedHash = {
-      "CollectionName"=> "dpkg" + @@delimiter + "1.18.4ubuntu1.1" + @@delimiter + "Ubuntu_14.04",
+      "CollectionName"=> "dpkg" + @@delimiter + "0:1.18.4ubuntu1.1" + @@delimiter + "Ubuntu_14.04",
       "Architecture"=>"amd64",
       "PackageName"=>"dpkg",
-      "PackageVersion"=>"1.18.4ubuntu1.1",
+      "PackageVersion"=>"0:1.18.4ubuntu1.1",
       "Repository"=>"Ubuntu:16.04/xenial-updates",
       "Installed"=>false,
       "PackageClassification"=>nil,
@@ -224,10 +224,10 @@ class LinuxUpdatesTest < Test::Unit::TestCase
               </INSTANCE>'    
 
     expectedHash = {
-      "CollectionName"=> "autotools-dev" + @@delimiter + "20150820.1" + @@delimiter + "Ubuntu_14.04",
+      "CollectionName"=> "autotools-dev" + @@delimiter + "0:20150820.1" + @@delimiter + "Ubuntu_14.04",
       "Architecture"=>"all",
       "PackageName"=> "autotools-dev",
-      "PackageVersion"=>"20150820.1",
+      "PackageVersion"=>"0:20150820.1",
       "Repository"=> nil,
       "Size"=>"151",
       "Installed"=>true,
@@ -250,13 +250,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHash["DataItems"][0]["Collections"] = [
                @myExpectedHeartbeatItem,
                 {
-                "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
+                "CollectionName" => "autotools-dev_0:20150820.1_Ubuntu_16.04",
                 "Installed" => true,
                 "PackageClassification"=>nil,
                 "UpdateState"=>"NotNeeded",
                 "Architecture"=>"all",
                 "PackageName" => "autotools-dev",
-                "PackageVersion" => "20150820.1",
+                "PackageVersion" => "0:20150820.1",
                 "Repository" => nil,
                 "Size" => "151"
             }]
@@ -276,13 +276,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHash["DataItems"][0]["Collections"] = [
                 @myExpectedHeartbeatItem,
                 {
-                    "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
+                    "CollectionName" => "autotools-dev_0:20150820.1_Ubuntu_16.04",
                     "Installed" => true,
                     "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
-                    "PackageVersion" => "20150820.1",
+                    "PackageVersion" => "0:20150820.1",
                     "Repository" => nil,
                     "Size" => "151",
                     "Timestamp" => "2016-07-11T02:02:16.000Z"
@@ -302,13 +302,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHash["DataItems"][0]["Collections"] = [
                 @myExpectedHeartbeatItem,      
                 {
-                    "CollectionName" => "autotools-dev_20150820.1_Ubuntu_16.04",
+                    "CollectionName" => "autotools-dev_0:20150820.1_Ubuntu_16.04",
                     "Installed" => true,
                     "PackageClassification"=>nil,
                     "UpdateState"=>"NotNeeded",
                     "Architecture"=>"all",
                     "PackageName" => "autotools-dev",
-                    "PackageVersion" => "20150820.1",
+                    "PackageVersion" => "0:20150820.1",
                     "Repository" => nil,
                     "Size" => "151"
                 }]
@@ -327,13 +327,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHash["DataItems"][0]["Collections"] = [
              @myExpectedHeartbeatItem,
                {
-                    "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
+                    "CollectionName" => "dpkg_0:1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
-                    "PackageVersion" => "1.18.4ubuntu1.1",
+                    "PackageVersion" => "0:1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
 
@@ -357,13 +357,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHash["DataItems"][0]["Collections"] = [      
                 @myExpectedHeartbeatItem,
                 {
-                    "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
+                    "CollectionName" => "dpkg_0:1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
-                    "PackageVersion" => "1.18.4ubuntu1.1",
+                    "PackageVersion" => "0:1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates",
                     "Timestamp" => "2016-07-11T02:02:16.000Z"
                 }]
@@ -402,13 +402,13 @@ class LinuxUpdatesTest < Test::Unit::TestCase
     @myExpectedHash["DataItems"][0]["Collections"] = [
                @myExpectedHeartbeatItem,      
                 {
-                    "CollectionName" => "dpkg_1.18.4ubuntu1.1_Ubuntu_14.04",
+                    "CollectionName" => "dpkg_0:1.18.4ubuntu1.1_Ubuntu_14.04",
                     "Installed" => false,
                     "PackageClassification"=>nil,
                     "UpdateState"=>"Needed",
                     "Architecture"=>"amd64",
                     "PackageName" => "dpkg",
-                    "PackageVersion" => "1.18.4ubuntu1.1",
+                    "PackageVersion" => "0:1.18.4ubuntu1.1",
                     "Repository" => "Ubuntu:15.04/xenial-updates"
                 }]
     
