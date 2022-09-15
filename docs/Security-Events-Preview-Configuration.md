@@ -14,8 +14,8 @@ Collection of the following 3rd party security log types is supported:
 
 
 ## Detailed configuration
-1. Download the OMS Agent for Linux, version 1.2.0-25 or above
-    - [OMS Agent for Linux GA v1.2.0-25](https://github.com/Microsoft/OMS-Agent-for-Linux/releases/tag/OMSAgent_GA_v1.2.0-25)
+1. Download the OMS Agent for Linux, version 1.14.19-0 or above
+    - [OMS Agent for Linux GA v1.14.19-0](https://github.com/microsoft/OMS-Agent-for-Linux/releases/latest)
 
 2. Install and onboard the agent to your workspace as described here:
     - [Documentation for OMS Agent for Linux](https://github.com/Microsoft/OMS-Agent-for-Linux)  
