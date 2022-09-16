@@ -94,6 +94,7 @@ Options:
   --force                Force upgrade (override version checks).
   --install              Install the package from the system.
   --purge                Uninstall the package and remove all related data.
+  --noDigest             RPM manager skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest).
   --restart-deps         Reconfigure and restart dependent service
   --source-references    Show source code reference hashes.
   --upgrade              Upgrade the package in the system.
