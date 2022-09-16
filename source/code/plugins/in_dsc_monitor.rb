@@ -57,11 +57,11 @@ not function properly. omsconfig can be installed by rerunning the omsagent inst
 
     def get_dsc_status
       begin
-        python = %x(which python2)
+        python = %x(which python3)
         if !python.empty?
-            dsc_status = %x(/opt/microsoft/omsconfig/Scripts/TestDscConfiguration.py)
-        else # assume python3, since /some/ python is an install prereq and we have a rescue below regardless
             dsc_status = %x(/opt/microsoft/omsconfig/Scripts/python3/TestDscConfiguration.py)
+        else # assume python2, since /some/ python is an install prereq and we have a rescue below regardless
+            dsc_status = %x(/opt/microsoft/omsconfig/Scripts/TestDscConfiguration.py)
         end
       rescue => error
         OMS::Log.error_once("Running TestDscConfiguration.py returned error : #{error}")

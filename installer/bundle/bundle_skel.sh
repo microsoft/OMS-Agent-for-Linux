@@ -85,6 +85,9 @@ OPENSSL_PATH="openssl"
 BUNDLES_PATH="bundles"
 BUNDLES_LEGACY_PATH="bundles/v1"
 
+# OMS Deprecation notice
+DEPRECATION_NOTICE="The Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to migrate to the new Azure Monitor agent (https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration) prior to that date."
+
 usage()
 {
     echo "usage: $1 [OPTIONS]"
@@ -93,6 +96,7 @@ usage()
     echo "  --force                         Force upgrade (override version checks)."
     echo "  --install                       Install the package from the system."
     echo "  --purge                         Uninstall the package and remove all related data."
+    echo "  --noDigest                      RPM manager skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest)"
     echo "  --restart-deps                  Reconfigure and restart dependent service(s)."
     echo "  --source-references             Show source code reference hashes."
     echo "  --upgrade                       Upgrade the package in the system."
@@ -145,8 +149,10 @@ cleanup_and_exit()
 
     if [ -n "$1" ]; then
         echo "OMS agent shell bundle exiting with status code $1"
+        echo -e "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit $1
     else
+        echo -e "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit 0
     fi
 }
@@ -554,7 +560,9 @@ pkg_add()
            return $DEPENDENCY_MISSING
         fi
 
-        rpm -ivh $FORCE ${pkg_filename}.rpm
+        [ -n "${noDigest}" -a "${noDigest}" == "true" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
+        rpm -ivh $NODIGEST $FORCE ${pkg_filename}.rpm
+
         return $?
     fi
 }
@@ -613,10 +621,11 @@ pkg_upd() {
         # Temp workaround for an upgrade issue seen on RedHat 7.5.
         # Only for RedHat 7.5 call upgrade with --replacepkgs flag by default and only if force flag is not set. 
         redhat_75=`cat /etc/*-release 2> /dev/null | grep -iP '.*?red.*?7\.5' /dev/null 2>&1 ; echo $?`
+        [ -n "${noDigest}" -a "${noDigest}" == "true" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
         if [ -n "${forceFlag}" ] && [ $redhat_75 -eq 0 ]; then
-            rpm --upgrade --replacepkgs $FORCE ${pkg_filename}.rpm
+            rpm --upgrade --replacepkgs $FORCE $NODIGEST ${pkg_filename}.rpm
         else
-            rpm --upgrade $FORCE ${pkg_filename}.rpm
+            rpm --upgrade $FORCE $NODIGEST ${pkg_filename}.rpm
         fi
         return $?
     fi
@@ -957,6 +966,12 @@ do
         --skip-docker-provider-install)
             echo "Provided skip-docker-provider-install option"
             skipDockerProviderInstall="true"
+            shift 1
+            ;;
+
+        --noDigest)
+            echo "Provided noDigest flag in cmdline - RPM skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest)"
+            noDigest="true"
             shift 1
             ;;
 
