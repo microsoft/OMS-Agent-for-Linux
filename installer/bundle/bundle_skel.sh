@@ -1455,6 +1455,11 @@ you should first purge the existing installation and then install using the --sk
                     continue
                 fi
 
+                if [ -n "${noDigest}" ] && [ "${noDigest}" == "true" ]; then
+                    echo "$OSS_BUNDLE provider package installation skipped since -noDigest flag is not supported with this provider."
+                    continue
+                fi
+
                 ./$i
                 if [ $? -eq 0 ]; then
                     ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
@@ -1632,6 +1637,11 @@ you should first purge the existing installation and then install using the --sk
                echo "$OSS_BUNDLE provider package installation skipped since --skip-docker-provider-install flag is set. \
 If you are installing over an existing omsagent install and wish to remove the docker provider, \
 you should first purge the existing installation and then install using the --skip-docker-provider-install flag."
+                continue
+            fi
+
+            if [ -n "${noDigest}" ] && [ "${noDigest}" == "true" ]; then
+                echo "$OSS_BUNDLE provider package installation skipped since -noDigest flag is not supported with this provider."
                 continue
             fi
 
