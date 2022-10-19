@@ -24,6 +24,7 @@ usage()
     echo "  -p conf, --proxy conf           Use <conf> as the proxy configuration."
     echo "                                  ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  --purge                         Uninstall the package and remove all related data."
+    echo "  --noDigest                      RPM skips verification of package or header digests when reading"
     echo "  --skip-docker-provider-install  Skip installation of docker provider package in the system."
     echo "  -? | -h | --help                Shows this usage text."
 }
@@ -55,6 +56,11 @@ do
 
         --skip-docker-provider-install)
            skipDockerProviderInstall="true"
+           shift 1
+           ;;
+
+        --noDigest)
+           noDigest="true"
            shift 1
            ;;
 
@@ -97,7 +103,9 @@ fi
 if [ -n "$skipDockerProviderInstall" ]; then
     bundleParameters="${bundleParameters} --skip-docker-provider-install"
 fi
-
+if [ -n "$noDigest" ]; then
+    bundleParameters="${bundleParameters} --noDigest"
+fi
 
 # We need to use sudo for commands in the following block, if not running as root
 SUDO=''
