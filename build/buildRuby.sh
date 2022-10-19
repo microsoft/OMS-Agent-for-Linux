@@ -244,7 +244,11 @@ else
     sudo cp --force $JEMALLOC_LIB_SO ${RUBY_DESTDIR}/lib/
 fi
 
+# During release build: ignore developement/test gems when installing fluentd dependencies
+FLUENTD_SKIP_TEST_PACKAGES="1"
+
 if [ $RUNNING_FOR_TEST -eq 1 ]; then
+    FLUENTD_SKIP_TEST_PACKAGES=""
     echo "Installing Metaclass and Mocha (for UnitTest) into Ruby ..."
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/metaclass-0.0.4.gem
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/mocha-1.8.0.gem
@@ -271,7 +275,7 @@ echo "Installing ISO8601 into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/iso8601-0.12.1.gem
 
 # Now do what we need for FluentD
-
+export FLUENTD_GEM_BUILD_SKIP_TEST_PACKAGES="${FLUENTD_SKIP_TEST_PACKAGES}"
 cd ${FLUENTD_DIR}
 
 if [ ! -d ${FLUENTD_DIR}/vendor/cache ]; then

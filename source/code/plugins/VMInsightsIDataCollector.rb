@@ -13,7 +13,7 @@ module VMInsights
 
         # return:
         #   Hash with elements:
-        #       :up - cummulative system uptime
+        #       :total_time - cummulative system total time
         #       :idle - cummulative system idle time
         def baseline
             not_implemented
@@ -29,7 +29,7 @@ module VMInsights
             not_implemented
         end
 
-        # returns: cummulative uptime, cummulative idle time
+        # returns: cummulative total time, cummulative idle time
         def get_cpu_idle
             not_implemented
         end

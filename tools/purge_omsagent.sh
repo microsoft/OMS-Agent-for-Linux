@@ -363,7 +363,7 @@ dir_rm /etc/opt/microsoft/auoms
 dir_rm /etc/opt/microsoft/dependency-agent
 dir_rm /etc/opt/microsoft/omsagent
 dir_rm /etc/opt/microsoft/scx
-if [ ! "$(ls -A /etc/opt/microsoft > /dev/null 2>&1)" ]; then
+if [ "$(ls -A /etc/opt/microsoft 2>/dev/null  |wc -w)" = "0" ]; then
     dir_rm /etc/opt/microsoft
 fi
 
@@ -372,7 +372,7 @@ dir_rm /opt/microsoft/dependency-agent
 dir_rm /opt/microsoft/omsagent
 dir_rm /opt/microsoft/omsconfig
 dir_rm /opt/microsoft/scx
-if [ ! "$(ls -A /opt/microsoft > /dev/null 2>&1)" ]; then
+if [ "$(ls -A /opt/microsoft 2>/dev/null  |wc -w)" = "0" ]; then
     dir_rm /opt/microsoft
 fi
 
@@ -381,7 +381,7 @@ dir_rm /var/opt/microsoft/dependency-agent
 dir_rm /var/opt/microsoft/omsagent
 dir_rm /var/opt/microsoft/omsconfig
 dir_rm /var/opt/microsoft/scx
-if [ ! "$(ls -A /var/opt/microsoft > /dev/null 2>&1)" ]; then
+if [ "$(ls -A /var/opt/microsoft 2>/dev/null  |wc -w)" = "0" ]; then
     dir_rm /var/opt/microsoft
 fi
 
@@ -423,6 +423,6 @@ echo "  - Wait for Azure Security Center to provision the VM (if it is active)"
 echo "  - Manually connect the VM to the workspace (Azure Log Analytics - > Workspace -> Virtual Machines -> VM_name -> Connect)"
 echo "  - Install+onboard via shell bundle using the onboard_agent.sh file:"
 echo "    $ wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh"
-echo "    $ sudo ./onboard_agent.sh -w <workspace_id> -s <shared_key>"
+echo "    $ sudo sh ./onboard_agent.sh -w <workspace_id> -s <shared_key>"
 echo "Thank you!"
 call_exit 0

@@ -55,6 +55,14 @@ class LinuxUpdates
     def getOSShortName(os_short_name = nil, os_version=nil)
         version = ""
         hostOSDetailsMap = getHostOSDetails()
+        #os short name is not proper for oracle linux at /etc/opt/microsoft/scx/conf/scx-release. this is to return proper short name till scx fixes the issue.
+        if hostOSDetailsMap.key?("OSFullName") && hostOSDetailsMap.key?("OSShortName")
+            osFullName = hostOSDetailsMap["OSFullName"]
+            osShortName = hostOSDetailsMap["OSShortName"]
+            if osFullName.downcase.include?("oracle") && ! osShortName.downcase.include?("oracle")
+               os_short_name = "Oracle"
+            end
+        end
 
         # match string of the form (1 or more non . chars)- followed by a . - (1 or more non . chars) - followed by anything
         if hostOSDetailsMap.key?("OSShortName")
@@ -108,6 +116,8 @@ class LinuxUpdates
             else
                 version = @default_version
             end
+        when "Oracle"
+            version = "6.0"
         when "SUSE"
             if @os_major_version == "11"
                 version = "11.0" 
@@ -152,12 +162,13 @@ class LinuxUpdates
     def availableUpdatesXMLtoHash(availableUpdatesXML, os_short_name)
         availableUpdatesHash = instanceXMLtoHash(availableUpdatesXML)
         ret = {}
-        ret["CollectionName"] = availableUpdatesHash["Name"] + @@delimiter + 
-                                availableUpdatesHash["Version"] + @@delimiter + os_short_name
+        version = availableUpdatesHash["Version"].count(':') > 0 ? availableUpdatesHash["Version"] : "0:" + availableUpdatesHash["Version"]
+        ret["CollectionName"] = availableUpdatesHash["Name"] + @@delimiter + version + @@delimiter + os_short_name
         ret["PackageName"] = availableUpdatesHash["Name"]
         ret["Architecture"] = availableUpdatesHash.key?("Architecture") ? availableUpdatesHash["Architecture"] : nil
-        ret["PackageVersion"] = availableUpdatesHash["Version"]
+        ret["PackageVersion"] = version
         ret["Repository"] = availableUpdatesHash.key?("Repository") ? availableUpdatesHash["Repository"] : nil
+        ret["PackageClassification"] = availableUpdatesHash.key?("Classification") ? availableUpdatesHash["Classification"] : nil
         ret["Installed"] = false
         ret["UpdateState"] = "Needed"
         if (Integer(availableUpdatesHash["BuildDate"]) rescue false)
@@ -174,6 +185,7 @@ class LinuxUpdates
         ret["Architecture"] = "all"
         ret["PackageVersion"] = nil
         ret["Repository"] = nil
+        ret["PackageClassification"] = nil
         ret["Installed"] = false
         ret["UpdateState"] = "NotNeeded"        
         ret
@@ -182,14 +194,14 @@ class LinuxUpdates
     def installedPackageXMLtoHash(packageXML, os_short_name)
         packageHash = instanceXMLtoHash(packageXML)
         ret = {}
-        
-        ret["CollectionName"] = packageHash["Name"] + @@delimiter + 
-                                packageHash["Version"] + @@delimiter + os_short_name
+        version = packageHash["Version"].count(':') > 0 ? packageHash["Version"] : "0:" + packageHash["Version"]
+        ret["CollectionName"] = packageHash["Name"] + @@delimiter + version + @@delimiter + os_short_name
         ret["PackageName"] = packageHash["Name"]
         ret["Architecture"] = packageHash.key?("Architecture") ? packageHash["Architecture"] : nil
-        ret["PackageVersion"] = packageHash["Version"]  
+        ret["PackageVersion"] = version  
         ret["Size"] = packageHash["Size"]
         ret["Repository"] = packageHash.key?("Repository") ? packageHash["Repository"] : nil
+        ret["PackageClassification"] = packageHash.key?("Classification") ? packageHash["Classification"] : nil
         ret["Installed"] = true
         ret["UpdateState"] = "NotNeeded"
         if (Integer(packageHash["InstalledOn"]) rescue false)

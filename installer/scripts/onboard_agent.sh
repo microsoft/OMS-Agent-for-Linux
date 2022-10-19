@@ -6,25 +6,27 @@
 
 
 # Values to be updated upon each new release
-GITHUB_RELEASE_X64="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.13.33-0/"
+GITHUB_RELEASE_X64="https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.14.19-0/"
 GITHUB_RELEASE_X86="https://github.com/Microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/"
 
-BUNDLE_X64="omsagent-1.13.33-0.universal.x64.sh"
+BUNDLE_X64="omsagent-1.14.19-0.universal.x64.sh"
 BUNDLE_X86="omsagent-1.12.15-0.universal.x86.sh"
 
 usage()
 {
     echo "usage: $1 [OPTIONS]"
     echo "Options:"
-    echo "  -w id, --id id             Use workspace ID <id> for automatic onboarding."
-    echo "  -s key, --shared key       Use <key> as the shared key for automatic onboarding."
-    echo "  -d dmn, --domain dmn       Use <dmn> as the OMS domain for onboarding. Optional."
-    echo "                             default: opinsights.azure.com"
-    echo "                             ex: opinsights.azure.us (for FairFax)"
-    echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
-    echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
-    echo "  --purge                    Uninstall the package and remove all related data."
-    echo "  -? | -h | --help           shows this usage text."
+    echo "  -w id, --id id                  Use workspace ID <id> for automatic onboarding."
+    echo "  -s key, --shared key            Use <key> as the shared key for automatic onboarding."
+    echo "  -d dmn, --domain dmn            Use <dmn> as the OMS domain for onboarding. Optional."
+    echo "                                  default: opinsights.azure.com"
+    echo "                                  ex: opinsights.azure.us (for FairFax)"
+    echo "  -p conf, --proxy conf           Use <conf> as the proxy configuration."
+    echo "                                  ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  --purge                         Uninstall the package and remove all related data."
+    echo "  --noDigest                      RPM skips verification of package or header digests when reading"
+    echo "  --skip-docker-provider-install  Skip installation of docker provider package in the system."
+    echo "  -? | -h | --help                Shows this usage text."
 }
 
 
@@ -51,6 +53,16 @@ do
             purgeAgent="true"
             break;
             ;;
+
+        --skip-docker-provider-install)
+           skipDockerProviderInstall="true"
+           shift 1
+           ;;
+
+        --noDigest)
+           noDigest="true"
+           shift 1
+           ;;
 
         -p|--proxy)
             proxyConf=$2
@@ -87,6 +99,12 @@ if [ -n "$purgeAgent" ]; then
 fi
 if [ -n "$proxyConf" ]; then
     bundleParameters="${bundleParameters} -p $proxyConf"
+fi
+if [ -n "$skipDockerProviderInstall" ]; then
+    bundleParameters="${bundleParameters} --skip-docker-provider-install"
+fi
+if [ -n "$noDigest" ]; then
+    bundleParameters="${bundleParameters} --noDigest"
 fi
 
 # We need to use sudo for commands in the following block, if not running as root

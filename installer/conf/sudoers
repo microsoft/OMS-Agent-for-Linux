@@ -15,6 +15,8 @@ omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSServiceStatAll.
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSYumUpdates.sh
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSZypperUpdates.sh
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSAptUpdates.sh
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSYumSecurityUpdates.sh
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMSZypperSecurityUpdates.sh
 
 # NPMD
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/NPMAgentBinaryCap.sh
@@ -59,12 +61,16 @@ omsagent ALL=(ALL) NOPASSWD: /usr/bin/python3 /opt/microsoft/omsconfig/modules/n
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/python3 /opt/microsoft/omsconfig/modules/nxOMSAutomationWorker/DSCResources/MSFT_nxOMSAutomationWorkerResource/automationworker/3.x/worker/omsutil.py *
 omsagent ALL=(ALL) NOPASSWD: /usr/bin/pkill -u nxautomation *
 
-#run update management commands
-omsagent ALL=(ALL) NOPASSWD: /usr/bin/tail *
-omsagent ALL=(ALL) NOPASSWD: /bin/tail *
-
 # configuring omsconfig
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py *
 omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/Scripts/python3/OMS_MetaConfigHelper.py *
+
+# ContainerLog tail file reader
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsagent/ruby/bin/ruby /opt/microsoft/omsagent/plugin/containerlogtailfilereader.rb *
+omsagent ALL=(ALL) NOPASSWD: /bin/touch /var/opt/microsoft/docker-cimprov/state/ContainerLogFile.pos.log
+
+# Enable secure_update.sh
+omsagent ALL=(ALL) NOPASSWD: /opt/microsoft/omsconfig/secure/secure_update.sh *
+
 
 # End sudo configuration for omsagent

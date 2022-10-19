@@ -95,16 +95,12 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/security_lib.rb;                         source/code/plugins/security_lib.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/filter_syslog_security.rb;               source/code/plugins/filter_syslog_security.rb;         744; root; root
 /opt/microsoft/omsagent/plugin/filter_changetracking.rb;                source/code/plugins/filter_changetracking.rb;          744; root; root
-/opt/microsoft/omsagent/plugin/changetracking_lib.rb;                   source/code/plugins/changetracking_lib.rb;             744; root; root
-/opt/microsoft/omsagent/plugin/out_oms_changetracking_file.rb;                   source/code/plugins/out_oms_changetracking_file.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/filter_collectd.rb;                      source/code/plugins/filter_collectd.rb;                744; root; root
 /opt/microsoft/omsagent/plugin/collectd_lib.rb;                         source/code/plugins/collectd_lib.rb;                   744; root; root
 /opt/microsoft/omsagent/plugin/filter_operation.rb;                     source/code/plugins/filter_operation.rb;               744; root; root
 /opt/microsoft/omsagent/plugin/operation_lib.rb;                        source/code/plugins/operation_lib.rb;                  744; root; root
 /opt/microsoft/omsagent/plugin/in_oms_heartbeat.rb;                     source/code/plugins/in_oms_heartbeat.rb;               744; root; root
 /opt/microsoft/omsagent/plugin/heartbeat_lib.rb;                        source/code/plugins/heartbeat_lib.rb;                  744; root; root
-/opt/microsoft/omsagent/plugin/filter_patch_management.rb;              source/code/plugins/filter_patch_management.rb;        744; root; root
-/opt/microsoft/omsagent/plugin/patch_management_lib.rb;                 source/code/plugins/patch_management_lib.rb;           744; root; root
 
 /opt/microsoft/omsagent/plugin/filter_flatten.rb;                       source/code/plugins/filter_flatten.rb;                 744; root; root
 /opt/microsoft/omsagent/plugin/flattenjson_lib.rb;                      source/code/plugins/flattenjson_lib.rb;                744; root; root
@@ -137,7 +133,6 @@ MAINTAINER:              'Microsoft Corporation'
 /opt/microsoft/omsagent/plugin/scom_configuration.rb;                   source/code/plugins/scom_configuration.rb;             744; root; root
 /opt/microsoft/omsagent/plugin/out_scom.rb;                             source/code/plugins/out_scom.rb;                       744; root; root
 
-/opt/microsoft/omsagent/plugin/VMInsightsDataCollector.rb;              source/code/plugins/VMInsightsDataCollector.rb;        744; root; root
 /opt/microsoft/omsagent/plugin/VMInsightsEngine.rb;                     source/code/plugins/VMInsightsEngine.rb;               744; root; root
 /opt/microsoft/omsagent/plugin/VMInsightsIDataCollector.rb;             source/code/plugins/VMInsightsIDataCollector.rb;       744; root; root
 /opt/microsoft/omsagent/plugin/in_vminsights.rb;                        source/code/plugins/in_vminsights.rb;                  744; root; root
@@ -259,8 +254,12 @@ chown -R omsagent:root /opt/microsoft/omsagent/plugin
 /opt/microsoft/omsagent/bin/omsadmin.sh -U
 
 %Postinstall_300
+POSTINSTALL_ERROR=0
 if [ -f /etc/omsagent-onboard.conf ]; then
     /opt/microsoft/omsagent/bin/omsadmin.sh
+    if [ $? -ne 0 ]; then
+       POSTINSTALL_ERROR=$?
+    fi
 else
     # Create a logrotate conf file for the Primary workspace if it does not already exist
     # This is needed when upgrading from old omsagent to multi-homing enabled version
@@ -272,6 +271,10 @@ fi
 # Set up a cron job to logrotate all omsagent-$WORKSPACE_ID every 5 minutes
 if [ ! -f /etc/cron.d/omsagent ]; then
     echo "*/5 * * * * root /usr/sbin/logrotate -s /var/lib/logrotate/omsagent-status /etc/logrotate.d/omsagent* >/dev/null 2>&1" > /etc/cron.d/omsagent
+fi
+
+if [ $POSTINSTALL_ERROR -ne 0 ]; then
+    exit $POSTINSTALL_ERROR
 fi
 
 %Postuninstall_10

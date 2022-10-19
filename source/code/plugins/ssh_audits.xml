@@ -196,11 +196,12 @@
     </audit>
     <audit
         description = "SSH warning banner should be enabled. - '/etc/ssh/sshd_config Banner = /etc/issue.net'"
-        msid="111"
+        msid="111.2"
         cceid="CCE-4431-3"
         severity="Informational"
         impact="Users will not be warned that their actions on the system are monitored"
-        remediation="Run the command '/usr/local/bin/azsecd remediate -r configure-ssh-banner'. This will add the line 'Banner /etc/azsec/banner.txt' to the file '/etc/ssh/sshd_config'">
+        remediation="Run the command '/usr/local/bin/azsecd remediate -r configure-ssh-banner'. This will add the line 'Banner /etc/azsec/banner.txt' to the file '/etc/ssh/sshd_config'"
+        ruleId="9e240540-5e0a-4b60-beb2-57421c65a0b9">
         <check 
           distro="*" 
           command="CheckMatchingConfigValue"
@@ -227,7 +228,8 @@
         cceid="CCE-14491-5"
         severity="Critical"
         impact="An attacker could compromise a weakly secured SSH connection"
-        remediation="Run the command '/usr/local/bin/azsecd remediate -r configure-ssh-ciphers'. This will add the line 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr' to the file '/etc/ssh/sshd_config'">
+        remediation="Run the command '/usr/local/bin/azsecd remediate -r configure-ssh-ciphers'. This will add the line 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr' to the file '/etc/ssh/sshd_config'"
+        ruleId="b07d4c69-a1d9-4c22-a486-634ec3b8c380">
         <check 
           distro="*" 
           command="CheckMatchingConfigValue"
@@ -270,8 +272,8 @@
       <action distro="*" action="ActionEditConfig" name="Ciphers" value="aes128-ctr,aes192-ctr,aes256-ctr" value-regex="[a-z\,-]+" path="/etc/ssh/sshd_config"/>
     </remediation>
     <remediation id="ssh-idle-imeout-interval" msids="110.1" description="Configure SSH Idle Timeout Interval">
-      <action distro="*" action="ActionEditConfig" name="ClientAliveCountMax" value="0" value-regex="[a-z\,-]+" path="/etc/ssh/sshd_config"/>
-      <action distro="*" action="ActionEditConfig" name="ClientAliveInterval" value="300" value-regex="[a-z\,-]+" path="/etc/ssh/sshd_config"/>
+      <action distro="*" action="ActionEditConfig" name="ClientAliveCountMax" value="0" value-regex="[0-9]+" path="/etc/ssh/sshd_config"/>
+      <action distro="*" action="ActionEditConfig" name="ClientAliveInterval" value="300" value-regex="[0-9]+" path="/etc/ssh/sshd_config"/>
     </remediation>
   </remediations>
 </baseline>

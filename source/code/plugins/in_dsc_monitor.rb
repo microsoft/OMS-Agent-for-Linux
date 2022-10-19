@@ -57,17 +57,17 @@ not function properly. omsconfig can be installed by rerunning the omsagent inst
 
     def get_dsc_status
       begin
-        python = %x(which python2)
+        python = %x(which python3)
         if !python.empty?
-            dsc_status = %x(/opt/microsoft/omsconfig/Scripts/TestDscConfiguration.py)
-        else # assume python3, since /some/ python is an install prereq and we have a rescue below regardless
             dsc_status = %x(/opt/microsoft/omsconfig/Scripts/python3/TestDscConfiguration.py)
+        else # assume python2, since /some/ python is an install prereq and we have a rescue below regardless
+            dsc_status = %x(/opt/microsoft/omsconfig/Scripts/TestDscConfiguration.py)
         end
       rescue => error
-        OMS::Log.error_once("Unable to run TestDscConfiguration.py for dsc : #{error}")
-        return 1
+        OMS::Log.error_once("Running TestDscConfiguration.py returned error : #{error}")
+        return 2
       end
-      if dsc_status.match("ReturnValue=0") and dsc_status.match("InDesiredState=true")
+      if dsc_status.match('"InDesiredState": true')
         return 0
       else
         return 1
@@ -81,18 +81,23 @@ not function properly. omsconfig can be installed by rerunning the omsagent inst
       until @finished_check_status && @install_status == 0
         dsc_status = get_dsc_status
 
-        # returns value of dsc configuration test from the cache
+        # returns value of test dsc configuration from the cache
         # if key does not exist, assigns the string as value
         stored_dsc_status = @dsc_cache.transaction {
-          @dsc_cache.fetch(:status, "DSC configuration test status not stored yet")
+          @dsc_cache.fetch(:status, "TestDscConfiguration.py run status not stored yet")
         }
 
         if dsc_status == 1 and stored_dsc_status == 1
-          router.emit(@tag, Time.now.to_f, {"message"=>"Two successive configuration applications from \
-OMS Settings failed – please report issue to github.com/Microsoft/PowerShell-DSC-for-Linux/issues"})
+          router.emit(@tag, Time.now.to_f, {"message"=>"Two subsequent runs of TestDscConfiguration.py \
+returned omsconfig resource(s) that are not in desired state. – please check omsconfig.log on local machine for more details."})
         end
 
-        # store dsc configuration test status in the cache
+        if dsc_status == 2 and stored_dsc_status == 2
+          router.emit(@tag, Time.now.to_f, {"message"=>"Two subsequent attempts to run TestDscConfiguration.py \
+failed – please check omsconfig.log on local machine for more details."})
+        end
+
+        # store test dsc configuration status in the cache
         @dsc_cache.transaction { 
           @dsc_cache[:status] = dsc_status
           @dsc_cache.commit

@@ -1,6 +1,5 @@
 import errno
 import os
-import platform
 import ssl
 import subprocess
 
@@ -12,6 +11,16 @@ try:
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
+
+# linux_distribution() function was moved to distro for Python 3.8+
+try:
+    from platform import linux_distribution
+    from platform import dist
+except ImportError:
+    try:
+        from distro import linux_distribution
+    except ImportError:
+        pass  # will use /etc/os-release check
 
 CONF_PATH = "/etc/opt/microsoft/omsagent/conf/omsadmin.conf"
 
@@ -62,9 +71,13 @@ dist_to_id = {'redhat' : 'rhel',
 def get_os_version():
     # get vm info
     try:
-        (vm_dist, vm_ver, vm_id) = platform.linux_distribution()
-    except AttributeError:
-        (vm_dist, vm_ver, vm_id) = platform.dist()
+        (vm_dist, vm_ver, vm_id) = linux_distribution()
+    except:
+        try:
+            (vm_dist, vm_ver, vm_id) = dist()
+        except:
+            pass  # continue on to os_release check
+
     # if above didn't work, get vm info through os_release
     if (not vm_dist and not vm_ver):
         try:

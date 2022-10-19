@@ -17,10 +17,11 @@ The Log Analytics agent for Linux comprises multiple packages. The release file 
 
 **Package** | **Version** | **Description**
 ----------- | ----------- | --------------
-omsagent | 1.13.33 | The Operations Management Suite Agent for Linux
-omsconfig | 1.1.1 | Configuration agent for the OMS Agent
-omi | 1.6.4 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
-scx | 1.6.4 | OMI CIM Providers for operating system performance metrics
+omsagent | 1.14.19-0 | The Operations Management Suite Agent for Linux
+omsconfig | 1.1.1-936 | Configuration agent for the OMS Agent
+omi | 1.6.9-1 | Open Management Infrastructure (OMI) -- a lightweight CIM Server. *Note that OMI requires root access to run a cron job necessary for the functioning of the service*
+scx | 1.6.9-2 | OMI CIM Providers for operating system performance metrics
+auoms | 2.5.2.52 | Microsoft Operations Management Suite Audit Data Collector
 apache-cimprov | 1.0.1 | Apache HTTP Server performance monitoring provider for OMI. Only installed if Apache HTTP Server is detected.
 mysql-cimprov | 1.0.1 | MySQL Server performance monitoring provider for OMI. Only installed if MySQL/MariaDB server is detected.
 docker-cimprov | 1.0.0 | Docker provider for OMI. Only installed if Docker is detected.
@@ -93,6 +94,7 @@ Options:
   --force                Force upgrade (override version checks).
   --install              Install the package from the system.
   --purge                Uninstall the package and remove all related data.
+  --noDigest             RPM manager skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest).
   --restart-deps         Reconfigure and restart dependent service
   --source-references    Show source code reference hashes.
   --upgrade              Upgrade the package in the system.

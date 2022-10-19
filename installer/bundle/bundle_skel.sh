@@ -85,34 +85,40 @@ OPENSSL_PATH="openssl"
 BUNDLES_PATH="bundles"
 BUNDLES_LEGACY_PATH="bundles/v1"
 
+# OMS Deprecation notice
+DEPRECATION_NOTICE="The Log Analytics agent is on a deprecation path and won't be supported after August 31, 2024. If you use the Log Analytics agent to ingest data to Azure Monitor, make sure to migrate to the new Azure Monitor agent (https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration) prior to that date."
+
 usage()
 {
     echo "usage: $1 [OPTIONS]"
     echo "Options:"
-    echo "  --extract                  Extract contents and exit."
-    echo "  --force                    Force upgrade (override version checks)."
-    echo "  --install                  Install the package from the system."
-    echo "  --purge                    Uninstall the package and remove all related data."
-    echo "  --restart-deps             Reconfigure and restart dependent service(s)."
-    echo "  --source-references        Show source code reference hashes."
-    echo "  --upgrade                  Upgrade the package in the system."
-    echo "  --enable-opsmgr            Enable port 1270 for usage with opsmgr."
-    echo "  --version                  Version of this shell bundle."
-    echo "  --version-check            Check versions already installed to see if upgradable."
-    echo "  --debug                    use shell debug mode."
+    echo "  --extract                       Extract contents and exit."
+    echo "  --force                         Force upgrade (override version checks)."
+    echo "  --install                       Install the package from the system."
+    echo "  --purge                         Uninstall the package and remove all related data."
+    echo "  --noDigest                      RPM manager skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest)"
+    echo "  --restart-deps                  Reconfigure and restart dependent service(s)."
+    echo "  --source-references             Show source code reference hashes."
+    echo "  --upgrade                       Upgrade the package in the system."
+    echo "  --skip-docker-provider-install  skip installation of docker provider package in the system."
+
+    echo "  --enable-opsmgr                 Enable port 1270 for usage with opsmgr."
+    echo "  --version                       Version of this shell bundle."
+    echo "  --version-check                 Check versions already installed to see if upgradable."
+    echo "  --debug                         use shell debug mode."
     echo
-    echo "  -w id, --id id             Use workspace ID <id> for automatic onboarding."
-    echo "  -s key, --shared key       Use <key> as the shared key for automatic onboarding."
-    echo "  -d dmn, --domain dmn       Use <dmn> as the OMS domain for onboarding. Optional."
-    echo "                             default: opinsights.azure.com"
-    echo "                             ex: opinsights.azure.us (for FairFax)"
-    echo "  -p conf, --proxy conf      Use <conf> as the proxy configuration."
-    echo "                             ex: -p [protocol://][user:password@]proxyhost[:port]"
+    echo "  -w id, --id id                  Use workspace ID <id> for automatic onboarding."
+    echo "  -s key, --shared key            Use <key> as the shared key for automatic onboarding."
+    echo "  -d dmn, --domain dmn            Use <dmn> as the OMS domain for onboarding. Optional."
+    echo "                                  default: opinsights.azure.com"
+    echo "                                  ex: opinsights.azure.us (for FairFax)"
+    echo "  -p conf, --proxy conf           Use <conf> as the proxy configuration."
+    echo "                                  ex: -p [protocol://][user:password@]proxyhost[:port]"
     echo "  -a id, --azure-resource id Use Azure Resource ID <id>."
     echo "  -m marker, --multi-homing-marker marker"
-    echo "                             Onboard as a multi-homing(Non-Primary) workspace."
+    echo "                                  Onboard as a multi-homing(Non-Primary) workspace."
     echo
-    echo "  -? | -h | --help           shows this usage text."
+    echo "  -? | -h | --help                shows this usage text."
 }
 
 source_references()
@@ -142,9 +148,11 @@ cleanup_and_exit()
     fi
 
     if [ -n "$1" ]; then
-        echo "Shell bundle exiting with code $1"
+        echo "OMS agent shell bundle exiting with status code $1"
+        echo -e "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit $1
     else
+        echo -e "\033[0;31m${DEPRECATION_NOTICE}\033[0m"
         exit 0
     fi
 }
@@ -263,8 +271,8 @@ is_suse11_platform_with_openssl1(){
 
 detect_cylance(){
   # Don't use 'service' to check the existance of a service
-  # because it will fail if there is no service available 
-  
+  # because it will fail if there is no service available
+
   [ -f /etc/init.d/cylance ] && return 0
   [ -f /etc/init.d/cylancesvc ] && return 0
   [ -d /opt/cylance ] && return 0
@@ -468,7 +476,7 @@ install_troubleshooter()
     echo ""
     echo "  $ sudo /opt/microsoft/omsagent/bin/troubleshooter"
     echo ""
-        
+
     return 0
 }
 
@@ -486,6 +494,7 @@ install_purge_script()
             echo ""
             return 0
         fi
+    fi
 
     return 0
 }
@@ -551,7 +560,9 @@ pkg_add()
            return $DEPENDENCY_MISSING
         fi
 
-        rpm -ivh $FORCE ${pkg_filename}.rpm
+        [ -n "${noDigest}" -a "${noDigest}" == "true" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
+        rpm -ivh $NODIGEST $FORCE ${pkg_filename}.rpm
+
         return $?
     fi
 }
@@ -575,7 +586,7 @@ pkg_rm()
         rpm --erase ${1}
     fi
     if [ $? -ne 0 ]; then
-        echo "----- Ignore previous errors for package: $1 -----"
+        echo "----- Ignore previous errors from removing $1 package command. Continue... -----"
     fi
 }
 
@@ -588,11 +599,11 @@ pkg_upd() {
     pkg_name=$2
     pkg_allowed=$3
 
-    echo "----- Upgrading package: $pkg_name ($pkg_filename) -----"
+    echo "----- Upgrading package $pkg_name to version ($pkg_filename) -----"
 
     if [ -z "${forceFlag}" -a -n "$pkg_allowed" ]; then
         if [ $pkg_allowed -ne 0 ]; then
-            echo "Skipping package since existing version >= version available"
+            echo "Skipping package upgrade since existing version is >= than version already installed."
             return 0
         fi
     fi
@@ -607,34 +618,17 @@ pkg_upd() {
         return $?
     else
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        rpm --upgrade $FORCE ${pkg_filename}.rpm
+        # Temp workaround for an upgrade issue seen on RedHat 7.5.
+        # Only for RedHat 7.5 call upgrade with --replacepkgs flag by default and only if force flag is not set. 
+        redhat_75=`cat /etc/*-release 2> /dev/null | grep -iP '.*?red.*?7\.5' /dev/null 2>&1 ; echo $?`
+        [ -n "${noDigest}" -a "${noDigest}" == "true" ] && NODIGEST="--nodigest --nofiledigest" || NODIGEST=""
+        if [ -n "${forceFlag}" ] && [ $redhat_75 -eq 0 ]; then
+            rpm --upgrade --replacepkgs $FORCE $NODIGEST ${pkg_filename}.rpm
+        else
+            rpm --upgrade $FORCE $NODIGEST ${pkg_filename}.rpm
+        fi
         return $?
     fi
-}
-
-get_arch()
-{
-    if [ $(getconf LONG_BIT) = 64 ]; then
-        echo "x64"
-    else
-        echo "x86"
-    fi
-}
-
-compare_arch()
-{
-    # Check if the user is trying to install the correct bundle (x64 vs. x86)
-    echo "Checking host architecture ..."
-    HOST_ARCH=$(get_arch)
-
-    case $OMS_PKG in
-        *"$HOST_ARCH")
-            ;;
-        *)
-            echo "Cannot install $OMS_PKG on ${HOST_ARCH} platform"
-            cleanup_and_exit $INVALID_PACKAGE_ARCH
-            ;;
-    esac
 }
 
 compare_install_type()
@@ -790,13 +784,13 @@ remove_and_install()
     temp_status=$?
 
     if [ $temp_status -ne 0 ]; then
-        echo "$OMI_PKG package failed to install and exited with status $temp_status"
-        
+        echo "$OMI_PKG package failed to install and exited with error code $temp_status"
+
         if [ $temp_status -eq 2 ]; then # dpkg is messed up
             return $DEPENDENCY_MISSING
         else
             return $OMI_INSTALL_FAILED
-        fi        
+        fi
     fi
 
     ${OMI_SERVICE} reload
@@ -804,16 +798,16 @@ remove_and_install()
 
     if [ $temp_status -ne 0 ]; then
         if [ $temp_status -eq 2 ]; then
-            ErrStr="System Issue with daemon control tool "
+            ErrStr="system issue with daemon control tool "
             ErrCode=$DEPENDENCY_MISSING
         elif [ $temp_status -eq 3 ]; then # dpkg is messed up
-            ErrStr="omi server conf file missing"
+            ErrStr="missing omi conf file"
             ErrCode=$DEPENDENCY_MISSING
         else
-            ErrStr="OMI installation failed"
+            ErrStr="OMI installation failure"
             ErrCode=$OMI_INSTALL_FAILED
         fi
-        echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+        echo "OMI server failed to start due to $ErrStr and exited with error code $temp_status"
         return $ErrCode
     fi
 
@@ -825,7 +819,7 @@ remove_and_install()
     temp_status=$?
 
     if [ $temp_status -ne 0 ]; then
-        echo "$SCX_PKG package failed to install and exited with status $temp_status"
+        echo "$SCX_PKG package failed to install and exited with error code $temp_status"
         return $SCX_INSTALL_FAILED
     fi
 
@@ -969,6 +963,18 @@ do
             shift 1
             ;;
 
+        --skip-docker-provider-install)
+            echo "Provided skip-docker-provider-install option"
+            skipDockerProviderInstall="true"
+            shift 1
+            ;;
+
+        --noDigest)
+            echo "Provided noDigest flag in cmdline - RPM skips verification of package or header digests when reading (same as rpm --nodigest --nofiledigest)"
+            noDigest="true"
+            shift 1
+            ;;
+
         -w|--id)
             onboardID=$2
             shift 2
@@ -1069,7 +1075,7 @@ cd $EXTRACT_DIR
 # Do we need to remove the package?
 set +e
 if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
-    
+
     check_if_pkg_is_installed azsec-mdsd
     azsec_mdsd_installed=$?
     check_if_pkg_is_installed lad-mdsd
@@ -1106,7 +1112,7 @@ if [ "$installMode" = "R" -o "$installMode" = "P" ]; then
 
         pkg_rm omsconfig
 
-        
+
         # If MDSD/LAD is installed and we're just removing (not purging), leave OMS, SCX and OMI
         # if at least one of mdsd product is installed
         MDSD_INSTALLED=$(( $azsec_mdsd_installed && $lad_mdsd_installed ))
@@ -1210,7 +1216,6 @@ fi
 
 if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
     compare_install_type
-    compare_arch
 
     python_installed
     if [ $? -ne 0 ]; then
@@ -1266,9 +1271,9 @@ if [ "$installMode" = "I" -o "$installMode" = "U" ]; then
         fi
     fi
 
-    check_if_program_exists_on_system gpg
+    install_if_program_does_not_exist_on_system gpg
     if [ $? -ne 0 ]; then
-        echo "gpg is not installed, installation cannot continue."
+        echo "gpg was not installed, installation cannot continue. Please install gpg."
         cleanup_and_exit $INSTALL_GPG
     fi
 fi
@@ -1277,7 +1282,7 @@ fi
 # Extract the binary here.
 #
 
-echo "Extracting..."
+echo "Extracting OMS agent install bundle..."
 
 tail -n +${SCRIPT_LEN_PLUS_ONE} "${SCRIPT}" | tar xzf -
 STATUS=$?
@@ -1375,17 +1380,17 @@ case "$installMode" in
 
             if [ $temp_status -ne 0 ]; then
                 if [ $temp_status -eq 2 ]; then
-                    ErrStr="System Issue with daemon control tool "
+                    ErrStr="system issue with daemon control tool "
                     ErrCode=$DEPENDENCY_MISSING
                 elif [ $temp_status -eq 3 ]; then # dpkg is messed up
-                    ErrStr="omi server conf file missing"
+                    ErrStr="missng omi server conf file"
                     ErrCode=$DEPENDENCY_MISSING
                 else
-                    ErrStr="OMI installation failed"
+                    ErrStr="OMI installation failure"
                     ErrCode=$OMI_INSTALL_FAILED
                 fi
 
-                echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+                echo "OMI server failed to start due to $ErrStr and exited with error code $temp_status"
                 OMI_EXIT_STATUS=$ErrCode
              fi
 
@@ -1407,7 +1412,7 @@ case "$installMode" in
                 remove_and_install
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "Install failed"
+                    echo "Re-installing $SCX_PKG or $OMI_PKG packages failed."
                     cleanup_and_exit $TEMP_STATUS
                 fi
             fi
@@ -1416,7 +1421,7 @@ case "$installMode" in
             pkg_add ${OMS_PKG} omsagent
             TEMP_STATUS=$?
             if [ $TEMP_STATUS -ne 0 ]; then
-               echo "$OMS_PKG package failed to install and exited with status $TEMP_STATUS"
+               echo "$OMS_PKG package failed to install and exited with error code $TEMP_STATUS"
                cleanup_and_exit $OMS_INSTALL_FAILED
             fi
 
@@ -1427,14 +1432,14 @@ case "$installMode" in
                 pkg_add ${DSC_PKG} omsconfig
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$DSC_PKG package failed to install and exited with status $TEMP_STATUS"
+                    echo "$DSC_PKG package failed to install and exited with error code $TEMP_STATUS"
                     cleanup_and_exit $DSC_INSTALL_FAILED
                 fi
             fi
 
             # Install bundled providers
             [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-            echo "----- Installing bundled packages -----"
+            echo "----- Installing bundled provider packages -----"
             for i in oss-kits/*-oss-test.sh; do
                 # If filespec didn't expand, break out of loop
                 [ ! -f $i ] && break
@@ -1443,12 +1448,19 @@ case "$installMode" in
                 OSS_BUNDLE=`basename $i -oss-test.sh`
                 [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
+                if [ "$OSS_BUNDLE" = "docker" ]  && [ "$skipDockerProviderInstall" = "true" ]; then
+                   echo "$OSS_BUNDLE provider package installation skipped since --skip-docker-provider-install flag is set. \
+If you are installing over an existing omsagent install and wish to remove the docker provider, \
+you should first purge the existing installation and then install using the --skip-docker-provider-install flag."
+                    continue
+                fi
+
                 ./$i
                 if [ $? -eq 0 ]; then
                     ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
-                        echo "$OSS_BUNDLE provider package failed to install and exited with status $TEMP_STATUS"
+                        echo "$OSS_BUNDLE provider package failed to install and exited with error code $TEMP_STATUS"
                         BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
                     fi
                 fi
@@ -1472,7 +1484,7 @@ case "$installMode" in
                     ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
-                        echo "$BUNDLE package failed to install and exited with status $TEMP_STATUS"
+                        echo "$BUNDLE package failed to install and exited with error code $TEMP_STATUS"
                         BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
                     fi
                 fi
@@ -1496,20 +1508,20 @@ case "$installMode" in
 
         if [ $temp_status -ne 0 ]; then
             if [ $temp_status -eq 2 ]; then
-                ErrStr="System Issue with daemon control tool "
+                ErrStr="system issue with daemon control tool"
                 ErrCode=$DEPENDENCY_MISSING
             elif [ $temp_status -eq 3 ]; then # dpkg is messed up
-                  ErrStr="omi server conf file missing"
+                  ErrStr="missing omi server conf file"
                   ErrCode=$DEPENDENCY_MISSING
             else
-                  ErrStr="OMI installation failed"
+                  ErrStr="Failure upgrading OMI"
                   ErrCode=$OMI_INSTALL_FAILED
             fi
 
-            echo "OMI server failed to start due to $ErrStr and exited with status $temp_status"
+            echo "OMI server failed to start due to $ErrStr and exited with error code $temp_status"
             OMI_EXIT_STATUS=$ErrCode
         fi
-	
+
         # Install SCX
         shouldInstall_scx
         if [ $? -eq 0 ]; then
@@ -1526,20 +1538,20 @@ case "$installMode" in
         if [ "${OMI_EXIT_STATUS}" -ne 0 -o "${SCX_EXIT_STATUS}" -ne 0 ]; then
 
             remove_and_install
-            TEMP_STATUS=$?
-            if [ $TEMP_STATUS -ne 0 ]; then
-                echo "Upgrade failed"
-                cleanup_and_exit $TEMP_STATUS
+            UPGRADE_RETRY_SCX_OMI=$?
+            if [ $UPGRADE_RETRY_SCX_OMI -ne 0 ]; then
+                echo "Re-upgrading $SCX_PKG or $OMI_PKG packages failed."
+                cleanup_and_exit $UPGRADE_RETRY_SCX_OMI
             fi
         fi
 
         # Update OMS Agent
-        shouldInstall_omsagent
         rm -f "$OMS_CONSISTENCY_INVOKER" > /dev/null 2>&1
+        shouldInstall_omsagent
         pkg_upd $OMS_PKG omsagent $?
-        TEMP_STATUS=$?
-        if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$OMS_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+        OMS_UPDATE_STATUS=$?
+        if [ $OMS_UPDATE_STATUS -ne 0 ]; then
+            echo "$OMS_PKG package failed to upgrade and exited with error code $OMS_UPDATE_STATUS"
             cleanup_and_exit $OMS_INSTALL_FAILED
         fi
 
@@ -1555,11 +1567,19 @@ case "$installMode" in
         fi
 
         # Update DSC
+        # Since we are using same path for old package and new package,
+        # In case of dsc upgrade, the package is removed as part of preuninstall event on old version.
+        # It resulted in omsconfig not functioning after upgrade, if we do the uninstall before upgrade then
+        # preuninstall event on the old version won't happen and omsconfig bits will not be deleted in upgrade.
+        if shouldInstall_omsconfig; then
+            echo "Removing omsconfig package as part of upgrade"
+            pkg_rm omsconfig
+        fi
         shouldInstall_omsconfig
         pkg_upd $DSC_PKG omsconfig $?
         TEMP_STATUS=$?
         if [ $TEMP_STATUS -ne 0 ]; then
-            echo "$DSC_PKG package failed to upgrade and exited with status $TEMP_STATUS"
+            echo "$DSC_PKG package failed to upgrade and exited with error code $TEMP_STATUS"
             cleanup_and_exit $DSC_INSTALL_FAILED
         fi
 
@@ -1592,14 +1612,14 @@ case "$installMode" in
                 B=$(($A+15))
                 C=$(($B+15))
                 D=$(($C+15))
-                echo "$A,$B,$C,$D * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER		
+                echo "$A,$B,$C,$D * * * * omsagent /opt/omi/bin/OMSConsistencyInvoker >/dev/null 2>&1" > $OMS_CONSISTENCY_INVOKER
             fi
             /opt/omi/bin/service_control restart
         fi
 
         # Upgrade bundled providers
         [ -n "${forceFlag}" ] && FORCE="--force" || FORCE=""
-        echo "----- Updating bundled packages -----"
+        echo "----- Updating bundled provider packages -----"
         for i in oss-kits/*-oss-test.sh; do
             # If filespec didn't expand, break out of loop
             [ ! -f $i ] && break
@@ -1608,12 +1628,19 @@ case "$installMode" in
             OSS_BUNDLE=`basename $i -oss-test.sh`
             [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
+            if [ "$OSS_BUNDLE" = "docker" ]  && [ "$skipDockerProviderInstall" = "true" ]; then
+               echo "$OSS_BUNDLE provider package installation skipped since --skip-docker-provider-install flag is set. \
+If you are installing over an existing omsagent install and wish to remove the docker provider, \
+you should first purge the existing installation and then install using the --skip-docker-provider-install flag."
+                continue
+            fi
+
             ./$i
             if [ $? -eq 0 ]; then
                 ./oss-kits/${OSS_BUNDLE}-cimprov-*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$OSS_BUNDLE provider package failed to upgrade and exited with status $TEMP_STATUS"
+                    echo "$OSS_BUNDLE provider package failed to upgrade and exited with error code $TEMP_STATUS"
                     BUNDLE_EXIT_STATUS=$SCX_KITS_INSTALL_FAILED
                 fi
             fi
@@ -1637,7 +1664,7 @@ case "$installMode" in
                 ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
-                    echo "$BUNDLE package failed to upgrade and exited with status $TEMP_STATUS"
+                    echo "$BUNDLE package failed to upgrade and exited with error code $TEMP_STATUS"
                     BUNDLE_EXIT_STATUS=$BUNDLED_INSTALL_FAILED
                 fi
             fi

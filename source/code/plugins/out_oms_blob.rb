@@ -223,6 +223,9 @@ module Fluent
       request_id = SecureRandom.uuid
       append_uri = URI.parse("#{uri.to_s}&comp=block&blockid=#{base64_blockid}")
 
+      @log.debug("uploading block request_id=#{request_id}, blockid=#{base64_blockid}")
+      @log.trace("blockid=#{base64_blockid} block=#{msg}")
+
       put_block_req = create_blob_put_request(append_uri, msg, request_id, nil)
       http = OMS::Common.create_secure_http(append_uri, @proxy_config)
       OMS::Common.start_request(put_block_req, http)
@@ -282,6 +285,8 @@ module Fluent
       uri.fragment = uri.query = nil
 
       data = {
+        # Adding timezone is important for ODS while generating _TimeReceived field
+        "metadata-TimeZoneId" => OMS::Common.get_current_timezone,
         "DataType" => "BLOB_UPLOAD_NOTIFICATION",
         "IPName" => "",
         "DataItems" => [
@@ -305,7 +310,7 @@ module Fluent
       fn = '/var/opt/microsoft/omsagent/log/ODSIngestionBlob.status'
       status = '{ "operation": "ODSIngestionBlob", "success": "%s", "message": "%s" }' % [success, message]
       begin
-        File.open(fn,'w') { |file| file.write(status) }
+        File.open(fn,'w',0664) { |file| file.write(status) }
       rescue => e
         @log.debug "Error:'#{e}'"
       end
