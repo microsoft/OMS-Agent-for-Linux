@@ -424,10 +424,10 @@ sudo service crond start
 * Onboarding to OMS Service failed
 * The setting "Apply the following configuration to my Linux Servers" has not been check marked
 * omsconfig has not picked up the latest Custom Log from the portal
-* OMS Agent for Linux user `omsagent` is unable to access the Custom Log due to permissions or not being found
- * `[DATETIME] [warn]: file not found. Continuing without tailing it.`
- * `[DATETIME] [error]: file not accessible by omsagent.`
-* Known Issue with Race Condition fixed in OMS Agent for Linux version 1.1.0-217
+* OMS Agent for Linux user `omsagent` is unable to access the Custom Log due to permissions or path not being found. In that case osmagent.log will contain one of these messages:
+  * `[DATETIME] [info]: <path> not found. Continuing without tailing it.`
+  * `[DATETIME] [info]: <path> does not exist or not accessable. Cannot tail the file. Skipping.`
+  * `[DATETIME] [info]: <path> is excluded since it's unreadable or doesn't have proper permissions.`
 
 #### Resolutions
 * Check if onboarding the OMS Service was successful by checking if the following file exists: `/etc/opt/microsoft/omsagent/<workspace id>/conf/omsadmin.conf`
@@ -440,10 +440,10 @@ sudo service crond start
    * If this command fails run the following command `sudo su omsagent -c 'python /opt/microsoft/omsconfig/Scripts/PerformRequiredConfigurationChecks.py'`. This command forces the omsconfig agent to talk to the OMS Portal Service and retrieve latest configuration.
 
 
-**Background:** Instead of the OMS Agent for Linux user running as a privileged user, `root` - The OMS Agent for Linux runs as the `omsagent` user. In most cases explicit permission must be granted to this user in order for certain files to be read.
-* To grant permission to `omsagent` user run the following commands
+**Background:** Instead of the OMS Agent for Linux user running as a privileged user, `root` - The OMS Agent for Linux runs as the `omsagent` user. In most cases explicit permission must be granted to this user in order for certain files to be read. For custom log collection, read permission is required. To grant permission to `omsagent` user run the following commands:
  * Add the `omsagent` user to specific group `sudo usermod -a -G <GROUPNAME> <USERNAME>`
- * Grant universal read access to the required file `sudo chmod -R ugo+rx <FILE DIRECTORY>`
+ * Grant owner read access to the required file `sudo chmod -R ugo+rx <FILE DIRECTORY>`
+ * Restart the omsagent service: `sudo /opt/microsoft/omsagent/bin/service_control restart`
 
 * There is a known issue with a Race Condition in OMS Agent for Linux version <1.1.0-217. After updating to the latest agent run the following command to get the latest version of the output plugin
  * `sudo cp /etc/opt/microsoft/omsagent/sysconf/omsagent.conf /etc/opt/microsoft/omsagent/<workspace id>/conf/omsagent.conf`
