@@ -426,7 +426,7 @@ sudo service crond start
 * omsconfig has not picked up the latest Custom Log from the portal
 * OMS Agent for Linux user `omsagent` is unable to access the Custom Log due to permissions or path not being found. In that case osmagent.log will contain one of these messages:
   * `[DATETIME] [info]: <path> not found. Continuing without tailing it.`
-  * `[DATETIME] [info]: <path> does not exist or not accessable. Cannot tail the file. Skipping.`
+  * `[DATETIME] [info]: <path> does not exist or not accessible. Cannot tail the file. Skipping.`
   * `[DATETIME] [info]: <path> is excluded since it's unreadable or doesn't have proper permissions.`
 
 #### Resolutions

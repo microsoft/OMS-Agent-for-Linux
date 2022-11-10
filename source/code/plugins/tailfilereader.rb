@@ -32,7 +32,7 @@ module Tailscript
         @log.info "File path #{path} exists. Trying to tail."
         return path
       else
-        @log.info "#{path} does not exist or not accessable. Cannot tail the file. Skipping."
+        @log.info "#{path} does not exist or not accessible. Cannot tail the file. Skipping."
         return nil
       end
     end
