@@ -1481,7 +1481,11 @@ you should first purge the existing installation and then install using the --sk
 
                 ./$i
                 if [ $? -eq 0 ]; then
-                    ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
+                    if [ -n "${noDigest}" -a "${noDigest}" == "true" ]; then
+                        ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install --noDigest $FORCE $restartDependencies
+                    else
+                        ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
+                    fi
                     TEMP_STATUS=$?
                     if [ $TEMP_STATUS -ne 0 ]; then
                         echo "$BUNDLE package failed to install and exited with error code $TEMP_STATUS"
@@ -1661,7 +1665,11 @@ you should first purge the existing installation and then install using the --sk
 
             ./$i
             if [ $? -eq 0 ]; then
-                ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
+                if [ -n "${noDigest}" -a "${noDigest}" == "true" ]; then
+                    ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade --noDigest $FORCE $restartDependencies
+                else
+                    ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
+                fi
                 TEMP_STATUS=$?
                 if [ $TEMP_STATUS -ne 0 ]; then
                     echo "$BUNDLE package failed to upgrade and exited with error code $TEMP_STATUS"
