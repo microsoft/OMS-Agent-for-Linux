@@ -22,17 +22,17 @@ module Tailscript
       @log.formatter = proc do |severity, time, progname, msg|
         "#{severity} #{msg}\n"
       end
-      @log.info "Received paths from sudo tail plugin : #{paths}, log_level=#{level}"
+      @log.info "sudo tail plugin in agent configuration is provisioned to tail files from the following paths: #{paths}, log_level=#{level}"
     end
 
     attr_reader :paths
 
     def file_exists(path)
       if File.exist?(path)
-        @log.info "Following tail of #{path}"
+        @log.info "File path #{path} exists. Trying to tail."
         return path
       else
-        @log.warn "#{path} does not exist. Cannot tail the file."
+        @log.info "#{path} does not exist or not accessible. Cannot tail the file. Skipping."
         return nil
       end
     end
@@ -51,12 +51,12 @@ module Tailscript
               @log.info "Following tail of #{p}"
               expanded_paths << p
             elsif !File.readable?(p)
-              @log.warn "#{p} is excluded since it's unreadable or doesn't have proper permissions."
+              @log.info "#{p} is excluded since it's unreadable or doesn't have proper permissions."
             else
               @log.warn "#{p} is a directory and thus cannot be tailed"
             end
           rescue Errno::ENOENT
-            @log.debug("#{p} is missing after refreshing file list")
+            @log.warn("#{p} is missing after refreshing file list")
           end
           }
         else
@@ -65,7 +65,7 @@ module Tailscript
             if File.readable?(path) && !File.directory?(path)
               expanded_paths << file 
             elsif !File.readable?(path)
-              @log.warn "#{path} is excluded since it's unreadable or doesn't have proper permissions."
+              @log.info "#{path} is excluded since it's unreadable or doesn't have proper permissions."
             else
               @log.warn "#{path} is a directory and thus cannot be tailed"
             end
@@ -105,7 +105,7 @@ module Tailscript
             begin
               pe.update(File::Stat.new(path).ino, 0)
             rescue Errno::ENOENT
-              @log.warn "#{path} not found. Continuing without tailing it."
+              @log.info "#{path} not found. Continuing without tailing it."
             end
           end
         end
@@ -325,7 +325,7 @@ module Tailscript
         file.each_line {|line|
           m = /^([^\t]+)\t([0-9a-fA-F]+)\t([0-9a-fA-F]+)/.match(line)
           unless m
-            @log.warn "Unparsable line in pos_file: #{line}"
+            @log.warn "Unparsable line in pos_file: #{line}. Skipping."
             next
           end
           path = m[1]
@@ -343,7 +343,7 @@ module Tailscript
         existent_entries = file.each_line.map { |line|
           m = /^([^\t]+)\t([0-9a-fA-F]+)\t([0-9a-fA-F]+)/.match(line)
           unless m
-            @log.warn "Unparsable line in pos_file: #{line}"
+            @log.warn "Unparsable line in pos_file: #{line}. Skipping."
             next
           end
           path = m[1]
