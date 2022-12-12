@@ -18,8 +18,8 @@ $logToConsole    = $false
 #    - OMI package is installed from Github.
 $upgradeOMI = $false #detect only
 
-$OmiServerGoodVersion  = "OMI-1.6.9-1"
-$OmiPkgGoodVersion     = "1.6.9.1"
+$OmiServerGoodVersion  = "OMI-1.6.10-2"
+$OmiPkgGoodVersion     = "1.6.10.2"
 $OmsPkgGoodVersion     = "1.14.13-0"
 $OmsTypeHandlerVersion = 1.14
 $OMSpublisher          = "Microsoft.EnterpriseCloud.Monitoring"
