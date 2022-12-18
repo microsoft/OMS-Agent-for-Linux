@@ -35,7 +35,7 @@ If you are an Azure customer, we have an Azure VM extension that allows you to e
 
 ## [Full installation guide](https://docs.microsoft.com/azure/azure-monitor/platform/log-analytics-agent)
 
-## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.14.20-0/omsagent-1.14.20-0.universal.x64.sh)
+## [Download Latest OMS Agent for Linux (64-bit)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.14.23-0/omsagent-1.14.23-0.universal.x64.sh)
 
 ## [Download Latest OMS Agent for Linux (Final 32-bit Release)](https://github.com/microsoft/OMS-Agent-for-Linux/releases/download/OMSAgent_v1.12.15-0/omsagent-1.12.15-0.universal.x86.sh)
 
