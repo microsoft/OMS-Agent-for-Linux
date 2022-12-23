@@ -44,6 +44,9 @@ module MaintenanceModule
       @load_config_return_code = load_config
       @logger = log.nil? ? OMS::Common.get_logger(@LOG_FACILITY) : log
 
+      # flag to restart the agent if certificate renewal was successful
+      @restart_agent = false
+
       @suppress_logging = false
     end
 
@@ -352,6 +355,11 @@ module MaintenanceModule
             return frequency_apply_res
           else
             log_info("OMS agent management service topology request success")
+            if @restart_agent
+              log_info("restart omsagent service to apply renewed certificate.")
+              retart_agent_cmd = %x(/opt/microsoft/omsagent/bin/service_control restart)
+              # ignore restart command result. If service restart fails user needs to manually restart to mitigate
+            end
             return 0
           end
         else
@@ -502,7 +510,7 @@ module MaintenanceModule
         res = nil
         res = http.start { |http_each| http.request(req) }
       rescue => e
-        log_error("Error renewing certificate: #{e.message}")
+        log_error("Faulure in certificate renewal request: #{e.message}")
         restore_old_certs(cert_old, key_old)
         return OMS::ERROR_SENDING_HTTP
       end
@@ -515,19 +523,20 @@ module MaintenanceModule
           hb_return = heartbeat
 
           if hb_return == 0
-            log_info("Certificates successfully renewed")
+            log_info("Certificates successfully renewed. Heartbeat with renewed certificate succeeded.")
+            @restart_agent = true
           else
-            log_error("Error renewing certificate. Restoring old certs.")
+            log_error("Heartbeat failed with renewed certificate. Restoring old certs.")
             restore_old_certs(cert_old, key_old)
             return hb_return
           end
         else
-          log_error("Error renewing certificate. HTTP code #{res.code}")
+          log_error("Renew certificate request returned HTTP error code #{res.code}")
           restore_old_certs(cert_old, key_old)
           return OMS::HTTP_NON_200
         end
       else
-        log_error("Error renewing certificate. No HTTP code")
+        log_error("Renew certificate request failed with no HTTP code")
         return OMS::ERROR_SENDING_HTTP
       end
 
