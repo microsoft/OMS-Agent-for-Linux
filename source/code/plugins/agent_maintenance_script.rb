@@ -45,7 +45,7 @@ module MaintenanceModule
       @logger = log.nil? ? OMS::Common.get_logger(@LOG_FACILITY) : log
 
       # flag to restart the agent if certificate renewal was successful
-      @restart_agent = false
+      @restart_agent = true
 
       @suppress_logging = false
     end
