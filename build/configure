@@ -439,7 +439,7 @@ else
     ruby_optimize_flag=-O3
 fi
 
-ruby_cflags="${ruby_optimize_flag} -fno-fast-math -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -std=gnu99"
+ruby_cflags="${ruby_optimize_flag} -g -DNDEBUG -fno-fast-math -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -std=gnu99"
 
 ruby_configure_quals=(
     \"CFLAGS=${ruby_cflags}\"
