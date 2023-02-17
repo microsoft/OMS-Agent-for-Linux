@@ -297,9 +297,9 @@ elevate ${RUBY_DESTDIR}/bin/gem install pkg/fluentd-0.12.40.gem
 echo "Installing Fluent plugin mdsd ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/fluent-plugin-mdsd-0.1.9.pre.build.master.71-oms.amd64.gem
 
-echo "========================= Performing Stripping Binaries"
-sudo find ${RUBY_DESTDIR} -name \*.so -print -exec strip {} \;
-sudo strip ${RUBY_DESTDIR}/bin/ruby
+#echo "========================= Performing Stripping Binaries"
+#sudo find ${RUBY_DESTDIR} -name \*.so -print -exec strip {} \;
+#sudo strip ${RUBY_DESTDIR}/bin/ruby
 
 if [ $RUNNING_FOR_TEST -eq 0 ]; then
     echo "========================= Performing Moving Ruby to intermediate directory"
