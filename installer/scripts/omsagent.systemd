@@ -18,6 +18,7 @@ ExecStop=/bin/rm -f %RUN_DIR_WS%/omsagent.pid
 KillMode=process
 TimeoutStartSec=10
 TimeoutStopSec=10
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
