@@ -2,6 +2,9 @@
 Description=Operations Management Suite agent
 After=network.target
 Wants=omid.service
+# Attempt restarts on failure up to 10 times within 120 seconds.
+StartLimitIntervalSec=120
+StartLimitBurst=10
 
 [Service]
 Type=simple
@@ -18,7 +21,10 @@ ExecStop=/bin/rm -f %RUN_DIR_WS%/omsagent.pid
 KillMode=process
 TimeoutStartSec=10
 TimeoutStopSec=10
+# Restart the process on a failure. Wait 3 seconds before attempting a restart.
 Restart=on-failure
+RestartSec=3
+
 
 [Install]
 WantedBy=multi-user.target
