@@ -212,10 +212,6 @@ ifeq ($(PF_ARCH),x64)
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.1.0 output
 	$(MAKE) -C $(DSC_DIR) dsc110
 	$(MAKE) -C $(DSC_DIR) dsckit110
-ifeq (# if openssl 3.0 #)
-	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_3.0.0 output
-	$(MAKE) -C $(DSC_DIR) dsc110
-	$(MAKE) -C $(DSC_DIR) dsckit110
 endif
 	cd $(OMI_ROOT); $(RMDIR) output
 endif
@@ -626,7 +622,6 @@ $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb:
 		$(INSTALLER_DATAFILES_DPKG)
 	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/110
 
-# CONDITIONAL DIRECTIVE FOR OPENSSL 3.0
 $(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).rpm:
 	@echo "========================= Performing Building RPM package (SSL 3.0)"
 	$(MKPATH) $(INSTALLER_TMPDIR)
