@@ -393,8 +393,8 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
 
 	# Gather OMI packages from omi-kits
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
 
 	# Remove ssl_100 and ssl_110 from omi filenames
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
@@ -468,7 +468,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
 
 	# Gather OMI packages from omi-kits
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 
 	# Remove ssl_100 from omi filenames
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
