@@ -379,15 +379,15 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
-	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
+	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.s.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
 
 	# Extract SCX bundle script
 	$(RMDIR) $(INTERMEDIATE_DIR)/scxbundle.*
 	cd $(INTERMEDIATE_DIR); $(SHELL) scx-*.sh --extract
 
 	# Gather SCX packages
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 110/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 110/scx-*.universal.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
 
 	# Gather apache and mysql cimprov bundle scripts from SCX
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
