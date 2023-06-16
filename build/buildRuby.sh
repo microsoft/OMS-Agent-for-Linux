@@ -8,6 +8,7 @@
 # Usage: buildRuby.sh <parameter>
 #
 #   Parameter may be one of:
+#       "300": Build for SSL v3.0.0
 #       "110": Build for SSL v1.1.0
 #       "101": Build for SSL v1.0.1
 #       "100": Build for SSL v1.0.0
@@ -112,6 +113,14 @@ case $RUBY_BUILD_TYPE in
         export PKG_CONFIG_PATH=${SSL_110_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
 	;;
 
+    test_300)
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_300[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
+        RUNNING_FOR_TEST=1
+
+        export LD_LIBRARY_PATH=$SSL_300_LIBPATH:$LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH=${SSL_300_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+	;;
+
 #    100)
 #        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
 #        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
@@ -136,12 +145,20 @@ case $RUBY_BUILD_TYPE in
         export PKG_CONFIG_PATH=${SSL_110_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
         ;;
 
+    300)
+        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_300[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+
+        export LD_LIBRARY_PATH=$SSL_300_LIBPATH:$LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH=${SSL_300_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+        ;;
+
     *)
         INT_APPEND_DIR=""
         RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         if [ -n "$RUBY_BUILD_TYPE" ]; then
-            echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, test_100, test_110, 100, 110 or blank" >& 2
+            echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, test_100, test_110, test_300, 100, 110, 300, or blank" >& 2
             exit 1
         fi
 esac

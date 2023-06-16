@@ -266,6 +266,8 @@ ifeq ($(ULINUX),1)
 ifeq ($(PF_ARCH),x64)
 	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
 	$(BASE_DIR)/build/buildRuby.sh 110
+	@$(ECHO) "========================= Performing Building Ruby for SSL v3.0.0 ..."
+	$(BASE_DIR)/build/buildRuby.sh 300
 endif
 else
 	@$(ECHO) "========================= Performing Building Ruby"
@@ -635,7 +637,7 @@ $(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).rpm:
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
 		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
-		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/110/ruby \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/300/ruby \
 		--RUBY_ARCH=$(RUBY_ARCH) \
 		--RUBY_ARCM=$(RUBY_ARCM) \
 		--PFARCH=$(PF_ARCH) \
@@ -663,7 +665,7 @@ $(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).deb:
 		--STAGING_DIR=$(STAGING_DIR) \
 		--BUILD_TYPE=$(BUILD_TYPE) \
 		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
-		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/110/ruby \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/300/ruby \
 		--RUBY_ARCH=$(RUBY_ARCH) \
 		--RUBY_ARCM=$(RUBY_ARCM) \
 		--PFARCH=$(PF_ARCH) \
@@ -726,6 +728,10 @@ set_ruby_test_ssl_110:
 	$(eval RUBY_TESTING_TARGET_NAME = test_110)
 	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
 
+set_ruby_test_ssl_300:
+	$(eval RUBY_TESTING_TARGET_NAME = test_300)
+	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
+
 tests : test
 
 unittest : $(RUBY_TESTING_DIR)
@@ -760,15 +766,20 @@ test : omstest
 
 tests_100: set_ruby_test_ssl_100 tests
 tests_110: set_ruby_test_ssl_110 tests
+tests_300: set_ruby_test_ssl_300 tests
 
 unittest_100: set_ruby_test_ssl_100 unittest
 unittest_110: set_ruby_test_ssl_110 unittest
+unittest_300: set_ruby_test_ssl_300 unittest
 
 systemtest_100: set_ruby_test_ssl_100 systemtest
 systemtest_110: set_ruby_test_ssl_110 systemtest
+systemtest_300: set_ruby_test_ssl_300 systemtest
 
 omstest_100: set_ruby_test_ssl_100 omstest
 omstest_110: set_ruby_test_ssl_110 omstest
+omstest_300: set_ruby_test_ssl_300 omstest
 
 test_100: set_ruby_test_ssl_100 test
 test_110: set_ruby_test_ssl_110 test
+test_300: set_ruby_test_ssl_300 test

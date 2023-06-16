@@ -479,6 +479,10 @@ if [ "$ULINUX" = "1" ]; then
     ssl_110_dirpath=/usr/local_ssl_1.1.0
     ruby_configure_quals_110=( --with-openssl-dir=$ssl_110_dirpath
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
+
+    ssl_300_dirpath=/usr/local_ssl_3.0.0
+    ruby_configure_quals_300=( --with-openssl-dir=$ssl_300_dirpath
+        \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 fi
 
 # Do we have a version file from the super project? If not, make one
@@ -530,15 +534,20 @@ if [ "$ULINUX" = "1" ]; then
     ssl_101_libpath=`eval echo ${ssl_101_dirpath}/lib*`
     if [ `uname -m` = "x86_64" ]; then
         ssl_110_libpath=`eval echo ${ssl_110_dirpath}/lib*`
+        ssl_300_libpath=`eval echo ${ssl_300_dirpath}/lib*`
     fi
     echo "SSL_100_LIBPATH=${ssl_100_libpath}" >> config.mak
     echo "SSL_101_LIBPATH=${ssl_101_libpath}" >> config.mak
 
     echo "RUBY_CONFIGURE_QUALS_100=( ${ruby_configure_quals_100[@]} )" >> config.mak
     echo "RUBY_CONFIGURE_QUALS_101=( ${ruby_configure_quals_101[@]} )" >> config.mak
+    
     if [ `uname -m` = "x86_64" ]; then
         echo "SSL_110_LIBPATH=${ssl_110_libpath}" >> config.mak
+        echo "SSL_300_LIBPATH=${ssl_300_libpath}" >> config.mak
+
         echo "RUBY_CONFIGURE_QUALS_110=( ${ruby_configure_quals_110[@]} )" >> config.mak
+        echo "RUBY_CONFIGURE_QUALS_300=( ${ruby_configure_quals_300[@]} )" >> config.mak
     fi
 fi
 
