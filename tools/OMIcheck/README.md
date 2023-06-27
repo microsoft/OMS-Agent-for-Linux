@@ -1,4 +1,4 @@
-- This tool detects vulnerable OMI installations (< 1.6.8.1) in your subscriptions.
+- This tool detects vulnerable OMI installations (< 1.6.10.2) in your subscriptions.
 
 - Review the script and update upgradeOMI accordingly.
 
@@ -15,7 +15,7 @@
 
 - It runs a remote command to detect OMI version, and reports findings.
 
-- Optional flag to install omi 1.6.8.1 is off by default. When set to true,
+- Optional flag to install omi 1.6.10.2 is off by default. When set to true,
   > if LinuxDiagnostics or OMSAgentLinux extension is installed, they will be updated.
   > If not, the omi package will be downloaded from github and updated.
 

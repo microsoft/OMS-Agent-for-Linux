@@ -23,7 +23,7 @@ $(error "ENABLE_DEBUG is not set.  Please re-run configure")
 endif
 
 DSC_TARGET_DIR := $(DSC_DIR)/release
-AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.5.2-52
+AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.5.2-52-ND
 AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
@@ -379,22 +379,22 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 
 	# Gather the SCX bits that we need
 	# Note: We take care to only copy the latest version if there are multiple versions
-	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
+	cd $(SCX_CORE_KITS)/release; $(COPY) `ls scx-*.s.$(PF_ARCH).sh | sort | tail -1` $(INTERMEDIATE_DIR)
 
 	# Extract SCX bundle script
 	$(RMDIR) $(INTERMEDIATE_DIR)/scxbundle.*
 	cd $(INTERMEDIATE_DIR); $(SHELL) scx-*.sh --extract
 
 	# Gather SCX packages
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
-	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 110/scx-*.universal.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 110/scx-*.universal.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
 
 	# Gather apache and mysql cimprov bundle scripts from SCX
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
 
 	# Gather OMI packages from omi-kits
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
 
 	# Remove ssl_100 and ssl_110 from omi filenames
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
@@ -468,7 +468,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
 
 	# Gather OMI packages from omi-kits
-	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 
 	# Remove ssl_100 from omi filenames
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`

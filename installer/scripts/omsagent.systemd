@@ -18,6 +18,12 @@ ExecStop=/bin/rm -f %RUN_DIR_WS%/omsagent.pid
 KillMode=process
 TimeoutStartSec=10
 TimeoutStopSec=10
+# Restart the process on a failure. Wait 10 seconds before attempting a restart.
+Restart=on-failure
+RestartSec=10
+# Attempt restarts on failure up to 10 times within 120 seconds.
+StartLimitInterval=120
+StartLimitBurst=10
 
 [Install]
 WantedBy=multi-user.target

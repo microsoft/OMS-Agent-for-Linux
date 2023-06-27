@@ -53,11 +53,11 @@ AGENT_MAINTENANCE_MISSING_CONFIG_FILE=4
 AGENT_MAINTENANCE_MISSING_CONFIG=5
 AGENT_MAINTENANCE_ERROR_WRITING_TO_FILE=12
 
-# DSC MetaConfig generation script
-if [ -x "$(command -v python2)" ]; then
-    METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
-elif [ -x "$(command -v python3)" ]; then
+# DSC MetaConfig generation script. User python3 over python2 if both versions are installed
+if [ -x "$(command -v python3)" ]; then
     METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/python3/OMS_MetaConfigHelper.py
+elif [ -x "$(command -v python2)" ]; then
+    METACONFIG_PY=/opt/microsoft/omsconfig/Scripts/OMS_MetaConfigHelper.py
 else
     # Failure to find python/the correct script path will only break onboarding (just one
     # of omsadmin's numerous functions); exit with failure in the onboard() function instead
