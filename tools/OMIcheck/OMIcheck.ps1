@@ -8,10 +8,10 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 # This script lists the virtual machines and scale sets in Azure subscriptions of the user,
 # and looks for vulnerable OMI packages. The report is grouped by subscription and resource group name.
 $ThrottlingLimit = 16
-$DEBUG           = $false
-$LOGDIR          = $PSScriptRoot
-$logToFile       = $true
-$logToConsole    = $false
+$DEBUG = $false
+$LOGDIR = $PSScriptRoot
+$logToFile = $true
+$logToConsole = $false
 
 # Set below flag to true if you want vulnerable OMI to be patched.
 #    - If OMSLinuxAgent or LinuxDiagnostics is installed, then a minor update will be triggered.
@@ -29,8 +29,32 @@ $LADextName            = "LinuxDiagnostic"
 $LadPkgGoodVersion     = "1.5.110-LADmaster.1483"
 
 # Update these paths accordingly. In cloud shell, the path is usually /home/user_name
-$checkScriptPath   = "$PSScriptRoot/omi_check.sh"
+$checkScriptPath = "$PSScriptRoot/omi_check.sh"
 $upgradeScriptPath = "$PSScriptRoot/omi_upgrade.sh"
+
+<#
+.DESCRIPTION
+    Check two OMI Server Versions
+.OUTPUTS
+    >0 if $v1 > $v2
+    <0 if $v1 < $v2
+    0 if $v1 == $v2
+#>
+function CompareOmiServerVersions($v1, $v2)
+{
+    if ($using:DEBUG)
+    {
+        Wait-Debugger
+    }
+
+    $reg = 'OMI-(\d+)\.(\d+)\.(\d+)-(\d+)'
+    $match = [Regex]::Match($v1, $reg)
+    $v1Value = [Int32]::Parse($match.Groups[1].Value) * 1000000000 + [Int32]::Parse($match.Groups[2].Value) * 1000000 + [Int32]::Parse($match.Groups[3].Value) * 1000 + [Int32]::Parse($match.Groups[4].Value)
+    $match = [Regex]::Match($v2, $reg)
+    $v2Value = [Int32]::Parse($match.Groups[1].Value) * 1000000000 + [Int32]::Parse($match.Groups[2].Value) * 1000000 + [Int32]::Parse($match.Groups[3].Value) * 1000 + [Int32]::Parse($match.Groups[4].Value)
+    return $v1Value - $v2Value
+}
+$CompareOmiServerVersionsFunc = $Function:CompareOmiServerVersions.ToString()
 
 # Parse the response string.
 function ParsePkgVersions($str)
@@ -44,7 +68,7 @@ function ParsePkgVersions($str)
         return $null
     }
 
-    $splitLines = $str.Split("`n",[System.StringSplitOptions]::RemoveEmptyEntries)
+    $splitLines = $str.Split("`n", [System.StringSplitOptions]::RemoveEmptyEntries)
 
     $omiServerResp   = $splitLines | Where-Object { $_.Contains("/opt/omi/bin/omiserver:") }
     $omiPkgLine      = $splitLines | Where-Object { $_.Contains(" omi ") }
@@ -101,7 +125,7 @@ function IsVMVulnerableOMI($VMorVMssObj, $checkScriptPath, $isVMss, $InstanceId)
         $VM = $VMorVMssObj
         $check = Invoke-AzVMRunCommand -ResourceGroupName $VM.ResourceGroupName -Name $VM.Name -CommandId 'RunShellScript' -ScriptPath $checkScriptPath
     }
-    return ParsePkgVersions($check.Value.Message) 
+    return ParsePkgVersions($check.Value.Message)
 }
 $IsVMVulnerableOMIFunc = $Function:IsVMVulnerableOMI.ToString()
 
@@ -296,16 +320,13 @@ function IsVMRunning($VM, $isVMss, $logger) {
 
         return $true
     }
-    else {
-        $provisioningState = $VM.Statuses | Where-Object { $_.Code.StartsWith("ProvisioningState") }
-        if ($provisioningState.Code -ne "ProvisioningState/succeeded")
-        {
+    else
+    {
+        if ($VM.ProvisioningState -ne 'Succeeded') {
             $logger.Log("`t`t" + $VM.Name + ": VM is not fully provisioned")
             return $false
         }
-        $powerState = $VM.Statuses | Where-Object { $_.Code.StartsWith("PowerState") }
-        if ($powerState.Code -ne "PowerState/running")
-        {
+        if ($VM.PowerState -ne 'VM running') {
             $logger.Log("`t`t" + $VM.Name + ": VM is not running")
             return $false
         }
@@ -322,10 +343,10 @@ function UpdateVMs($sub, $logger)
     Set-AzContext -Subscription $sub.Id
 
     Write-Output "Listing Virtual Machines in subscription '$($sub.Name)'"
-    $VMs = Get-AzVM
+    $VMs = Get-AzVM -Status
     $VMsSorted = $VMs | Sort-Object -Property ResourceGroupName
     $VMsSorted | ForEach-Object -ThrottleLimit $using:ThrottlingLimit -Parallel {
-        $VM = Get-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName -Status
+        $VM = $_
 
         #DEBUG: limit to 1 vm only
         #if ($using:DEBUG -and $VM.name -ne "my-testing-vm")
@@ -334,13 +355,14 @@ function UpdateVMs($sub, $logger)
         #}
 
         $logger = $using:logger
-        $Function:IsVMRunning       = $using:IsVMRunningFunc
-        $Function:UpdateOMS         = $using:UpdateOMSFunc
-        $Function:UpdateLAD         = $using:UpdateLADFunc
-        $Function:UpgradeOMI        = $using:UpgradeVmOMIFunc
+        $Function:IsVMRunning = $using:IsVMRunningFunc
+        $Function:UpdateOMS = $using:UpdateOMSFunc
+        $Function:UpdateLAD = $using:UpdateLADFunc
+        $Function:UpgradeOMI = $using:UpgradeVmOMIFunc
         $Function:IsVMVulnerableOMI = $using:IsVMVulnerableOMIFunc
-        $Function:ParsePkgVersions  = $using:ParsePkgVersionsFunc
-        $Variable:Debug             = $using:DEBUG
+        $Function:CompareOmiServerVersions = $using:CompareOmiServerVersionsFunc
+        $Function:ParsePkgVersions = $using:ParsePkgVersionsFunc
+        $Variable:Debug = $using:DEBUG
 
         if (!(IsVMRunning $VM $false $logger))
         {
@@ -363,7 +385,8 @@ function UpdateVMs($sub, $logger)
             continue
         }
 
-        if ($check.OmiServerVer -eq $using:OmiServerGoodVersion)
+        $versionDiff = CompareOmiServerVersions $check.OmiServerVer $using:OmiServerGoodVersion
+        if ($versionDiff -ge 0)
         {
             $logger.Log("`t`tVM " + $VM.Name + " in resource group " + $VM.ResourceGroupName + " has patched OMI version " + $check.OmiPkgVer)
             Write-Host -NoNewline "."
@@ -397,7 +420,7 @@ function UpdateVMss($sub, $logger)
         Wait-Debugger
     }
 
-    # Set Azure Subscription context  
+    # Set Azure Subscription context
     Set-AzContext -Subscription $sub.Id
 
     Write-Output "Listing Virtual Machine scale sets in subscription '$($sub.Name)'"
@@ -429,16 +452,17 @@ function UpdateVMss($sub, $logger)
         }
 
         $logger = $using:logger
-        $Function:IsVMRunning         = $using:IsVMRunningFunc
-        $Function:UpdateOMS           = $using:UpdateOMSFunc
-        $Function:UpdateLAD           = $using:UpdateLADFunc
-        $Function:UpgradeOMI          = $using:UpgradeVmOMIFunc
-        $Function:IsVMVulnerableOMI   = $using:IsVMVulnerableOMIFunc
-        $Function:ParsePkgVersions    = $using:ParsePkgVersionsFunc
-        $Function:UpgradeVmssOMI      = $using:UpgradeVmssOMIFunc
-        $Variable:Debug               = $using:DEBUG
-        $Variable:upgradeScriptPath   = $using:upgradeScriptPath
-        $Variable:logFilePath         = $using:logFilePath
+        $Function:IsVMRunning = $using:IsVMRunningFunc
+        $Function:UpdateOMS = $using:UpdateOMSFunc
+        $Function:UpdateLAD = $using:UpdateLADFunc
+        $Function:UpgradeOMI = $using:UpgradeVmOMIFunc
+        $Function:IsVMVulnerableOMI = $using:IsVMVulnerableOMIFunc
+        $Function:CompareOmiServerVersions = $using:CompareOmiServerVersionsFunc
+        $Function:ParsePkgVersions = $using:ParsePkgVersionsFunc
+        $Function:UpgradeVmssOMI = $using:UpgradeVmssOMIFunc
+        $Variable:Debug = $using:DEBUG
+        $Variable:upgradeScriptPath = $using:upgradeScriptPath
+        $Variable:logFilePath = $using:logFilePath
 
         if (!(IsVMRunning $VMinstances[0] $true $logger))
         {
@@ -460,7 +484,8 @@ function UpdateVMss($sub, $logger)
             continue
         }
 
-        if ($check.OmiServerVer -eq $using:OmiServerGoodVersion)
+        $versionDiff = CompareOmiServerVersions $check.OmiServerVer $using:OmiServerGoodVersion
+        if ($versionDiff -ge 0)
         {
             $logger.Log("`t`t" + $_.Name + " VMss has patched OMI version " + $check.OmiPkgVer)
             Write-Host -NoNewline "."
@@ -502,7 +527,7 @@ function UpdateConnectedMachines($sub, $rg)
     Write-Output "Listing connected machines (ARC servers) in subscription '$($sub.Name)'"
     $connectedMachines = Get-AzConnectedMachine
     $CMsSorted = $connectedMachines | Sort-Object -Property ResourceGroupName
-    foreach($CM in $CMsSorted)
+    foreach ($CM in $CMsSorted)
     {
         #DEBUG: limit to 1 vm only
         # if ($CM.name -ne "my-test-machine-arc")
@@ -571,31 +596,32 @@ $subs | ForEach-Object -ThrottleLimit $ThrottlingLimit -Parallel {
     # }
 
     # Pass the context variables to the runspaces.
-    $Function:UpdateVMs               = $using:UpdateVMsFunc
-    $Function:UpdateVMss              = $using:UpdateVMssFunc
-    $Variable:IsVMRunningFunc         = $using:IsVMRunningFunc
-    $Variable:UpdateOMSFunc           = $using:UpdateOMSFunc
-    $Variable:UpdateLADFunc           = $using:UpdateLADFunc
-    $Variable:UpgradeVmOMIFunc        = $using:UpgradeVmOMIFunc
-    $Variable:IsVMVulnerableOMIFunc   = $using:IsVMVulnerableOMIFunc
-    $Variable:ParsePkgVersionsFunc    = $using:ParsePkgVersionsFunc
-    $Variable:ThrottlingLimit         = $using:ThrottlingLimit
-    $Variable:checkScriptPath         = $using:checkScriptPath
-    $Variable:upgradeScriptPath       = $using:upgradeScriptPath
-    $Variable:OmiServerGoodVersion    = $using:OmiServerGoodVersion
-    $Variable:OmiPkgGoodVersion       = $using:OmiPkgGoodVersion
-    $Variable:OmsPkgGoodVersion       = $using:OmsPkgGoodVersion
-    $Variable:OmsTypeHandlerVersion   = $using:OmsTypeHandlerVersion
-    $Variable:OMSpublisher            = $using:OMSpublisher
-    $Variable:OMSextName              = $using:OMSextName
-    $Variable:LADpublisher            = $using:LADpublisher
-    $Variable:LADextName              = $using:LADextName
-    $Variable:LadPkgGoodVersion       = $using:LadPkgGoodVersion
-    $Variable:upgradeOMI              = $using:upgradeOMI
-    $Variable:UpgradeVmssOMIFunc      = $using:UpgradeVmssOMIFunc
-    $Variable:DEBUG                   = $using:DEBUG
+    $Function:UpdateVMs = $using:UpdateVMsFunc
+    $Function:UpdateVMss = $using:UpdateVMssFunc
+    $Variable:IsVMRunningFunc = $using:IsVMRunningFunc
+    $Variable:UpdateOMSFunc = $using:UpdateOMSFunc
+    $Variable:UpdateLADFunc = $using:UpdateLADFunc
+    $Variable:UpgradeVmOMIFunc = $using:UpgradeVmOMIFunc
+    $Variable:IsVMVulnerableOMIFunc = $using:IsVMVulnerableOMIFunc
+    $Variable:CompareOmiServerVersionsFunc = $using:CompareOmiServerVersionsFunc
+    $Variable:ParsePkgVersionsFunc = $using:ParsePkgVersionsFunc
+    $Variable:ThrottlingLimit = $using:ThrottlingLimit
+    $Variable:checkScriptPath = $using:checkScriptPath
+    $Variable:upgradeScriptPath = $using:upgradeScriptPath
+    $Variable:OmiServerGoodVersion = $using:OmiServerGoodVersion
+    $Variable:OmiPkgGoodVersion = $using:OmiPkgGoodVersion
+    $Variable:OmsPkgGoodVersion = $using:OmsPkgGoodVersion
+    $Variable:OmsTypeHandlerVersion = $using:OmsTypeHandlerVersion
+    $Variable:OMSpublisher = $using:OMSpublisher
+    $Variable:OMSextName = $using:OMSextName
+    $Variable:LADpublisher = $using:LADpublisher
+    $Variable:LADextName = $using:LADextName
+    $Variable:LadPkgGoodVersion = $using:LadPkgGoodVersion
+    $Variable:upgradeOMI = $using:upgradeOMI
+    $Variable:UpgradeVmssOMIFunc = $using:UpgradeVmssOMIFunc
+    $Variable:DEBUG = $using:DEBUG
     $LogFilePath                      = $_.Id + ".log"
-    $Variable:LogFilePath             = $LogFilePath
+    $Variable:LogFilePath = $LogFilePath
 
     if ($using:DEBUG) {
         Write-Host "DEBUG is true. Please attach a debugger."
