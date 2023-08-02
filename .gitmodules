@@ -10,3 +10,7 @@
 	path = source/ext/jemalloc
 	url = ../../jemalloc/jemalloc.git
 	branch = stable-4
+[submodule "source/ext/ruby_sslv3"]
+	path = source/ext/ruby_sslv3
+	url = ../../ruby/ruby.git
+	ignore = dirty
