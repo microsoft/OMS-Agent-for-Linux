@@ -27,6 +27,7 @@ AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.5.2-52-ND
 AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
+RUBY_SSLV3_DIR := $(BASE_DIR)/source/ext/ruby_sslv3
 # This Ruby version number refers only to the major/minor version (not teeny)
 #      of the Ruby installed with the OMSAgent
 RUBY_VER := $(RUBY_VERSION_MAJOR_MINOR)
@@ -127,7 +128,8 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
-	cd $(BASE_DIR)/source/ext/ruby; git clean -dfx; git reset --hard
+	cd $(RUBY_DIR); git clean -dfx; git reset --hard
+	cd $(RUBY_SSLV3_DIR); git clean -dfx; git reset --hard
 
 compile_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy
 
@@ -150,11 +152,13 @@ clean : clean-status
 clean-ruby : clean
 	sudo $(RMDIR) $(BASE_DIR)/intermediate
 	sudo $(RMDIR) $(RUBY_DIR)/.ext
+	sudo $(RMDIR) $(RUBY_SSLV3_DIR)/.ext
 	#
 	# Warning: This step will clean out checked out files from Ruby directory
 	#
 	@echo "Cleaning RUBY source directory ..."
 	cd $(RUBY_DIR); git clean -dfx; git reset --hard
+	cd $(RUBY_SSLV3_DIR); git clean -dfx; git reset --hard
 	#
 	# Warning: This step will clean out checked out files from fluentd directory
 	#
@@ -212,6 +216,9 @@ ifeq ($(PF_ARCH),x64)
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.1.0 output
 	$(MAKE) -C $(DSC_DIR) dsc110
 	$(MAKE) -C $(DSC_DIR) dsckit110
+	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_3.0.0 output
+	$(MAKE) -C $(DSC_DIR) dsc300
+	$(MAKE) -C $(DSC_DIR) dsckit300
 endif
 	cd $(OMI_ROOT); $(RMDIR) output
 endif
@@ -363,9 +370,9 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/110
 	cd $(INTERMEDIATE_DIR)/110; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_110././'` ; $(MV) $$SOURCE $$DEST; done
 
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/300
-	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/300
-	cd $(INTERMEDIATE_DIR)/300; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_110././'` ; $(MV) $$SOURCE $$DEST; done
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_300.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/300
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_300.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/300
+	cd $(INTERMEDIATE_DIR)/300; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_300././'` ; $(MV) $$SOURCE $$DEST; done
 
 	# Pick up the OSS (Open Source) providers
 	$(RMDIR) $(INTERMEDIATE_DIR)/oss-kits
