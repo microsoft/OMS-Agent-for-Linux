@@ -16,7 +16,6 @@
    Version     : 2.3
 
 '''
-from __future__ import print_function
 # coding: UTF-8
 import os
 import subprocess
