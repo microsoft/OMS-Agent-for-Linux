@@ -148,11 +148,15 @@ case $RUBY_BUILD_TYPE in
 
     300)
         INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
-        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_300[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+#        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_300[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        # Do not configure ruby for 300 with "--with-openssl-dir=/usr/local_ssl_3.0.0" to workaround https://bugs.ruby-lang.org/issues/19844
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
         RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby_sslv3
 
         export LD_LIBRARY_PATH=$SSL_300_LIBPATH:$LD_LIBRARY_PATH
         export PKG_CONFIG_PATH=${SSL_300_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+        # Needed to workaround ruby build issue: https://bugs.ruby-lang.org/issues/19844
+        export PATH=${RUBY_CONFIGURE_QUALS_300}/bin:$PATH
         ;;
 
     *)
@@ -207,7 +211,7 @@ git clean -q -dfx
 
 # Configure and build Ruby
 cd ${RUBY_SRCDIR}
-echo "========================= Performing Running Ruby configure"
+echo "========================= Performing Running Ruby configure ${RUBY_SRCDIR}"
 echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS[@]} ..."
 # Restore the configure script
 autoconf
@@ -282,7 +286,13 @@ if [ $RUNNING_FOR_TEST -eq 1 ]; then
 fi
 
 echo "Installing Bundler into Ruby ..."
-elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.17.3.gem
+if [ $RUBY_BUILD_TYPE -eq 300 ]; then
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-2.3.3.gem
+    echo "Installing openssl gem into Ruby only to workaround openssl v3 ruby build issues..."
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/openssl-3.1.0.gem
+else
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.17.3.gem
+fi
 
 echo "Installing Builder into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.3.gem
