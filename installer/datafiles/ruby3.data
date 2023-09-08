@@ -2272,8 +2272,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/new-c.ri;
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/name-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/name-i.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/%3c%3c-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/%3c%3c-i.ri; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/klass;/cdesc-klass;.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/klass;/cdesc-klass;.ri; 644; root; root
-
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/reset-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/reset-i.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/digest-c.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/digest-c.ri; 644; root; root
 
@@ -9363,7 +9361,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/Digest; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/DigestError; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/klass;; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/SSL; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/SSL/Session; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/SSL/Session/SessionError; 755; root; root
