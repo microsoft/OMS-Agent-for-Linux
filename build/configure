@@ -481,7 +481,8 @@ if [ "$ULINUX" = "1" ]; then
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 
     ssl_300_dirpath=/usr/local_ssl_3.0.0
-    ruby_configure_quals_300=( --with-openssl-dir=$ssl_300_dirpath
+    # Do not configure ruby for 300 with "--with-openssl-dir=/usr/local_ssl_3.0.0" to workaround https://bugs.ruby-lang.org/issues/19844
+    ruby_configure_quals_300=( 
         \"LDFLAGS=-Wl,-rpath=/opt/omi/lib\" )
 fi
 
