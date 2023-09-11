@@ -156,7 +156,7 @@ case $RUBY_BUILD_TYPE in
         export LD_LIBRARY_PATH=$SSL_300_LIBPATH:$LD_LIBRARY_PATH
         export PKG_CONFIG_PATH=${SSL_300_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
         # Needed to workaround ruby build issue: https://bugs.ruby-lang.org/issues/19844
-        export PATH=/usr/local_ssl_3.0.0/bin:$PATH
+        # export PATH=/usr/local_ssl_3.0.0/bin:$PATH
         ;;
 
     *)
