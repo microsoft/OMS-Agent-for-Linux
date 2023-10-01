@@ -1484,7 +1484,7 @@ you should first purge the existing installation and then install using the --sk
 
                 ./$i
                 if [ $? -eq 0 ]; then
-                    if [ -n "${noDigest}" -a "${noDigest}" == "true" ]; then
+                    if [ -n "${noDigest}" -a "${noDigest}" = "true" ]; then
                         ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install --noDigest $FORCE $restartDependencies
                     else
                         ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --install $FORCE $restartDependencies
@@ -1668,7 +1668,7 @@ you should first purge the existing installation and then install using the --sk
 
             ./$i
             if [ $? -eq 0 ]; then
-                if [ -n "${noDigest}" -a "${noDigest}" == "true" ]; then
+                if [ -n "${noDigest}" -a "${noDigest}" = "true" ]; then
                     ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade --noDigest $FORCE $restartDependencies
                 else
                     ./${BUNDLES_PATH}/${BUNDLE}-*universal.*.sh --upgrade $FORCE $restartDependencies
