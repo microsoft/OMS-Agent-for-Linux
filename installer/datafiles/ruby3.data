@@ -2264,8 +2264,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/digest_le
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/cdesc-Digest.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/cdesc-Digest.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/update-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/update-i.ri; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/DigestError/cdesc-DigestError.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/DigestError/cdesc-DigestError.ri; 644; root; root
-
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/initialize_copy-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/initialize_copy-i.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/finish-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/finish-i.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/new-c.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/new-c.ri; 644; root; root
@@ -9842,8 +9840,6 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/Object; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/Digest; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/DigestError; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/Digest/klass;; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/SSL; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/SSL/Session; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/openssl-3.1.0/ri/OpenSSL/SSL/Session/SessionError; 755; root; root
