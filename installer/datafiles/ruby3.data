@@ -3828,6 +3828,26 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTMLUtils/escape
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTMLUtils/escape-c.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTMLUtils/escape-c.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTMLUtils/cdesc-HTMLUtils.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTMLUtils/cdesc-HTMLUtils.ri; 644; root; root
 
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Kernel/scanf-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Kernel/scanf-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Kernel/cdesc-Kernel.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Kernel/cdesc-Kernel.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/cache.ri;          ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/cache.ri;   644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/scanf-i.ri;     ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/scanf-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/block_scanf-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/block_scanf-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/soak_up_spaces-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/soak_up_spaces-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/cdesc-IO.ri;    ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO/cdesc-IO.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/String/scanf-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/String/scanf-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/String/block_scanf-i.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/String/block_scanf-i.ri; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/String/cdesc-String.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/String/cdesc-String.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/cdesc-Scanf.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/cdesc-Scanf.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/FormatSpecifier/cdesc-FormatSpecifier.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/FormatSpecifier/cdesc-FormatSpecifier.ri; 644; root; root
+
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/FormatString/cdesc-FormatString.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/FormatString/cdesc-FormatString.ri; 644; root; root
+
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri/BlankSlate/find_hidden_method-c.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri/BlankSlate/find_hidden_method-c.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri/BlankSlate/reveal-c.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri/BlankSlate/reveal-c.ri; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri/BlankSlate/hide-c.ri; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri/BlankSlate/hide-c.ri; 644; root; root
@@ -3929,6 +3949,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/gyoku-1.3.1.gemspec;   ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/msgpack-1.1.0.gemspec; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/specifications/msgpack-1.1.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/rr-1.1.2.gemspec;      ${{RUBY_INT}}/lib/ruby/gems/3.1.0/specifications/rr-1.1.2.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/test-unit-3.5.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/specifications/test-unit-3.5.3.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/scanf-1.0.0.gemspec;   ${{RUBY_INT}}/lib/ruby/gems/3.1.0/specifications/scanf-1.0.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/flexmock-2.0.5.gemspec; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/specifications/flexmock-2.0.5.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/matrix-0.4.2.gemspec;  ${{RUBY_INT}}/lib/ruby/gems/3.1.0/specifications/matrix-0.4.2.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/specifications/tzinfo-data-1.2017.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/3.1.0/specifications/tzinfo-data-1.2017.3.gemspec; 644; root; root
@@ -3952,6 +3973,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/rr-1.1.2.gem;                   ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/typeprof-0.21.1.gem;            ${{RUBY_INT}}/lib/ruby/gems/3.1.0/cache/typeprof-0.21.1.gem;     644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/msgpack-1.1.0.gem;              ${{RUBY_INT}}/lib/ruby/gems/3.1.0/cache/msgpack-1.1.0.gem;       644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/fluentd-0.12.40.gem;            ${{RUBY_INT}}/lib/ruby/gems/3.1.0/cache/fluentd-0.12.40.gem;     644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/scanf-1.0.0.gem;                ${{RUBY_INT}}/lib/ruby/gems/3.1.0/cache/scanf-1.0.0.gem;         644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/net-smtp-0.3.1.gem;             ${{RUBY_INT}}/lib/ruby/gems/3.1.0/cache/net-smtp-0.3.1.gem;      644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/tzinfo-data-1.2017.3.gem;       ${{RUBY_INT}}/lib/ruby/gems/3.1.0/cache/tzinfo-data-1.2017.3.gem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/cache/prime-0.1.2.gem;                ${{RUBY_INT}}/lib/ruby/gems/3.1.0/cache/prime-0.1.2.gem;         644; root; root
@@ -7978,6 +8000,8 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/net-smtp-0.3.1/lib/net/smtp.rb;  ${{RUBY
 
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/net-smtp-0.3.1/LICENSE.txt;      ${{RUBY_INT}}/lib/ruby/gems/3.1.0/gems/net-smtp-0.3.1/LICENSE.txt; 644; root; root
 
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/scanf-1.0.0/lib/scanf.rb;        ${{RUBY_INT}}/lib/ruby/gems/3.1.0/gems/scanf-1.0.0/lib/scanf.rb; 644; root; root
+
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/prime-0.1.2/README.md;           ${{RUBY_INT}}/lib/ruby/gems/3.1.0/gems/prime-0.1.2/README.md;    644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/prime-0.1.2/lib/prime.rb;        ${{RUBY_INT}}/lib/ruby/gems/3.1.0/gems/prime-0.1.2/lib/prime.rb; 644; root; root
@@ -10017,6 +10041,14 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTTPProxyServer;
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/Daemon; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTTPRequest; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/webrick-1.8.1/ri/WEBrick/HTMLUtils; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0;     755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri;  755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Kernel; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/IO; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/String; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/FormatSpecifier; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/scanf-1.0.0/ri/Scanf/FormatString; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3;   755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/doc/builder-3.2.3/ri/BlankSlate; 755; root; root
@@ -10627,6 +10659,8 @@ ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/webrick-1.8.1/lib/webrick/httpservlet; 7
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/net-smtp-0.3.1; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/net-smtp-0.3.1/lib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/net-smtp-0.3.1/lib/net; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/scanf-1.0.0;    755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/scanf-1.0.0/lib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/prime-0.1.2;    755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/prime-0.1.2/lib; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/3.1.0/gems/prime-0.1.2/bin; 755; root; root

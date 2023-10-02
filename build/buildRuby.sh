@@ -154,8 +154,6 @@ case $RUBY_BUILD_TYPE in
 
         export LD_LIBRARY_PATH=$SSL_300_LIBPATH:$LD_LIBRARY_PATH
         export PKG_CONFIG_PATH=${SSL_300_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
-        # Needed to workaround ruby build issue: https://bugs.ruby-lang.org/issues/19844
-        # export PATH=/usr/local_ssl_3.0.0/bin:$PATH
         ;;
 
     *)
@@ -287,10 +285,11 @@ fi
 echo "Installing Bundler into Ruby ..."
 if [ $RUBY_BUILD_TYPE -eq 300 ]; then
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-2.3.3.gem
-    echo "Installing openssl gem into Ruby 3.1.0 only to workaround openssl v3 ruby build issues..."
+    echo "Installing openssl gem into Ruby 3.1.0 to workaround ruby build issues when compiling it with openssl v3 includes..."
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/openssl-3.1.0.gem
-    echo "Installing webrick gem into Ruby 3.1.0 to workaround fluentd dependency issue since this gem was removed in v 3.1.0."
+    echo "Installing webrick  and scanf gems into Ruby 3.1.0 to workaround fluentd dependency issue since they have been removed from ruby 3.1.0."
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/webrick-1.8.1.gem
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/scanf-1.0.0.gem
 else
     elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.17.3.gem
 fi
