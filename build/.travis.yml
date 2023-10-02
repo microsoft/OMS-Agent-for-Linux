@@ -34,10 +34,10 @@ before_script:
   # pwd: /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux/omsagent/build
   # Since 'build' is a keyword for travis-CI, change Makefile to substitute 'omsagent/build' instead of 'build'
   - sed -i 's/(subst \/build,,$(CURDIR))/(subst omsagent\/build,omsagent,$(CURDIR))/' Makefile
-  - docker pull abenbachir/oms-centos6-x64:latest || true
+  - docker pull narinem/oms-centos6-x64:3.2 || true
 
 script:
   # System tests are not run because OMS-Agent-for-Linux-testconfig.git is a private repo
-  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos6-x64:latest /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux; make unittest"
-  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS abenbachir/oms-centos6-x64:latest /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux; make compile_only"
+  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS narinem/oms-centos6-x64:3.2 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; ./configure --enable-ulinux; make unittest"
+  - docker run --rm -t -v /home/travis/build/Microsoft/Build-OMS-Agent-for-Linux:/home/scratch/Build-OMS narinem/oms-centos6-x64:3.2 /bin/sh -c "cd /home/scratch/Build-OMS/omsagent/build; make distclean; ./configure --enable-ulinux; make compile_only"
 
