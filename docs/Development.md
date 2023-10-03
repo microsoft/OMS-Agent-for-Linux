@@ -86,7 +86,7 @@ When the build is completed, the bundle will be built out in Build-OMS-Agent-for
 You can run unit tests locally  with:
 ```
 # 100 means run unittests against SSL 1.0.0
-# you can also do 'make unittest_110' to target SSL 1.1.0
+# you can also do 'make unittest_110' to target SSL 1.1.0 or 'make unittest_300' to target SSL 3.0.0
 make unittest_100
 ```
 
