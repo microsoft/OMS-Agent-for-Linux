@@ -1326,7 +1326,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/iso8601-0.12.1.gem;             ${{RUBY
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/fluent-plugin-mdsd-0.1.9.pre.build.master.71.gem; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/fluent-plugin-mdsd-0.1.9.pre.build.master.71.gem; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/string-scrub-0.0.5.gem;         ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/string-scrub-0.0.5.gem;  644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/json-2.1.0.gem;                 ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/json-2.1.0.gem;          644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/cool.io-1.5.3.gem;              ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/cool.io-1.5.3.gem;       644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/cool.io-1.8.0.gem;              ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/cool.io-1.8.0.gem;       644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/rake-10.4.2.gem;                ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/rake-10.4.2.gem;         644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/yajl-ruby-1.3.1.gem;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/yajl-ruby-1.3.1.gem;     644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/cache/thread_safe-0.3.6.gem;          ${{RUBY_INT}}/lib/ruby/gems/2.6.0/cache/thread_safe-0.3.6.gem;   644; root; root
@@ -1363,11 +1363,11 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/http_p
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/http_parser.rb-0.6.0/ruby_http_parser.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/http_parser.rb-0.6.0/ruby_http_parser.so; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/http_parser.rb-0.6.0/gem_make.out; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/http_parser.rb-0.6.0/gem_make.out; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/cool.io_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/cool.io_ext.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/gem.build_complete; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/gem.build_complete; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/mkmf.log; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/mkmf.log; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/iobuffer_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/iobuffer_ext.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/gem_make.out; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3/gem_make.out; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/mkmf.log; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/mkmf.log; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/gem.build_complete; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/gem.build_complete; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/iobuffer_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/iobuffer_ext.so; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/gem_make.out; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/gem_make.out; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/cool.io_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0/cool.io_ext.so; 755; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/oj-3.7.9/gem.build_complete; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/oj-3.7.9/gem.build_complete; 644; root; root
 
@@ -9095,109 +9095,110 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/tzinfo-data-1.2017.3/lib/tzinfo/data/ind
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/tzinfo-data-1.2017.3/.yardopts;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/tzinfo-data-1.2017.3/.yardopts; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/appveyor.yml;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/appveyor.yml; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/Gemfile;           ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/Gemfile;    644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/README.md;         ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/README.md;  644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/LICENSE;           ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/LICENSE;    644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/libev_ruby_gil.diff; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/libev_ruby_gil.diff; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/.rspec;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/.rspec;     644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_vars.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_vars.h; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_win32.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_win32.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/LICENSE; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/LICENSE; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/test_libev_win32.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/test_libev_win32.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/README.embed; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/README.embed; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_wrap.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_wrap.h; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_poll.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_poll.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_kqueue.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_kqueue.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_port.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_port.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/Changes; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/Changes; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_epoll.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_epoll.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev.c;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_select.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev_select.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/README;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/README; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev.h;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev/ev.h; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io.rb;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io_ext.so; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/iobuffer.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/iobuffer.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/iobuffer.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/iobuffer.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/.sitearchdir.time; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/.sitearchdir.time; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/extconf.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/extconf.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/Makefile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/Makefile; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/iobuffer_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer/iobuffer_ext.so; 755; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/timer_watcher.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/timer_watcher.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/io.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/io.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/dns_resolver.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/dns_resolver.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/custom_require.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/custom_require.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/async_watcher.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/async_watcher.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/meta.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/meta.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/listener.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/listener.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/version.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/dsl.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/dsl.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/server.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/socket.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/socket.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/iowatcher.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/iowatcher.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/loop.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io/loop.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/stat_watcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/stat_watcher.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/watcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/watcher.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/.sitearchdir.time; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/.sitearchdir.time; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io_ext.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io_ext.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/utils.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/utils.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/.gitignore; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/.gitignore; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/watcher.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/watcher.h; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/extconf.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/extconf.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/timer_watcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/timer_watcher.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/loop.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/loop.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io.h; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/loop.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/loop.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/ev_wrap.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/ev_wrap.h; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/utils.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/utils.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/iowatcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/iowatcher.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/iowatcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/iowatcher.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io_ext.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io_ext.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/watcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/watcher.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/libev.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/libev.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/libev.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/libev.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/timer_watcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/timer_watcher.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/Makefile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/Makefile; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/stat_watcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/stat_watcher.o; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io/cool.io_ext.so; 755; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/iobuffer_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/iobuffer_ext.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/coolio.rb;     ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/coolio.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/.gitignore;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/.gitignore; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.gitignore;        ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.gitignore; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/LICENSE;           ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/LICENSE;    644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/README.md;         ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/README.md;  644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/appveyor.yml;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/appveyor.yml; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/libev_win_select.diff; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/libev_win_select.diff; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/echo_server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/echo_server.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/callbacked_echo_server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/callbacked_echo_server.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/dslified_echo_server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/dslified_echo_server.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/dslified_echo_client.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/dslified_echo_client.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/echo_client.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/echo_client.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/google.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples/google.rb; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/async_watcher_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/async_watcher_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/udp_socket_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/udp_socket_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/iobuffer_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/iobuffer_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/unix_listener_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/unix_listener_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/stat_watcher_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/stat_watcher_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/timer_watcher_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/timer_watcher_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/spec_helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/spec_helper.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/dns_spec.rb;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/dns_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/unix_server_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/unix_server_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/tcp_server_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/tcp_server_spec.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/tcp_socket_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec/tcp_socket_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/async_watcher_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/async_watcher_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/tcp_socket_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/tcp_socket_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/dns_spec.rb;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/dns_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/stat_watcher_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/stat_watcher_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/udp_socket_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/udp_socket_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/unix_listener_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/unix_listener_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/spec_helper.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/spec_helper.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/timer_watcher_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/timer_watcher_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/unix_server_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/unix_server_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/tcp_server_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/tcp_server_spec.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/iobuffer_spec.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec/iobuffer_spec.rb; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/dslified_echo_server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/dslified_echo_server.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/callbacked_echo_server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/callbacked_echo_server.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/echo_server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/echo_server.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/dslified_echo_client.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/dslified_echo_client.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/google.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/google.rb; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/echo_client.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples/echo_client.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/coolio.rb;     ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/coolio.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/.gitignore;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/.gitignore; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io.rb;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io.rb; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/.travis.yml;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/.travis.yml; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/CHANGES.md;        ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/CHANGES.md; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/async_watcher.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/async_watcher.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/listener.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/listener.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/server.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/server.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/custom_require.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/custom_require.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/loop.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/loop.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/iowatcher.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/iowatcher.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/meta.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/meta.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/dns_resolver.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/dns_resolver.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/timer_watcher.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/timer_watcher.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/socket.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/socket.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/version.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/version.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/dsl.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/dsl.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/io.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io/io.rb; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_epoll.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_epoll.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/Changes; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/Changes; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/LICENSE; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/LICENSE; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/test_libev_win32.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/test_libev_win32.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_win32.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_win32.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_poll.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_poll.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/README;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/README; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_wrap.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_wrap.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev.h;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_port.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_port.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_vars.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_vars.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_kqueue.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_kqueue.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_select.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev_select.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/README.embed; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/README.embed; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev.c;    ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev/ev.c; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/iobuffer_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/iobuffer_ext.so; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io_ext.so; 755; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/.sitearchdir.time; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/.sitearchdir.time; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/Makefile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/Makefile; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/iobuffer.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/iobuffer.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/iobuffer_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/iobuffer_ext.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/iobuffer.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/iobuffer.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/extconf.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer/extconf.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/Gemfile;           ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/Gemfile;    644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/libev_win_select.diff; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/libev_win_select.diff; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/utils.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/utils.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/watcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/watcher.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/.sitearchdir.time; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/.sitearchdir.time; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/loop.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/loop.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/loop.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/loop.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/watcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/watcher.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io_ext.so; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io_ext.so; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/Makefile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/Makefile; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/libev.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/libev.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io_ext.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io_ext.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/stat_watcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/stat_watcher.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/watcher.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/watcher.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/iowatcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/iowatcher.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/timer_watcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/timer_watcher.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io_ext.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/cool.io_ext.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/ev_wrap.h; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/ev_wrap.h; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/stat_watcher.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/stat_watcher.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/iowatcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/iowatcher.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/libev.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/libev.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/.gitignore; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/.gitignore; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/timer_watcher.c; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/timer_watcher.c; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/utils.o; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/utils.o; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/extconf.rb; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io/extconf.rb; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.github/workflows/test.yaml; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.github/workflows/test.yaml; 644; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/cool.io.gemspec;   ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/cool.io.gemspec; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/.gitignore;        ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/.gitignore; 644; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/Rakefile;          ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/Rakefile;   644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/Rakefile;          ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/Rakefile;   644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/libev_ruby_gil.diff; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/libev_ruby_gil.diff; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/CHANGES.md;        ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/CHANGES.md; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/cool.io.gemspec;   ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/cool.io.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.travis.yml;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.travis.yml; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.rspec;            ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.rspec;     644; root; root
 
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/oj-3.7.9/pages/Advanced.md;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/oj-3.7.9/pages/Advanced.md; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/oj-3.7.9/pages/JsonGem.md;       ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/oj-3.7.9/pages/JsonGem.md; 644; root; root
@@ -9779,7 +9780,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluent-plugin-mdsd-0.1.9.pre.build.maste
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluent-plugin-mdsd-0.1.9.pre.build.master.71/fluent-plugin-mdsd.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluent-plugin-mdsd-0.1.9.pre.build.master.71/fluent-plugin-mdsd.gemspec; 664; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/fluent-plugin-mdsd-0.1.9.pre.build.master.71/Rakefile; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/gems/fluent-plugin-mdsd-0.1.9.pre.build.master.71/Rakefile; 664; root; root
 
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/cool.io-1.5.3.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/cool.io-1.5.3.gemspec; 644; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/cool.io-1.8.0.gemspec; ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/cool.io-1.8.0.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/tzinfo-1.2.4.gemspec;  ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/tzinfo-1.2.4.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/gyoku-1.3.1.gemspec;   ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/gyoku-1.3.1.gemspec; 644; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/specifications/rr-1.1.2.gemspec;      ${{RUBY_INT}}/lib/ruby/gems/2.6.0/specifications/rr-1.1.2.gemspec; 644; root; root
@@ -10059,7 +10060,7 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/string
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/msgpack-1.1.0; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/msgpack-1.1.0/msgpack; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/http_parser.rb-0.6.0; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.5.3; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/cool.io-1.8.0; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/oj-3.7.9; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/extensions/${{RUBY_ARCH}}/2.6.0-static/oj-3.7.9/oj; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/build_info;          755; root; root
@@ -10983,15 +10984,17 @@ ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/tzinfo-data-1.2017.3/lib/tzinfo/data/def
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/tzinfo-data-1.2017.3/lib/tzinfo/data/definitions/Atlantic; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/tzinfo-data-1.2017.3/lib/tzinfo/data/definitions/Mexico; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/tzinfo-data-1.2017.3/lib/tzinfo/data/indexes; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3;  755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/lib/cool.io; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/spec; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/examples; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/libev; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/iobuffer; 755; root; root
-${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.5.3/ext/cool.io; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0;  755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/libev; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/iobuffer; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/ext/cool.io; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/examples; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/spec; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/lib/cool.io; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.github; 755; root; root
+${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/cool.io-1.8.0/.github/workflows; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/oj-3.7.9;       755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/oj-3.7.9/pages; 755; root; root
 ${{RUBY_DEST}}/lib/ruby/gems/2.6.0/gems/oj-3.7.9/lib;   755; root; root

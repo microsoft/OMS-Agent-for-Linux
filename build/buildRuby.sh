@@ -8,6 +8,7 @@
 # Usage: buildRuby.sh <parameter>
 #
 #   Parameter may be one of:
+#       "300": Build for SSL v3.0.0
 #       "110": Build for SSL v1.1.0
 #       "101": Build for SSL v1.0.1
 #       "100": Build for SSL v1.0.0
@@ -112,6 +113,15 @@ case $RUBY_BUILD_TYPE in
         export PKG_CONFIG_PATH=${SSL_110_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
 	;;
 
+    test_300)
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_300[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_TESTINS}" )
+        RUNNING_FOR_TEST=1
+        RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby_sslv3
+
+        export LD_LIBRARY_PATH=$SSL_300_LIBPATH:$LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH=${SSL_300_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+	;;
+
 #    100)
 #        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
 #        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_100[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
@@ -136,12 +146,22 @@ case $RUBY_BUILD_TYPE in
         export PKG_CONFIG_PATH=${SSL_110_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
         ;;
 
+    300)
+        INT_APPEND_DIR="/${RUBY_BUILD_TYPE}"
+        RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS_300[@]}" "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
+        # Do not configure ruby for 300 with "--with-openssl-dir=/usr/local_ssl_3.0.0" to workaround https://bugs.ruby-lang.org/issues/19844
+        RUBY_SRCDIR=${BASE_DIR}/source/ext/ruby_sslv3
+
+        export LD_LIBRARY_PATH=$SSL_300_LIBPATH:$LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH=${SSL_300_LIBPATH}/pkgconfig:$PKG_CONFIG_PATH
+        ;;
+
     *)
         INT_APPEND_DIR=""
         RUBY_CONFIGURE_QUALS=( "${RUBY_CONFIGURE_QUALS[@]}" "${RUBY_CONFIGURE_QUALS_SYSINS}" )
 
         if [ -n "$RUBY_BUILD_TYPE" ]; then
-            echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, test_100, test_110, 100, 110 or blank" >& 2
+            echo "Invalid parameter passed (${RUBY_BUILD_TYPE}): Must be test, test_100, test_110, test_300, 100, 110, 300, or blank" >& 2
             exit 1
         fi
 esac
@@ -188,7 +208,7 @@ git clean -q -dfx
 
 # Configure and build Ruby
 cd ${RUBY_SRCDIR}
-echo "========================= Performing Running Ruby configure"
+echo "========================= Performing Running Ruby configure ${RUBY_SRCDIR}"
 echo " Building Ruby with configuration: ${RUBY_CONFIGURE_QUALS[@]} ..."
 # Restore the configure script
 autoconf
@@ -263,7 +283,16 @@ if [ $RUNNING_FOR_TEST -eq 1 ]; then
 fi
 
 echo "Installing Bundler into Ruby ..."
-elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.17.3.gem
+if [ $RUBY_BUILD_TYPE -eq 300 ]; then
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-2.3.3.gem
+    echo "Installing openssl gem into Ruby 3.1.0 to workaround ruby build issues when compiling it with openssl v3 includes..."
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/openssl-3.1.0.gem
+    echo "Installing webrick  and scanf gems into Ruby 3.1.0 to workaround fluentd dependency issue since they have been removed from ruby 3.1.0."
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/webrick-1.8.1.gem
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/scanf-1.0.0.gem
+else
+    elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/bundler-1.17.3.gem
+fi
 
 echo "Installing Builder into Ruby ..."
 elevate ${RUBY_DESTDIR}/bin/gem install ${BASE_DIR}/source/ext/gems/builder-3.2.3.gem

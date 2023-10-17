@@ -31,8 +31,8 @@ usage()
     echo "only on Linux, and only for universal installations. As such, package names"
     echo "are determined via directory lookups."
     echo
-    echo "Note that the \"directory\" parameter must contain \"100\" and \"110\""
-    echo "directories (for SSL 1.0.0 and SSL 1.1.0), so that we have .rpm and .deb"
+    echo "Note that the \"directory\" parameter must contain \"100\", \"110\", and \"300\""
+    echo "directories (for SSL 1.0.0, 1.1.0, and 3.0.0), so that we have .rpm and .deb"
     echo "files for each of the SSL-sensitive files."
     exit 1
 }

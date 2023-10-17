@@ -27,6 +27,7 @@ AUOMS_KITS_RELEASE_DIR := $(AUOMS_KITS_DIR)/release/2.5.2-52-ND
 AUOMS_KITS_RELEASE_1_3_DIR := $(AUOMS_KITS_DIR)/release/1.3.0-3
 
 RUBY_DIR := $(BASE_DIR)/source/ext/ruby
+RUBY_SSLV3_DIR := $(BASE_DIR)/source/ext/ruby_sslv3
 # This Ruby version number refers only to the major/minor version (not teeny)
 #      of the Ruby installed with the OMSAgent
 RUBY_VER := $(RUBY_VERSION_MAJOR_MINOR)
@@ -83,6 +84,10 @@ else
 INSTALLER_DATAFILES_CURRENT := $(INSTALLER_DATAFILES_DPKG)
 endif
 
+INSTALLER_DATAFILES3 := base_omsagent.data linux.data ruby3.data
+INSTALLER_DATAFILES3_RPM := $(INSTALLER_DATAFILES3) linux_rpm.data
+INSTALLER_DATAFILES3_DPKG := $(INSTALLER_DATAFILES3) linux_dpkg.data
+
 ifeq ("$(wildcard /usr/bin/dpkg-deb)","")
 DPKG_LOCATION="--DPKG_LOCATION=$(PAL_DIR)/installer/InstallBuilder/tools/bin/dpkg-deb-$(PF_ARCH)"
 else
@@ -127,7 +132,8 @@ SYSTEST_CONFIG := $(BASE_DIR)/test/config/systest.conf
 all : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy kit
         # After a successful make, undo the Ruby patches for sequential builds from old branches
 	@echo "Cleaning patched Ruby files..."
-	cd $(BASE_DIR)/source/ext/ruby; git clean -dfx; git reset --hard
+	cd $(RUBY_DIR); git clean -dfx; git reset --hard
+	cd $(RUBY_SSLV3_DIR); git clean -dfx; git reset --hard
 
 compile_only : $(OMI_LIBRARY_LIB_BASE) $(DSC_TARGET_DIR) $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) sepolicy
 
@@ -150,11 +156,13 @@ clean : clean-status
 clean-ruby : clean
 	sudo $(RMDIR) $(BASE_DIR)/intermediate
 	sudo $(RMDIR) $(RUBY_DIR)/.ext
+	sudo $(RMDIR) $(RUBY_SSLV3_DIR)/.ext
 	#
 	# Warning: This step will clean out checked out files from Ruby directory
 	#
 	@echo "Cleaning RUBY source directory ..."
 	cd $(RUBY_DIR); git clean -dfx; git reset --hard
+	cd $(RUBY_SSLV3_DIR); git clean -dfx; git reset --hard
 	#
 	# Warning: This step will clean out checked out files from fluentd directory
 	#
@@ -212,6 +220,9 @@ ifeq ($(PF_ARCH),x64)
 	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_1.1.0 output
 	$(MAKE) -C $(DSC_DIR) dsc110
 	$(MAKE) -C $(DSC_DIR) dsckit110
+	cd $(OMI_ROOT); $(RMDIR) output; ln -s output_openssl_3.0.0 output
+	$(MAKE) -C $(DSC_DIR) dsc300
+	$(MAKE) -C $(DSC_DIR) dsckit300
 endif
 	cd $(OMI_ROOT); $(RMDIR) output
 endif
@@ -266,6 +277,8 @@ ifeq ($(ULINUX),1)
 ifeq ($(PF_ARCH),x64)
 	@$(ECHO) "========================= Performing Building Ruby for SSL v1.1.0 ..."
 	$(BASE_DIR)/build/buildRuby.sh 110
+	@$(ECHO) "========================= Performing Building Ruby for SSL v3.0.0 ..."
+	$(BASE_DIR)/build/buildRuby.sh 300
 endif
 else
 	@$(ECHO) "========================= Performing Building Ruby"
@@ -345,12 +358,13 @@ $(TARGET_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).sh : $(INTERMEDIATE_DIR)/$(OUTPUT_PAC
 ifeq ($(PF_ARCH),x64)
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
 	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb \
-	$(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
+	$(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb \
+	$(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building .tar file"
 
 	# Gather the DSC bits that we need
-	$(RM) $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/110/omsconfig-*.{rpm,deb}
+	$(RM) $(INTERMEDIATE_DIR)/100/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/110/omsconfig-*.{rpm,deb} $(INTERMEDIATE_DIR)/300/omsconfig-*.{rpm,deb}
 
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/100
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_100.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/100
@@ -359,6 +373,10 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/110
 	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_110.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/110
 	cd $(INTERMEDIATE_DIR)/110; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_110././'` ; $(MV) $$SOURCE $$DEST; done
+
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_300.*.rpm | sort | tail -1` $(INTERMEDIATE_DIR)/300
+	cd $(DSC_DIR)/release; $(COPY) `ls omsconfig-*.ssl_300.*.deb | sort | tail -1` $(INTERMEDIATE_DIR)/300
+	cd $(INTERMEDIATE_DIR)/300; for f in omsconfig-*.{rpm,deb}; do SOURCE=$$f; DEST=`echo $$SOURCE | sed 's/.ssl_300././'` ; $(MV) $$SOURCE $$DEST; done
 
 	# Pick up the OSS (Open Source) providers
 	$(RMDIR) $(INTERMEDIATE_DIR)/oss-kits
@@ -388,6 +406,7 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Gather SCX packages
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 100/scx-*.universal.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 110/scx-*.universal.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) 300/scx-*.universal.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/300
 
 	# Gather apache and mysql cimprov bundle scripts from SCX
 	cd $(INTERMEDIATE_DIR)/scxbundle.*; $(COPY) *.sh $(INTERMEDIATE_DIR)/oss-kits
@@ -395,33 +414,38 @@ $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS
 	# Gather OMI packages from omi-kits
 	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_100.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/100
 	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_110.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/110
+	cd $(OMI_KITS); $(COPY) release/omi-*.ssl_300.ulinux.s.$(PF_ARCH).{deb,rpm} $(INTERMEDIATE_DIR)/300
 
-	# Remove ssl_100 and ssl_110 from omi filenames
+	# Remove ssl_100, ssl_110, ssl_300 from omi filenames
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_100\./\./g"`
 	cd $(INTERMEDIATE_DIR)/100; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_100\./\./g"`
 	cd $(INTERMEDIATE_DIR)/110; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_110\./\./g"`
 	cd $(INTERMEDIATE_DIR)/110; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_110\./\./g"`
+	cd $(INTERMEDIATE_DIR)/300; mv omi-*.deb `ls omi-*.deb | sed "s/\.ssl_300\./\./g"`
+	cd $(INTERMEDIATE_DIR)/300; mv omi-*.rpm `ls omi-*.rpm | sed "s/\.ssl_300\./\./g"`
 
 	chmod +x $(INTERMEDIATE_DIR)/bundles/**/*.sh
 
 	# Build the tar file containing both .rpm and .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 100/*.{deb,rpm} 110/*.{deb,rpm} oss-kits/* bundles/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX).tar 100/*.{deb,rpm} 110/*.{deb,rpm} 300/*.{deb,rpm} oss-kits/* bundles/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_RPM).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm 
+	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).rpm \
+	$(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).rpm
 
 	@echo "========================= Performing Building RPM .tar file"
 
 	# Build the tar file containing .rpm packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 100/*.rpm 110/*.rpm oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_RPM).tar 100/*.rpm 110/*.rpm 300/*.rpm oss-kits/*
 
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX_DEB).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
-	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb
+	$(INTERMEDIATE_DIR)/100/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb \
+	$(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).deb
 
 	@echo "========================= Performing Building DEB .tar file"
 
 	# Build the tar file containing .deb packages
-	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb 110/*.deb oss-kits/*
+	cd $(INTERMEDIATE_DIR); tar cvf $(OUTPUT_PACKAGE_PREFIX_DEB).tar 100/*.deb 110/*.deb 300/*.deb oss-kits/*
 
 else
 $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).tar : $(RUBY_DEST_DIR) $(IN_PLUGINS_LIB) \
@@ -610,6 +634,63 @@ $(INTERMEDIATE_DIR)/110/$(OUTPUT_PACKAGE_PREFIX).deb:
 		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
 		$(INSTALLER_DATAFILES_DPKG)
 	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/110
+
+$(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).rpm:
+	@echo "========================= Performing Building RPM package (SSL 3.0)"
+	$(MKPATH) $(INSTALLER_TMPDIR)
+	$(MKPATH) $(INTERMEDIATE_DIR)/300
+
+	sudo $(RMDIR) $(STAGING_DIR)
+	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
+		--BASE_DIR=$(BASE_DIR) \
+		--TARGET_DIR=$(INTERMEDIATE_DIR) \
+		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
+		--STAGING_DIR=$(STAGING_DIR) \
+		--BUILD_TYPE=$(BUILD_TYPE) \
+		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/300/ruby \
+		--RUBY_ARCH=$(RUBY_ARCH) \
+		--RUBY_ARCM=$(RUBY_ARCM) \
+		--PFARCH=$(PF_ARCH) \
+		--PFDISTRO=$(PF_DISTRO) \
+		--PFMAJOR=$(PF_MAJOR) \
+		--PFMINOR=$(PF_MINOR) \
+		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
+		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
+		--VERSION_IDENT="$(OMS_BUILDVERSION_DATE) $(OMS_BUILDVERSION_STATUS)" \
+		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
+		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
+		$(INSTALLER_DATAFILES3_RPM)
+	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).rpm $(INTERMEDIATE_DIR)/300
+
+$(INTERMEDIATE_DIR)/300/$(OUTPUT_PACKAGE_PREFIX).deb:
+	@echo "========================= Performing Building DEB package (SSL 3.0)"
+	$(MKPATH) $(INSTALLER_TMPDIR)
+	$(MKPATH) $(INTERMEDIATE_DIR)/300
+
+	sudo $(RMDIR) $(STAGING_DIR)
+	python $(PAL_DIR)/installer/InstallBuilder/installbuilder.py \
+		--BASE_DIR=$(BASE_DIR) \
+		--TARGET_DIR=$(INTERMEDIATE_DIR) \
+		--INTERMEDIATE_DIR=$(INSTALLER_TMPDIR) \
+		--STAGING_DIR=$(STAGING_DIR) \
+		--BUILD_TYPE=$(BUILD_TYPE) \
+		--BUILD_CONFIGURATION=$(BUILD_CONFIGURATION) \
+		--RUBY_INT=intermediate/$(BUILD_CONFIGURATION)/300/ruby \
+		--RUBY_ARCH=$(RUBY_ARCH) \
+		--RUBY_ARCM=$(RUBY_ARCM) \
+		--PFARCH=$(PF_ARCH) \
+		--PFDISTRO=$(PF_DISTRO) \
+		--PFMAJOR=$(PF_MAJOR) \
+		--PFMINOR=$(PF_MINOR) \
+		--VERSION=$(OMS_BUILDVERSION_MAJOR).$(OMS_BUILDVERSION_MINOR).$(OMS_BUILDVERSION_PATCH) \
+		--RELEASE=$(OMS_BUILDVERSION_BUILDNR) \
+		--VERSION_IDENT="$(OMS_BUILDVERSION_DATE) $(OMS_BUILDVERSION_STATUS)" \
+		$(DPKG_LOCATION) \
+		--DATAFILE_PATH=$(BASE_DIR)/installer/datafiles \
+		--OUTPUTFILE=$(OUTPUT_PACKAGE_PREFIX) \
+		$(INSTALLER_DATAFILES3_DPKG)
+	mv $(INTERMEDIATE_DIR)/$(OUTPUT_PACKAGE_PREFIX).deb $(INTERMEDIATE_DIR)/300
 endif
 else
 
@@ -658,6 +739,10 @@ set_ruby_test_ssl_110:
 	$(eval RUBY_TESTING_TARGET_NAME = test_110)
 	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
 
+set_ruby_test_ssl_300:
+	$(eval RUBY_TESTING_TARGET_NAME = test_300)
+	@echo "RUBY_TESTING_TARGET_NAME=${RUBY_TESTING_TARGET_NAME}"
+
 tests : test
 
 unittest : $(RUBY_TESTING_DIR)
@@ -692,15 +777,20 @@ test : omstest
 
 tests_100: set_ruby_test_ssl_100 tests
 tests_110: set_ruby_test_ssl_110 tests
+tests_300: set_ruby_test_ssl_300 tests
 
 unittest_100: set_ruby_test_ssl_100 unittest
 unittest_110: set_ruby_test_ssl_110 unittest
+unittest_300: set_ruby_test_ssl_300 unittest
 
 systemtest_100: set_ruby_test_ssl_100 systemtest
 systemtest_110: set_ruby_test_ssl_110 systemtest
+systemtest_300: set_ruby_test_ssl_300 systemtest
 
 omstest_100: set_ruby_test_ssl_100 omstest
 omstest_110: set_ruby_test_ssl_110 omstest
+omstest_300: set_ruby_test_ssl_300 omstest
 
 test_100: set_ruby_test_ssl_100 test
 test_110: set_ruby_test_ssl_110 test
+test_300: set_ruby_test_ssl_300 test
