@@ -298,6 +298,7 @@ ulinux_detect_openssl_version()
 
     TMPBINDIR=
     # the system OpenSSL version is 1.0.0.  Likewise with OPENSSL_SYSTEM_VERSION_11X
+    # take system current openssl version as default
     OPENSSL_SYSTEM_VERSION_FULL=`$OPENSSL_PATH version | awk '{print $2}'`
     OPENSSL_SYSTEM_VERSION_10X=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.'; echo $?`
     OPENSSL_SYSTEM_VERSION_100_ONLY=`echo $OPENSSL_SYSTEM_VERSION_FULL | grep -Eq '^1.0.0'; echo $?`
@@ -316,6 +317,8 @@ ulinux_detect_openssl_version()
         echo "Supported versions: 1.0.1 onward (1.0.0 was deprecated), 1.1.*, 3.0.*"
         cleanup_and_exit $UNSUPPORTED_OPENSSL
     fi
+    echo "Detected OpenSSL version $OPENSSL_SYSTEM_VERSION_FULL set as system default."
+    echo "Install/Upgrade will use package(s) from OMS bundle installer's $TMPBINDIR openssl directtory."
 }
 
 ulinux_detect_installer()
@@ -545,6 +548,7 @@ pkg_add()
     echo "----- Installing package: $pkg_name ($pkg_filename) -----"
 
     ulinux_detect_openssl_version
+    # TMPBINDIR now points to the openssl version folder to take pkg from
     pkg_filename=$TMPBINDIR/$pkg_filename
 
     if [ "$INSTALLER" = "DPKG" ]; then
@@ -612,6 +616,7 @@ pkg_upd() {
     fi
 
     ulinux_detect_openssl_version
+    # TMPBINDIR now points to the openssl version folder to take pkg from
     pkg_filename=$TMPBINDIR/$pkg_filename
 
     if [ "$INSTALLER" = "DPKG" ]
