@@ -76,6 +76,8 @@ fi
 
 # Ensure omsagent is in the omiusers group, but leave omsagent as a group
 /usr/sbin/usermod -g omiusers omsagent 1> /dev/null 2> /dev/null
+# Ensure omsagent is in the omi group as well
+/usr/sbin/usermod -g omi omsagent 1> /dev/null 2> /dev/null
 
 # Add the 'nxautomation' group if it does not already exist
 # (Can't use useradd with -U since that doesn't exist on older systems)
@@ -164,6 +166,10 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
 
     # Unconfigure sudo if it's already configured
     RemoveSudoersSupport
+
+    # Remove omsagent from the omi group
+    echo "Removing omsagent from the omi group ..."
+    gpasswd -d omsagent omi
 
     # Remove the service accounts
     echo "Deleting nxautomation service account ..."
