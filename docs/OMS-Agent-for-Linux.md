@@ -37,7 +37,7 @@ After installing the Log Analytics agent for Linux packages, the following addit
  **Required package** | **Description** | **Minimum version**
 --------------------- | --------------------- | -------------------
 Glibc |	GNU C Library	| 2.5-12 
-Openssl	| OpenSSL Libraries | 1.0.1 or 1.1.x
+Openssl	| OpenSSL Libraries | 1.0.1, 1.1.x or 3.0.x
 Curl | cURL web client | 7.15.5
 Python 2 | | 2.6
 Python-ctypes | |
