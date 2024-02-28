@@ -1456,10 +1456,8 @@ case "$installMode" in
                 OSS_BUNDLE=`basename $i -oss-test.sh`
                 [ ! -f oss-kits/${OSS_BUNDLE}-cimprov-*.sh ] && continue
 
-                if [ "$OSS_BUNDLE" = "docker" ]  && [ "$skipDockerProviderInstall" = "true" ]; then
-                   echo "$OSS_BUNDLE provider package installation skipped since --skip-docker-provider-install flag is set. \
-If you are installing over an existing omsagent install and wish to remove the docker provider, \
-you should first purge the existing installation and then install using the --skip-docker-provider-install flag."
+                # New installations of the docker-cimprov package are no longer supported
+                if [ "$OSS_BUNDLE" = "docker" ]; then
                     continue
                 fi
 
