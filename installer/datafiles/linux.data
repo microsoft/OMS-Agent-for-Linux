@@ -74,8 +74,8 @@ if [ $? -ne 0 ]; then
     useradd -r -c "OMS agent" -d /var/opt/microsoft/omsagent/run -g omsagent -s /bin/bash omsagent
 fi
 
-# Ensure omsagent is in the omiusers primary group, but leave omsagent as a group
-# Ensure omsagent is in the omi secondary group as well
+# Ensure omsagent is in the omiusers group, but leave omsagent as a group
+# Ensure omsagent is in the omi group as well
 /usr/sbin/usermod -g omiusers -a -G omi omsagent 1> /dev/null 2> /dev/null
 
 # Add the 'nxautomation' group if it does not already exist
@@ -169,10 +169,6 @@ if ${{PERFORMING_UPGRADE_NOT}}; then
     # Remove omsagent from the omi group
     echo "Removing omsagent from the omi group ..."
     gpasswd -d omsagent omi
-
-    # Remove omsagent from the omiusers group
-    echo "Removing omsagent from the omiusers group ..."
-    gpasswd -d omsagent omiusers
 
     # Remove the service accounts
     echo "Deleting nxautomation service account ..."
