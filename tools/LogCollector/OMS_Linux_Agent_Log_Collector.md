@@ -10,6 +10,15 @@ Make sure the target Linux server has the following software installed:
 You can use OMS Log collector to collect logs for both failed and successful installations of the OMS Linux Agent.
 
 ## Log Collector Download:
+
+The Log Collector is automatically installed with the OMS Agent via the [OMS Troubleshooting Tool](https://github.com/microsoft/OMS-Agent-for-Linux/blob/master/docs/Troubleshooting-Tool.md). It can be found by running the Troubleshooting Tool:
+```
+sudo /opt/microsoft/omsagent/bin/troubleshooter
+```
+And choosing Option `L` after startup.
+
+However, if for some reason the Troubleshooting Tool is not installed or working, the Log Collector can be downloaded manually:
+
 - Download the tool and copy to any directory of your choice:
     ```
     wget https://github.com/Microsoft/OMS-Agent-for-Linux/raw/master/tools/LogCollector/download/v7/omslinux_agentlog.tgz

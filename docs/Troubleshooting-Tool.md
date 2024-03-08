@@ -14,7 +14,7 @@ The OMS Linux Troubleshooter is designed in order to help find and diagnose issu
 
 ## Installing the Troubleshooter
 
-The OMS Troubleshooter is automatically installed upon installation of the OMS Agent. However, if installation fails in any way, it can also be installed manually by following the steps below.
+**The OMS Troubleshooter is automatically installed upon installation of the OMS Agent.** However, if installation fails in any way, it can also be installed manually by following the steps below.
 
 ### Manual Install of the Troubleshooter
 1. Copy the troubleshooter bundle onto your machine: `wget https://raw.github.com/microsoft/OMS-Agent-for-Linux/master/source/code/troubleshooter/omsagent_tst.tar.gz`
