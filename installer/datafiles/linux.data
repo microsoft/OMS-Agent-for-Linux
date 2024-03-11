@@ -75,9 +75,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Ensure omsagent is in the omiusers group, but leave omsagent as a group
-/usr/sbin/usermod -g omiusers omsagent 1> /dev/null 2> /dev/null
 # Ensure omsagent is in the omi group as well
-/usr/sbin/usermod -g omi omsagent 1> /dev/null 2> /dev/null
+/usr/sbin/usermod -g omiusers -a -G omi omsagent 1> /dev/null 2> /dev/null
 
 # Add the 'nxautomation' group if it does not already exist
 # (Can't use useradd with -U since that doesn't exist on older systems)
