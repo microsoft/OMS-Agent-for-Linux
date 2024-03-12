@@ -39,6 +39,7 @@ fi
 # Create script file
 su - omsagent -c "echo $'chmod 755 \$1\nsetcap cap_net_raw=ep \$1' > $scriptPath"
 chmod 755 $scriptPath
+chown root:root $scriptPath
 
 # Check if firewalld is present and running, open up destination port
 tcp_port=8084
