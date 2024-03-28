@@ -116,7 +116,7 @@ module Fluent
       def on_read_json(data)
         @y << data
       rescue
-        @log.error "Unexpected auoms error while reading json", error: $!.to_s, data: data
+        @log.error "Unexpected auoms error while reading json", error: $!.to_s
         @log.error_backtrace
         close
       end
