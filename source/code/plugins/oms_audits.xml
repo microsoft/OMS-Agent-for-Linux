@@ -1491,7 +1491,7 @@ Modify user parameters for all users with a password set to match:
       msid="181"
       severity="Critical"
       impact="The `rsyncd` service presents a security risk as it uses unencrypted protocols for communication."
-      remediation="Run one of the following commands to disable `rsyncd` : `chkconfig rsyncd off`, `systemctl disable rsyncd`, `update-rc.d rsyncd disable` or run '/opt/microsoft/omsagent/plugin/omsremediate -r disable-rsysnc'"
+      remediation="Run one of the following commands to disable `rsyncd` : `chkconfig rsyncd off`, `systemctl disable rsyncd`, `update-rc.d rsyncd disable` or run '/opt/microsoft/omsagent/plugin/omsremediate -r disable-rsync'"
       ruleId="63aba603-b1f8-40df-82c5-38915452ce23">
       <check distro="*" command="CheckServiceDisabled" service="rsync" />
     </audit>
