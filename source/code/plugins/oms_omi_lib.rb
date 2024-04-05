@@ -162,6 +162,8 @@ class OmiOms
       omi_to_oms_instance(instance, timestamp, wlm_enabled)
     }
 
+    @log.info "Received #{records_hash.size} records from OMI."
+
     if instances.length > 0
       wrapper = {
         "DataType"=>data_type,
