@@ -53,7 +53,6 @@ module OmiModule
     def transform(records, collected_counters, host, time)
       if records.to_s == ''
         # nil or empty, return empty record
-        @log.info "Received empty record set from OMI."
         return {}
       end
       
@@ -66,7 +65,6 @@ module OmiModule
       
       data_items = []
 
-      @log.info "Received #{records_hash.size} records from OMI."
       records_hash.each { |record|
         # get the specific class mapping
         specific_mapping = lookup_class_name(record["ClassName"], @counter_mapping)
